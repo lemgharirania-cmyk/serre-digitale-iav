@@ -33,8 +33,8 @@
   --gray-200:  #e5e7eb;
   --gray-400:  #9ca3af;
   --gray-600:  #4b5563;
-  --gray-800:  #1f2937;
-  --gray-900:  #111827;
+  --gray-800:  #d2d7de;
+  --gray-900:  #29292a;
   --font: 'Outfit', sans-serif;
   --font2: 'Space Grotesk', sans-serif;
   --radius: 16px;
@@ -498,58 +498,201 @@ footer {
   </div>
 </section>
 
-<!-- ─── UNITÉS ────────────────────────────────────────────── -->
-<section id="unites">
+<!-- ─── PRÉSENTATION AGROBIOTECH ──────────────────────────── -->
+<section id="unites" style="background:#f8faf8;padding:5rem 2rem">
   <div class="container">
-    <div class="section-header">
-      <div class="section-label" data-fr="Campus AgroBioTech" data-en="AgroBioTech Campus">Campus AgroBioTech</div>
-      <h2 class="section-title" data-fr="Les 5 Unités de Recherche" data-en="The 5 Research Units">Les 5 Unités de Recherche</h2>
-      <p class="section-sub" data-fr="Chaque unité est équipée de capteurs IoT connectés et d'un scan Matterport pour une visite virtuelle immersive." data-en="Each unit is equipped with connected IoT sensors and a Matterport scan for an immersive virtual tour.">
-        Chaque unité est équipée de capteurs IoT connectés et d'un scan Matterport pour une visite virtuelle immersive.
-      </p>
-    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
 
-    <div class="campus-plan">
-      <div class="campus-plan-placeholder">
-        <span style="font-size:32px">🗺️</span>
-        <span data-fr="[INSÉRER PLAN DU CAMPUS AGROBIOTECH]" data-en="[INSERT AGROBIOTECH CAMPUS PLAN]">[INSÉRER PLAN DU CAMPUS AGROBIOTECH]</span>
-        <span style="font-size:12px;opacity:0.6" data-fr="Remplacez ce bloc par votre image : <img src='plan.jpg'>" data-en="Replace with: <img src='plan.jpg'>">Remplacez ce bloc par votre image : &lt;img src='plan.jpg'&gt;</span>
+      <!-- Texte gauche -->
+      <div>
+        <div class="section-label" style="margin-bottom:12px">Campus AgroBioTech · IAV Hassan II</div>
+        <h2 class="section-title" style="margin-bottom:1.25rem;font-size:clamp(1.8rem,3vw,2.6rem)">
+          Un campus de recherche<br>agricole <span style="color:var(--green-600)">connecté</span>
+        </h2>
+        <p style="font-size:15px;color:var(--gray-600);line-height:1.8;margin-bottom:1.5rem">
+          Le campus AgroBioTech de l'IAV Hassan II à Rabat abrite <strong>5 serres de recherche connectées</strong>, équipées de capteurs IoT, de systèmes d'irrigation intelligents et de scans 3D Matterport. Il constitue un véritable <strong>jumeau numérique agricole</strong> permettant le suivi en temps réel des conditions de culture.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem">
+          <div style="background:white;border:1px solid var(--gray-200);border-radius:14px;padding:1rem;border-left:4px solid var(--green-500)">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--green-600)">5</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px">Serres de recherche connectées</div>
+          </div>
+          <div style="background:white;border:1px solid var(--gray-200);border-radius:14px;padding:1rem;border-left:4px solid var(--green-500)">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--green-600)">15</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px">Scans Matterport Pro 2</div>
+          </div>
+          <div style="background:white;border:1px solid var(--gray-200);border-radius:14px;padding:1rem;border-left:4px solid #3b82f6">
+            <div style="font-size:1.6rem;font-weight:800;color:#2563eb">10</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px">Capteurs IoT actifs</div>
+          </div>
+          <div style="background:white;border:1px solid var(--gray-200);border-radius:14px;padding:1rem;border-left:4px solid #14b8a6">
+            <div style="font-size:1.6rem;font-weight:800;color:#0f766e">24/7</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px">Monitoring en continu</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="background:var(--green-50);color:var(--green-700);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-200)">🧬 Génétique</span>
+          <span style="background:var(--green-50);color:var(--green-700);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-200)">🌸 Horticulture</span>
+          <span style="background:var(--green-50);color:var(--green-700);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-200)">🌾 Agronomie</span>
+          <span style="background:var(--green-50);color:var(--green-700);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-200)">💧 Hydroponie</span>
+          <span style="background:var(--green-50);color:var(--green-700);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-200)">🛡️ Protection</span>
+        </div>
       </div>
-    </div>
 
-    <div class="unites-grid" id="unites-grid">
-      <!-- Remplies dynamiquement par JS -->
+      <!-- Carte satellite droite -->
+      <div style="border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);border:1px solid var(--gray-200);position:relative">
+        <div id="mini-map" style="height:420px;width:100%"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.5));padding:1rem 1.2rem;pointer-events:none">
+          <div style="color:white;font-size:13px;font-weight:600">📍 AgroBioTech · IAV Hassan II</div>
+          <div style="color:rgba(255,255,255,.7);font-size:11px">Rabat, Maroc · 33.9787°N 6.8641°W</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ─── CARTE ─────────────────────────────────────────────── -->
-<section id="carte">
+<!-- ─── PLAN 2D INTERACTIF ─────────────────────────────────── -->
+<section id="carte" style="background:white;padding:5rem 2rem">
   <div class="container">
     <div class="section-header">
-      <div class="section-label" data-fr="Carte Interactive" data-en="Interactive Map">Carte Interactive</div>
-      <h2 class="section-title" data-fr="Localisation des Serres" data-en="Greenhouse Locations">Localisation des Serres</h2>
-      <p class="section-sub" data-fr="Cliquez sur une serre pour voir ses données capteurs en temps réel." data-en="Click on a greenhouse to see its real-time sensor data.">
-        Cliquez sur une serre pour voir ses données capteurs en temps réel.
+      <div class="section-label">Plan Interactif</div>
+      <h2 class="section-title" data-fr="Plan 2D du Campus" data-en="Campus 2D Plan">Plan 2D du Campus</h2>
+      <p class="section-sub" data-fr="Cliquez sur une unité pour voir ses données capteurs en temps réel et lancer la visite 3D." data-en="Click on a unit to see its real-time sensor data and launch the 3D tour.">
+        Cliquez sur une unité pour voir ses données capteurs en temps réel et lancer la visite 3D.
       </p>
     </div>
-    <div class="carte-wrapper">
-      <div id="map-container"></div>
-      <div class="carte-side">
-        <div class="serre-list-card">
-          <div class="serre-list-title" data-fr="Serres" data-en="Greenhouses">Serres</div>
-          <div id="serre-list"></div>
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+      <!-- SVG Plan -->
+      <div style="background:linear-gradient(135deg,#f0f8f3,#e8f5ee);border-radius:20px;padding:1.5rem;border:1px solid var(--gray-200);box-shadow:var(--shadow)">
+        <svg id="plan-svg" viewBox="0 0 800 530" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+          <rect width="800" height="530" fill="#f0f8f3" rx="8"/>
+          <!-- Bloc Technique Nord -->
+          <g class="plan-zone" data-unit="bloc-nord" style="cursor:pointer" onclick="selectPlanUnit('bloc-nord')">
+            <rect x="30" y="30" width="230" height="185" rx="4" fill="#dde8f5" stroke="#4aa8d8" stroke-width="1.5"/>
+            <rect x="30" y="30" width="230" height="4" rx="2" fill="#4aa8d8"/>
+            <line x1="107" y1="30" x2="107" y2="215" stroke="#4aa8d8" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="184" y1="30" x2="184" y2="215" stroke="#4aa8d8" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="68" y="118" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Local Technique</text>
+            <text x="68" y="130" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Équipements</text>
+            <text x="145" y="118" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Salle de</text>
+            <text x="145" y="130" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Commande</text>
+            <text x="214" y="118" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Salle de</text>
+            <text x="214" y="130" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Commande</text>
+            <text x="145" y="208" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#1a507a">Bloc Technique Nord</text>
+          </g>
+          <!-- Couloir -->
+          <rect x="29" y="217" width="230" height="78" rx="3" fill="#e6efe9" stroke="#7aa890" stroke-width="1.2"/>
+          <text x="145" y="260" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#4a7a65">Couloir</text>
+          <!-- Bloc Technique Sud -->
+          <g class="plan-zone" data-unit="bloc-sud" style="cursor:pointer" onclick="selectPlanUnit('bloc-sud')">
+            <rect x="30" y="298" width="230" height="185" rx="4" fill="#dde8f5" stroke="#4aa8d8" stroke-width="1.5"/>
+            <rect x="30" y="298" width="230" height="4" rx="2" fill="#4aa8d8"/>
+            <line x1="107" y1="298" x2="107" y2="483" stroke="#4aa8d8" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="184" y1="298" x2="184" y2="483" stroke="#4aa8d8" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="68" y="395" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Salle de Lavage</text>
+            <text x="145" y="388" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Fertilisation</text>
+            <text x="145" y="400" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">&amp; Traitement Eau</text>
+            <text x="214" y="395" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3a7090">Salle de Préparation</text>
+            <text x="145" y="476" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#1a507a">Bloc Technique Sud</text>
+          </g>
+          <!-- Liaison blocs -->
+          <rect x="258" y="240" width="22" height="36" fill="#e8a830"/>
+          <!-- Couloir Principal -->
+          <rect x="280" y="225" width="490" height="65" rx="4" fill="#c8e6d4" stroke="#2a9e5c" stroke-width="1.5"/>
+          <text x="525" y="265" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="700" fill="#155c32">Couloir Principal — Hub Central</text>
+          <!-- Génétique U1 -->
+          <g class="plan-zone" data-unit="genetique" style="cursor:pointer" onclick="selectPlanUnit('genetique')">
+            <rect x="280" y="40" width="158" height="183" rx="4" fill="rgba(42,158,92,0.12)" stroke="#2a9e5c" stroke-width="1.8"/>
+            <rect x="280" y="40" width="158" height="5" rx="2" fill="#2a9e5c"/>
+            <line x1="313" y1="50" x2="318" y2="218" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <line x1="341" y1="50" x2="346" y2="218" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <line x1="369" y1="50" x2="374" y2="218" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <line x1="397" y1="50" x2="402" y2="218" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <text x="359" y="116" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="700" fill="#155c32">Génétique &amp;</text>
+            <text x="359" y="131" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="700" fill="#155c32">Amélioration</text>
+            <text x="359" y="150" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#3d8a54">des Plantes</text>
+            <text x="359" y="216" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#5aaa78">Unité 1</text>
+          </g>
+          <rect x="340" y="220" width="36" height="8" rx="2" fill="#e8a830"/>
+          <!-- Horticulture U2 -->
+          <g class="plan-zone" data-unit="horticulture" style="cursor:pointer" onclick="selectPlanUnit('horticulture')">
+            <rect x="448" y="40" width="155" height="183" rx="4" fill="rgba(74,168,216,0.1)" stroke="#4aa8d8" stroke-width="1.8"/>
+            <rect x="448" y="40" width="155" height="5" rx="2" fill="#4aa8d8"/>
+            <line x1="481" y1="50" x2="486" y2="218" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <line x1="509" y1="50" x2="514" y2="218" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <line x1="537" y1="50" x2="542" y2="218" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <text x="525" y="126" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12" font-weight="700" fill="#1a507a">Horticulture</text>
+            <text x="525" y="216" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#4a90b0">Unité 2</text>
+          </g>
+          <rect x="506" y="220" width="36" height="8" rx="2" fill="#e8a830"/>
+          <!-- Agronomie U3 -->
+          <g class="plan-zone" data-unit="agronomie" style="cursor:pointer" onclick="selectPlanUnit('agronomie')">
+            <rect x="614" y="40" width="156" height="183" rx="4" fill="rgba(106,170,128,0.12)" stroke="#5aaa78" stroke-width="1.8"/>
+            <rect x="614" y="40" width="156" height="5" rx="2" fill="#5aaa78"/>
+            <line x1="647" y1="50" x2="652" y2="218" stroke="rgba(90,170,120,0.08)" stroke-width="8"/>
+            <line x1="675" y1="50" x2="680" y2="218" stroke="rgba(90,170,120,0.08)" stroke-width="8"/>
+            <line x1="703" y1="50" x2="708" y2="218" stroke="rgba(90,170,120,0.08)" stroke-width="8"/>
+            <text x="692" y="126" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12" font-weight="700" fill="#2a6040">Agronomie</text>
+            <text x="692" y="216" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#5aaa78">Unité 3</text>
+          </g>
+          <rect x="672" y="220" width="36" height="8" rx="2" fill="#e8a830"/>
+          <!-- Bloc Protection -->
+          <g class="plan-zone" data-unit="bloc-protection" style="cursor:pointer" onclick="selectPlanUnit('bloc-protection')">
+            <rect x="280" y="293" width="155" height="198" rx="4" fill="rgba(180,210,185,0.2)" stroke="#6aaa80" stroke-width="1.8"/>
+            <rect x="280" y="293" width="155" height="5" rx="2" fill="#6aaa80"/>
+            <rect x="295" y="328" width="58" height="48" rx="2" fill="rgba(106,170,128,0.15)" stroke="#6aaa80" stroke-width="1"/>
+            <text x="324" y="352" text-anchor="middle" font-family="Outfit,sans-serif" font-size="8" fill="#3d7a50">SAS Isolement</text>
+            <rect x="295" y="383" width="58" height="38" rx="2" fill="rgba(106,170,128,0.15)" stroke="#6aaa80" stroke-width="1"/>
+            <text x="324" y="405" text-anchor="middle" font-family="Outfit,sans-serif" font-size="8" fill="#3d7a50">Lavage &amp; Désinfection</text>
+            <rect x="362" y="328" width="58" height="95" rx="2" fill="rgba(106,170,128,0.15)" stroke="#6aaa80" stroke-width="1"/>
+            <text x="391" y="378" text-anchor="middle" font-family="Outfit,sans-serif" font-size="8" fill="#3d7a50">Salle de Préparation</text>
+            <text x="357" y="478" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#2a6040">Bloc Protection</text>
+          </g>
+          <!-- Protection U5 -->
+          <g class="plan-zone" data-unit="protection" style="cursor:pointer" onclick="selectPlanUnit('protection')">
+            <rect x="446" y="293" width="155" height="198" rx="4" fill="rgba(42,158,92,0.1)" stroke="#2a9e5c" stroke-width="1.8"/>
+            <rect x="446" y="293" width="155" height="5" rx="2" fill="#2a9e5c"/>
+            <line x1="479" y1="303" x2="484" y2="486" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <line x1="507" y1="303" x2="512" y2="486" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <line x1="535" y1="303" x2="540" y2="486" stroke="rgba(42,158,92,0.08)" stroke-width="8"/>
+            <text x="523" y="383" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="700" fill="#155c32">Protection</text>
+            <text x="523" y="398" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="700" fill="#155c32">des Plantes</text>
+            <text x="523" y="478" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#5aaa78">Unité 5</text>
+          </g>
+          <!-- Hydroponie U4 -->
+          <g class="plan-zone" data-unit="hydroponie" style="cursor:pointer" onclick="selectPlanUnit('hydroponie')">
+            <rect x="612" y="293" width="158" height="198" rx="4" fill="rgba(74,168,216,0.1)" stroke="#4aa8d8" stroke-width="1.8"/>
+            <rect x="612" y="293" width="158" height="5" rx="2" fill="#4aa8d8"/>
+            <line x1="645" y1="303" x2="650" y2="486" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <line x1="673" y1="303" x2="678" y2="486" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <line x1="701" y1="303" x2="706" y2="486" stroke="rgba(74,168,216,0.08)" stroke-width="8"/>
+            <text x="691" y="378" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#1a507a">Hydroponie &amp;</text>
+            <text x="691" y="393" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#1a507a">Systèmes Innovants</text>
+            <text x="691" y="478" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#4a90b0">Unité 4</text>
+          </g>
+          <rect x="670" y="283" width="36" height="12" rx="2" fill="#e8a830"/>
+          <!-- Légende -->
+          <rect x="30" y="505" width="11" height="8" rx="2" fill="rgba(42,158,92,0.2)" stroke="#2a9e5c" stroke-width="1.2"/>
+          <text x="46" y="513" font-family="Outfit,sans-serif" font-size="9" fill="#5aaa78">Serre</text>
+          <rect x="90" y="505" width="11" height="8" rx="2" fill="rgba(74,168,216,0.2)" stroke="#4aa8d8" stroke-width="1.2"/>
+          <text x="106" y="513" font-family="Outfit,sans-serif" font-size="9" fill="#4a90b0">Bloc Technique</text>
+          <rect x="195" y="505" width="11" height="8" rx="2" fill="#e8a830"/>
+          <text x="211" y="513" font-family="Outfit,sans-serif" font-size="9" fill="#a07820">Entrée/Porte</text>
+          <text x="30" y="527" font-family="Outfit,sans-serif" font-size="8.5" fill="#aac4b0">← Cliquez sur une zone pour afficher les données →</text>
+        </svg>
+      </div>
+
+      <!-- Panneau info droite -->
+      <div id="plan-info-panel" style="background:var(--gray-50);border-radius:16px;border:1px solid var(--gray-200);overflow:hidden;box-shadow:var(--shadow)">
+        <div style="background:var(--green-50);padding:16px 18px;border-bottom:1px solid var(--green-100)">
+          <div style="font-size:14px;font-weight:700;color:var(--green-800)">Informations</div>
+          <div style="font-size:11px;color:var(--green-600);margin-top:2px">Sélectionnez une zone sur le plan</div>
         </div>
-        <div class="sensor-panel" id="sensor-panel">
-          <div class="sensor-panel-title">
-            <span id="panel-serre-name" data-fr="Sélectionnez une serre" data-en="Select a greenhouse">Sélectionnez une serre</span>
+        <div id="plan-detail" style="padding:18px">
+          <div style="text-align:center;padding:2rem 1rem;color:var(--gray-400)">
+            <div style="font-size:36px;opacity:.4;margin-bottom:10px">🗺️</div>
+            <div style="font-size:13px;line-height:1.6">Cliquez sur une unité<br>pour voir ses données</div>
           </div>
-          <div class="sensor-grid" id="sensor-grid">
-            <div style="grid-column:1/-1;text-align:center;color:var(--gray-400);font-size:13px;padding:1rem" data-fr="Cliquez sur une serre pour voir ses données" data-en="Click a greenhouse to see its data">
-              Cliquez sur une serre pour voir ses données
-            </div>
-          </div>
-          <div class="refresh-info" id="panel-refresh"></div>
         </div>
       </div>
     </div>
@@ -607,25 +750,20 @@ footer {
 </section>
 
 <!-- ─── FOOTER ────────────────────────────────────────────── -->
-<footer>
+<footer style="background:var(--gray-50);border-top:1px solid var(--gray-200);padding:3rem 2rem 2rem;text-align:center">
   <div class="container">
-    <div class="footer-logos">
-      <img src="https://www.iav.ac.ma/sites/default/files/logo_iav_0.png"
-           onerror="this.style.display='none'" alt="IAV Hassan II">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <img src="https://www.iav.ac.ma/sites/default/files/logo_iav_0.png" onerror="this.style.display='none'" alt="IAV Hassan II" style="height:48px">
     </div>
-    <div class="footer-title" data-fr="Serre Digitale Intelligente — IAV Hassan II" data-en="Smart Digital Greenhouse — IAV Hassan II">
+    <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:6px">
       Serre Digitale Intelligente — IAV Hassan II
     </div>
-    <div class="footer-sub">
-      <span data-fr="Campus AgroBioTech · Géoportail Interactif · Jumeau Numérique" data-en="AgroBioTech Campus · Interactive Geoportal · Digital Twin">
-        Campus AgroBioTech · Géoportail Interactif · Jumeau Numérique
-      </span>
+    <div style="font-size:13px;color:var(--gray-400);margin-bottom:1rem">
+      Campus AgroBioTech · Géoportail Interactif · Jumeau Numérique
     </div>
-    <hr class="footer-divider">
-    <div class="footer-bottom">
-      <span data-fr="PFE Ingénieur Géomètre Topographe · IAV Hassan II · 2024–2025 · [INSÉRER NOM]" data-en="Final Year Project · IAV Hassan II · 2024–2025 · [INSERT NAME]">
-        PFE Ingénieur Géomètre Topographe · IAV Hassan II · 2024–2025 · [INSÉRER NOM]
-      </span>
+    <hr style="border:none;border-top:1px solid var(--gray-200);margin:1.25rem 0">
+    <div style="font-size:12px;color:var(--gray-400)">
+      PFE Ingénieur Géomètre Topographe · IAV Hassan II · 2024–2025 · [INSÉRER NOM]
     </div>
   </div>
 </footer>
@@ -675,24 +813,93 @@ window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
 });
 
-// ── Leaflet Map ───────────────────────────────────────────
+// ── Mini Map Satellite ────────────────────────────────────
+let miniMap;
+function initMiniMap() {
+  miniMap = L.map('mini-map', {zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false});
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:20}).addTo(miniMap);
+  miniMap.setView([33.96, -6.864096], 13);
+  setTimeout(() => miniMap.flyTo([33.978659, -6.864096], 18, {animate:true, duration:3.5}), 600);
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="width:22px;height:22px;border-radius:50%;background:#16a34a;border:3px solid white;box-shadow:0 0 0 8px rgba(22,163,74,0.25)"></div>`,
+    iconSize:[22,22], iconAnchor:[11,11]
+  });
+  L.marker([33.978659, -6.864096], {icon}).addTo(miniMap)
+    .bindPopup('<b style="color:#155c32">🌿 AgroBioTech · IAV Hassan II</b><br><small>Rabat, Maroc</small>');
+}
+
+// ── Plan 2D interactif ─────────────────────────────────────
+const PLAN_UNITS = {
+  'genetique':      {name:'Génétique & Amélioration', icon:'🧬', type:'Recherche', serreId:1, mId:'vG3pzqGDsvE'},
+  'horticulture':   {name:'Horticulture',             icon:'🌸', type:'Culture',   serreId:2, mId:'ewVdkig18XN'},
+  'agronomie':      {name:'Agronomie',                icon:'🌾', type:'Culture',   serreId:3, mId:'ximB8o6Y7HL'},
+  'hydroponie':     {name:'Hydroponie & Systèmes',    icon:'💧', type:'Culture',   serreId:4, mId:'PMVdAWZFaEn'},
+  'protection':     {name:'Protection des Plantes',   icon:'🛡️', type:'Technique', serreId:5, mId:'nkZ8GQuN2ep'},
+  'bloc-protection':{name:'Bloc Protection',          icon:'🔬', type:'Technique', serreId:null, mId:'teWd9VjkgAA'},
+  'bloc-nord':      {name:'Bloc Technique Nord',      icon:'🖥️', type:'Administration', serreId:null, mId:null},
+  'bloc-sud':       {name:'Bloc Technique Sud',       icon:'⚙️', type:'Technique', serreId:null, mId:null},
+};
+
+function selectPlanUnit(id) {
+  // Highlight selected zone
+  document.querySelectorAll('.plan-zone rect:first-child').forEach(r => r.style.opacity = '1');
+  const d = PLAN_UNITS[id];
+  if (!d) return;
+  // Get live data for this serre
+  const sd = liveData.find(x => x.serre_id === d.serreId);
+  const env = sd?.env || {};
+  const irr = sd?.irr || {};
+  const fv = (v, u) => v != null ? `<strong style="color:var(--green-700)">${v}${u}</strong>` : '<span style="color:var(--gray-400)">—</span>';
+  document.getElementById('plan-detail').innerHTML = `
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:42px;height:42px;border-radius:12px;background:var(--green-50);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--green-200)">${d.icon}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--gray-900)">${d.name}</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${d.type}</div>
+        </div>
+      </div>
+      ${d.serreId ? `
+      <div style="background:white;border-radius:12px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:12px">
+        <div style="padding:8px 12px;background:var(--green-50);border-bottom:1px solid var(--green-100);font-size:11px;font-weight:700;color:var(--green-700);text-transform:uppercase;letter-spacing:.05em">📡 Capteurs live</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--gray-100);border-right:1px solid var(--gray-100)">
+            <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px">🌡 Température</div>
+            <div style="font-size:14px">${fv(env.temperature, '°C')}</div>
+          </div>
+          <div style="padding:10px 12px;border-bottom:1px solid var(--gray-100)">
+            <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px">💧 Humidité</div>
+            <div style="font-size:14px">${fv(env.humidite, '%')}</div>
+          </div>
+          <div style="padding:10px 12px;border-right:1px solid var(--gray-100)">
+            <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px">⚗️ pH</div>
+            <div style="font-size:14px">${fv(irr?.ph, '')}</div>
+          </div>
+          <div style="padding:10px 12px">
+            <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px">⚡ EC</div>
+            <div style="font-size:14px">${fv(irr?.ec, ' mS/cm')}</div>
+          </div>
+        </div>
+      </div>` : `<div style="background:var(--gray-50);border-radius:10px;padding:12px;font-size:12px;color:var(--gray-400);margin-bottom:12px;text-align:center">Espace technique — pas de capteurs IoT</div>`}
+      ${d.mId ? `<button onclick="goToVisite('${d.mId}')" style="width:100%;padding:11px;border-radius:10px;background:var(--green-600);color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s" onmouseover="this.style.background='var(--green-700)'" onmouseout="this.style.background='var(--green-600)'">🔍 Lancer la visite 3D →</button>` : ''}
+    </div>`;
+}
+
+function goToVisite(mId) {
+  document.getElementById('visite').scrollIntoView({behavior:'smooth'});
+  setTimeout(() => {
+    document.querySelectorAll('.scene-tab').forEach(t => {
+      if (t.dataset.id === mId) { t.click(); }
+    });
+  }, 600);
+}
+
+// ── Leaflet Map (kept for compatibility) ──────────────────
 let map, markers = {};
 function initMap() {
-  map = L.map('map-container').setView([33.9866, -6.8537], 18);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors', maxZoom: 22
-  }).addTo(map);
-
-  SERRES_CONFIG.forEach(s => {
-    const icon = L.divIcon({
-      html: `<div style="background:${s.couleur};border:3px solid white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${s.icon}</div>`,
-      className:'', iconSize:[36,36], iconAnchor:[18,18]
-    });
-    const marker = L.marker([s.lat, s.lng], {icon}).addTo(map);
-    marker.bindPopup(`<b>${s.nom_fr}</b><br><small>${s.code}</small>`);
-    marker.on('click', () => selectSerre(s.id));
-    markers[s.id] = marker;
-  });
+  // Map is now the mini-map, keep function for compatibility
+  initMiniMap();
   buildSerreList();
 }
 
