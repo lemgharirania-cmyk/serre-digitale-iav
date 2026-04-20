@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serre Digitale Intelligente — IAV Hassan II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --green-50:  #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-800: #166534;
+  --blue-50:   #eff6ff;
+  --blue-100:  #dbeafe;
+  --blue-400:  #60a5fa;
+  --blue-500:  #3b82f6;
+  --blue-600:  #2563eb;
+  --teal-400:  #2dd4bf;
+  --teal-500:  #14b8a6;
+  --white:     #ffffff;
+  --gray-50:   #f9fafb;
+  --gray-100:  #f3f4f6;
+  --gray-200:  #e5e7eb;
+  --gray-400:  #9ca3af;
+  --gray-600:  #4b5563;
+  --gray-800:  #1f2937;
+  --gray-900:  #111827;
+  --font: 'Outfit', sans-serif;
+  --font2: 'Space Grotesk', sans-serif;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--white); color: var(--gray-800); overflow-x: hidden; }
+
+/* ─── NAVBAR ─────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 2rem;
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.3s;
+}
+nav.scrolled { box-shadow: var(--shadow); }
+.nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.nav-brand img { height: 42px; }
+.nav-brand-text { line-height: 1.2; }
+.nav-brand-text .title { font-size: 14px; font-weight: 700; color: var(--green-700); }
+.nav-brand-text .sub { font-size: 11px; color: var(--gray-400); font-weight: 400; }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+  font-size: 13px; font-weight: 500; color: var(--gray-600);
+  text-decoration: none; padding: 6px 14px; border-radius: 8px;
+  transition: all 0.2s;
+}
+.nav-links a:hover { background: var(--green-50); color: var(--green-700); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.lang-switch {
+  display: flex; border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden;
+}
+.lang-btn {
+  padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+  background: none; border: none; color: var(--gray-400); transition: all 0.2s;
+  font-family: var(--font);
+}
+.lang-btn.active { background: var(--green-600); color: white; }
+.btn-login {
+  background: var(--green-600); color: white;
+  padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: all 0.2s; font-family: var(--font);
+  border: none; cursor: pointer;
+}
+.btn-login:hover { background: var(--green-700); transform: translateY(-1px); }
+
+/* ─── HERO ────────────────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a2e1a 0%, #0d4a2a 40%, #064e3b 70%, #0f3460 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; padding-top: 68px;
+}
+.hero-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.particle {
+  position: absolute; border-radius: 50%;
+  background: rgba(74, 222, 128, 0.12);
+  animation: float linear infinite;
+}
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+.hero-video-placeholder {
+  position: absolute; inset: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(74,222,128,0.08)" stroke-width="1"/></pattern></defs><rect width="800" height="600" fill="url(%23grid)"/></svg>');
+  opacity: 0.6;
+}
+.hero-content {
+  position: relative; z-index: 2; text-align: center; max-width: 900px; padding: 2rem;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #86efac; font-size: 13px; font-weight: 500;
+  padding: 6px 16px; border-radius: 100px; margin-bottom: 1.5rem;
+  animation: fadeInDown 0.8s ease;
+}
+.hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; color: white;
+  line-height: 1.1; margin-bottom: 1rem;
+  animation: fadeInUp 0.8s ease 0.2s both;
+}
+.hero-title span { color: #4ade80; }
+.hero-sub {
+  font-size: 1.2rem; color: rgba(255,255,255,0.65); font-weight: 300;
+  margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;
+  animation: fadeInUp 0.8s ease 0.4s both; line-height: 1.7;
+}
+.hero-stats {
+  display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+  animation: fadeInUp 0.8s ease 0.6s both;
+}
+.hero-stat {
+  text-align: center;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px; padding: 1rem 1.5rem; min-width: 130px;
+}
+.hero-stat .val { font-size: 2rem; font-weight: 800; color: #4ade80; line-height: 1; }
+.hero-stat .lbl { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 400; }
+.hero-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease 0.8s both;
+}
+.btn-primary {
+  background: var(--green-500); color: white;
+  padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 600;
+  text-decoration: none; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+  font-family: var(--font); border: none; cursor: pointer;
+}
+.btn-primary:hover { background: var(--green-600); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(34,197,94,0.4); }
+.btn-outline {
+  background: rgba(255,255,255,0.08); color: white;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 500;
+  text-decoration: none; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+  font-family: var(--font); cursor: pointer;
+}
+.btn-outline:hover { background: rgba(255,255,255,0.14); }
+.hero-scroll {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.4); font-size: 12px; animation: fadeInUp 1s ease 1.2s both;
+}
+.scroll-arrow { width: 20px; height: 20px; border-right: 2px solid rgba(255,255,255,0.3); border-bottom: 2px solid rgba(255,255,255,0.3); transform: rotate(45deg); animation: bounce 2s infinite; }
+@keyframes bounce { 0%,100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(5px); } }
+
+/* ─── SECTIONS COMMUNES ───────────────────────────────────── */
+section { padding: 6rem 2rem; }
+.section-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--green-600); margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--gray-900);
+  line-height: 1.2; margin-bottom: 1rem;
+}
+.section-sub { font-size: 1.05rem; color: var(--gray-400); max-width: 580px; line-height: 1.7; }
+.section-header { margin-bottom: 3rem; }
+.container { max-width: 1200px; margin: 0 auto; }
+
+/* ─── SECTION UNITÉS ──────────────────────────────────────── */
+#unites { background: var(--gray-50); }
+.campus-plan {
+  background: white; border-radius: 24px; padding: 2rem;
+  border: 1px solid var(--gray-200); margin-bottom: 3rem;
+  box-shadow: var(--shadow);
+}
+.campus-plan img { width: 100%; border-radius: 12px; }
+.campus-plan-placeholder {
+  width: 100%; height: 280px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--green-50), var(--blue-50));
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--green-200); color: var(--green-600);
+  font-size: 14px; font-weight: 500; text-align: center; gap: 8px;
+  flex-direction: column;
+}
+.unites-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;
+}
+.unite-card {
+  background: white; border-radius: 20px; padding: 1.5rem;
+  border: 1px solid var(--gray-200); transition: all 0.3s;
+  cursor: pointer; position: relative; overflow: hidden;
+}
+.unite-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--card-color, var(--green-400));
+}
+.unite-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--green-200); }
+.unite-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1rem; }
+.unite-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: var(--card-bg, var(--green-50));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.unite-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px;
+  background: var(--card-bg, var(--green-50)); color: var(--card-text, var(--green-700));
+  margin-left: auto;
+}
+.unite-title { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+.unite-desc { font-size: 13px; color: var(--gray-400); line-height: 1.6; margin-bottom: 1rem; }
+.unite-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.unite-tag {
+  font-size: 11px; padding: 4px 10px; border-radius: 8px;
+  background: var(--gray-100); color: var(--gray-600); font-weight: 500;
+}
+.unite-sensors {
+  display: flex; gap: 8px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--gray-100); flex-wrap: wrap;
+}
+.sensor-chip {
+  font-size: 11px; padding: 3px 8px; border-radius: 6px;
+  background: var(--green-50); color: var(--green-700); font-weight: 600;
+}
+
+/* ─── SECTION CARTE ───────────────────────────────────────── */
+#carte { background: white; }
+.carte-wrapper {
+  display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start;
+}
+#map-container {
+  border-radius: 20px; overflow: hidden; border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow); height: 520px;
+}
+.carte-side { display: flex; flex-direction: column; gap: 16px; }
+.serre-list-card {
+  background: var(--gray-50); border-radius: 16px; padding: 1.25rem;
+  border: 1px solid var(--gray-200);
+}
+.serre-list-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.serre-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px;
+  border-radius: 10px; cursor: pointer; transition: all 0.2s; margin-bottom: 4px;
+}
+.serre-item:hover { background: white; }
+.serre-item.active { background: white; box-shadow: var(--shadow); }
+.serre-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.serre-item-name { font-size: 13px; font-weight: 500; color: var(--gray-700); flex: 1; }
+.serre-item-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.status-ok { background: var(--green-50); color: var(--green-700); }
+.status-warn { background: #fef9c3; color: #854d0e; }
+.status-err { background: #fef2f2; color: #dc2626; }
+
+.sensor-panel {
+  background: white; border-radius: 16px; padding: 1.25rem;
+  border: 1px solid var(--gray-200); box-shadow: var(--shadow);
+}
+.sensor-panel-title { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sensor-card {
+  background: var(--gray-50); border-radius: 12px; padding: 12px;
+  border: 1px solid var(--gray-100); text-align: center;
+}
+.sensor-card .sensor-val { font-size: 1.4rem; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.sensor-card .sensor-unit { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+.sensor-card .sensor-name { font-size: 11px; font-weight: 600; color: var(--gray-500); margin-bottom: 4px; }
+.refresh-info { font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 12px; }
+
+/* ─── SECTION MATTERPORT ──────────────────────────────────── */
+#visite { background: var(--gray-900); }
+#visite .section-title { color: white; }
+#visite .section-label { color: #4ade80; }
+#visite .section-sub { color: rgba(255,255,255,0.5); }
+.scene-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem;
+}
+.scene-tab {
+  padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s;
+  font-family: var(--font);
+}
+.scene-tab:hover { border-color: #4ade80; color: #4ade80; }
+.scene-tab.active { background: rgba(74,222,128,0.15); border-color: #4ade80; color: #4ade80; }
+.matterport-embed {
+  border-radius: 20px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  position: relative; padding-bottom: 56.25%; height: 0;
+}
+.matterport-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.matterport-controls {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 1.5rem;
+}
+.matterport-btn {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s;
+  font-family: var(--font); color: white; text-align: left;
+}
+.matterport-btn:hover { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); }
+.matterport-btn.active { background: rgba(74,222,128,0.15); border-color: #4ade80; }
+.matterport-btn .mb-icon { font-size: 20px; margin-bottom: 6px; }
+.matterport-btn .mb-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9); }
+.matterport-btn .mb-type { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+/* ─── SECTION DONNÉES ─────────────────────────────────────── */
+#donnees { background: var(--gray-50); }
+.refresh-bar {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 2rem;
+  background: white; padding: 12px 20px; border-radius: 14px;
+  border: 1px solid var(--gray-200); box-shadow: var(--shadow);
+}
+.refresh-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-500); animation: pulse 2s infinite; }
+.refresh-text { font-size: 13px; color: var(--gray-600); flex: 1; }
+.refresh-countdown { font-size: 13px; font-weight: 700; color: var(--green-600); }
+.btn-refresh {
+  background: var(--green-50); color: var(--green-700); border: 1px solid var(--green-200);
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: all 0.2s;
+}
+.btn-refresh:hover { background: var(--green-100); }
+.donnees-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+.donnee-card {
+  background: white; border-radius: 20px; padding: 1.5rem;
+  border: 1px solid var(--gray-200); box-shadow: var(--shadow);
+  transition: all 0.3s;
+}
+.donnee-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.donnee-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--gray-100);
+}
+.donnee-color { width: 12px; height: 12px; border-radius: 3px; }
+.donnee-name { font-size: 15px; font-weight: 700; color: var(--gray-900); flex: 1; }
+.status-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
+}
+.sensors-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+.s-box { text-align: center; background: var(--gray-50); border-radius: 10px; padding: 10px 6px; }
+.s-box .s-val { font-size: 1.15rem; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.s-box .s-unit { font-size: 10px; color: var(--gray-400); }
+.s-box .s-lbl { font-size: 10px; font-weight: 600; color: var(--gray-500); margin-bottom: 2px; }
+.chart-mini { height: 60px; margin-top: 8px; }
+.donnee-irr {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--gray-100);
+}
+.irr-box { background: var(--blue-50); border-radius: 8px; padding: 8px; text-align: center; }
+.irr-box .i-val { font-size: 1rem; font-weight: 800; color: var(--blue-600); }
+.irr-box .i-lbl { font-size: 10px; color: #6b7280; font-weight: 500; }
+
+/* ─── FOOTER ──────────────────────────────────────────────── */
+footer {
+  background: var(--gray-900); color: rgba(255,255,255,0.6);
+  padding: 3rem 2rem 2rem; text-align: center;
+}
+.footer-logos { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.footer-logos img { height: 48px; filter: brightness(0) invert(1); opacity: 0.7; }
+.footer-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 8px; }
+.footer-sub { font-size: 13px; line-height: 1.6; }
+.footer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0; }
+.footer-bottom { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+/* ─── MODAL POPUP ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: white; border-radius: 24px; padding: 2rem;
+  max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto;
+  transform: scale(0.9); transition: transform 0.3s;
+}
+.modal-overlay.open .modal { transform: scale(1); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close { background: var(--gray-100); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; }
+
+/* ─── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .carte-wrapper { grid-template-columns: 1fr; }
+  #map-container { height: 380px; }
+  nav .nav-links { display: none; }
+}
+@media (max-width: 600px) {
+  section { padding: 4rem 1rem; }
+  .hero-stats { gap: 1rem; }
+  .hero-stat { min-width: 100px; padding: 0.75rem 1rem; }
+}
+
+/* ─── LOADING ─────────────────────────────────────────────── */
+.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--gray-200); border-top-color: var(--green-500); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.skeleton { background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+</style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ──────────────────────────────────────────── -->
+<nav id="navbar">
+  <a href="#hero" class="nav-brand">
+    <img src="https://www.iav.ac.ma/sites/default/files/logo_iav_0.png"
+         onerror="this.style.display='none'" alt="IAV">
+    <div class="nav-brand-text">
+      <div class="title" data-fr="Serre Digitale Intelligente" data-en="Smart Digital Greenhouse">Serre Digitale Intelligente</div>
+      <div class="sub">IAV Hassan II · AgroBioTech</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="#unites" data-fr="Unités" data-en="Units">Unités</a>
+    <a href="#carte" data-fr="Carte" data-en="Map">Carte</a>
+    <a href="#visite" data-fr="Visite 3D" data-en="3D Tour">Visite 3D</a>
+    <a href="#donnees" data-fr="Données" data-en="Data">Données</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="btn-login" onclick="window.location.href='dashboard/index.html'" data-fr="Espace Gérant" data-en="Manager Login">
+      Espace Gérant
+    </button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-video-placeholder"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span data-fr="Données IoT en temps réel" data-en="Real-time IoT Data">Données IoT en temps réel</span>
+    </div>
+    <h1 class="hero-title">
+      <span data-fr="Serre Digitale" data-en="Smart Digital">Serre Digitale</span><br>
+      <span data-fr="Intelligente" data-en="Greenhouse">Intelligente</span>
+    </h1>
+    <p class="hero-sub" data-fr="Géoportail interactif du campus AgroBioTech — visualisation 3D, données capteurs live et jumeau numérique des 5 serres connectées de l'IAV Hassan II."
+       data-en="Interactive geoportal of the AgroBioTech campus — 3D visualization, live sensor data and digital twin of the 5 connected greenhouses of IAV Hassan II.">
+      Géoportail interactif du campus AgroBioTech — visualisation 3D, données capteurs live et jumeau numérique des 5 serres connectées de l'IAV Hassan II.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="val" id="stat-serres">5</div>
+        <div class="lbl" data-fr="Serres connectées" data-en="Connected greenhouses">Serres connectées</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="stat-capteurs">10</div>
+        <div class="lbl" data-fr="Capteurs actifs" data-en="Active sensors">Capteurs actifs</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="stat-mesures">—</div>
+        <div class="lbl" data-fr="Mesures aujourd'hui" data-en="Measures today">Mesures aujourd'hui</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="stat-scans">15</div>
+        <div class="lbl" data-fr="Scans Matterport" data-en="Matterport scans">Scans Matterport</div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a href="#carte" class="btn-primary" data-fr="Explorer la carte" data-en="Explore the map">Explorer la carte →</a>
+      <a href="#visite" class="btn-outline" data-fr="Visite virtuelle 3D" data-en="3D Virtual tour">Visite virtuelle 3D</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span data-fr="Défiler" data-en="Scroll">Défiler</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ─── UNITÉS ────────────────────────────────────────────── -->
+<section id="unites">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label" data-fr="Campus AgroBioTech" data-en="AgroBioTech Campus">Campus AgroBioTech</div>
+      <h2 class="section-title" data-fr="Les 5 Unités de Recherche" data-en="The 5 Research Units">Les 5 Unités de Recherche</h2>
+      <p class="section-sub" data-fr="Chaque unité est équipée de capteurs IoT connectés et d'un scan Matterport pour une visite virtuelle immersive." data-en="Each unit is equipped with connected IoT sensors and a Matterport scan for an immersive virtual tour.">
+        Chaque unité est équipée de capteurs IoT connectés et d'un scan Matterport pour une visite virtuelle immersive.
+      </p>
+    </div>
+
+    <div class="campus-plan">
+      <div class="campus-plan-placeholder">
+        <span style="font-size:32px">🗺️</span>
+        <span data-fr="[INSÉRER PLAN DU CAMPUS AGROBIOTECH]" data-en="[INSERT AGROBIOTECH CAMPUS PLAN]">[INSÉRER PLAN DU CAMPUS AGROBIOTECH]</span>
+        <span style="font-size:12px;opacity:0.6" data-fr="Remplacez ce bloc par votre image : <img src='plan.jpg'>" data-en="Replace with: <img src='plan.jpg'>">Remplacez ce bloc par votre image : &lt;img src='plan.jpg'&gt;</span>
+      </div>
+    </div>
+
+    <div class="unites-grid" id="unites-grid">
+      <!-- Remplies dynamiquement par JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── CARTE ─────────────────────────────────────────────── -->
+<section id="carte">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label" data-fr="Carte Interactive" data-en="Interactive Map">Carte Interactive</div>
+      <h2 class="section-title" data-fr="Localisation des Serres" data-en="Greenhouse Locations">Localisation des Serres</h2>
+      <p class="section-sub" data-fr="Cliquez sur une serre pour voir ses données capteurs en temps réel." data-en="Click on a greenhouse to see its real-time sensor data.">
+        Cliquez sur une serre pour voir ses données capteurs en temps réel.
+      </p>
+    </div>
+    <div class="carte-wrapper">
+      <div id="map-container"></div>
+      <div class="carte-side">
+        <div class="serre-list-card">
+          <div class="serre-list-title" data-fr="Serres" data-en="Greenhouses">Serres</div>
+          <div id="serre-list"></div>
+        </div>
+        <div class="sensor-panel" id="sensor-panel">
+          <div class="sensor-panel-title">
+            <span id="panel-serre-name" data-fr="Sélectionnez une serre" data-en="Select a greenhouse">Sélectionnez une serre</span>
+          </div>
+          <div class="sensor-grid" id="sensor-grid">
+            <div style="grid-column:1/-1;text-align:center;color:var(--gray-400);font-size:13px;padding:1rem" data-fr="Cliquez sur une serre pour voir ses données" data-en="Click a greenhouse to see its data">
+              Cliquez sur une serre pour voir ses données
+            </div>
+          </div>
+          <div class="refresh-info" id="panel-refresh"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── VISITE MATTERPORT ─────────────────────────────────── -->
+<section id="visite">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Matterport 3D</div>
+      <h2 class="section-title" data-fr="Visite Virtuelle Immersive" data-en="Immersive Virtual Tour">Visite Virtuelle Immersive</h2>
+      <p class="section-sub" data-fr="Explorez le campus en 3D, naviguez entre les serres et découvrez les espaces techniques." data-en="Explore the campus in 3D, navigate between greenhouses and discover technical spaces.">
+        Explorez le campus en 3D, naviguez entre les serres et découvrez les espaces techniques.
+      </p>
+    </div>
+    <div class="scene-tabs" id="scene-tabs">
+      <button class="scene-tab active" data-id="R1sCgCSGJMQ" onclick="loadScene('R1sCgCSGJMQ',this)" data-fr="Vue Complète" data-en="Full View">Vue Complète</button>
+      <button class="scene-tab" data-id="XgEA1hS6oGD" onclick="loadScene('XgEA1hS6oGD',this)" data-fr="Extérieur" data-en="Exterior">Extérieur</button>
+      <button class="scene-tab" data-id="geDWdk2gcB2" onclick="loadScene('geDWdk2gcB2',this)" data-fr="Couloir" data-en="Corridor">Couloir</button>
+      <button class="scene-tab" data-id="vG3pzqGDsvE" onclick="loadScene('vG3pzqGDsvE',this)" data-fr="Génétique" data-en="Genetics">Génétique</button>
+      <button class="scene-tab" data-id="ewVdkig18XN" onclick="loadScene('ewVdkig18XN',this)" data-fr="Horticulture" data-en="Horticulture">Horticulture</button>
+      <button class="scene-tab" data-id="ximB8o6Y7HL" onclick="loadScene('ximB8o6Y7HL',this)" data-fr="Agronomie" data-en="Agronomy">Agronomie</button>
+      <button class="scene-tab" data-id="PMVdAWZFaEn" onclick="loadScene('PMVdAWZFaEn',this)" data-fr="Hydroponie" data-en="Hydroponics">Hydroponie</button>
+      <button class="scene-tab" data-id="nkZ8GQuN2ep" onclick="loadScene('nkZ8GQuN2ep',this)" data-fr="Protection" data-en="Protection">Protection</button>
+    </div>
+    <div class="matterport-embed">
+      <iframe id="matterport-frame"
+        src="https://my.matterport.com/show/?m=R1sCgCSGJMQ&play=1&qs=1&lang=fr"
+        frameborder="0" allowfullscreen allow="vr"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DONNÉES LIVE ───────────────────────────────────────── -->
+<section id="donnees">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label" data-fr="Temps Réel" data-en="Real-time">Temps Réel</div>
+      <h2 class="section-title" data-fr="Données des Capteurs" data-en="Sensor Data">Données des Capteurs</h2>
+      <p class="section-sub" data-fr="Températures, humidité, pH, EC et plus — mis à jour automatiquement toutes les 2 minutes." data-en="Temperature, humidity, pH, EC and more — automatically updated every 2 minutes.">
+        Températures, humidité, pH, EC et plus — mis à jour automatiquement toutes les 2 minutes.
+      </p>
+    </div>
+    <div class="refresh-bar">
+      <div class="refresh-dot"></div>
+      <span class="refresh-text" id="refresh-text" data-fr="Données en temps réel" data-en="Real-time data">Données en temps réel</span>
+      <span class="refresh-countdown" id="refresh-countdown">2:00</span>
+      <button class="btn-refresh" onclick="fetchLiveData()" data-fr="↻ Actualiser" data-en="↻ Refresh">↻ Actualiser</button>
+    </div>
+    <div class="donnees-grid" id="donnees-grid">
+      <!-- Remplies dynamiquement -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-logos">
+      <img src="https://www.iav.ac.ma/sites/default/files/logo_iav_0.png"
+           onerror="this.style.display='none'" alt="IAV Hassan II">
+    </div>
+    <div class="footer-title" data-fr="Serre Digitale Intelligente — IAV Hassan II" data-en="Smart Digital Greenhouse — IAV Hassan II">
+      Serre Digitale Intelligente — IAV Hassan II
+    </div>
+    <div class="footer-sub">
+      <span data-fr="Campus AgroBioTech · Géoportail Interactif · Jumeau Numérique" data-en="AgroBioTech Campus · Interactive Geoportal · Digital Twin">
+        Campus AgroBioTech · Géoportail Interactif · Jumeau Numérique
+      </span>
+    </div>
+    <hr class="footer-divider">
+    <div class="footer-bottom">
+      <span data-fr="PFE Ingénieur Géomètre Topographe · IAV Hassan II · 2024–2025 · [INSÉRER NOM]" data-en="Final Year Project · IAV Hassan II · 2024–2025 · [INSERT NAME]">
+        PFE Ingénieur Géomètre Topographe · IAV Hassan II · 2024–2025 · [INSÉRER NOM]
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ─── SCRIPTS ───────────────────────────────────────────── -->
+<script>
+const API = 'http://localhost:8000';
+let liveData = [];
+let countdownVal = 120;
+let countdownTimer;
+let currentLang = 'fr';
+
+const SERRES_CONFIG = [
+  { id:1, code:'S01', nom_fr:'Génétique & Amélioration', nom_en:'Plant Genetics', couleur:'#86efac', icon:'🧬', lat:33.9870, lng:-6.8540 },
+  { id:2, code:'S02', nom_fr:'Horticulture',             nom_en:'Horticulture',   couleur:'#6ee7b7', icon:'🌸', lat:33.9868, lng:-6.8537 },
+  { id:3, code:'S03', nom_fr:'Agronomie',                nom_en:'Agronomy',       couleur:'#34d399', icon:'🌾', lat:33.9866, lng:-6.8534 },
+  { id:4, code:'S04', nom_fr:'Hydroponie',               nom_en:'Hydroponics',    couleur:'#2dd4bf', icon:'💧', lat:33.9862, lng:-6.8534 },
+  { id:5, code:'S05', nom_fr:'Protection des Plantes',   nom_en:'Plant Protection',couleur:'#a3e635', icon:'🛡️', lat:33.9862, lng:-6.8537 },
+];
+
+// ── Langue ───────────────────────────────────────────────
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  document.querySelectorAll('[data-fr]').forEach(el => {
+    const txt = el.getAttribute('data-' + lang);
+    if (txt) el.textContent = txt;
+  });
+  document.documentElement.lang = lang;
+}
+
+// ── Particles ────────────────────────────────────────────
+function createParticles() {
+  const c = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 60 + 20;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*20+15}s;animation-delay:${Math.random()*15}s;opacity:${Math.random()*0.15+0.05}`;
+    c.appendChild(p);
+  }
+}
+
+// ── Navbar scroll ─────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ── Leaflet Map ───────────────────────────────────────────
+let map, markers = {};
+function initMap() {
+  map = L.map('map-container').setView([33.9866, -6.8537], 18);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 22
+  }).addTo(map);
+
+  SERRES_CONFIG.forEach(s => {
+    const icon = L.divIcon({
+      html: `<div style="background:${s.couleur};border:3px solid white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${s.icon}</div>`,
+      className:'', iconSize:[36,36], iconAnchor:[18,18]
+    });
+    const marker = L.marker([s.lat, s.lng], {icon}).addTo(map);
+    marker.bindPopup(`<b>${s.nom_fr}</b><br><small>${s.code}</small>`);
+    marker.on('click', () => selectSerre(s.id));
+    markers[s.id] = marker;
+  });
+  buildSerreList();
+}
+
+function buildSerreList() {
+  const el = document.getElementById('serre-list');
+  el.innerHTML = SERRES_CONFIG.map(s => `
+    <div class="serre-item" id="sitem-${s.id}" onclick="selectSerre(${s.id})">
+      <div class="serre-dot" style="background:${s.couleur}"></div>
+      <span class="serre-item-name">${currentLang==='fr'?s.nom_fr:s.nom_en}</span>
+      <span class="serre-item-status status-ok" id="sstatus-${s.id}">—</span>
+    </div>`).join('');
+}
+
+function selectSerre(id) {
+  document.querySelectorAll('.serre-item').forEach(e => e.classList.remove('active'));
+  document.getElementById(`sitem-${id}`)?.classList.add('active');
+  const s = SERRES_CONFIG.find(x => x.id === id);
+  if (s && map) map.setView([s.lat, s.lng], 20);
+  showSensorPanel(id);
+}
+
+function showSensorPanel(id) {
+  const s = SERRES_CONFIG.find(x => x.id === id);
+  const data = liveData.find(x => x.serre_id === id);
+  document.getElementById('panel-serre-name').textContent = currentLang==='fr' ? s.nom_fr : s.nom_en;
+  const grid = document.getElementById('sensor-grid');
+  if (!data) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:1rem"><div class="loading"></div></div>`; return; }
+  const env = data.env || {};
+  const irr = data.irr || {};
+  const fmt = (v,u) => v!=null ? `<span class="sensor-val">${v}</span><span class="sensor-unit">${u}</span>` : `<span class="sensor-val" style="color:var(--gray-400)">—</span>`;
+  grid.innerHTML = [
+    { name:'Temp.', val:env.temperature, unit:'°C' },
+    { name:'Humid.', val:env.humidite, unit:'%' },
+    { name:'VPD', val:env.vpd, unit:'kPa' },
+    { name:'CO₂', val:env.co2, unit:'ppm' },
+    { name:'pH', val:irr?.ph, unit:'pH' },
+    { name:'EC', val:irr?.ec, unit:'mS/cm' },
+  ].map(x => `<div class="sensor-card"><div class="sensor-name">${x.name}</div>${fmt(x.val,x.unit)}</div>`).join('');
+  document.getElementById('panel-refresh').textContent = currentLang==='fr' ? 'Mis à jour il y a moins de 2 min' : 'Updated less than 2 min ago';
+}
+
+// ── Fetch Live Data ───────────────────────────────────────
+async function fetchLiveData() {
+  try {
+    const res = await fetch(`${API}/api/iot/live`);
+    const json = await res.json();
+    liveData = json.serres || [];
+    renderDonneesGrid();
+    updateSerreStatuses();
+    fetchStats();
+    resetCountdown();
+  } catch(e) {
+    console.error('Erreur IoT:', e);
+    document.getElementById('refresh-text').textContent = currentLang==='fr' ? '⚠️ Impossible de joindre le serveur' : '⚠️ Cannot reach server';
+  }
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch(`${API}/api/iot/stats`);
+    const d = await res.json();
+    document.getElementById('stat-mesures').textContent = d.mesures_24h || '0';
+  } catch(e) {}
+}
+
+function updateSerreStatuses() {
+  liveData.forEach(d => {
+    const el = document.getElementById(`sstatus-${d.serre_id}`);
+    if (!el) return;
+    el.className = 'serre-item-status ' + (d.statut==='ok' ? 'status-ok' : d.statut==='partiel' ? 'status-warn' : 'status-err');
+    el.textContent = d.statut==='ok' ? (currentLang==='fr'?'OK':'OK') : d.statut==='partiel' ? '⚠️' : (currentLang==='fr'?'Hors ligne':'Offline');
+  });
+}
+
+// ── Render Données Grid ────────────────────────────────────
+function renderDonneesGrid() {
+  const grid = document.getElementById('donnees-grid');
+  if (!liveData.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--gray-400)">${currentLang==='fr'?'Chargement des données...':'Loading data...'}</div>`;
+    return;
+  }
+  grid.innerHTML = liveData.map(d => {
+    const s = SERRES_CONFIG.find(x => x.id === d.serre_id) || {};
+    const env = d.env || {};
+    const irr = d.irr || {};
+    const fv = (v, u) => v != null ? `<div class="s-val">${v}</div><div class="s-unit">${u}</div>` : `<div class="s-val" style="color:var(--gray-400)">—</div>`;
+    const statusClass = d.statut==='ok' ? 'status-ok' : d.statut==='partiel' ? 'status-warn' : 'status-err';
+    const statusTxt = d.statut==='ok' ? '● Live' : d.statut==='partiel' ? '◐ Partiel' : '○ Offline';
+    return `
+    <div class="donnee-card">
+      <div class="donnee-header">
+        <div class="donnee-color" style="background:${d.couleur||s.couleur||'#4ade80'}"></div>
+        <div class="donnee-name">${s.icon||'🌿'} ${currentLang==='fr'?d.nom_fr:d.nom_en}</div>
+        <span class="status-badge ${statusClass}">${statusTxt}</span>
+      </div>
+      <div class="sensors-row">
+        <div class="s-box"><div class="s-lbl">🌡 Temp</div>${fv(env.temperature,'°C')}</div>
+        <div class="s-box"><div class="s-lbl">💧 Humid</div>${fv(env.humidite,'%')}</div>
+        <div class="s-box"><div class="s-lbl">🌬 VPD</div>${fv(env.vpd,'kPa')}</div>
+      </div>
+      ${irr && (irr.ph!=null||irr.ec!=null) ? `
+      <div class="donnee-irr">
+        <div class="irr-box"><div class="i-lbl">pH</div><div class="i-val">${irr.ph??'—'}</div></div>
+        <div class="irr-box"><div class="i-lbl">EC</div><div class="i-val">${irr.ec!=null?irr.ec+' mS/cm':'—'}</div></div>
+        ${irr.temp_eau!=null?`<div class="irr-box"><div class="i-lbl">Temp eau</div><div class="i-val">${irr.temp_eau}°C</div></div>`:''}
+        ${irr.niveau_eau!=null?`<div class="irr-box"><div class="i-lbl">Niveau</div><div class="i-val">${irr.niveau_eau}m</div></div>`:''}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Unités Grid ────────────────────────────────────────────
+function renderUnitesGrid() {
+  const colors = ['#86efac','#6ee7b7','#34d399','#2dd4bf','#a3e635'];
+  const bgs = ['#f0fdf4','#ecfdf5','#d1fae5','#ccfbf1','#f7fee7'];
+  const texts = ['#15803d','#047857','#065f46','#0f766e','#3f6212'];
+  const descs_fr = [
+    'Recherche sur la génétique végétale et l\'amélioration des espèces cultivées. [INSÉRER DESCRIPTION]',
+    'Techniques horticoles avancées et production florale de qualité. [INSÉRER DESCRIPTION]',
+    'Systèmes de culture, agronomie appliquée et recherche terrain. [INSÉRER DESCRIPTION]',
+    'Culture hors-sol innovante et systèmes hydroponiques de pointe. [INSÉRER DESCRIPTION]',
+    'Phytopathologie et techniques de protection intégrée des cultures. [INSÉRER DESCRIPTION]',
+  ];
+  const grid = document.getElementById('unites-grid');
+  grid.innerHTML = SERRES_CONFIG.map((s,i) => `
+    <div class="unite-card" style="--card-color:${colors[i]};--card-bg:${bgs[i]};--card-text:${texts[i]}" onclick="document.getElementById('visite').scrollIntoView({behavior:'smooth'});loadScene('${s.code==='S01'?'vG3pzqGDsvE':s.code==='S02'?'ewVdkig18XN':s.code==='S03'?'ximB8o6Y7HL':s.code==='S04'?'PMVdAWZFaEn':'nkZ8GQuN2ep'}',null)">
+      <div class="unite-header">
+        <div class="unite-icon">${s.icon}</div>
+        <div style="flex:1">
+          <div class="unite-title">${currentLang==='fr'?s.nom_fr:s.nom_en}</div>
+        </div>
+        <div class="unite-badge">${s.code}</div>
+      </div>
+      <div class="unite-desc">${descs_fr[i]}</div>
+      <div class="unite-sensors">
+        <span class="sensor-chip">🌡 Temp</span>
+        <span class="sensor-chip">💧 Humid</span>
+        <span class="sensor-chip">🌬 VPD</span>
+        <span class="sensor-chip">⚗️ pH/EC</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Matterport ─────────────────────────────────────────────
+function loadScene(id, tabEl) {
+  document.getElementById('matterport-frame').src = `https://my.matterport.com/show/?m=${id}&play=1&qs=1&lang=${currentLang}`;
+  if (tabEl) {
+    document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.scene-tab').forEach(t => {
+      if (t.dataset.id === id) t.classList.add('active');
+    });
+  }
+}
+
+// ── Countdown ─────────────────────────────────────────────
+function resetCountdown() {
+  clearInterval(countdownTimer);
+  countdownVal = 120;
+  countdownTimer = setInterval(() => {
+    countdownVal--;
+    const m = Math.floor(countdownVal/60);
+    const s = countdownVal%60;
+    document.getElementById('refresh-countdown').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (countdownVal <= 0) fetchLiveData();
+  }, 1000);
+}
+
+// ── Init ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  createParticles();
+  initMap();
+  renderUnitesGrid();
+  fetchLiveData();
+});
+</script>
+</body>
+</html>

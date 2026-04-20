@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Gérant — Serre Digitale Intelligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --green-50:#f0fdf4;--green-100:#dcfce7;--green-200:#bbf7d0;
+  --green-500:#22c55e;--green-600:#16a34a;--green-700:#15803d;
+  --blue-50:#eff6ff;--blue-500:#3b82f6;--blue-600:#2563eb;
+  --red-50:#fef2f2;--red-500:#ef4444;--red-600:#dc2626;
+  --amber-50:#fffbeb;--amber-500:#f59e0b;--amber-600:#d97706;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;
+  --gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;
+  --white:#ffffff;--font:'Outfit',sans-serif;
+  --sidebar:260px;--topbar:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--sidebar);min-height:100vh;background:var(--gray-900);
+  position:fixed;left:0;top:0;bottom:0;z-index:100;
+  display:flex;flex-direction:column;transition:transform 0.3s;
+}
+.sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px}
+.sidebar-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#14b8a6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sidebar-logo-text .t1{font-size:13px;font-weight:700;color:white;line-height:1.2}
+.sidebar-logo-text .t2{font-size:10px;color:rgba(255,255,255,0.4)}
+.sidebar-nav{flex:1;padding:1rem 0.75rem;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:0.75rem 0.75rem 0.5rem}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;margin-bottom:2px;text-decoration:none}
+.nav-item:hover{background:rgba(255,255,255,0.07)}
+.nav-item.active{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.25)}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-label{font-size:13px;font-weight:500;color:rgba(255,255,255,0.7)}
+.nav-item.active .nav-label{color:#4ade80}
+.nav-badge{margin-left:auto;background:var(--red-500);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:100px}
+.sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,0.08)}
+.user-pill{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,0.05)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#14b8a6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);line-height:1.2}
+.user-role{font-size:10px;color:rgba(255,255,255,0.4)}
+.btn-logout{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:16px;transition:color 0.2s}
+.btn-logout:hover{color:var(--red-400)}
+
+/* ── MAIN ── */
+#main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:var(--topbar);background:white;border-bottom:1px solid var(--gray-200);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:18px;font-weight:700;color:var(--gray-900)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.alert-bell{position:relative;cursor:pointer;background:var(--gray-100);border:none;width:36px;height:36px;border-radius:10px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.alert-bell:hover{background:var(--gray-200)}
+.bell-badge{position:absolute;top:-4px;right:-4px;background:var(--red-500);color:white;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;display:none}
+.refresh-chip{background:var(--green-50);border:1px solid var(--green-200);color:var(--green-700);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green-500);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ── CONTENT ── */
+.page{display:none;padding:1.5rem;flex:1}
+.page.active{display:block}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:1.5rem}
+.stat-card{background:white;border-radius:16px;padding:1.25rem;border:1px solid var(--gray-200);display:flex;align-items:center;gap:14px}
+.stat-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.stat-val{font-size:1.8rem;font-weight:800;color:var(--gray-900);line-height:1}
+.stat-lbl{font-size:12px;color:var(--gray-400);margin-top:2px}
+.stat-trend{font-size:11px;font-weight:600;margin-top:4px}
+.trend-ok{color:var(--green-600)}.trend-warn{color:var(--amber-600)}.trend-err{color:var(--red-600)}
+
+/* ── CARDS ── */
+.card{background:white;border-radius:16px;padding:1.25rem;border:1px solid var(--gray-200);margin-bottom:1.25rem}
+.card-title{font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title span{display:flex;align-items:center;gap:8px}
+
+/* ── LIVE GRID ── */
+.live-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.live-serre{border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem;transition:all 0.2s;cursor:pointer}
+.live-serre:hover{border-color:var(--green-300);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.live-serre-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.live-color{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.live-name{font-size:14px;font-weight:700;color:var(--gray-900);flex:1}
+.live-sensors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ls{text-align:center;background:var(--gray-50);border-radius:10px;padding:8px 4px}
+.ls-val{font-size:1.1rem;font-weight:800;color:var(--gray-900);line-height:1}
+.ls-unit{font-size:9px;color:var(--gray-400)}
+.ls-lbl{font-size:9px;font-weight:600;color:var(--gray-500);margin-bottom:3px}
+.ls.alert{background:var(--red-50)}.ls.alert .ls-val{color:var(--red-600)}
+.ls.warn{background:var(--amber-50)}.ls.warn .ls-val{color:var(--amber-600)}
+
+/* ── THRESHOLDS ── */
+.threshold-table{width:100%;border-collapse:collapse}
+.threshold-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-400);padding:8px 12px;border-bottom:1px solid var(--gray-100);text-align:left}
+.threshold-table td{padding:10px 12px;border-bottom:1px solid var(--gray-50);font-size:13px;vertical-align:middle}
+.threshold-table tr:hover td{background:var(--gray-50)}
+.th-input{width:80px;padding:6px 8px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;transition:border-color 0.2s;text-align:center}
+.th-input:focus{border-color:var(--green-500)}
+.serre-select{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;cursor:pointer;background:white}
+.serre-select:focus{border-color:var(--green-500)}
+.btn-save{background:var(--green-600);color:white;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s}
+.btn-save:hover{background:var(--green-700)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font);font-weight:600;transition:all 0.2s}
+.btn-green{background:var(--green-50);color:var(--green-700)}.btn-green:hover{background:var(--green-100)}
+.btn-red{background:var(--red-50);color:var(--red-600)}.btn-red:hover{background:#fee2e2}
+.capteur-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--green-50);color:var(--green-700)}
+
+/* ── GRAPHIQUES ── */
+.chart-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.chart-select{padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:white}
+.chart-select:focus{border-color:var(--green-500)}
+.chart-wrapper{position:relative;height:320px}
+.chart-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.chart-tab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1.5px solid var(--gray-200);background:white;color:var(--gray-600);cursor:pointer;font-family:var(--font);transition:all 0.2s}
+.chart-tab.active{background:var(--green-600);color:white;border-color:var(--green-600)}
+
+/* ── ALERTES ── */
+.alerte-item{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--gray-200);margin-bottom:8px;transition:all 0.2s}
+.alerte-item.non-lue{border-color:#fecaca;background:var(--red-50)}
+.alerte-dot{width:8px;height:8px;border-radius:50%;background:var(--red-500);flex-shrink:0;margin-top:5px}
+.alerte-dot.lue{background:var(--gray-300)}
+.alerte-info{flex:1}
+.alerte-title{font-size:13px;font-weight:700;color:var(--gray-900)}
+.alerte-sub{font-size:12px;color:var(--gray-400);margin-top:2px}
+.alerte-time{font-size:11px;color:var(--gray-400)}
+
+/* ── EXPORT ── */
+.export-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.export-card{border:1.5px solid var(--gray-200);border-radius:14px;padding:1.25rem;text-align:center;transition:all 0.2s}
+.export-card:hover{border-color:var(--green-300);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.export-icon{font-size:36px;margin-bottom:0.75rem}
+.export-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:6px}
+.export-sub{font-size:12px;color:var(--gray-400);margin-bottom:1rem}
+.export-actions{display:flex;gap:8px;justify-content:center}
+.btn-export{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font);transition:all 0.2s}
+.btn-csv{background:var(--green-50);color:var(--green-700)}.btn-csv:hover{background:var(--green-100)}
+.btn-xlsx{background:var(--blue-50);color:var(--blue-600)}.btn-xlsx:hover{background:#dbeafe}
+
+/* ── MISC ── */
+.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px}
+.badge-ok{background:var(--green-50);color:var(--green-700)}
+.badge-warn{background:var(--amber-50);color:var(--amber-600)}
+.badge-err{background:var(--red-50);color:var(--red-600)}
+.loading{display:inline-block;width:16px;height:16px;border:2px solid var(--gray-200);border-top-color:var(--green-500);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:3rem;color:var(--gray-400);font-size:14px}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gray-900);color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--green-700)}
+.toast.error{background:var(--red-600)}
+
+@media(max-width:768px){#sidebar{transform:translateX(-100%)}#main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ─────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🌿</div>
+    <div class="sidebar-logo-text">
+      <div class="t1">Serre Digitale</div>
+      <div class="t2">IAV Hassan II</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item active" onclick="showPage('overview')">
+      <span class="nav-icon">📊</span><span class="nav-label">Vue d'ensemble</span>
+    </a>
+    <a class="nav-item" onclick="showPage('graphiques')">
+      <span class="nav-icon">📈</span><span class="nav-label">Graphiques</span>
+    </a>
+    <a class="nav-item" onclick="showPage('alertes')">
+      <span class="nav-icon">🔔</span><span class="nav-label">Alertes</span>
+      <span class="nav-badge" id="alert-badge" style="display:none">0</span>
+    </a>
+    <div class="nav-section">Configuration</div>
+    <a class="nav-item" onclick="showPage('thresholds')">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Seuils & Thresholds</span>
+    </a>
+    <a class="nav-item" onclick="showPage('export')">
+      <span class="nav-icon">📥</span><span class="nav-label">Export données</span>
+    </a>
+    <div class="nav-section">Autre</div>
+    <a class="nav-item" href="../index.html">
+      <span class="nav-icon">🌐</span><span class="nav-label">Voir le site public</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div>
+        <div class="user-name" id="user-name">Chargement...</div>
+        <div class="user-role" id="user-role">Gérant</div>
+      </div>
+      <button class="btn-logout" onclick="logout()" title="Déconnexion">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ────────────────────────────────────────────── -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Vue d'ensemble</div>
+    <div class="topbar-right">
+      <div class="refresh-chip">
+        <div class="live-dot"></div>
+        <span id="countdown-chip">2:00</span>
+      </div>
+      <button class="alert-bell" onclick="showPage('alertes')">
+        🔔<span class="bell-badge" id="bell-badge">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PAGE : VUE D'ENSEMBLE ── -->
+  <div class="page active" id="page-overview">
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-icon" style="background:#f0fdf4">🌿</div><div><div class="stat-val" id="s-serres">5</div><div class="stat-lbl">Serres actives</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📡</div><div><div class="stat-val" id="s-capteurs">10</div><div class="stat-lbl">Capteurs connectés</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fff7ed">📊</div><div><div class="stat-val" id="s-mesures">—</div><div class="stat-lbl">Mesures aujourd'hui</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef2f2">🚨</div><div><div class="stat-val" id="s-alertes">—</div><div class="stat-lbl">Alertes actives</div></div><div class="stat-trend trend-ok" id="s-alertes-trend"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>📡 Données live — toutes les serres</span><button class="btn-sm btn-green" onclick="fetchAll()">↻ Actualiser</button></div>
+      <div class="live-grid" id="live-grid"><div class="empty-state"><div class="loading"></div><br>Chargement...</div></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE : GRAPHIQUES ── -->
+  <div class="page" id="page-graphiques">
+    <div class="card">
+      <div class="card-title"><span>📈 Historique capteurs</span></div>
+      <div class="chart-controls">
+        <select class="chart-select" id="chart-serre" onchange="loadChart()">
+          <option value="1">S01 — Génétique</option>
+          <option value="2">S02 — Horticulture</option>
+          <option value="3">S03 — Agronomie</option>
+          <option value="4">S04 — Hydroponie</option>
+          <option value="5">S05 — Protection</option>
+        </select>
+        <select class="chart-select" id="chart-heures" onchange="loadChart()">
+          <option value="6">6 dernières heures</option>
+          <option value="24" selected>24 dernières heures</option>
+          <option value="72">3 derniers jours</option>
+          <option value="168">7 derniers jours</option>
+        </select>
+      </div>
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="setChartCapteur('temperature',this)">🌡 Température</button>
+        <button class="chart-tab" onclick="setChartCapteur('humidite',this)">💧 Humidité</button>
+        <button class="chart-tab" onclick="setChartCapteur('vpd',this)">🌬 VPD</button>
+        <button class="chart-tab" onclick="setChartCapteur('co2',this)">☁️ CO₂</button>
+        <button class="chart-tab" onclick="setChartCapteur('ph',this)">⚗️ pH</button>
+        <button class="chart-tab" onclick="setChartCapteur('ec',this)">⚡ EC</button>
+      </div>
+      <div class="chart-wrapper"><canvas id="main-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🔀 Comparaison entre serres</span></div>
+      <div class="chart-controls">
+        <select class="chart-select" id="comp-capteur" onchange="loadComparaison()">
+          <option value="temperature">Température</option>
+          <option value="humidite">Humidité</option>
+          <option value="vpd">VPD</option>
+          <option value="ph">pH</option>
+          <option value="ec">EC</option>
+        </select>
+        <select class="chart-select" id="comp-heures" onchange="loadComparaison()">
+          <option value="24" selected>24h</option>
+          <option value="72">3 jours</option>
+          <option value="168">7 jours</option>
+        </select>
+      </div>
+      <div class="chart-wrapper"><canvas id="comp-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE : ALERTES ── -->
+  <div class="page" id="page-alertes">
+    <div class="card">
+      <div class="card-title">
+        <span>🔔 Alertes <span id="alertes-count" class="badge badge-err" style="display:none"></span></span>
+        <button class="btn-sm btn-green" onclick="markAllRead()">✓ Tout marquer lu</button>
+      </div>
+      <div id="alertes-list"><div class="empty-state"><div class="loading"></div></div></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE : THRESHOLDS ── -->
+  <div class="page" id="page-thresholds">
+    <div class="card">
+      <div class="card-title">
+        <span>⚙️ Seuils d'alerte par serre</span>
+        <select class="serre-select" id="th-serre" onchange="loadThresholds()">
+          <option value="1">S01 — Génétique</option>
+          <option value="2">S02 — Horticulture</option>
+          <option value="3">S03 — Agronomie</option>
+          <option value="4">S04 — Hydroponie</option>
+          <option value="5">S05 — Protection</option>
+        </select>
+      </div>
+      <p style="font-size:13px;color:var(--gray-400);margin-bottom:1rem">Définissez les valeurs min/max pour chaque capteur. Une alerte email sera envoyée si une valeur dépasse ces seuils.</p>
+      <table class="threshold-table">
+        <thead>
+          <tr>
+            <th>Capteur</th><th>Unité</th><th>Min</th><th>Max</th>
+            <th>Email alerte</th><th>Actif</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="threshold-tbody"><tr><td colspan="7" class="empty-state"><div class="loading"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PAGE : EXPORT ── -->
+  <div class="page" id="page-export">
+    <div class="card">
+      <div class="card-title"><span>📥 Export des données</span></div>
+      <p style="font-size:13px;color:var(--gray-400);margin-bottom:1.5rem">Téléchargez l'historique des capteurs de chaque serre en CSV ou Excel.</p>
+      <div style="margin-bottom:1.25rem;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:13px;font-weight:600;color:var(--gray-700)">Période :</label>
+        <select class="chart-select" id="export-heures">
+          <option value="24">24 heures</option>
+          <option value="72">3 jours</option>
+          <option value="168" selected>7 jours</option>
+          <option value="720">30 jours</option>
+        </select>
+      </div>
+      <div class="export-grid" id="export-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+const COLORS = ['#86efac','#6ee7b7','#34d399','#2dd4bf','#a3e635'];
+const SERRES = [
+  {id:1,code:'S01',nom:'Génétique',icon:'🧬',couleur:COLORS[0]},
+  {id:2,code:'S02',nom:'Horticulture',icon:'🌸',couleur:COLORS[1]},
+  {id:3,code:'S03',nom:'Agronomie',icon:'🌾',couleur:COLORS[2]},
+  {id:4,code:'S04',nom:'Hydroponie',icon:'💧',couleur:COLORS[3]},
+  {id:5,code:'S05',nom:'Protection',icon:'🛡️',couleur:COLORS[4]},
+];
+const CAPTEURS_META = {
+  temperature:{label:'Température',unit:'°C',color:'#ef4444'},
+  humidite:{label:'Humidité',unit:'%',color:'#3b82f6'},
+  vpd:{label:'VPD',unit:'kPa',color:'#8b5cf6'},
+  co2:{label:'CO₂',unit:'ppm',color:'#f59e0b'},
+  ph:{label:'pH',unit:'pH',color:'#06b6d4'},
+  ec:{label:'EC',unit:'mS/cm',color:'#10b981'},
+};
+
+let token = localStorage.getItem('sdi_token');
+let liveData = [];
+let countdown = 120;
+let cdTimer;
+let mainChart = null;
+let compChart = null;
+let currentCapteur = 'temperature';
+
+// ── Auth ──────────────────────────────────────────────────
+if (!token) { window.location.href = 'login.html'; }
+
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+async function apiFetch(url, opts={}) {
+  const res = await fetch(API + url, { ...opts, headers: { ...authHeaders(), ...(opts.headers||{}) } });
+  if (res.status === 401) { logout(); return null; }
+  return res;
+}
+
+function logout() {
+  localStorage.removeItem('sdi_token');
+  localStorage.removeItem('sdi_user');
+  window.location.href = 'login.html';
+}
+
+// ── User ──────────────────────────────────────────────────
+function loadUser() {
+  const u = JSON.parse(localStorage.getItem('sdi_user') || '{}');
+  document.getElementById('user-name').textContent = u.nom || 'Utilisateur';
+  document.getElementById('user-role').textContent = u.role === 'admin' ? 'Administrateur' : 'Gérant';
+  document.getElementById('user-avatar').textContent = (u.nom||'U')[0].toUpperCase();
+}
+
+// ── Navigation ────────────────────────────────────────────
+const PAGE_TITLES = {
+  overview:'Vue d\'ensemble', graphiques:'Graphiques',
+  alertes:'Alertes', thresholds:'Seuils & Thresholds', export:'Export données'
+};
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll(`.nav-item[onclick="showPage('${id}')"]`).forEach(n => n.classList.add('active'));
+  document.getElementById('page-title').textContent = PAGE_TITLES[id] || id;
+  if (id === 'graphiques') { loadChart(); loadComparaison(); }
+  if (id === 'alertes')    loadAlertes();
+  if (id === 'thresholds') loadThresholds();
+  if (id === 'export')     buildExportGrid();
+}
+
+// ── Countdown ─────────────────────────────────────────────
+function startCountdown() {
+  clearInterval(cdTimer);
+  countdown = 120;
+  cdTimer = setInterval(() => {
+    countdown--;
+    const m = Math.floor(countdown/60), s = countdown%60;
+    document.getElementById('countdown-chip').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (countdown <= 0) fetchAll();
+  }, 1000);
+}
+
+// ── Live Data ─────────────────────────────────────────────
+async function fetchAll() {
+  try {
+    const res = await fetch(`${API}/api/iot/live`);
+    const json = await res.json();
+    liveData = json.serres || [];
+    renderLiveGrid();
+    fetchStats();
+    startCountdown();
+  } catch(e) { showToast('Erreur de connexion au serveur', 'error'); }
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch(`${API}/api/iot/stats`);
+    const d = await res.json();
+    document.getElementById('s-mesures').textContent = d.mesures_24h ?? '—';
+    const al = d.alertes_actives ?? 0;
+    document.getElementById('s-alertes').textContent = al;
+    if (al > 0) {
+      document.getElementById('bell-badge').style.display = 'flex';
+      document.getElementById('bell-badge').textContent = al;
+      document.getElementById('alert-badge').style.display = 'flex';
+      document.getElementById('alert-badge').textContent = al;
+    }
+  } catch(e) {}
+}
+
+function renderLiveGrid() {
+  const grid = document.getElementById('live-grid');
+  if (!liveData.length) { grid.innerHTML = '<div class="empty-state">Aucune donnée disponible</div>'; return; }
+  grid.innerHTML = liveData.map(d => {
+    const s = SERRES.find(x => x.id === d.serre_id) || {};
+    const env = d.env || {};
+    const irr = d.irr || {};
+    const statusClass = d.statut==='ok'?'badge-ok':d.statut==='partiel'?'badge-warn':'badge-err';
+    const statusTxt = d.statut==='ok'?'● Live':d.statut==='partiel'?'◐ Partiel':'○ Offline';
+    const fbox = (lbl, val, unit, cls='') => `
+      <div class="ls ${cls}">
+        <div class="ls-lbl">${lbl}</div>
+        <div class="ls-val">${val??'—'}</div>
+        <div class="ls-unit">${val!=null?unit:''}</div>
+      </div>`;
+    return `
+    <div class="live-serre" onclick="showPage('graphiques');document.getElementById('chart-serre').value='${d.serre_id}';loadChart()">
+      <div class="live-serre-header">
+        <div class="live-color" style="background:${d.couleur||s.couleur}"></div>
+        <div class="live-name">${s.icon||''} ${d.nom_fr}</div>
+        <span class="badge ${statusClass}">${statusTxt}</span>
+      </div>
+      <div class="live-sensors">
+        ${fbox('🌡 Temp', env.temperature, '°C')}
+        ${fbox('💧 Humid', env.humidite, '%')}
+        ${fbox('🌬 VPD', env.vpd, 'kPa')}
+        ${fbox('⚗️ pH', irr?.ph, 'pH')}
+        ${fbox('⚡ EC', irr?.ec, 'mS/cm')}
+        ${fbox('💦 Eau', irr?.temp_eau, '°C')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Chart ─────────────────────────────────────────────────
+async function loadChart() {
+  const serreId = document.getElementById('chart-serre').value;
+  const heures  = document.getElementById('chart-heures').value;
+  const meta    = CAPTEURS_META[currentCapteur];
+  try {
+    const res  = await fetch(`${API}/api/iot/historique/${serreId}?capteur=${currentCapteur}&heures=${heures}`);
+    const json = await res.json();
+    const data = json.data || [];
+    const labels = data.map(d => new Date(d.time).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}));
+    const values = data.map(d => d.value);
+    if (mainChart) mainChart.destroy();
+    const ctx = document.getElementById('main-chart').getContext('2d');
+    mainChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: meta.label,
+          data: values,
+          borderColor: meta.color,
+          backgroundColor: meta.color + '18',
+          borderWidth: 2,
+          pointRadius: data.length > 50 ? 0 : 3,
+          fill: true,
+          tension: 0.4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.y} ${meta.unit}` } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { family: 'Outfit', size: 11 } } },
+          y: { grid: { color: '#f3f4f6' }, ticks: { font: { family: 'Outfit', size: 11 }, callback: v => `${v} ${meta.unit}` } }
+        }
+      }
+    });
+  } catch(e) { showToast('Erreur chargement graphique', 'error'); }
+}
+
+function setChartCapteur(c, btn) {
+  currentCapteur = c;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  loadChart();
+}
+
+async function loadComparaison() {
+  const capteur = document.getElementById('comp-capteur').value;
+  const heures  = document.getElementById('comp-heures').value;
+  const meta    = CAPTEURS_META[capteur];
+  try {
+    const res  = await apiFetch(`/api/dashboard/comparaison?capteur=${capteur}&heures=${heures}`);
+    if (!res) return;
+    const data = await res.json();
+    const allTimes = [...new Set(data.flatMap(s => s.data.map(d => d.time)))].sort();
+    const labels   = allTimes.map(t => new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+    const datasets = data.map((s, i) => {
+      const serreS = SERRES.find(x => x.id === s.serre_id);
+      const timeMap = Object.fromEntries(s.data.map(d => [d.time, d.value]));
+      return {
+        label: serreS?.nom || s.code,
+        data: allTimes.map(t => timeMap[t] ?? null),
+        borderColor: COLORS[i],
+        borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4, spanGaps: true,
+      };
+    });
+    if (compChart) compChart.destroy();
+    const ctx = document.getElementById('comp-chart').getContext('2d');
+    compChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { font: { family: 'Outfit', size: 12 }, usePointStyle: true } },
+          tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} ${meta.unit}` } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { family: 'Outfit', size: 11 } } },
+          y: { grid: { color: '#f3f4f6' }, ticks: { font: { family: 'Outfit', size: 11 } } }
+        }
+      }
+    });
+  } catch(e) {}
+}
+
+// ── Alertes ───────────────────────────────────────────────
+async function loadAlertes() {
+  const list = document.getElementById('alertes-list');
+  list.innerHTML = '<div class="empty-state"><div class="loading"></div></div>';
+  try {
+    const res  = await apiFetch('/api/dashboard/alertes');
+    if (!res) return;
+    const data = await res.json();
+    const nonLues = data.filter(a => !a.lu).length;
+    const countEl = document.getElementById('alertes-count');
+    if (nonLues > 0) { countEl.textContent = nonLues; countEl.style.display = 'inline'; }
+    else countEl.style.display = 'none';
+    if (!data.length) { list.innerHTML = '<div class="empty-state">✅ Aucune alerte</div>'; return; }
+    list.innerHTML = data.map(a => `
+      <div class="alerte-item ${a.lu?'':'non-lue'}" id="alerte-${a.id}">
+        <div class="alerte-dot ${a.lu?'lue':''}"></div>
+        <div class="alerte-info">
+          <div class="alerte-title">${a.nom_fr||a.code} — ${a.capteur} : <b>${a.valeur}</b></div>
+          <div class="alerte-sub">${a.message_fr||'Seuil dépassé'}</div>
+          <div class="alerte-time">${new Date(a.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+        ${!a.lu?`<button class="btn-sm btn-green" onclick="markRead(${a.id})">✓ Lu</button>`:''}
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-state">Erreur de chargement</div>'; }
+}
+
+async function markRead(id) {
+  await apiFetch(`/api/dashboard/alertes/${id}/lue`, {method:'PUT'});
+  document.getElementById(`alerte-${id}`)?.classList.remove('non-lue');
+  showToast('Alerte marquée comme lue', 'success');
+}
+
+async function markAllRead() {
+  await apiFetch('/api/dashboard/alertes/tout-lire', {method:'PUT'});
+  showToast('Toutes les alertes marquées comme lues', 'success');
+  loadAlertes();
+}
+
+// ── Thresholds ────────────────────────────────────────────
+async function loadThresholds() {
+  const serreId = document.getElementById('th-serre').value;
+  const tbody   = document.getElementById('threshold-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="loading"></div></td></tr>';
+  try {
+    const res  = await apiFetch(`/api/dashboard/thresholds/${serreId}`);
+    if (!res) return;
+    const data = await res.json();
+    if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Aucun seuil configuré</td></tr>'; return; }
+    tbody.innerHTML = data.map(t => {
+      const meta = CAPTEURS_META[t.capteur] || {label:t.capteur, unit:''};
+      return `
+      <tr id="tr-${t.serre_id}-${t.capteur}">
+        <td><span class="capteur-badge">${meta.label}</span></td>
+        <td style="color:var(--gray-400);font-size:12px">${meta.unit}</td>
+        <td><input type="number" class="th-input" id="min-${t.serre_id}-${t.capteur}" value="${t.valeur_min??''}" step="0.1" placeholder="—"></td>
+        <td><input type="number" class="th-input" id="max-${t.serre_id}-${t.capteur}" value="${t.valeur_max??''}" step="0.1" placeholder="—"></td>
+        <td><input type="email" class="th-input" style="width:160px" id="email-${t.serre_id}-${t.capteur}" value="${t.email_alerte||''}" placeholder="email@..."></td>
+        <td>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="actif-${t.serre_id}-${t.capteur}" ${t.actif?'checked':''}>
+            <span style="font-size:12px">${t.actif?'Oui':'Non'}</span>
+          </label>
+        </td>
+        <td><button class="btn-save" onclick="saveThreshold(${t.serre_id},'${t.capteur}')">Enregistrer</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erreur de chargement</td></tr>'; }
+}
+
+async function saveThreshold(serreId, capteur) {
+  const vmin  = parseFloat(document.getElementById(`min-${serreId}-${capteur}`).value) || null;
+  const vmax  = parseFloat(document.getElementById(`max-${serreId}-${capteur}`).value) || null;
+  const email = document.getElementById(`email-${serreId}-${capteur}`).value || null;
+  const actif = document.getElementById(`actif-${serreId}-${capteur}`).checked;
+  try {
+    const res = await apiFetch(`/api/dashboard/thresholds/${serreId}/${capteur}`, {
+      method: 'PUT',
+      body: JSON.stringify({ valeur_min:vmin, valeur_max:vmax, email_alerte:email, actif })
+    });
+    if (res?.ok) showToast(`Seuil ${capteur} enregistré ✓`, 'success');
+    else         showToast('Erreur lors de la sauvegarde', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+// ── Export ────────────────────────────────────────────────
+function buildExportGrid() {
+  const grid = document.getElementById('export-grid');
+  grid.innerHTML = SERRES.map(s => `
+    <div class="export-card">
+      <div class="export-icon">${s.icon}</div>
+      <div class="export-name">${s.nom}</div>
+      <div class="export-sub">${s.code} — Historique capteurs</div>
+      <div class="export-actions">
+        <button class="btn-export btn-csv" onclick="doExport(${s.id},'csv')">📄 CSV</button>
+        <button class="btn-export btn-xlsx" onclick="doExport(${s.id},'excel')">📊 Excel</button>
+      </div>
+    </div>`).join('');
+}
+
+async function doExport(serreId, format) {
+  const heures = document.getElementById('export-heures').value;
+  showToast('Téléchargement en cours...', '');
+  try {
+    const res = await apiFetch(`/api/dashboard/export/${serreId}?format=${format}&heures=${heures}`);
+    if (!res?.ok) { showToast('Erreur lors de l\'export', 'error'); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `serre_${serreId}_${heures}h.${format==='excel'?'xlsx':'csv'}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Fichier téléchargé ✓', 'success');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadUser();
+fetchAll();
+</script>
+</body>
+</html>
