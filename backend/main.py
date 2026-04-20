@@ -34,6 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ─── Routers ────────────────────────────────────────────────
 app.include_router(auth_router.router)
 app.include_router(iot_router.router)

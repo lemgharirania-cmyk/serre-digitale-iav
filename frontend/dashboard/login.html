@@ -76,8 +76,11 @@ async function doLogin() {
     form.append('username', email);
     form.append('password', password);
 
-    const res = await fetch(`${API}/api/auth/login`, { method: 'POST', body: form });
-    const data = await res.json();
+const res = await fetch(`${API}/api/auth/login`, { 
+    method: 'POST', 
+    body: form,
+    credentials: 'omit'
+});    const data = await res.json();
 
     if (!res.ok) {
       showError(data.detail || 'Email ou mot de passe incorrect.');
