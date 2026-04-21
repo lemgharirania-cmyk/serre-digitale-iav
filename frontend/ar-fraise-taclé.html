@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { background: #000; overflow: hidden; }
+
+#showcase {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  display: block;
+}
+
+/* Le hotspot fraise — positionné par worldToScreen */
+#hotspot {
+  position: fixed;
+  display: none;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+/* Point pulsant */
+.pulse-dot {
+  width: 20px; height: 20px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.pulse-dot::before, .pulse-dot::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(220, 50, 80, 0.6);
+  animation: pulse 2s ease-out infinite;
+}
+.pulse-dot::before { width: 30px; height: 30px; }
+.pulse-dot::after  { width: 46px; height: 46px; animation-delay: 0.5s; opacity: 0.4; }
+@keyframes pulse {
+  0%   { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.berry-icon {
+  font-size: 26px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+  position: relative; z-index: 2;
+  animation: bob 3s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Popup fiche */
+#popup {
+  position: fixed;
+  display: none;
+  z-index: 200;
+  transform: translate(-50%, calc(-100% - 20px));
+  width: 240px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.popup-head {
+  background: #fff5f6;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid #fce4e8;
+  display: flex; align-items: center; gap: 10px;
+}
+.popup-emoji { font-size: 32px; }
+.popup-name  { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+.popup-latin { font-size: 11px; color: #aaa; font-style: italic; }
+.popup-close {
+  margin-left: auto; background: #eee; border: none;
+  border-radius: 50%; width: 22px; height: 22px;
+  cursor: pointer; font-size: 12px; color: #666;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.popup-body { padding: 12px 14px; }
+.popup-row  { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }
+.popup-row:last-child { border: none; }
+.popup-key  { font-size: 11px; color: #888; }
+.popup-val  { font-size: 11px; font-weight: 600; color: #333; }
+
+.popup-badge {
+  margin: 8px 14px 12px;
+  background: #fff0f2; border: 1px solid #fce4e8;
+  border-radius: 8px; padding: 6px 10px;
+  font-size: 10px; color: #c0394b; font-weight: 600;
+  text-align: center;
+}
+
+/* Petite flèche vers le bas */
+#popup::after {
+  content: '';
+  position: absolute;
+  bottom: -7px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px; height: 14px;
+  background: #fff;
+  border-right: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+</style>
+</head>
+<body>
+
+<iframe id="showcase" allowfullscreen allow="xr-spatial-tracking"></iframe>
+
+<!-- HOTSPOT -->
+<div id="hotspot">
+  <div class="pulse-dot"></div>
+  <span class="berry-icon">🍓</span>
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-head">
+    <span class="popup-emoji">🍓</span>
+    <div>
+      <div class="popup-name">Fraise</div>
+      <div class="popup-latin">Fragaria × ananassa</div>
+    </div>
+    <button class="popup-close" id="close-btn">✕</button>
+  </div>
+  <div class="popup-body">
+    <div class="popup-row"><span class="popup-key">Culture</span><span class="popup-val">Hydroponie NFT</span></div>
+    <div class="popup-row"><span class="popup-key">pH optimal</span><span class="popup-val">5.5 – 6.5</span></div>
+    <div class="popup-row"><span class="popup-key">EC optimal</span><span class="popup-val">0.8 – 1.4 mS/cm</span></div>
+    <div class="popup-row"><span class="popup-key">Température eau</span><span class="popup-val">18 – 22 °C</span></div>
+    <div class="popup-row"><span class="popup-key">Lumière</span><span class="popup-val">12 – 16 h/jour</span></div>
+    <div class="popup-row"><span class="popup-key">Saison</span><span class="popup-val">Mars – Juin</span></div>
+  </div>
+  <div class="popup-badge">🌊 Sans pesticides · Qualité optimale</div>
+</div>
+
+<script src="https://static.matterport.com/showcase-sdk/latest.js"></script>
+<script>
+const iframe  = document.getElementById('showcase');
+const hotspot = document.getElementById('hotspot');
+const popup   = document.getElementById('popup');
+
+// ── Clé JSFiddle (fonctionne sur jsfiddle.net) ──
+const SDK_KEY = 'w0et5c72g07z981gtgxxxrg1d';
+const MODEL   = 'PMVdAWZFaEn'; // Serre Hydroponie
+
+// 📍 Coordonnées exactes de la fraise
+const BERRY = {
+  x: -0.2625515427495099,
+  y:  0.8955033248815382,
+  z: -0.7172336019393898
+};
+
+iframe.src = `https://my.matterport.com/show?m=${MODEL}&play=1&qs=1&title=0&hr=0`;
+
+window.MP_SDK.connect(iframe, SDK_KEY, '').then(sdk => {
+  console.log('✅ SDK connecté');
+
+  // Cache de la pose caméra — mis à jour en continu
+  let poseCache = null;
+  sdk.Camera.pose.subscribe(pose => { poseCache = pose; });
+
+  // Boucle de mise à jour 60fps — repositionne le hotspot
+  setInterval(() => {
+    if (!poseCache) return;
+
+    const size = { w: iframe.clientWidth || window.innerWidth, h: iframe.clientHeight || window.innerHeight };
+    const coord = sdk.Conversion.worldToScreen(BERRY, poseCache, size);
+
+    // Cacher si derrière la caméra
+    if (coord.x < 0 || coord.x > size.w || coord.y < 0 || coord.y > size.h) {
+      hotspot.style.display = 'none';
+      popup.style.display   = 'none';
+      return;
+    }
+
+    // Positionner le hotspot
+    hotspot.style.display = 'block';
+    hotspot.style.left    = coord.x + 'px';
+    hotspot.style.top     = coord.y + 'px';
+
+    // Si popup ouverte, la suivre aussi
+    if (popup.style.display === 'block') {
+      popup.style.left = coord.x + 'px';
+      popup.style.top  = coord.y + 'px';
+    }
+  }, 16);
+
+  // Clic hotspot → ouvrir popup
+  hotspot.addEventListener('click', () => {
+    popup.style.display = 'block';
+    const left = hotspot.style.left;
+    const top  = hotspot.style.top;
+    popup.style.left = left;
+    popup.style.top  = top;
+  });
+
+  // Fermer popup
+  document.getElementById('close-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    popup.style.display = 'none';
+  });
+
+}).catch(err => console.error('SDK Error:', err));
+</script>
+</body>
+</html>
