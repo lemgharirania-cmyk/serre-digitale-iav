@@ -404,6 +404,20 @@ footer {
 .modal-title { font-size: 18px; font-weight: 700; }
 .modal-close { background: var(--gray-100); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; }
 
+
+/* ─── SERRE VISITE CARDS ──────────────────────────────── */
+.serre-visite-card {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-top: 3px solid var(--c, #4ade80);
+  border-radius: 14px; padding: 1rem 1.25rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.serre-visite-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); border-color: var(--c, #4ade80); }
+.serre-visite-card.active { background: rgba(255,255,255,0.12); border-color: var(--c, #4ade80); box-shadow: 0 0 0 1px var(--c, #4ade80); }
+.svc-badge { font-size: 10px; font-weight: 700; color: var(--c, #4ade80); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+.svc-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.35; }
+
 /* ─── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   .carte-wrapper { grid-template-columns: 1fr; }
@@ -700,29 +714,91 @@ footer {
 </section>
 
 <!-- ─── VISITE MATTERPORT ─────────────────────────────────── -->
-<section id="visite">
+<section id="visite" style="background:var(--gray-900);padding:5rem 2rem">
   <div class="container">
-    <div class="section-header">
-      <div class="section-label">Matterport 3D</div>
-      <h2 class="section-title" data-fr="Visite Virtuelle Immersive" data-en="Immersive Virtual Tour">Visite Virtuelle Immersive</h2>
-      <p class="section-sub" data-fr="Explorez le campus en 3D, naviguez entre les serres et découvrez les espaces techniques." data-en="Explore the campus in 3D, navigate between greenhouses and discover technical spaces.">
-        Explorez le campus en 3D, naviguez entre les serres et découvrez les espaces techniques.
+
+    <div class="section-header" style="text-align:center;margin-bottom:3rem">
+      <div class="section-label" style="color:#4ade80">Matterport 3D &middot; 15 Scans</div>
+      <h2 class="section-title" style="color:white" data-fr="Visite Virtuelle Immersive" data-en="Immersive Virtual Tour">Visite Virtuelle Immersive</h2>
+      <p class="section-sub" style="color:rgba(255,255,255,0.5);margin:0 auto" data-fr="Explorez le campus complet et naviguez dans chacune des 5 serres de recherche." data-en="Explore the full campus and navigate through each of the 5 research greenhouses.">
+        Explorez le campus complet et naviguez dans chacune des 5 serres de recherche.
       </p>
     </div>
-    <div class="scene-tabs" id="scene-tabs">
-      <button class="scene-tab active" data-id="R1sCgCSGJMQ" onclick="loadScene('R1sCgCSGJMQ',this)" data-fr="Vue Complète" data-en="Full View">Vue Complète</button>
-      <button class="scene-tab" data-id="XgEA1hS6oGD" onclick="loadScene('XgEA1hS6oGD',this)" data-fr="Extérieur" data-en="Exterior">Extérieur</button>
-      <button class="scene-tab" data-id="geDWdk2gcB2" onclick="loadScene('geDWdk2gcB2',this)" data-fr="Couloir" data-en="Corridor">Couloir</button>
-      <button class="scene-tab" data-id="vG3pzqGDsvE" onclick="loadScene('vG3pzqGDsvE',this)" data-fr="Génétique" data-en="Genetics">Génétique</button>
-      <button class="scene-tab" data-id="ewVdkig18XN" onclick="loadScene('ewVdkig18XN',this)" data-fr="Horticulture" data-en="Horticulture">Horticulture</button>
-      <button class="scene-tab" data-id="ximB8o6Y7HL" onclick="loadScene('ximB8o6Y7HL',this)" data-fr="Agronomie" data-en="Agronomy">Agronomie</button>
-      <button class="scene-tab" data-id="PMVdAWZFaEn" onclick="loadScene('PMVdAWZFaEn',this)" data-fr="Hydroponie" data-en="Hydroponics">Hydroponie</button>
-      <button class="scene-tab" data-id="nkZ8GQuN2ep" onclick="loadScene('nkZ8GQuN2ep',this)" data-fr="Protection" data-en="Protection">Protection</button>
+
+    <!-- ── PARTIE 1 : Campus complet + Blocs techniques ── -->
+    <div style="margin-bottom:3rem">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+        <div style="width:4px;height:28px;background:#4ade80;border-radius:2px"></div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px" data-fr="Partie 1" data-en="Part 1">Partie 1</div>
+          <div style="font-size:18px;font-weight:700;color:white" data-fr="Campus complet &amp; Espaces techniques" data-en="Full Campus &amp; Technical Spaces">Campus complet &amp; Espaces techniques</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem" id="tabs-part1">
+        <button class="scene-tab active" data-id="R1sCgCSGJMQ" onclick="loadScene('R1sCgCSGJMQ',this)" data-fr="Merge Complet" data-en="Full Merge">Merge Complet</button>
+        <button class="scene-tab" data-id="XgEA1hS6oGD" onclick="loadScene('XgEA1hS6oGD',this)" data-fr="Extérieur" data-en="Exterior">Extérieur</button>
+        <button class="scene-tab" data-id="geDWdk2gcB2" onclick="loadScene('geDWdk2gcB2',this)" data-fr="Couloir Principal" data-en="Main Corridor">Couloir Principal</button>
+        <button class="scene-tab" data-id="LVZFUX6t46N" onclick="loadScene('LVZFUX6t46N',this)" data-fr="Salle de Lavage" data-en="Washing Room">Salle de Lavage</button>
+        <button class="scene-tab" data-id="op7eKJyN347" onclick="loadScene('op7eKJyN347',this)" data-fr="Local Technique" data-en="Equipment Room">Local Technique</button>
+        <button class="scene-tab" data-id="hy3jqT45C99" onclick="loadScene('hy3jqT45C99',this)" data-fr="Salle de Commande" data-en="Control Room">Salle de Commande</button>
+        <button class="scene-tab" data-id="tg9epaXEhgK" onclick="loadScene('tg9epaXEhgK',this)" data-fr="Salle de Préparation" data-en="Preparation Room">Salle de Préparation</button>
+        <button class="scene-tab" data-id="teWd9VjkgAA" onclick="loadScene('teWd9VjkgAA',this)" data-fr="Bloc Protection" data-en="Protection Block">Bloc Protection</button>
+        <button class="scene-tab" data-id="Sgqh5fQymzW" onclick="loadScene('Sgqh5fQymzW',this)" data-fr="Salle Fertilisation" data-en="Fertilization Room">Salle Fertilisation</button>
+      </div>
+
+      <div class="matterport-embed">
+        <iframe id="matterport-frame"
+          src="https://my.matterport.com/show/?m=R1sCgCSGJMQ&play=1&qs=1&lang=fr"
+          frameborder="0" allowfullscreen allow="xr-spatial-tracking"></iframe>
+      </div>
     </div>
-    <div class="matterport-embed">
-      <iframe id="matterport-frame"
-        src="https://my.matterport.com/show/?m=R1sCgCSGJMQ&play=1&qs=1&lang=fr"
-        frameborder="0" allowfullscreen allow="vr"></iframe>
+
+    <!-- Divider -->
+    <div style="height:1px;background:rgba(255,255,255,0.08);margin:0 0 3rem"></div>
+
+    <!-- ── PARTIE 2 : Les 5 serres de recherche ── -->
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+        <div style="width:4px;height:28px;background:#2dd4bf;border-radius:2px"></div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#2dd4bf;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px" data-fr="Partie 2" data-en="Part 2">Partie 2</div>
+          <div style="font-size:18px;font-weight:700;color:white" data-fr="Les 5 Serres de Recherche" data-en="The 5 Research Greenhouses">Les 5 Serres de Recherche</div>
+        </div>
+      </div>
+
+      <!-- Serre cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:1.5rem">
+        <div class="serre-visite-card" data-id="vG3pzqGDsvE" onclick="loadSerreVisite('vG3pzqGDsvE',this)" style="--c:#86efac">
+          <div class="svc-badge">Unité 1</div>
+          <div class="svc-name" data-fr="Génétique &amp; Amélioration" data-en="Plant Genetics">Génétique &amp; Amélioration</div>
+        </div>
+        <div class="serre-visite-card" data-id="ewVdkig18XN" onclick="loadSerreVisite('ewVdkig18XN',this)" style="--c:#6ee7b7">
+          <div class="svc-badge">Unité 2</div>
+          <div class="svc-name" data-fr="Horticulture" data-en="Horticulture">Horticulture</div>
+        </div>
+        <div class="serre-visite-card" data-id="ximB8o6Y7HL" onclick="loadSerreVisite('ximB8o6Y7HL',this)" style="--c:#34d399">
+          <div class="svc-badge">Unité 3</div>
+          <div class="svc-name" data-fr="Agronomie" data-en="Agronomy">Agronomie</div>
+        </div>
+        <div class="serre-visite-card" data-id="PMVdAWZFaEn" onclick="loadSerreVisite('PMVdAWZFaEn',this)" style="--c:#2dd4bf">
+          <div class="svc-badge">Unité 4</div>
+          <div class="svc-name" data-fr="Hydroponie" data-en="Hydroponics">Hydroponie</div>
+        </div>
+        <div class="serre-visite-card" data-id="nkZ8GQuN2ep" onclick="loadSerreVisite('nkZ8GQuN2ep',this)" style="--c:#a3e635">
+          <div class="svc-badge">Unité 5</div>
+          <div class="svc-name" data-fr="Protection des Plantes" data-en="Plant Protection">Protection des Plantes</div>
+        </div>
+      </div>
+
+      <!-- Serre embed -->
+      <div class="matterport-embed" id="serre-embed-wrap" style="display:none">
+        <iframe id="serre-frame" frameborder="0" allowfullscreen allow="xr-spatial-tracking"></iframe>
+      </div>
+      <div id="serre-placeholder" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:3rem;text-align:center;color:rgba(255,255,255,0.35);font-size:14px">
+        Sélectionnez une unité ci-dessus pour lancer sa visite virtuelle
+      </div>
+
     </div>
   </div>
 </section>
@@ -1041,6 +1117,20 @@ function renderUnitesGrid() {
         <span class="sensor-chip">⚗️ pH/EC</span>
       </div>
     </div>`).join('');
+}
+
+
+// ── Load serre visite (Part 2) ────────────────────────────
+function loadSerreVisite(id, cardEl) {
+  document.querySelectorAll('.serre-visite-card').forEach(c => c.classList.remove('active'));
+  if (cardEl) cardEl.classList.add('active');
+  const wrap = document.getElementById('serre-embed-wrap');
+  const placeholder = document.getElementById('serre-placeholder');
+  const frame = document.getElementById('serre-frame');
+  wrap.style.display = 'block';
+  placeholder.style.display = 'none';
+  frame.src = `https://my.matterport.com/show/?m=${id}&play=1&qs=1&lang=${currentLang}`;
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ── Matterport ─────────────────────────────────────────────
