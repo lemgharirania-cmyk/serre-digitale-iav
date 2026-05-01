@@ -97,9 +97,13 @@ export default function Overview({ liveData, stats, countdown, refreshAll }) {
         <div className="over-row">
           {liveData.map((d, i) => {
             const env = d.env || {}
+            const irr = d.irr || {}
             const st  = d.statut === 'ok' ? 'ok' : d.statut === 'partiel' ? 'warn' : 'crit'
             const tWarn = env.temperature > 27 || env.temperature < 16
             const hWarn = env.humidite > 88 || env.humidite < 40
+            const phWarn = irr.ph !== null && irr.ph !== undefined && (irr.ph < 5.5 || irr.ph > 7.5)
+            const hasIrr = irr && Object.values(irr).some(v => v !== null && v !== undefined)
+
             return (
               <div
                 key={d.serre_id}
@@ -117,20 +121,67 @@ export default function Overview({ liveData, stats, countdown, refreshAll }) {
                 </div>
                 <div className="oc-name">{d.nom_fr?.split('&')[0].trim()}</div>
                 <div className="oc-id">{SERRES[i]?.code}</div>
+
+                {/* ── Données ENV ── */}
                 <div className="oc-stats">
                   <div>
                     <div className="l">Temp</div>
                     <div className="v tnum" style={{color: tWarn ? '#a46f1a' : 'inherit'}}>
-                      {env.temperature ?? '—'}°
+                      {env.temperature != null ? `${env.temperature}°` : '—'}
                     </div>
                   </div>
                   <div>
                     <div className="l">Hum</div>
                     <div className="v tnum" style={{color: hWarn ? '#a46f1a' : 'inherit'}}>
-                      {env.humidite ?? '—'}%
+                      {env.humidite != null ? `${env.humidite}%` : '—'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="l">VPD</div>
+                    <div className="v tnum">
+                      {env.vpd != null ? `${env.vpd}` : '—'}
                     </div>
                   </div>
                 </div>
+
+                {/* ── Données IRR ── */}
+                {hasIrr ? (
+                  <div className="oc-stats" style={{marginTop:'8px', paddingTop:'8px', borderTop:'1px solid var(--border)'}}>
+                    <div>
+                      <div className="l">pH</div>
+                      <div className="v tnum" style={{color: phWarn ? '#a46f1a' : 'inherit'}}>
+                        {irr.ph != null ? irr.ph : '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="l">EC</div>
+                      <div className="v tnum">
+                        {irr.ec != null ? `${irr.ec}` : '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="l">T°eau</div>
+                      <div className="v tnum">
+                        {irr.temp_eau != null ? `${irr.temp_eau}°` : '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="l">Niv.</div>
+                      <div className="v tnum">
+                        {irr.niveau_eau != null ? `${irr.niveau_eau}m` : '—'}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    marginTop:'8px', paddingTop:'8px',
+                    borderTop:'1px solid var(--border)',
+                    fontSize:'10px', color:'var(--ink-4)',
+                    fontFamily:'var(--font-mono)'
+                  }}>
+                    IRR non disponible
+                  </div>
+                )}
               </div>
             )
           })}

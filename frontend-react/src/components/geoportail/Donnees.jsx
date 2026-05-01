@@ -1,11 +1,10 @@
 // src/components/geoportail/Donnees.jsx
 import { useState, useEffect } from 'react'
-import { iotAPI } from '../../api/client'
 
 export default function Donnees({ lang, liveData, countdown, onRefresh }) {
   const t = lang === 'fr'
-    ? { title: 'Données des Capteurs', sub: 'Températures, humidité, pH, EC — mis à jour toutes les 2 minutes.', label: 'Temps Réel', live: 'Données en temps réel', refresh: '↻ Actualiser', noData: 'Chargement...' }
-    : { title: 'Sensor Data', sub: 'Temperature, humidity, pH, EC — updated every 2 minutes.', label: 'Real-time', live: 'Real-time data', refresh: '↻ Refresh', noData: 'Loading...' }
+    ? { title: 'Données des Capteurs', sub: 'Températures, humidité, pH, EC — mis à jour toutes les 2 minutes.', label: 'Temps Réel', live: 'Données en temps réel', refresh: '↻ Actualiser', noData: 'Chargement...', irrNA: 'Irrigation non disponible' }
+    : { title: 'Sensor Data', sub: 'Temperature, humidity, pH, EC — updated every 2 minutes.', label: 'Real-time', live: 'Real-time data', refresh: '↻ Refresh', noData: 'Loading...', irrNA: 'Irrigation unavailable' }
 
   const fv = (v, u) => v != null ? `${v}${u}` : '—'
 
@@ -48,6 +47,18 @@ export default function Donnees({ lang, liveData, countdown, onRefresh }) {
               const irr = d.irr || {}
               const isOk = d.statut === 'ok'
               const colors = ['#16a34a', '#3b82f6', '#16a34a', '#3b82f6', '#6b7280']
+
+              // Vérifie si au moins une valeur IRR existe
+              const hasIrr = irr.ph != null || irr.ec != null || irr.temp_eau != null || irr.niveau_eau != null
+
+              // Liste des métriques IRR — affiche '—' si null (au lieu de cacher)
+              const irrMetrics = [
+                { lbl: 'pH',        val: fv(irr.ph,         '') },
+                { lbl: 'EC',        val: fv(irr.ec,         ' mS/cm') },
+                { lbl: 'Temp. eau', val: fv(irr.temp_eau,   '°C') },
+                { lbl: 'Niveau',    val: fv(irr.niveau_eau, ' m') },
+              ]
+
               return (
                 <div key={d.serre_id} style={{
                   background: 'white', borderRadius: '20px', padding: '1.5rem',
@@ -70,11 +81,14 @@ export default function Donnees({ lang, liveData, countdown, onRefresh }) {
                   </div>
 
                   {/* ENV sensors */}
+                  <div style={{ marginBottom: '6px', fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Environnement
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginBottom: '1rem' }}>
                     {[
-                      { lbl: 'Temp.', val: fv(env.temperature, '°C') },
-                      { lbl: 'Humid.', val: fv(env.humidite, '%') },
-                      { lbl: 'VPD', val: fv(env.vpd, ' kPa') },
+                      { lbl: 'Temp.',  val: fv(env.temperature, '°C') },
+                      { lbl: 'Humid.', val: fv(env.humidite,    '%') },
+                      { lbl: 'VPD',    val: fv(env.vpd,         ' kPa') },
                     ].map((s, j) => (
                       <div key={j} style={{ textAlign: 'center', background: '#f9fafb', borderRadius: '10px', padding: '10px 6px' }}>
                         <div style={{ fontSize: '10px', fontWeight: 600, color: '#9ca3af', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '.03em' }}>{s.lbl}</div>
@@ -84,21 +98,35 @@ export default function Donnees({ lang, liveData, countdown, onRefresh }) {
                   </div>
 
                   {/* IRR sensors */}
-                  {(irr.ph != null || irr.ec != null) && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '8px', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
-                      {[
-                        { lbl: 'pH', val: irr.ph ?? '—' },
-                        { lbl: 'EC', val: irr.ec != null ? `${irr.ec} mS/cm` : '—' },
-                        irr.temp_eau != null   ? { lbl: 'Temp. eau', val: `${irr.temp_eau}°C` } : null,
-                        irr.niveau_eau != null  ? { lbl: 'Niveau',    val: `${irr.niveau_eau}m` } : null,
-                      ].filter(Boolean).map((s, j) => (
-                        <div key={j} style={{ background: '#eff6ff', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>{s.lbl}</div>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#2563eb' }}>{s.val}</div>
-                        </div>
-                      ))}
+                  <div style={{ paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
+                    <div style={{ marginBottom: '6px', fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                      Irrigation
                     </div>
-                  )}
+
+                    {hasIrr ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' }}>
+                        {irrMetrics.map((s, j) => (
+                          <div key={j} style={{ background: '#eff6ff', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500, marginBottom: '3px' }}>{s.lbl}</div>
+                            <div style={{
+                              fontSize: '0.95rem', fontWeight: 800,
+                              color: s.val === '—' ? '#d1d5db' : '#2563eb'
+                            }}>
+                              {s.val}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{
+                        background: '#f9fafb', borderRadius: '8px', padding: '10px',
+                        textAlign: 'center', fontSize: '12px', color: '#9ca3af'
+                      }}>
+                        {t.irrNA}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               )
             })}
