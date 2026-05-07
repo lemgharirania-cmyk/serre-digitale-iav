@@ -5,18 +5,16 @@ from typing import Optional
 
 IOT_BASE_URL = os.getenv("IOT_BASE_URL", "http://guardian.pro-leaf.com:8083/wx/android/behive")
 
-# ─── Règles de conversion ────────────────────────────────────
-# L'API retourne les données dans response.data.detail
-# Champs ENV : temp ÷10, humid ÷10, vpd ÷100, co2 brut, ppfd brut
-# Champs IRR : ph ÷100, ec ÷100, waterTemp ÷10, waterLevel ÷100
-
 def convert_env(raw: dict) -> dict:
     def safe(val, divisor=1):
         try:
-            return round(float(val) / divisor, 2) if val is not None else None
+            v = float(val)
+            if v == -9999:
+                return None
+            return round(v / divisor, 2)
         except (TypeError, ValueError):
             return None
-    # Les données sont dans raw["detail"] si présent, sinon raw directement
+
     d = raw.get("detail") or raw
     return {
         "temperature": safe(d.get("temp"),   10),
@@ -29,15 +27,32 @@ def convert_env(raw: dict) -> dict:
 def convert_irr(raw: dict) -> dict:
     def safe(val, divisor=1):
         try:
-            return round(float(val) / divisor, 2) if val is not None else None
+            v = float(val)
+            if v == -9999:
+                return None
+            return round(v / divisor, 2)
         except (TypeError, ValueError):
             return None
-    d = raw.get("detail") or raw
+
+    # Les données IRR sont dans raw["detail"]["pool"][0]
+    detail = raw.get("detail") or {}
+    pool = detail.get("pool") or []
+    
+    # Prendre le premier tank actif (no=1, celui de la serre)
+    tank = None
+    for p in pool:
+        if p.get("no") == 1:
+            tank = p
+            break
+    
+    if not tank:
+        return {"ph": None, "ec": None, "temp_eau": None, "niveau_eau": None}
+
     return {
-        "ph":         safe(d.get("ph")        or d.get("phValue"),         100),
-        "ec":         safe(d.get("ec")        or d.get("ecValue"),         100),
-        "temp_eau":   safe(d.get("waterTemp") or d.get("waterTemperature"), 10),
-        "niveau_eau": safe(d.get("waterLevel") or d.get("level"),          100),
+        "ph":         safe(tank.get("tankPh"),  100),
+        "ec":         safe(tank.get("tankEc"),  100),
+        "temp_eau":   safe(tank.get("tankWt"),   10),
+        "niveau_eau": safe(tank.get("wl"),       100),
     }
 
 async def fetch_env(device_id: int, token: str) -> Optional[dict]:
@@ -69,10 +84,9 @@ async def fetch_irr(device_id: int, token: str) -> Optional[dict]:
             if data.get("errno") == 418 or data.get("code") == 418:
                 print(f"[IoT IRR] Device {device_id}: pas de permission (418)")
                 return None
-            raw  = data.get("data") or data
-            print(f"[IoT IRR DEBUG] Device {device_id} raw: {raw}")
+            raw = data.get("data") or data
             converted = convert_irr(raw)
-            converted["raw"] = raw.get("detail") or raw
+            converted["raw"] = raw
             return converted
     except Exception as e:
         print(f"[IoT IRR] Erreur device {device_id}: {e}")
