@@ -70,6 +70,7 @@ async def fetch_irr(device_id: int, token: str) -> Optional[dict]:
                 print(f"[IoT IRR] Device {device_id}: pas de permission (418)")
                 return None
             raw  = data.get("data") or data
+            print(f"[IoT IRR DEBUG] Device {device_id} raw: {raw}")
             converted = convert_irr(raw)
             converted["raw"] = raw.get("detail") or raw
             return converted
