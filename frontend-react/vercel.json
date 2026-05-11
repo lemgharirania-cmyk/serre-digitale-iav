@@ -1,6 +1,8 @@
 {
   "rewrites": [
-    { "source": "/walkthrough/(.*)", "destination": "/walkthrough/$1" },
-    { "source": "/((?!walkthrough).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!walkthrough/).*)",
+      "destination": "/index.html"
+    }
   ]
 }
