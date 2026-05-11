@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; }
+#pano { width:100%; height:100vh; }
+#debug { position:fixed; top:10px; left:10px; z-index:999; background:white; padding:10px; font-size:12px; font-family:monospace; max-width:500px; border:2px solid red; border-radius:8px; }
+.pnlm-hotspot-base { background:transparent!important; border:none!important; width:auto!important; height:auto!important; overflow:visible!important; }
+.pnlm-hotspot-base .pnlm-sprite { display:none!important; }
+.hs-nav-dot {
+  width:52px; height:52px; border-radius:50%;
+  background:radial-gradient(circle at 50% 38%, rgba(255,255,255,.95) 0%, rgba(190,235,205,.88) 52%, rgba(45,142,80,.18) 100%);
+  border:2px solid rgba(45,142,80,.75);
+  box-shadow:0 0 0 7px rgba(45,142,80,.18), 0 3px 14px rgba(0,0,0,.25);
+  cursor:pointer;
+  animation:pf 2.4s infinite;
+  display:flex; align-items:center; justify-content:center;
+}
+@keyframes pf {
+  0%,100%{box-shadow:0 0 0 7px rgba(45,142,80,.18),0 3px 14px rgba(0,0,0,.25)}
+  50%{box-shadow:0 0 0 13px rgba(45,142,80,.07),0 3px 14px rgba(0,0,0,.25)}
+}
+.hs-nav-dot:hover { transform:scale(1.1); }
+</style>
+</head>
+<body>
+<div id="debug">Loading...</div>
+<div id="pano"></div>
+<script>
+// Load hotspots from localStorage (where the editor saves them)
+const saved = localStorage.getItem('agrobiotech_hotspots');
+const dbg = document.getElementById('debug');
+
+if (!saved) {
+  dbg.innerHTML = 'NO localStorage data found.<br>Open editor.html first and place hotspots, then come back here.';
+} else {
+  const allHotspots = JSON.parse(saved);
+  const sceneHotspots = allHotspots['couloir-serre']?.['couloir-serre__000'] || [];
+  
+  dbg.innerHTML = 'localStorage found!<br>' +
+    'couloir-serre__000 hotspots: ' + sceneHotspots.length + '<br>' +
+    JSON.stringify(sceneHotspots[0] || 'none');
+
+  fetch('images/manifest.json')
+    .then(r => r.json())
+    .then(m => {
+      const zone = m.zones.find(z => z.id === 'couloir-serre');
+      const scene = zone.scenes[0];
+
+      const pannellumHS = sceneHotspots.map(hs => ({
+        pitch: hs.pitch,
+        yaw: hs.yaw,
+        type: 'custom',
+        cssClass: 'hs-nav-dot',
+        createTooltipFunc: function(div, args) {
+          div.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(30,100,55,0.85)"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
+        },
+        createTooltipArgs: {},
+        clickHandlerFunc: function() {
+          alert('→ ' + hs.targetSceneId);
+        }
+      }));
+
+      dbg.innerHTML += '<br>Pannellum HS built: ' + pannellumHS.length;
+
+      pannellum.viewer('pano', {
+        type: 'equirectangular',
+        panorama: scene.file,
+        autoLoad: true,
+        hfov: 100,
+        pitch: -10,
+        yaw: 0,
+        hotSpots: pannellumHS
+      });
+    });
+}
+</script>
+</body>
+</html>

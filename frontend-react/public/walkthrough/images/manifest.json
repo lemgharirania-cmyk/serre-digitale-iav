@@ -1,0 +1,1503 @@
+{
+  "zones": [
+    {
+      "id": "agronomie",
+      "label": "Agronomie",
+      "folder": "Agronomie",
+      "color": "#6dbc85",
+      "icon": "🌾",
+      "unit": "S03",
+      "scenes": [
+        {
+          "id": "agronomie__000",
+          "file": "images/Agronomie/IMG_20260507_102758_00_069.jpg",
+          "label": "Agronomie — 1/3",
+          "zoneId": "agronomie"
+        },
+        {
+          "id": "agronomie__001",
+          "file": "images/Agronomie/IMG_20260507_102838_00_070.jpg",
+          "label": "Agronomie — 2/3",
+          "zoneId": "agronomie"
+        },
+        {
+          "id": "agronomie__002",
+          "file": "images/Agronomie/IMG_20260507_102919_00_071.jpg",
+          "label": "Agronomie — 3/3",
+          "zoneId": "agronomie"
+        }
+      ]
+    },
+    {
+      "id": "bloc-protection",
+      "label": "Bloc Protection des Plantes",
+      "folder": "Bloc protection des plantes",
+      "color": "#f0a030",
+      "icon": "🔬",
+      "unit": "BPP",
+      "scenes": [
+        {
+          "id": "bloc-protection__000",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103635_00_078.jpg",
+          "label": "Bloc Protection des Plantes — 1/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__001",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103701_00_079.jpg",
+          "label": "Bloc Protection des Plantes — 2/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__002",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103808_00_080.jpg",
+          "label": "Bloc Protection des Plantes — 3/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__003",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103849_00_081.jpg",
+          "label": "Bloc Protection des Plantes — 4/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__004",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103927_00_082.jpg",
+          "label": "Bloc Protection des Plantes — 5/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__005",
+          "file": "images/Bloc protection des plantes/IMG_20260507_103951_00_083.jpg",
+          "label": "Bloc Protection des Plantes — 6/7",
+          "zoneId": "bloc-protection"
+        },
+        {
+          "id": "bloc-protection__006",
+          "file": "images/Bloc protection des plantes/IMG_20260507_104015_00_084.jpg",
+          "label": "Bloc Protection des Plantes — 7/7",
+          "zoneId": "bloc-protection"
+        }
+      ]
+    },
+    {
+      "id": "couloir-bloc",
+      "label": "Couloir Bloc Technique",
+      "folder": "Couloir bloc technique",
+      "color": "#9aa09a",
+      "icon": "🚪",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "couloir-bloc__000",
+          "file": "images/Couloir bloc technique/IMG_20260507_101353_00_050.jpg",
+          "label": "Couloir Bloc Technique — 1/3",
+          "zoneId": "couloir-bloc"
+        },
+        {
+          "id": "couloir-bloc__001",
+          "file": "images/Couloir bloc technique/IMG_20260507_101412_00_051.jpg",
+          "label": "Couloir Bloc Technique — 2/3",
+          "zoneId": "couloir-bloc"
+        },
+        {
+          "id": "couloir-bloc__002",
+          "file": "images/Couloir bloc technique/IMG_20260507_101443_00_052.jpg",
+          "label": "Couloir Bloc Technique — 3/3",
+          "zoneId": "couloir-bloc"
+        }
+      ]
+    },
+    {
+      "id": "couloir-serre",
+      "label": "Couloir Serre",
+      "folder": "Couloir serre",
+      "color": "#9aa09a",
+      "icon": "🚶",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "couloir-serre__000",
+          "file": "images/Couloir serre/IMG_20260507_102055_00_060.jpg",
+          "label": "Couloir Serre — 1/6",
+          "zoneId": "couloir-serre"
+        },
+        {
+          "id": "couloir-serre__001",
+          "file": "images/Couloir serre/IMG_20260507_102127_00_061.jpg",
+          "label": "Couloir Serre — 2/6",
+          "zoneId": "couloir-serre"
+        },
+        {
+          "id": "couloir-serre__002",
+          "file": "images/Couloir serre/IMG_20260507_102203_00_062.jpg",
+          "label": "Couloir Serre — 3/6",
+          "zoneId": "couloir-serre"
+        },
+        {
+          "id": "couloir-serre__003",
+          "file": "images/Couloir serre/IMG_20260507_102246_00_063.jpg",
+          "label": "Couloir Serre — 4/6",
+          "zoneId": "couloir-serre"
+        },
+        {
+          "id": "couloir-serre__004",
+          "file": "images/Couloir serre/IMG_20260507_102334_00_064.jpg",
+          "label": "Couloir Serre — 5/6",
+          "zoneId": "couloir-serre"
+        },
+        {
+          "id": "couloir-serre__005",
+          "file": "images/Couloir serre/IMG_20260507_102422_00_065.jpg",
+          "label": "Couloir Serre — 6/6",
+          "zoneId": "couloir-serre"
+        }
+      ]
+    },
+    {
+      "id": "exterieur",
+      "label": "Extérieur",
+      "folder": "Extérieur",
+      "color": "#5ba8d8",
+      "icon": "🌿",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "exterieur__000",
+          "file": "images/Extérieur/IMG_20260507_095651_00_022.jpg",
+          "label": "Extérieur — 1/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__001",
+          "file": "images/Extérieur/IMG_20260507_100031_00_028.jpg",
+          "label": "Extérieur — 2/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__002",
+          "file": "images/Extérieur/IMG_20260507_100247_00_032.jpg",
+          "label": "Extérieur — 3/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__003",
+          "file": "images/Extérieur/IMG_20260507_100407_00_035.jpg",
+          "label": "Extérieur — 4/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__004",
+          "file": "images/Extérieur/IMG_20260507_100520_00_036.jpg",
+          "label": "Extérieur — 5/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__005",
+          "file": "images/Extérieur/IMG_20260507_100711_00_039.jpg",
+          "label": "Extérieur — 6/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__006",
+          "file": "images/Extérieur/IMG_20260507_100752_00_040.jpg",
+          "label": "Extérieur — 7/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__007",
+          "file": "images/Extérieur/IMG_20260507_100831_00_041.jpg",
+          "label": "Extérieur — 8/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__008",
+          "file": "images/Extérieur/IMG_20260507_100901_00_042.jpg",
+          "label": "Extérieur — 9/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__009",
+          "file": "images/Extérieur/IMG_20260507_100934_00_043.jpg",
+          "label": "Extérieur — 10/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__010",
+          "file": "images/Extérieur/IMG_20260507_101007_00_044.jpg",
+          "label": "Extérieur — 11/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__011",
+          "file": "images/Extérieur/IMG_20260507_101053_00_045.jpg",
+          "label": "Extérieur — 12/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__012",
+          "file": "images/Extérieur/IMG_20260507_101130_00_046.jpg",
+          "label": "Extérieur — 13/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__013",
+          "file": "images/Extérieur/IMG_20260507_101201_00_047.jpg",
+          "label": "Extérieur — 14/15",
+          "zoneId": "exterieur"
+        },
+        {
+          "id": "exterieur__014",
+          "file": "images/Extérieur/IMG_20260507_101230_00_048.jpg",
+          "label": "Extérieur — 15/15",
+          "zoneId": "exterieur"
+        }
+      ]
+    },
+    {
+      "id": "genetique",
+      "label": "Génétique",
+      "folder": "Génétique",
+      "color": "#6dbc85",
+      "icon": "🧬",
+      "unit": "S01",
+      "scenes": [
+        {
+          "id": "genetique__000",
+          "file": "images/Génétique/IMG_20260507_103034_00_072.jpg",
+          "label": "Génétique — 1/3",
+          "zoneId": "genetique"
+        },
+        {
+          "id": "genetique__001",
+          "file": "images/Génétique/IMG_20260507_103101_00_073.jpg",
+          "label": "Génétique — 2/3",
+          "zoneId": "genetique"
+        },
+        {
+          "id": "genetique__002",
+          "file": "images/Génétique/IMG_20260507_103132_00_074.jpg",
+          "label": "Génétique — 3/3",
+          "zoneId": "genetique"
+        }
+      ]
+    },
+    {
+      "id": "horticulture",
+      "label": "Horticulture",
+      "folder": "Horticulture",
+      "color": "#6dbc85",
+      "icon": "🌸",
+      "unit": "S02",
+      "scenes": [
+        {
+          "id": "horticulture__000",
+          "file": "images/Horticulture/IMG_20260507_103413_00_075.jpg",
+          "label": "Horticulture — 1/3",
+          "zoneId": "horticulture"
+        },
+        {
+          "id": "horticulture__001",
+          "file": "images/Horticulture/IMG_20260507_103440_00_076.jpg",
+          "label": "Horticulture — 2/3",
+          "zoneId": "horticulture"
+        },
+        {
+          "id": "horticulture__002",
+          "file": "images/Horticulture/IMG_20260507_103515_00_077.jpg",
+          "label": "Horticulture — 3/3",
+          "zoneId": "horticulture"
+        }
+      ]
+    },
+    {
+      "id": "hydroponie",
+      "label": "Hydroponie",
+      "folder": "Hydroponie",
+      "color": "#6dbc85",
+      "icon": "💧",
+      "unit": "S04",
+      "scenes": [
+        {
+          "id": "hydroponie__000",
+          "file": "images/Hydroponie/IMG_20260507_102519_00_066.jpg",
+          "label": "Hydroponie — 1/3",
+          "zoneId": "hydroponie"
+        },
+        {
+          "id": "hydroponie__001",
+          "file": "images/Hydroponie/IMG_20260507_102556_00_067.jpg",
+          "label": "Hydroponie — 2/3",
+          "zoneId": "hydroponie"
+        },
+        {
+          "id": "hydroponie__002",
+          "file": "images/Hydroponie/IMG_20260507_102645_00_068.jpg",
+          "label": "Hydroponie — 3/3",
+          "zoneId": "hydroponie"
+        }
+      ]
+    },
+    {
+      "id": "local-technique",
+      "label": "Local Technique",
+      "folder": "Local technique",
+      "color": "#9aa09a",
+      "icon": "⚙️",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "local-technique__000",
+          "file": "images/Local technique/IMG_20260507_101653_00_055.jpg",
+          "label": "Local Technique — 1/3",
+          "zoneId": "local-technique"
+        },
+        {
+          "id": "local-technique__001",
+          "file": "images/Local technique/IMG_20260507_101716_00_056.jpg",
+          "label": "Local Technique — 2/3",
+          "zoneId": "local-technique"
+        },
+        {
+          "id": "local-technique__002",
+          "file": "images/Local technique/IMG_20260507_101739_00_057.jpg",
+          "label": "Local Technique — 3/3",
+          "zoneId": "local-technique"
+        }
+      ]
+    },
+    {
+      "id": "salle-controle",
+      "label": "Salle de Contrôle",
+      "folder": "Salle de controle",
+      "color": "#5ba8d8",
+      "icon": "📡",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "salle-controle__000",
+          "file": "images/Salle de controle/IMG_20260511_104828_00_093.jpg",
+          "label": "Salle de Contrôle — 1/2",
+          "zoneId": "salle-controle"
+        },
+        {
+          "id": "salle-controle__001",
+          "file": "images/Salle de controle/IMG_20260511_104904_00_094.jpg",
+          "label": "Salle de Contrôle — 2/2",
+          "zoneId": "salle-controle"
+        }
+      ]
+    },
+    {
+      "id": "salle-fertigation",
+      "label": "Salle de Fertigation",
+      "folder": "Salle de fertigation",
+      "color": "#5ba8d8",
+      "icon": "💊",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "salle-fertigation__000",
+          "file": "images/Salle de fertigation/IMG_20260511_104937_00_095.jpg",
+          "label": "Salle de Fertigation — 1/3",
+          "zoneId": "salle-fertigation"
+        },
+        {
+          "id": "salle-fertigation__001",
+          "file": "images/Salle de fertigation/IMG_20260511_105001_00_096.jpg",
+          "label": "Salle de Fertigation — 2/3",
+          "zoneId": "salle-fertigation"
+        },
+        {
+          "id": "salle-fertigation__002",
+          "file": "images/Salle de fertigation/IMG_20260511_105028_00_097.jpg",
+          "label": "Salle de Fertigation — 3/3",
+          "zoneId": "salle-fertigation"
+        }
+      ]
+    },
+    {
+      "id": "salle-lavage",
+      "label": "Salle de Lavage",
+      "folder": "Salle de lavage",
+      "color": "#9aa09a",
+      "icon": "🚿",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "salle-lavage__000",
+          "file": "images/Salle de lavage/IMG_20260507_101555_00_053.jpg",
+          "label": "Salle de Lavage — 1/2",
+          "zoneId": "salle-lavage"
+        },
+        {
+          "id": "salle-lavage__001",
+          "file": "images/Salle de lavage/IMG_20260507_101614_00_054.jpg",
+          "label": "Salle de Lavage — 2/2",
+          "zoneId": "salle-lavage"
+        }
+      ]
+    },
+    {
+      "id": "salle-preparation",
+      "label": "Salle de Préparation",
+      "folder": "Salle de préparation",
+      "color": "#9aa09a",
+      "icon": "🧪",
+      "unit": "—",
+      "scenes": [
+        {
+          "id": "salle-preparation__000",
+          "file": "images/Salle de préparation/IMG_20260507_101854_00_058.jpg",
+          "label": "Salle de Préparation — 1/2",
+          "zoneId": "salle-preparation"
+        },
+        {
+          "id": "salle-preparation__001",
+          "file": "images/Salle de préparation/IMG_20260507_101927_00_059.jpg",
+          "label": "Salle de Préparation — 2/2",
+          "zoneId": "salle-preparation"
+        }
+      ]
+    },
+    {
+      "id": "unite-protection",
+      "label": "Unité Protection des Plantes",
+      "folder": "Unité Protection des plantes",
+      "color": "#6dbc85",
+      "icon": "🌱",
+      "unit": "S05",
+      "scenes": [
+        {
+          "id": "unite-protection__000",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104055_00_085.jpg",
+          "label": "Unité Protection des Plantes — 1/6",
+          "zoneId": "unite-protection"
+        },
+        {
+          "id": "unite-protection__001",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104132_00_086.jpg",
+          "label": "Unité Protection des Plantes — 2/6",
+          "zoneId": "unite-protection"
+        },
+        {
+          "id": "unite-protection__002",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104159_00_087.jpg",
+          "label": "Unité Protection des Plantes — 3/6",
+          "zoneId": "unite-protection"
+        },
+        {
+          "id": "unite-protection__003",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104307_00_088.jpg",
+          "label": "Unité Protection des Plantes — 4/6",
+          "zoneId": "unite-protection"
+        },
+        {
+          "id": "unite-protection__004",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104349_00_089.jpg",
+          "label": "Unité Protection des Plantes — 5/6",
+          "zoneId": "unite-protection"
+        },
+        {
+          "id": "unite-protection__005",
+          "file": "images/Unité Protection des plantes/IMG_20260507_104440_00_090.jpg",
+          "label": "Unité Protection des Plantes — 6/6",
+          "zoneId": "unite-protection"
+        }
+      ]
+    }
+  ],
+  "hotspots": {
+    "agronomie": {
+      "agronomie__000": [
+        {
+          "type": "cross",
+          "pitch": -2.9,
+          "yaw": 23.6,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__005",
+          "label": "🚶 Couloir Serre"
+        },
+        {
+          "type": "nav",
+          "pitch": -34.7,
+          "yaw": -146.9,
+          "targetZoneId": "agronomie",
+          "targetSceneId": "agronomie__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "agronomie__001": [
+        {
+          "type": "nav",
+          "pitch": -21.4,
+          "yaw": -152.6,
+          "targetZoneId": "agronomie",
+          "targetSceneId": "agronomie__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -22.9,
+          "yaw": 27,
+          "targetZoneId": "agronomie",
+          "targetSceneId": "agronomie__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "agronomie__002": [
+        {
+          "type": "nav",
+          "pitch": -28.8,
+          "yaw": 21,
+          "targetZoneId": "agronomie",
+          "targetSceneId": "agronomie__001",
+          "label": "→ sc.2"
+        }
+      ]
+    },
+    "bloc-protection": {
+      "bloc-protection__000": [
+        {
+          "type": "cross",
+          "pitch": -4.1,
+          "yaw": -177.4,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__002",
+          "label": "🌿 Extérieur"
+        },
+        {
+          "type": "nav",
+          "pitch": -27.1,
+          "yaw": -9.6,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "bloc-protection__001": [
+        {
+          "type": "nav",
+          "pitch": -5.8,
+          "yaw": 84.7,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -5.1,
+          "yaw": -96.3,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__006",
+          "label": "→ sc.7"
+        },
+        {
+          "type": "nav",
+          "pitch": -23,
+          "yaw": 179,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "bloc-protection__002": [
+        {
+          "type": "nav",
+          "pitch": -25.3,
+          "yaw": -81.2,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__003",
+          "label": "→ sc.4"
+        },
+        {
+          "type": "nav",
+          "pitch": -7,
+          "yaw": -154.2,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "bloc-protection__003": [
+        {
+          "type": "nav",
+          "pitch": -8.9,
+          "yaw": 39,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__004",
+          "label": "→ sc.5"
+        },
+        {
+          "type": "nav",
+          "pitch": -25.4,
+          "yaw": -42.8,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__002",
+          "label": "→ sc.3"
+        }
+      ],
+      "bloc-protection__004": [
+        {
+          "type": "nav",
+          "pitch": -7.4,
+          "yaw": -122.8,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__005",
+          "label": "→ sc.6"
+        },
+        {
+          "type": "nav",
+          "pitch": -4.4,
+          "yaw": 72.2,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__003",
+          "label": "→ sc.4"
+        },
+        {
+          "type": "cross",
+          "pitch": -3.3,
+          "yaw": -22.1,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__000",
+          "label": "🌱 Unité Protection des Plantes"
+        }
+      ],
+      "bloc-protection__005": [
+        {
+          "type": "nav",
+          "pitch": -29.6,
+          "yaw": -77.1,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__006",
+          "label": "→ sc.7"
+        },
+        {
+          "type": "nav",
+          "pitch": -8.7,
+          "yaw": -172.7,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__004",
+          "label": "→ sc.5"
+        }
+      ],
+      "bloc-protection__006": [
+        {
+          "type": "nav",
+          "pitch": -24.5,
+          "yaw": -151.5,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "nav",
+          "pitch": -25.2,
+          "yaw": 136.2,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__005",
+          "label": "→ sc.6"
+        }
+      ]
+    },
+    "couloir-bloc": {
+      "couloir-bloc__000": [
+        {
+          "type": "cross",
+          "pitch": -5.2,
+          "yaw": 83.8,
+          "targetZoneId": "salle-lavage",
+          "targetSceneId": "salle-lavage__000",
+          "label": "🚿 Salle de Lavage"
+        },
+        {
+          "type": "cross",
+          "pitch": -5.7,
+          "yaw": -87.9,
+          "targetZoneId": "salle-controle",
+          "targetSceneId": "salle-controle__000",
+          "label": "📡 Salle de Contrôle"
+        },
+        {
+          "type": "cross",
+          "pitch": -4,
+          "yaw": -0.5,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__001",
+          "label": "🌿 Extérieur"
+        },
+        {
+          "type": "nav",
+          "pitch": -18.9,
+          "yaw": 175.5,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "couloir-bloc__001": [
+        {
+          "type": "cross",
+          "pitch": -7.6,
+          "yaw": -35,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__000",
+          "label": "⚙️ Local Technique"
+        },
+        {
+          "type": "cross",
+          "pitch": -5.2,
+          "yaw": 148.1,
+          "targetZoneId": "salle-fertigation",
+          "targetSceneId": "salle-fertigation__000",
+          "label": "💊 Salle de Fertigation"
+        },
+        {
+          "type": "nav",
+          "pitch": -18.5,
+          "yaw": -126,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -17.2,
+          "yaw": 59.5,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "couloir-bloc__002": [
+        {
+          "type": "cross",
+          "pitch": -5.3,
+          "yaw": 149.3,
+          "targetZoneId": "salle-preparation",
+          "targetSceneId": "salle-preparation__000",
+          "label": "🧪 Salle de Préparation"
+        },
+        {
+          "type": "nav",
+          "pitch": -16.6,
+          "yaw": 63.3,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "couloir-bloc__003": [
+        {
+          "type": "cross",
+          "pitch": -6.9,
+          "yaw": 148.9,
+          "targetZoneId": "salle-preparation",
+          "targetSceneId": "salle-preparation__000",
+          "label": "🧪 Salle de Préparation"
+        }
+      ]
+    },
+    "couloir-serre": {
+      "couloir-serre__000": [
+        {
+          "type": "nav",
+          "pitch": -24.3,
+          "yaw": 179.3,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -3,
+          "yaw": 0.6,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__001",
+          "label": "🌿 Extérieur"
+        }
+      ],
+      "couloir-serre__001": [
+        {
+          "type": "nav",
+          "pitch": -23.6,
+          "yaw": 179,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "cross",
+          "pitch": -5.7,
+          "yaw": 94,
+          "targetZoneId": "genetique",
+          "targetSceneId": "genetique__000",
+          "label": "🧬 Génétique"
+        },
+        {
+          "type": "nav",
+          "pitch": -21.8,
+          "yaw": 3.2,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "couloir-serre__002": [
+        {
+          "type": "nav",
+          "pitch": -16.9,
+          "yaw": 168.9,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__003",
+          "label": "→ sc.4"
+        },
+        {
+          "type": "nav",
+          "pitch": -19.7,
+          "yaw": -3.2,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "couloir-serre__003": [
+        {
+          "type": "nav",
+          "pitch": -19.4,
+          "yaw": 172.8,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__004",
+          "label": "→ sc.5"
+        },
+        {
+          "type": "cross",
+          "pitch": -4.7,
+          "yaw": 90.5,
+          "targetZoneId": "horticulture",
+          "targetSceneId": "horticulture__000",
+          "label": "🌸 Horticulture"
+        },
+        {
+          "type": "nav",
+          "pitch": -21.9,
+          "yaw": -3.4,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__002",
+          "label": "→ sc.3"
+        }
+      ],
+      "couloir-serre__004": [
+        {
+          "type": "nav",
+          "pitch": -16,
+          "yaw": 136.6,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__005",
+          "label": "→ sc.6"
+        },
+        {
+          "type": "nav",
+          "pitch": -17.7,
+          "yaw": -36,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__003",
+          "label": "→ sc.4"
+        }
+      ],
+      "couloir-serre__005": [
+        {
+          "type": "cross",
+          "pitch": -6.9,
+          "yaw": -159.6,
+          "targetZoneId": "hydroponie",
+          "targetSceneId": "hydroponie__000",
+          "label": "💧 Hydroponie"
+        },
+        {
+          "type": "cross",
+          "pitch": -3.5,
+          "yaw": 21.6,
+          "targetZoneId": "agronomie",
+          "targetSceneId": "agronomie__000",
+          "label": "🌾 Agronomie"
+        },
+        {
+          "type": "nav",
+          "pitch": -21.3,
+          "yaw": -65.4,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__004",
+          "label": "→ sc.5"
+        }
+      ]
+    },
+    "exterieur": {
+      "exterieur__000": [
+        {
+          "type": "nav",
+          "pitch": -4.2,
+          "yaw": -7.4,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "exterieur__001": [
+        {
+          "type": "cross",
+          "pitch": -16.5,
+          "yaw": -109.1,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__000",
+          "label": "🚶 Couloir Serre"
+        },
+        {
+          "type": "nav",
+          "pitch": -10.3,
+          "yaw": -11,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "cross",
+          "pitch": -8.2,
+          "yaw": 88.2,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__000",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "exterieur__002": [
+        {
+          "type": "nav",
+          "pitch": -13.4,
+          "yaw": -23.8,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__003",
+          "label": "→ sc.4"
+        },
+        {
+          "type": "cross",
+          "pitch": -7.1,
+          "yaw": -147.6,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__000",
+          "label": "🔬 Bloc Protection des Plantes"
+        }
+      ],
+      "exterieur__003": [
+        {
+          "type": "nav",
+          "pitch": -27.6,
+          "yaw": -70.2,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__004",
+          "label": "→ sc.5"
+        }
+      ],
+      "exterieur__004": [
+        {
+          "type": "nav",
+          "pitch": -4.8,
+          "yaw": 56,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__005",
+          "label": "→ sc.6"
+        }
+      ],
+      "exterieur__005": [
+        {
+          "type": "nav",
+          "pitch": -15.8,
+          "yaw": 50.9,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__006",
+          "label": "→ sc.7"
+        }
+      ],
+      "exterieur__006": [
+        {
+          "type": "nav",
+          "pitch": -8,
+          "yaw": 58.1,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__007",
+          "label": "→ sc.8"
+        }
+      ],
+      "exterieur__007": [
+        {
+          "type": "nav",
+          "pitch": -7.5,
+          "yaw": 39.6,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__008",
+          "label": "→ sc.9"
+        }
+      ],
+      "exterieur__008": [
+        {
+          "type": "nav",
+          "pitch": -10,
+          "yaw": 98.3,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__009",
+          "label": "→ sc.10"
+        }
+      ],
+      "exterieur__009": [
+        {
+          "type": "nav",
+          "pitch": -6.5,
+          "yaw": 107.8,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__010",
+          "label": "→ sc.11"
+        }
+      ],
+      "exterieur__010": [
+        {
+          "type": "nav",
+          "pitch": -10.5,
+          "yaw": 17.2,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__011",
+          "label": "→ sc.12"
+        }
+      ],
+      "exterieur__011": [
+        {
+          "type": "nav",
+          "pitch": -9.1,
+          "yaw": -95.7,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__012",
+          "label": "→ sc.13"
+        }
+      ],
+      "exterieur__012": [
+        {
+          "type": "nav",
+          "pitch": -8.7,
+          "yaw": -93.8,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__013",
+          "label": "→ sc.14"
+        }
+      ],
+      "exterieur__013": [
+        {
+          "type": "nav",
+          "pitch": -19,
+          "yaw": -123.3,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__014",
+          "label": "→ sc.15"
+        }
+      ],
+      "exterieur__014": [
+        {
+          "type": "nav",
+          "pitch": -13.8,
+          "yaw": 168.9,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__000",
+          "label": "→ sc.1"
+        }
+      ]
+    },
+    "genetique": {
+      "genetique__000": [
+        {
+          "type": "nav",
+          "pitch": -32.7,
+          "yaw": -168,
+          "targetZoneId": "genetique",
+          "targetSceneId": "genetique__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -3.4,
+          "yaw": 3.4,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__001",
+          "label": "🚶 Couloir Serre"
+        }
+      ],
+      "genetique__001": [
+        {
+          "type": "nav",
+          "pitch": -28.4,
+          "yaw": -161.1,
+          "targetZoneId": "genetique",
+          "targetSceneId": "genetique__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -20.8,
+          "yaw": 10.5,
+          "targetZoneId": "genetique",
+          "targetSceneId": "genetique__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "genetique__002": [
+        {
+          "type": "nav",
+          "pitch": -26.3,
+          "yaw": 6.9,
+          "targetZoneId": "genetique",
+          "targetSceneId": "genetique__001",
+          "label": "→ sc.2"
+        }
+      ]
+    },
+    "horticulture": {
+      "horticulture__000": [
+        {
+          "type": "cross",
+          "pitch": -6,
+          "yaw": -79.5,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__003",
+          "label": "🚶 Couloir Serre"
+        },
+        {
+          "type": "nav",
+          "pitch": -30.4,
+          "yaw": 108.4,
+          "targetZoneId": "horticulture",
+          "targetSceneId": "horticulture__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "horticulture__001": [
+        {
+          "type": "nav",
+          "pitch": -24.5,
+          "yaw": -3,
+          "targetZoneId": "horticulture",
+          "targetSceneId": "horticulture__000",
+          "label": "→ sc.1"
+        },
+        {
+          "type": "nav",
+          "pitch": -23.4,
+          "yaw": 175.6,
+          "targetZoneId": "horticulture",
+          "targetSceneId": "horticulture__002",
+          "label": "→ sc.3"
+        }
+      ],
+      "horticulture__002": [
+        {
+          "type": "nav",
+          "pitch": -31,
+          "yaw": -9.8,
+          "targetZoneId": "horticulture",
+          "targetSceneId": "horticulture__001",
+          "label": "→ sc.2"
+        }
+      ]
+    },
+    "hydroponie": {
+      "hydroponie__000": [
+        {
+          "type": "cross",
+          "pitch": -4.4,
+          "yaw": 11,
+          "targetZoneId": "couloir-serre",
+          "targetSceneId": "couloir-serre__005",
+          "label": "🚶 Couloir Serre"
+        },
+        {
+          "type": "nav",
+          "pitch": -30.9,
+          "yaw": -176.4,
+          "targetZoneId": "hydroponie",
+          "targetSceneId": "hydroponie__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "hydroponie__001": [
+        {
+          "type": "nav",
+          "pitch": -23.2,
+          "yaw": -177,
+          "targetZoneId": "hydroponie",
+          "targetSceneId": "hydroponie__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -22.2,
+          "yaw": 6,
+          "targetZoneId": "hydroponie",
+          "targetSceneId": "hydroponie__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "hydroponie__002": [
+        {
+          "type": "nav",
+          "pitch": -28.2,
+          "yaw": -8.8,
+          "targetZoneId": "hydroponie",
+          "targetSceneId": "hydroponie__001",
+          "label": "→ sc.2"
+        }
+      ]
+    },
+    "local-technique": {
+      "local-technique__000": [
+        {
+          "type": "nav",
+          "pitch": -31.1,
+          "yaw": 18.8,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -10.9,
+          "yaw": -161.7,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__001",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "local-technique__001": [
+        {
+          "type": "nav",
+          "pitch": -24.5,
+          "yaw": 4.1,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -26.5,
+          "yaw": -175.5,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "local-technique__002": [
+        {
+          "type": "nav",
+          "pitch": -32.2,
+          "yaw": -148.5,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "nav",
+          "pitch": -13.5,
+          "yaw": -150.7,
+          "targetZoneId": "local-technique",
+          "targetSceneId": "local-technique__000",
+          "label": "→ sc.1"
+        }
+      ]
+    },
+    "salle-controle": {
+      "salle-controle__000": [
+        {
+          "type": "nav",
+          "pitch": -24,
+          "yaw": 5.5,
+          "targetZoneId": "salle-controle",
+          "targetSceneId": "salle-controle__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -10.8,
+          "yaw": -158.3,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__000",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "salle-controle__001": [
+        {
+          "type": "nav",
+          "pitch": -26.6,
+          "yaw": -112.5,
+          "targetZoneId": "salle-controle",
+          "targetSceneId": "salle-controle__000",
+          "label": "→ sc.1"
+        }
+      ]
+    },
+    "salle-fertigation": {
+      "salle-fertigation__000": [
+        {
+          "type": "nav",
+          "pitch": -25.3,
+          "yaw": 42.9,
+          "targetZoneId": "salle-fertigation",
+          "targetSceneId": "salle-fertigation__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -13.4,
+          "yaw": -144.7,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__001",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "salle-fertigation__001": [
+        {
+          "type": "nav",
+          "pitch": -25.2,
+          "yaw": 27.9,
+          "targetZoneId": "salle-fertigation",
+          "targetSceneId": "salle-fertigation__002",
+          "label": "→ sc.3"
+        },
+        {
+          "type": "nav",
+          "pitch": -24.5,
+          "yaw": -159.5,
+          "targetZoneId": "salle-fertigation",
+          "targetSceneId": "salle-fertigation__000",
+          "label": "→ sc.1"
+        }
+      ],
+      "salle-fertigation__002": []
+    },
+    "salle-lavage": {
+      "salle-lavage__000": [
+        {
+          "type": "nav",
+          "pitch": -27.3,
+          "yaw": 98.3,
+          "targetZoneId": "salle-lavage",
+          "targetSceneId": "salle-lavage__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -0.9,
+          "yaw": -74.2,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__000",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "salle-lavage__001": [
+        {
+          "type": "nav",
+          "pitch": -24,
+          "yaw": -74.8,
+          "targetZoneId": "salle-lavage",
+          "targetSceneId": "salle-lavage__000",
+          "label": "→ sc.1"
+        }
+      ]
+    },
+    "salle-preparation": {
+      "salle-preparation__000": [
+        {
+          "type": "nav",
+          "pitch": -21.7,
+          "yaw": 67.6,
+          "targetZoneId": "salle-preparation",
+          "targetSceneId": "salle-preparation__001",
+          "label": "→ sc.2"
+        },
+        {
+          "type": "cross",
+          "pitch": -3.9,
+          "yaw": -100.6,
+          "targetZoneId": "couloir-bloc",
+          "targetSceneId": "couloir-bloc__002",
+          "label": "🚪 Couloir Bloc Technique"
+        }
+      ],
+      "salle-preparation__001": [
+        {
+          "type": "nav",
+          "pitch": -22.6,
+          "yaw": 1.2,
+          "targetZoneId": "salle-preparation",
+          "targetSceneId": "salle-preparation__000",
+          "label": "→ sc.1"
+        }
+      ]
+    },
+    "unite-protection": {
+      "unite-protection__000": [
+        {
+          "type": "cross",
+          "pitch": -3.9,
+          "yaw": 177.9,
+          "targetZoneId": "bloc-protection",
+          "targetSceneId": "bloc-protection__004",
+          "label": "🔬 Bloc Protection des Plantes"
+        },
+        {
+          "type": "nav",
+          "pitch": -20.8,
+          "yaw": 17.7,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "unite-protection__001": [
+        {
+          "type": "nav",
+          "pitch": -20.3,
+          "yaw": -78.2,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__002",
+          "label": "→ sc.3"
+        }
+      ],
+      "unite-protection__002": [
+        {
+          "type": "nav",
+          "pitch": -40,
+          "yaw": -67.1,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__003",
+          "label": "→ sc.4"
+        }
+      ],
+      "unite-protection__003": [
+        {
+          "type": "nav",
+          "pitch": -20.1,
+          "yaw": -71.9,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__004",
+          "label": "→ sc.5"
+        }
+      ],
+      "unite-protection__004": [
+        {
+          "type": "nav",
+          "pitch": -7.6,
+          "yaw": -125.3,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__005",
+          "label": "→ sc.6"
+        }
+      ],
+      "unite-protection__005": []
+    }
+  },
+  "tours": {}
+}
