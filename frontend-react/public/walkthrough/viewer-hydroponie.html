@@ -3,88 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroBioTech — Hydroponie</title>
+<title>AgroBioTech — Visite Virtuelle</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif}
-.topbar{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;
-  background:rgba(255,255,255,.95);backdrop-filter:blur(14px);
-  border-bottom:1px solid #d8ddd8;display:flex;align-items:center;
-  justify-content:space-between;padding:0 18px}
-.logo{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:#2a2e2a}
-.logo span{color:#2d8e50}
-.center{display:flex;align-items:center;gap:8px;font-size:12px}
-.zpill{padding:5px 12px;border-radius:999px;border:1px solid #d8ddd8;background:#f8faf9;font-weight:500;display:flex;align-items:center;gap:6px}
-.zdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.spill{padding:4px 10px;border-radius:999px;background:#eef1ee;color:#6b736b}
-.tbtn{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:500;border:1px solid #d8ddd8;cursor:pointer;font-family:'DM Sans',sans-serif;background:#eef1ee;color:#2a2e2a;transition:.13s}
-.tbtn:hover{background:#d8ddd8}
-.tbtn.g{background:#2d8e50;color:white;border-color:#2d8e50}
-.tbtn.g:hover{background:#1a5c33}
-#pano{position:fixed;top:0;left:0;width:100%;height:100%}
+html,body{width:100%;height:100%;overflow:hidden}
+#pano{position:fixed;inset:0;width:100%;height:100%}
 .pnlm-about-msg,.pnlm-panorama-info,.pnlm-controls-container,
-.pnlm-load-box,.pnlm-lbar,.pnlm-lbar-fill,.pnlm-load-button,.pnlm-loading{display:none!important}
-.pnlm-hotspot-base{background:transparent!important;border:none!important;width:auto!important;height:auto!important;overflow:visible!important}
+.pnlm-load-box,.pnlm-lbar,.pnlm-lbar-fill,.pnlm-load-button,
+.pnlm-loading,.pnlm-compass{display:none!important}
+.pnlm-hotspot-base{background:transparent!important;border:none!important;
+  width:auto!important;height:auto!important;overflow:visible!important}
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
-.hs-nav{width:64px;height:64px;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.96) 0%,rgba(190,235,205,.9) 52%,rgba(45,142,80,.2) 100%);
-  border:2px solid rgba(45,142,80,.75);
-  box-shadow:0 0 0 10px rgba(45,142,80,.15),0 3px 12px rgba(0,0,0,.2);
+.hs-nav{
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,1) 0%,rgba(160,225,185,1) 50%,rgba(45,142,80,.9) 100%);
+  border:3px solid rgba(45,142,80,.95);
+  box-shadow:0 0 0 10px rgba(45,142,80,.22),0 0 28px rgba(45,142,80,.35),0 4px 14px rgba(0,0,0,.3);
   display:flex;align-items:center;justify-content:center;
-  animation:hsp 2.5s ease-in-out infinite;}
-.hs-cross{width:64px;height:64px;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.96) 0%,rgba(185,220,248,.9) 52%,rgba(30,122,181,.2) 100%);
-  border:2px solid rgba(30,122,181,.75);
-  box-shadow:0 0 0 10px rgba(30,122,181,.13),0 3px 12px rgba(0,0,0,.2);
+  animation:hsp 2.5s ease-in-out infinite;cursor:pointer}
+.hs-cross{
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,1) 0%,rgba(155,210,248,1) 50%,rgba(30,122,181,.9) 100%);
+  border:3px solid rgba(30,122,181,.95);
+  box-shadow:0 0 0 10px rgba(30,122,181,.20),0 0 28px rgba(30,122,181,.3),0 4px 14px rgba(0,0,0,.3);
   display:flex;align-items:center;justify-content:center;
-  animation:hsp-b 2.5s ease-in-out infinite;}
+  animation:hsp-b 2.5s ease-in-out infinite;cursor:pointer}
 .hs-nav:hover,.hs-cross:hover{transform:scale(1.1)}
-@keyframes hsp{0%,100%{box-shadow:0 0 0 10px rgba(45,142,80,.15),0 3px 12px rgba(0,0,0,.2)}50%{box-shadow:0 0 0 18px rgba(45,142,80,.05),0 3px 12px rgba(0,0,0,.2)}}
-@keyframes hsp-b{0%,100%{box-shadow:0 0 0 10px rgba(30,122,181,.13),0 3px 12px rgba(0,0,0,.2)}50%{box-shadow:0 0 0 17px rgba(30,122,181,.04),0 3px 12px rgba(0,0,0,.2)}}
+@keyframes hsp{0%,100%{box-shadow:0 0 0 10px rgba(45,142,80,.22),0 0 28px rgba(45,142,80,.35),0 4px 14px rgba(0,0,0,.3)}50%{box-shadow:0 0 0 20px rgba(45,142,80,.07),0 0 44px rgba(45,142,80,.15),0 4px 14px rgba(0,0,0,.3)}}
+@keyframes hsp-b{0%,100%{box-shadow:0 0 0 10px rgba(30,122,181,.20),0 0 28px rgba(30,122,181,.3),0 4px 14px rgba(0,0,0,.3)}50%{box-shadow:0 0 0 19px rgba(30,122,181,.06),0 0 42px rgba(30,122,181,.12),0 4px 14px rgba(0,0,0,.3)}}
 .arrow{position:fixed;top:50%;z-index:201;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;
-  background:rgba(255,255,255,.88);border:1px solid #d8ddd8;cursor:pointer;font-size:18px;
-  display:flex;align-items:center;justify-content:center;transition:.15s}
-.arrow:hover{background:#edf7f0;border-color:#6dbc85}
-.arrow.L{left:12px}.arrow.R{right:12px}
-.arrow.off{opacity:.2;pointer-events:none}
-.bc{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:201;
-  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
-  border:1px solid #d8ddd8;border-radius:999px;padding:6px 16px;
-  font-size:12px;color:#6b736b;display:flex;align-items:center;gap:6px;white-space:nowrap}
-.bc b{color:#2a2e2a;font-weight:600}
+  background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);cursor:pointer;color:white;font-size:20px;font-weight:300;
+  display:flex;align-items:center;justify-content:center;transition:background .15s}
+.arrow:hover{background:rgba(255,255,255,.28)}
+.arrow.L{left:14px}.arrow.R{right:14px}
+.arrow.off{opacity:0;pointer-events:none}
 .zf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;
-  background:rgba(255,255,255,.97);border:1px solid #d8ddd8;border-radius:18px;
-  padding:20px 32px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.12);
-  opacity:0;pointer-events:none;transition:opacity .3s;min-width:200px}
+  background:rgba(255,255,255,.95);border-radius:16px;padding:18px 28px;text-align:center;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);font-family:system-ui,sans-serif;
+  opacity:0;pointer-events:none;transition:opacity .3s}
 .zf.show{opacity:1}
-.zf-icon{font-size:32px;margin-bottom:8px}
-.zf-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#2a2e2a}
-.zf-unit{font-size:11px;color:#6b736b;margin-top:4px}
+.zf-name{font-size:17px;font-weight:600;color:#1a2e1a}
+.zf-unit{font-size:11px;color:#6b736b;margin-top:3px}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="logo">Agro<span>Bio</span>Tech <span style="font-family:'DM Sans',serif;font-size:12px;color:#9aa09a;font-weight:400;margin-left:6px">💧 Hydroponie</span></div>
-  <div class="center">
-    <div class="zpill"><div class="zdot" id="zdot" style="background:#6dbc85"></div><span id="zn">—</span></div>
-    <div class="spill" id="sn">—</div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="tbtn" onclick="toggleFS()">⛶</button>
-    <button class="tbtn g" onclick="location.href='hub.html'">← Accueil</button>
-  </div>
-</div>
 <div id="pano"></div>
 <button class="arrow L off" id="prev" onclick="stepScene(-1)">‹</button>
 <button class="arrow R" id="next" onclick="stepScene(1)">›</button>
-<div class="bc"><b id="bcz">—</b><span>›</span><span id="bcs">Scène 1</span></div>
-<div class="zf" id="zf"><div class="zf-icon" id="zfi">🌿</div><div class="zf-name" id="zfn">—</div><div class="zf-unit" id="zfu">—</div></div>
+<div class="zf" id="zf">
+  <div class="zf-name" id="zfn">—</div>
+  <div class="zf-unit" id="zfu"></div>
+</div>
 <script>
-const START_ZONE = 'hydroponie';
-const RESTRICT_ZONES = ['hydroponie']; // null = all zones allowed
+const START_ZONE     = 'hydroponie';
+const RESTRICT_ZONES = ['hydroponie'];
 
 let manifest, zones={}, hotspots={};
 let curZone, curScene, viewer;
@@ -95,102 +70,105 @@ const navHistory=[];
 window.addEventListener('load', async ()=>{
   const r = await fetch('images/manifest.json');
   manifest = await r.json();
-  manifest.zones.forEach(z=>zones[z.id]=z);
-  hotspots = manifest.hotspots||{};
-  const ls = localStorage.getItem('agrobiotech_hotspots');
-  if(ls){const d=JSON.parse(ls);Object.keys(d).forEach(zid=>{if(Object.keys(d[zid]).length>0)hotspots[zid]=d[zid];});}
-  const p=new URLSearchParams(location.search);
-  const z=p.get('zone')||START_ZONE;
-  const s=p.get('scene')||zones[z]?.scenes[0]?.id;
-  load(z,s);
-  document.addEventListener('keydown',e=>{
-    if(e.code==='ArrowRight')stepScene(1);
-    if(e.code==='ArrowLeft')stepScene(-1);
+  manifest.zones.forEach(z => zones[z.id] = z);
+  hotspots = manifest.hotspots || {};
+  const p = new URLSearchParams(location.search);
+  const z = p.get('zone') || START_ZONE;
+  const s = p.get('scene') || zones[z]?.scenes[0]?.id;
+  load(z, s);
+  document.addEventListener('keydown', e => {
+    if(e.code === 'ArrowRight') stepScene(1);
+    if(e.code === 'ArrowLeft')  stepScene(-1);
   });
 });
 
-function goTo(zid,sid){
-  // If restricted to certain zones, block navigation outside them
+function goTo(zid, sid) {
   if(RESTRICT_ZONES && !RESTRICT_ZONES.includes(zid)) return;
-  if(curZone&&curScene)navHistory.push({zoneId:curZone,sceneId:curScene});
-  if(navHistory.length>50)navHistory.shift();
-  setTimeout(()=>load(zid,sid),200);
+  if(curZone && curScene) navHistory.push({zoneId:curZone, sceneId:curScene});
+  if(navHistory.length > 50) navHistory.shift();
+  setTimeout(() => load(zid, sid), 80);
 }
 
-function load(zid,sid){
-  const zone=zones[zid];
-  const scene=zone?.scenes.find(s=>s.id===sid);
-  if(!zone||!scene){console.error('not found',zid,sid);return;}
-  curZone=zid;curScene=sid;
-  const idx=zone.scenes.indexOf(scene);
-  document.getElementById('zdot').style.background=zone.color;
-  document.getElementById('zn').textContent=`${zone.icon} ${zone.label}`;
-  document.getElementById('sn').textContent=`${idx+1} / ${zone.scenes.length}`;
-  document.getElementById('bcz').textContent=zone.label;
-  document.getElementById('bcs').textContent=`Scène ${idx+1}`;
-  document.getElementById('prev').className='arrow L'+(idx===0?' off':'');
-  document.getElementById('next').className='arrow R'+(idx===zone.scenes.length-1?' off':'');
-  if(zid!==lastZoneId){
-    lastZoneId=zid;
-    document.getElementById('zfi').textContent=zone.icon;
-    document.getElementById('zfn').textContent=zone.label;
-    document.getElementById('zfu').textContent=zone.unit!=='—'?`Unité ${zone.unit}`:'';
-    const zf=document.getElementById('zf');
+function load(zid, sid) {
+  const zone  = zones[zid];
+  const scene = zone?.scenes.find(s => s.id === sid);
+  if(!zone || !scene) return;
+  curZone = zid; curScene = sid;
+  const idx = zone.scenes.indexOf(scene);
+
+  document.getElementById('prev').className = 'arrow L' + (idx === 0 ? ' off' : '');
+  document.getElementById('next').className = 'arrow R' + (idx === zone.scenes.length-1 ? ' off' : '');
+
+  if(zid !== lastZoneId) {
+    lastZoneId = zid;
+    document.getElementById('zfn').textContent = zone.label;
+    document.getElementById('zfu').textContent = zone.unit !== '—' ? `Unité ${zone.unit}` : '';
+    const zf = document.getElementById('zf');
     zf.classList.add('show');
-    clearTimeout(flashT);flashT=setTimeout(()=>zf.classList.remove('show'),2200);
+    clearTimeout(flashT);
+    flashT = setTimeout(() => zf.classList.remove('show'), 2000);
   }
-  const shs=(hotspots[zid]?.[sid]||[]).slice();
-  // Auto same-zone back
-  const fwdNav=shs.find(h=>h.type==='nav'&&h.targetSceneId!==sid&&h.targetZoneId===zid);
-  const hasBack=shs.some(h=>h.type==='nav'&&zones[h.targetZoneId]?.scenes.findIndex(s=>s.id===h.targetSceneId)===idx-1&&h.targetZoneId===zid);
-  if(fwdNav&&idx>0&&!hasBack){
-    const by=((fwdNav.yaw+180)+360)%360;
-    shs.push({type:'nav',pitch:fwdNav.pitch,yaw:by>180?by-360:by,targetZoneId:zid,targetSceneId:zone.scenes[idx-1].id,label:'← Retour',auto:true});
+
+  const shs = (hotspots[zid]?.[sid] || []).slice();
+
+  const fwdNav = shs.find(h => h.type==='nav' && h.targetSceneId!==sid && h.targetZoneId===zid);
+  const hasAnyBack = shs.some(h => zones[h.targetZoneId]?.scenes.findIndex(s=>s.id===h.targetSceneId) === idx-1);
+  if(fwdNav && idx > 0 && !hasAnyBack) {
+    const by = ((fwdNav.yaw+180)+360)%360;
+    shs.push({type:'nav',pitch:fwdNav.pitch,yaw:by>180?by-360:by,
+      targetZoneId:zid,targetSceneId:zone.scenes[idx-1].id,auto:true});
   }
-  // Cross-zone back from history
-  const prev=navHistory.length>0?navHistory[navHistory.length-1]:null;
-  const hasCrossBack=shs.some(h=>h.type==='cross'&&h.auto);
-  const hasForward=shs.some(h=>!h.auto);
-  if(prev&&!hasCrossBack&&(prev.zoneId!==zid||!hasForward)){
-    const pz=zones[prev.zoneId];
-    if(pz&&(!RESTRICT_ZONES||RESTRICT_ZONES.includes(prev.zoneId))){
-      const refYaw=fwdNav?.yaw??(shs[0]?.yaw??0);
-      const by=((refYaw+180)+360)%360;
-      shs.push({type:'cross',pitch:fwdNav?.pitch??-20,yaw:by>180?by-360:by,targetZoneId:prev.zoneId,targetSceneId:prev.sceneId,label:`← ${pz.icon} ${pz.label}`,auto:true});
+
+  const prev = navHistory.length > 0 ? navHistory[navHistory.length-1] : null;
+  const hasAnyCross = shs.some(h => h.type==='cross');
+  const hasForward  = shs.some(h => !h.auto && h.targetSceneId !== sid);
+  if(prev && !hasAnyCross && !hasForward) {
+    const pz = zones[prev.zoneId];
+    if(pz && (!RESTRICT_ZONES || RESTRICT_ZONES.includes(prev.zoneId))) {
+      const refYaw = fwdNav?.yaw ?? (shs[0]?.yaw ?? 0);
+      const by = ((refYaw+180)+360)%360;
+      shs.push({type:'cross',pitch:fwdNav?.pitch??-20,yaw:by>180?by-360:by,
+        targetZoneId:prev.zoneId,targetSceneId:prev.sceneId,auto:true});
     }
   }
-  const fst=shs.find(h=>!h.auto)||shs[0];
-  const sy=fst?.yaw??0;
-  const sp=fst?Math.min(fst.pitch+18,5):0;
-  const phs=shs.map(hs=>({
-    pitch:hs.pitch,yaw:hs.yaw,type:'custom',
-    cssClass:hs.type==='cross'?'hs-cross':'hs-nav',
-    createTooltipFunc:function(div){
-      const color=hs.type==='cross'?'rgba(15,70,130,.85)':'rgba(30,100,55,.85)';
-      div.innerHTML=`<svg width="22" height="22" viewBox="0 0 24 24" fill="${color}"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg>`;
+
+  const fst = shs.find(h => !h.auto) || shs[0];
+  const sy = fst?.yaw ?? 0;
+  const sp = fst ? Math.min(fst.pitch+18, 5) : 0;
+
+  const phs = shs.map(hs => ({
+    pitch: hs.pitch, yaw: hs.yaw, type: 'custom',
+    cssClass: hs.type==='cross' ? 'hs-cross' : 'hs-nav',
+    createTooltipFunc: function(div) {
+      const color = hs.type==='cross' ? 'rgba(15,70,130,.85)' : 'rgba(30,100,55,.85)';
+      div.innerHTML = '<svg width="50" height="50" viewBox="0 0 24 24" fill="' + color + '"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg>';
     },
-    createTooltipArgs:{},
-    clickHandlerFunc:function(){goTo(hs.targetZoneId,hs.targetSceneId);}
+    createTooltipArgs: {},
+    clickHandlerFunc: function() { goTo(hs.targetZoneId, hs.targetSceneId); }
   }));
+
   if(viewer){viewer.destroy();viewer=null;}
   document.getElementById('pano').innerHTML='';
-  viewer=pannellum.viewer('pano',{
-    type:'equirectangular',panorama:scene.file,
-    autoLoad:true,autoRotate:0,hfov:100,minHfov:50,maxHfov:130,
-    pitch:sp,yaw:sy,hotSpots:phs
+  viewer = pannellum.viewer('pano', {
+    type:'equirectangular', panorama:scene.file,
+    autoLoad:true, autoRotate:0,
+    hfov:100, minHfov:50, maxHfov:130,
+    pitch:sp, yaw:sy, hotSpots:phs
   });
-  viewer.on('load',()=>{
-    [-1,1,2].forEach(d=>{const sc=zone.scenes[idx+d];if(sc&&!preloaded.has(sc.file)){preloaded.add(sc.file);new Image().src=sc.file;}});
+  viewer.on('load', ()=>{
+    [-1,1,2].forEach(d=>{
+      const sc=zone.scenes[idx+d];
+      if(sc&&!preloaded.has(sc.file)){preloaded.add(sc.file);new Image().src=sc.file;}
+    });
   });
 }
 
-function stepScene(d){
-  const zone=zones[curZone];
-  const idx=zone?.scenes.findIndex(s=>s.id===curScene);
-  const next=zone?.scenes[idx+d];
-  if(next)goTo(curZone,next.id);
+function stepScene(d) {
+  const zone = zones[curZone];
+  const idx  = zone?.scenes.findIndex(s => s.id === curScene);
+  const next = zone?.scenes[idx+d];
+  if(next) goTo(curZone, next.id);
 }
-function toggleFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 </script>
 </body>
 </html>

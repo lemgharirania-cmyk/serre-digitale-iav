@@ -1442,15 +1442,15 @@
         {
           "type": "cross",
           "pitch": -3.9,
-          "yaw": 177.9,
+          "yaw": 178.7,
           "targetZoneId": "bloc-protection",
           "targetSceneId": "bloc-protection__004",
           "label": "🔬 Bloc Protection des Plantes"
         },
         {
           "type": "nav",
-          "pitch": -20.8,
-          "yaw": 17.7,
+          "pitch": -22.1,
+          "yaw": 18.2,
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__001",
           "label": "→ sc.2"
@@ -1459,44 +1459,77 @@
       "unite-protection__001": [
         {
           "type": "nav",
-          "pitch": -20.3,
-          "yaw": -78.2,
+          "pitch": -22.5,
+          "yaw": -169.9,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__000",
+          "label": "→ sc.1"
+        },
+        {
+          "type": "nav",
+          "pitch": -22.6,
+          "yaw": -79.2,
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__002",
           "label": "→ sc.3"
-        }
-      ],
-      "unite-protection__002": [
+        },
         {
           "type": "nav",
-          "pitch": -40,
-          "yaw": -67.1,
-          "targetZoneId": "unite-protection",
-          "targetSceneId": "unite-protection__003",
-          "label": "→ sc.4"
-        }
-      ],
-      "unite-protection__003": [
-        {
-          "type": "nav",
-          "pitch": -20.1,
-          "yaw": -71.9,
+          "pitch": -19.4,
+          "yaw": 101.5,
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__004",
           "label": "→ sc.5"
         }
       ],
+      "unite-protection__002": [
+        {
+          "type": "nav",
+          "pitch": -40.1,
+          "yaw": -65.6,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__003",
+          "label": "→ sc.4"
+        },
+        {
+          "type": "nav",
+          "pitch": -23.1,
+          "yaw": -154.2,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__001",
+          "label": "→ sc.2"
+        }
+      ],
+      "unite-protection__003": [
+        {
+          "type": "nav",
+          "pitch": -39.6,
+          "yaw": -115.8,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__002",
+          "label": "→ sc.3"
+        }
+      ],
       "unite-protection__004": [
         {
           "type": "nav",
-          "pitch": -7.6,
-          "yaw": -125.3,
+          "pitch": -28.1,
+          "yaw": -119.2,
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__005",
           "label": "→ sc.6"
         }
       ],
-      "unite-protection__005": []
+      "unite-protection__005": [
+        {
+          "type": "nav",
+          "pitch": 0.7,
+          "yaw": 43.9,
+          "targetZoneId": "unite-protection",
+          "targetSceneId": "unite-protection__000",
+          "label": "→ sc.1"
+        }
+      ]
     }
   },
   "tours": {}
