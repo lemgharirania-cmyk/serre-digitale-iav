@@ -1,5 +1,5 @@
-// src/pages/Geoportail.jsx — Page principale assemblée
-import { useState, useEffect, useRef } from 'react'
+// src/pages/Geoportail.jsx
+import { useState, useEffect } from 'react'
 import { iotAPI } from '../api/client'
 
 import Header           from '../components/geoportail/Header'
@@ -13,15 +13,14 @@ import SectionVisite    from '../components/geoportail/SectionVisite'
 import FooterGeoportail from '../components/geoportail/FooterGeoportail'
 
 export default function Geoportail() {
-  const [lang,      setLang]      = useState('fr')
-  const [darkMode,  setDarkMode]  = useState(true)
+  const [lang,        setLang]        = useState('fr')
+  const [darkMode,    setDarkMode]    = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [liveData,  setLiveData]  = useState([])
-  const [stats,     setStats]     = useState({})
-  const [countdown, setCountdown] = useState(120)
+  const [liveData,    setLiveData]    = useState([])
+  const [stats,       setStats]       = useState({})
+  const [countdown,   setCountdown]   = useState(120)
   const [activeSection, setActiveSection] = useState('projet')
 
-  // Fetch data
   async function fetchAll() {
     try {
       const [live, st] = await Promise.all([iotAPI.getLive(), iotAPI.getStats()])
@@ -48,7 +47,6 @@ export default function Geoportail() {
         if (entry.isIntersecting) setActiveSection(entry.target.id)
       })
     }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 })
-
     ids.forEach(id => {
       const el = document.getElementById(id)
       if (el) observer.observe(el)
@@ -57,40 +55,36 @@ export default function Geoportail() {
   }, [])
 
   const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
-  const sidebarWidth = sidebarOpen ? 240 : 56
-
-  // Theme background
-  const bgColor = darkMode ? '#07111F' : '#F4F7F5'
+  const sidebarWidth   = sidebarOpen ? 240 : 56
+  const bgColor        = darkMode ? '#07111F' : '#F4F7F5'
 
   return (
     <div style={{ fontFamily: "'Outfit','Inter',sans-serif", background: bgColor, minHeight: '100vh', transition: 'background 0.4s ease' }}>
 
-      {/* Header — full width, fixed top */}
-      <Header
-        lang={lang} setLang={setLang}
-        darkMode={darkMode} setDarkMode={setDarkMode}
-      />
-
-      {/* Sidebar — fixed left, below header */}
+      {/* Sidebar — fixed left, full height, zIndex 200 (above header) */}
       <Sidebar
         open={sidebarOpen} setOpen={setSidebarOpen}
         active={activeSection}
         lang={lang} darkMode={darkMode}
       />
 
-      {/* Main content — scrollable, offset by sidebar */}
-     {/* Header offset by sidebar */}
-<div style={{ marginLeft: `${sidebarWidth}px`, transition: 'margin-left 0.3s ease' }}>
-  <Header ... />
-</div>
-<main style={{
-  marginLeft: `${sidebarWidth}px`,
-  marginTop: '80px',
-  ...
-}}>
-        <SectionProjet  lang={lang} stats={stats}    darkMode={darkMode} />
-        <SectionApropos lang={lang}                  darkMode={darkMode} />
-        <SectionCampus  lang={lang}                  darkMode={darkMode} />
+      {/* Header — fixed, starts AFTER sidebar, zIndex 150 (below sidebar) */}
+      <Header
+        lang={lang} setLang={setLang}
+        darkMode={darkMode} setDarkMode={setDarkMode}
+        sidebarWidth={sidebarWidth}
+      />
+
+      {/* Main content — offset by sidebar width + header height */}
+      <main style={{
+        marginLeft: `${sidebarWidth}px`,
+        marginTop:  '80px',
+        transition: 'margin-left 0.3s ease',
+        minHeight:  'calc(100vh - 80px)',
+      }}>
+        <SectionProjet  lang={lang} stats={stats}       darkMode={darkMode} />
+        <SectionApropos lang={lang}                     darkMode={darkMode} />
+        <SectionCampus  lang={lang}                     darkMode={darkMode} />
         <SectionPlan2D  lang={lang} liveData={liveData} darkMode={darkMode} />
         <SectionDonnees
           lang={lang} liveData={liveData}
