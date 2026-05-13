@@ -1234,11 +1234,53 @@
         },
         {
           "type": "nav",
-          "pitch": -22.2,
-          "yaw": 6,
+          "pitch": -27.8,
+          "yaw": 6.1,
           "targetZoneId": "hydroponie",
           "targetSceneId": "hydroponie__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 29.6,
+          "yaw": 5,
+          "label": "truc qui lache co2",
+          "arDesc": "truc qui lache co2"
+        },
+        {
+          "type": "ar",
+          "pitch": -21.3,
+          "yaw": -127.4,
+          "label": "fraise",
+          "arDesc": "fraise"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.3,
+          "yaw": 165.4,
+          "label": "ventilation",
+          "arDesc": "ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 46.7,
+          "yaw": -95.7,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": -1.7,
+          "yaw": -176.9,
+          "label": "fertigation automatique",
+          "arDesc": "fertigation automatique"
+        },
+        {
+          "type": "ar",
+          "pitch": 37.3,
+          "yaw": -178.3,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
         }
       ],
       "hydroponie__002": [

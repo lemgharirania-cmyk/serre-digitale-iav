@@ -234,6 +234,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--n50);color:var(--n800);he
       </div>
     </div>
 
+    <!-- AR description field — only visible in AR mode -->
+    <div id="ar-desc-row" style="display:none;margin-top:10px">
+      <div style="font-size:10px;color:var(--n500);font-weight:500;margin-bottom:4px">Description (ce que tu pointes)</div>
+      <input id="ar-desc-input" type="text" placeholder="ex: Fraisier en production, Sonde pH..."
+        style="width:100%;border:1.5px solid var(--n200);border-radius:6px;padding:7px 10px;
+        font-size:12px;font-family:'DM Sans',sans-serif;color:var(--n800);outline:none;
+        background:var(--white);transition:border-color .13s"
+        onfocus="this.style.borderColor='var(--g300)'"
+        onblur="this.style.borderColor='var(--n200)'"/>
+    </div>
+
     <div class="click-status" id="click-status">Cliquez sur le sol du panorama</div>
   </div>
 
@@ -445,9 +456,12 @@ function attachTracking() {
 // ══════════════════════════════════════════════════
 function placeHotspot(pitch, yaw, cx, cy) {
   if (mode === 'ar') {
-    addHS({ type:'ar', pitch, yaw, label:'Info AR' });
-    showToast('🌿 Info AR placé');
+    const desc = document.getElementById('ar-desc-input').value.trim() || 'Info AR';
+    addHS({ type:'ar', pitch, yaw, label: desc, arDesc: desc });
+    showToast(`🌿 "${desc}" placé`);
     showRing(cx, cy);
+    document.getElementById('click-status').textContent = `pitch ${pitch}  ·  yaw ${yaw}`;
+    document.getElementById('click-status').classList.add('has-click');
     return;
   }
 
@@ -574,7 +588,7 @@ function renderList() {
     const isCross = hs.type === 'cross';
     const tz = isCross ? zones.find(z => z.id === hs.targetZoneId) : null;
     const sub = hs.type === 'ar'
-      ? '🌿 Info AR'
+      ? `🌿 ${hs.arDesc || hs.label || 'Info AR'}`
       : isCross
         ? `↗ ${tz?.icon} ${tz?.label}`
         : `→ ${hs.label}`;
@@ -680,6 +694,7 @@ function setMode(m) {
   const showScene = m !== 'ar';
   document.getElementById('target-zone-row').style.display  = showZone  ? 'flex' : 'none';
   document.querySelector('.target-scene-row').style.display = showScene ? 'flex' : 'none';
+  document.getElementById('ar-desc-row').style.display      = m === 'ar' ? 'block' : 'none';
 
   // For same-zone nav, reset zone selector to current zone
   if (m === 'nav') {
