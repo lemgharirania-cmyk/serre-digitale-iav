@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Sun, Moon } from 'lucide-react'
 
-export default function Header({ lang, setLang, darkMode, setDarkMode }) {
+export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWidth = 240 }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -18,37 +18,40 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
   const borderColor = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)'
   const shadow = scrolled
     ? darkMode
-      ? '0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04)'
-      : '0 8px 32px rgba(15,23,42,0.08), 0 1px 0 rgba(0,0,0,0.04)'
+      ? '0 8px 32px rgba(0,0,0,0.4)'
+      : '0 8px 32px rgba(15,23,42,0.08)'
     : 'none'
 
   const btnBorder = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.1)'
   const btnBg     = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.04)'
   const btnColor  = darkMode ? '#CBD5E1' : '#475569'
 
-  // ── Translated content
   const T = {
     fr: {
-      title:  'Serre Digitale Intelligente',
-      sub:    'IAV Hassan II · AgroBioTech',
-      tech:   'Jumeau Numérique · Monitoring IoT · Visualisation 3D',
-      live:   'En direct',
-      day:    'Mode Jour',
-      night:  'Mode Nuit',
+      title: 'Serre Digitale Intelligente',
+      sub:   'IAV Hassan II · AgroBioTech',
+      tech:  'Jumeau Numérique · Monitoring IoT · Visualisation 3D',
+      live:  'En direct',
+      day:   'Mode Jour',
+      night: 'Mode Nuit',
     },
     en: {
-      title:  'Smart Digital Greenhouse',
-      sub:    'IAV Hassan II · AgroBioTech',
-      tech:   'Digital Twin · IoT Monitoring · 3D Visualization',
-      live:   'Live',
-      day:    'Light Mode',
-      night:  'Dark Mode',
+      title: 'Smart Digital Greenhouse',
+      sub:   'IAV Hassan II · AgroBioTech',
+      tech:  'Digital Twin · IoT Monitoring · 3D Visualization',
+      live:  'Live',
+      day:   'Light Mode',
+      night: 'Dark Mode',
     },
   }[lang]
 
   return (
     <header style={{
-     position: 'fixed', top: 0, left: 0, right: 0, zIndex: 150,
+      position: 'fixed',
+      top: 0,
+      left: `${sidebarWidth}px`,   // ← commence APRÈS la sidebar
+      right: 0,
+      zIndex: 150,                  // ← sous la sidebar (zIndex 200)
       height: '80px',
       background: bg,
       backdropFilter: 'blur(20px)',
@@ -58,13 +61,11 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
       boxShadow: shadow,
       display: 'flex', alignItems: 'center',
       padding: '0 48px', gap: '32px',
-      transition: 'background 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease',
+      transition: 'background 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease, left 0.3s ease',
     }}>
 
-      {/* ── Logo + Title ── */}
+      {/* Logo + Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
-
-        {/* Logo */}
         <div
           style={{
             width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
@@ -77,12 +78,12 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
             cursor: 'pointer',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.transform  = 'scale(1.07) rotate(-3deg)'
-            e.currentTarget.style.boxShadow  = '0 0 30px rgba(34,197,94,0.45), 0 8px 20px rgba(0,0,0,0.2)'
+            e.currentTarget.style.transform = 'scale(1.07) rotate(-3deg)'
+            e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45), 0 8px 20px rgba(0,0,0,0.2)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.transform  = 'scale(1) rotate(0deg)'
-            e.currentTarget.style.boxShadow  = darkMode
+            e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
+            e.currentTarget.style.boxShadow = darkMode
               ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
               : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)'
           }}
@@ -95,10 +96,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
           </svg>
         </div>
 
-        {/* Title block — loose spacing */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-
-          {/* Main title */}
           <div style={{
             fontSize: '19px', fontWeight: 800,
             fontFamily: "'Space Grotesk','Outfit',sans-serif",
@@ -112,18 +110,14 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
           }}>
             {T.title}
           </div>
-
-          {/* Subtitle — smaller, clearly separated */}
           <div style={{
             fontSize: '11px', fontWeight: 500,
             color: darkMode ? '#64748B' : '#94A3B8',
             fontFamily: "'Inter','Outfit',sans-serif",
-            lineHeight: 1, letterSpacing: '0.01em',
+            lineHeight: 1,
           }}>
             {T.sub}
           </div>
-
-          {/* Tech line — smallest, clearly separated */}
           <div style={{
             fontSize: '9px', fontWeight: 600,
             color: darkMode ? '#475569' : '#CBD5E1',
@@ -134,17 +128,15 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
         </div>
       </div>
 
-      {/* Spacer */}
       <div style={{ flex: 1 }} />
 
-      {/* ── Live badge ── */}
+      {/* Live badge */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '7px',
         background: 'rgba(34,197,94,0.12)',
         border: '1px solid rgba(34,197,94,0.25)',
         borderRadius: '999px', padding: '7px 14px',
-        fontSize: '12px', fontWeight: 600, color: '#22C55E',
-        flexShrink: 0,
+        fontSize: '12px', fontWeight: 600, color: '#22C55E', flexShrink: 0,
       }}>
         <span style={{
           width: '7px', height: '7px', borderRadius: '50%',
@@ -154,7 +146,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
         {T.live}
       </div>
 
-      {/* ── Lang toggle ── */}
+      {/* Lang toggle */}
       <div style={{
         display: 'flex', border: `1px solid ${btnBorder}`,
         borderRadius: '14px', overflow: 'hidden', height: '44px', flexShrink: 0,
@@ -176,22 +168,21 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
         ))}
       </div>
 
-      {/* ── Dark/Light toggle ── */}
+      {/* Dark/Light toggle */}
       <button
         onClick={() => setDarkMode(d => !d)}
         style={{
           display: 'flex', alignItems: 'center', gap: '9px',
-          height: '44px', padding: '0 20px',
-          borderRadius: '14px', cursor: 'pointer',
-          background: btnBg, border: `1px solid ${btnBorder}`,
+          height: '44px', padding: '0 20px', borderRadius: '14px',
+          cursor: 'pointer', background: btnBg, border: `1px solid ${btnBorder}`,
           color: btnColor, fontSize: '13px', fontWeight: 600,
           fontFamily: "'Outfit',sans-serif",
           transition: 'all 0.3s ease', flexShrink: 0,
         }}
         onMouseEnter={e => {
-          e.currentTarget.style.background   = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
-          e.currentTarget.style.boxShadow    = '0 0 16px rgba(34,197,94,0.18)'
-          e.currentTarget.style.borderColor  = 'rgba(34,197,94,0.3)'
+          e.currentTarget.style.background  = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
+          e.currentTarget.style.boxShadow   = '0 0 16px rgba(34,197,94,0.18)'
+          e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
         }}
         onMouseLeave={e => {
           e.currentTarget.style.background  = btnBg
