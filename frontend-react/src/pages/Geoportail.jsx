@@ -79,12 +79,15 @@ export default function Geoportail() {
       />
 
       {/* Main content — scrollable, offset by sidebar */}
-      <main style={{
-        marginLeft: `${sidebarWidth}px`,
-        marginTop: '64px',
-        transition: 'margin-left 0.3s ease',
-        minHeight: 'calc(100vh - 64px)',
-      }}>
+     {/* Header offset by sidebar */}
+<div style={{ marginLeft: `${sidebarWidth}px`, transition: 'margin-left 0.3s ease' }}>
+  <Header ... />
+</div>
+<main style={{
+  marginLeft: `${sidebarWidth}px`,
+  marginTop: '80px',
+  ...
+}}>
         <SectionProjet  lang={lang} stats={stats}    darkMode={darkMode} />
         <SectionApropos lang={lang}                  darkMode={darkMode} />
         <SectionCampus  lang={lang}                  darkMode={darkMode} />
