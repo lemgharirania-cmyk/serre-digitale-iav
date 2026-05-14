@@ -18,21 +18,25 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',system-ui
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
 
 /* NAV hotspots */
-.hs-nav{width:72px;height:72px;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,1) 0%,rgba(160,225,185,1) 50%,rgba(45,142,80,.9) 100%);
-  border:3px solid rgba(45,142,80,.95);
-  box-shadow:0 0 0 10px rgba(45,142,80,.22),0 0 28px rgba(45,142,80,.35),0 4px 14px rgba(0,0,0,.3);
+.hs-nav{width:64px;height:64px;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.15);
+  border:2px solid rgba(255,255,255,.5);
+  box-shadow:0 4px 24px rgba(0,0,0,.35),0 0 0 8px rgba(255,255,255,.06);
   display:flex;align-items:center;justify-content:center;
-  animation:hsp 2.5s ease-in-out infinite;cursor:pointer}
-.hs-cross{width:72px;height:72px;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,1) 0%,rgba(155,210,248,1) 50%,rgba(30,122,181,.9) 100%);
-  border:3px solid rgba(30,122,181,.95);
-  box-shadow:0 0 0 10px rgba(30,122,181,.20),0 0 28px rgba(30,122,181,.3),0 4px 14px rgba(0,0,0,.3);
+  animation:hsp 3s ease-in-out infinite;cursor:pointer}
+.hs-cross{width:64px;height:64px;border-radius:50%;cursor:pointer;
+  background:rgba(96,165,250,.18);
+  border:2px solid rgba(147,197,253,.55);
+  box-shadow:0 4px 24px rgba(30,100,200,.3),0 0 0 8px rgba(96,165,250,.08);
   display:flex;align-items:center;justify-content:center;
-  animation:hsp-b 2.5s ease-in-out infinite;cursor:pointer}
-.hs-nav:hover,.hs-cross:hover{transform:scale(1.1)}
-@keyframes hsp{0%,100%{box-shadow:0 0 0 10px rgba(45,142,80,.22),0 0 28px rgba(45,142,80,.35),0 4px 14px rgba(0,0,0,.3)}50%{box-shadow:0 0 0 20px rgba(45,142,80,.07),0 0 44px rgba(45,142,80,.15),0 4px 14px rgba(0,0,0,.3)}}
-@keyframes hsp-b{0%,100%{box-shadow:0 0 0 10px rgba(30,122,181,.20),0 0 28px rgba(30,122,181,.3),0 4px 14px rgba(0,0,0,.3)}50%{box-shadow:0 0 0 19px rgba(30,122,181,.06),0 0 42px rgba(30,122,181,.12),0 4px 14px rgba(0,0,0,.3)}}
+  animation:hsp-b 3s ease-in-out infinite;cursor:pointer}
+.hs-nav:hover,.hs-cross:hover{transform:scale(1.12)}
+@keyframes hsp{
+  0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.35),0 0 0 8px rgba(255,255,255,.06)}
+  50%{box-shadow:0 4px 24px rgba(0,0,0,.35),0 0 0 16px rgba(255,255,255,.0)}}
+@keyframes hsp-b{
+  0%,100%{box-shadow:0 4px 24px rgba(30,100,200,.3),0 0 0 8px rgba(96,165,250,.08)}
+  50%{box-shadow:0 4px 24px rgba(30,100,200,.3),0 0 0 16px rgba(96,165,250,.0)}}
 
 /* AR hotspot base — transparent wrapper */
 .hs-ar-base{background:transparent!important;border:none!important;width:auto!important;height:auto!important;overflow:visible!important}
@@ -596,12 +600,12 @@ function load(zid,sid){
         clickHandlerFunc:function(){ openSimpleAR(desc); }
       };
     }
-    const color=hs.type==='cross'?'rgba(15,70,130,.85)':'rgba(30,100,55,.85)';
+    const color=hs.type==='cross'?'rgba(200,225,255,.95)':'rgba(255,255,255,.95)';
     return {
       pitch:hs.pitch,yaw:hs.yaw,type:'custom',
       cssClass:hs.type==='cross'?'hs-cross':'hs-nav',
       createTooltipFunc:function(div){
-        div.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="'+color+'"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg>';
+        div.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
       },
       createTooltipArgs:{},
       clickHandlerFunc:function(){goTo(hs.targetZoneId,hs.targetSceneId);}
