@@ -370,36 +370,35 @@ function SloganCard({ lang, darkMode }) {
         ? 'linear-gradient(135deg, rgba(16,27,46,0.98), rgba(11,23,40,0.95))'
         : 'linear-gradient(135deg, rgba(240,255,244,0.97), rgba(255,255,255,0.99))',
       border: darkMode ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(34,197,94,0.18)',
-      borderRadius: '28px', padding: '32px 36px',
+      borderRadius: '28px', padding: '40px 36px 32px',
       boxShadow: darkMode ? '0 10px 40px rgba(0,0,0,0.3)' : '0 10px 40px rgba(0,0,0,0.06)',
       opacity: visible ? 1 : 0,
       transform: visible ? 'scale(1)' : 'scale(0.97)',
       transition: 'opacity 0.7s ease, transform 0.7s ease',
+      textAlign: 'center',
     }}>
       <div style={{ position: 'absolute', bottom: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(34,197,94,0.08)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-30px', left: '-30px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(34,197,94,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-      <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '7px',
-        background: darkMode ? 'rgba(34,197,94,0.12)' : '#ECFDF5',
-        border: `1px solid ${darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.2)'}`,
-        borderRadius: '999px', padding: '5px 14px',
-        fontSize: '11px', fontWeight: 700,
-        color: darkMode ? '#4ADE80' : '#16A34A',
-        letterSpacing: '0.08em', marginBottom: '20px',
-      }}>
+      {/* Plant icon */}
+      <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: darkMode ? 'rgba(34,197,94,0.12)' : '#ECFDF5', border: `1px solid ${darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: darkMode ? '0 0 20px rgba(34,197,94,0.15)' : '0 4px 16px rgba(34,197,94,0.12)' }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 22V12" stroke={darkMode ? '#4ADE80' : '#16A34A'} strokeWidth="1.8" strokeLinecap="round"/>
+          <path d="M12 12C12 12 7 10 5 6c4 0 7 2 7 6z" fill={darkMode ? '#4ADE80' : '#16A34A'} opacity="0.9"/>
+          <path d="M12 15C12 15 17 13 19 9c-4 0-7 2-7 6z" fill={darkMode ? '#22C55E' : '#22C55E'} opacity="0.7"/>
+          <path d="M12 18C12 18 8 16.5 7 13c3.5 0 5 2 5 5z" fill={darkMode ? '#4ADE80' : '#16A34A'} opacity="0.6"/>
+        </svg>
+      </div>
+
+      {/* Badge */}
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: darkMode ? 'rgba(34,197,94,0.12)' : '#ECFDF5', border: `1px solid ${darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.2)'}`, borderRadius: '999px', padding: '5px 14px', fontSize: '11px', fontWeight: 700, color: darkMode ? '#4ADE80' : '#16A34A', letterSpacing: '0.08em', marginBottom: '24px' }}>
         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: darkMode ? '#4ADE80' : '#16A34A', boxShadow: `0 0 8px ${darkMode ? '#4ADE80' : '#16A34A'}`, animation: 'sdiPulse 2s ease-in-out infinite', display: 'inline-block' }} />
         LIVE DIGITAL TWIN
       </div>
 
-      <div style={{
-        fontSize: '26px', fontWeight: 700, lineHeight: 1.4,
-        letterSpacing: '-0.02em',
-        color: darkMode ? '#F8FAFC' : '#111827',
-        fontFamily: "'Space Grotesk','Outfit',sans-serif",
-        marginBottom: '20px', whiteSpace: 'pre-line',
-      }}>{quote}</div>
+      <div style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.4, letterSpacing: '-0.02em', color: darkMode ? '#F8FAFC' : '#111827', fontFamily: "'Space Grotesk','Outfit',sans-serif", marginBottom: '24px', whiteSpace: 'pre-line' }}>{quote}</div>
 
-      <div style={{ height: '1px', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(34,197,94,0.15)', marginBottom: '16px' }} />
+      <div style={{ height: '1px', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(34,197,94,0.15)', maxWidth: '320px', margin: '0 auto 18px' }} />
       <div style={{ fontSize: '13px', color: darkMode ? '#94A3B8' : '#6B7280', marginBottom: '10px', fontWeight: 500 }}>{techLine}</div>
       <div style={{ fontSize: '12px', color: darkMode ? '#64748B' : '#9CA3AF' }}>{footer}</div>
     </div>
