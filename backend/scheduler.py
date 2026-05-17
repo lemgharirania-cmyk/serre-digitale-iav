@@ -106,10 +106,19 @@ async def check_threshold(db, serre: dict, capteur: str, valeur):
                 """, serre["id"], capteur)
 
 async def start_scheduler():
-    """Lance la boucle de collecte toutes les 2 minutes."""
+    cycle = 0
     while True:
         try:
             await collect_and_store()
+            if cycle % 720 == 0:
+                pool = await get_pool()
+                async with pool.acquire() as db:
+                    await db.execute("""
+                        DELETE FROM mesures_iot 
+                        WHERE capture_at < NOW() - INTERVAL '90 days'
+                    """)
+                    print(f"[Cleanup] 🗑️ Old data purged")
+            cycle += 1
         except Exception as e:
             print(f"[Scheduler] ❌ Erreur: {e}")
         await asyncio.sleep(120)
