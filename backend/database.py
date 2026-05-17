@@ -14,11 +14,16 @@ _pool = None
 async def get_pool():
     global _pool
     if _pool is None:
-        is_railway = "railway.internal" in DATABASE_URL or "rlwy.net" in DATABASE_URL
-        if is_railway:
-            _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10, ssl="require")
+        ssl_needed = any(x in DATABASE_URL for x in
+                        ["railway", "rlwy", "supabase", "render", "pooler"])
+        if ssl_needed:
+            _pool = await asyncpg.create_pool(
+                DATABASE_URL, min_size=2, max_size=10, ssl="require"
+            )
         else:
-            _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+            _pool = await asyncpg.create_pool(
+                DATABASE_URL, min_size=2, max_size=10
+            )
     return _pool
 
 async def close_pool():
