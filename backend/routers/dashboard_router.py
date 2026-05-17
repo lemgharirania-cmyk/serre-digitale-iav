@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from typing import Optional
 from database import get_db
 from auth import get_current_user
-import pandas as pd
 import io
+import csv
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
@@ -20,7 +20,6 @@ class ThresholdUpdate(BaseModel):
 
 @router.get("/thresholds")
 async def get_all_thresholds(db=Depends(get_db), user=Depends(get_current_user)):
-    """Liste tous les seuils configurés."""
     rows = await db.fetch("""
         SELECT t.*, s.nom_fr, s.code
         FROM thresholds t
@@ -31,7 +30,6 @@ async def get_all_thresholds(db=Depends(get_db), user=Depends(get_current_user))
 
 @router.get("/thresholds/{serre_id}")
 async def get_serre_thresholds(serre_id: int, db=Depends(get_db), user=Depends(get_current_user)):
-    """Seuils d'une serre spécifique."""
     rows = await db.fetch(
         "SELECT * FROM thresholds WHERE serre_id=$1 ORDER BY capteur", serre_id
     )
@@ -44,7 +42,6 @@ async def update_threshold(
     db=Depends(get_db),
     user=Depends(get_current_user)
 ):
-    """Met à jour ou crée un seuil pour un capteur d'une serre."""
     await db.execute("""
         INSERT INTO thresholds (serre_id, capteur, valeur_min, valeur_max, email_alerte, actif, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, NOW())
@@ -62,7 +59,6 @@ async def update_threshold(
 
 @router.get("/alertes")
 async def get_alertes(non_lues: bool = False, db=Depends(get_db), user=Depends(get_current_user)):
-    """Liste des alertes."""
     query = """
         SELECT a.*, s.nom_fr, s.code
         FROM alertes a JOIN serres s ON s.id = a.serre_id
@@ -92,7 +88,6 @@ async def comparer_serres(
     db=Depends(get_db),
     user=Depends(get_current_user)
 ):
-    """Compare un capteur entre toutes les serres."""
     serres = await db.fetch("SELECT id, code, nom_fr FROM serres WHERE actif=TRUE")
     result = []
     for serre in serres:
@@ -112,17 +107,30 @@ async def comparer_serres(
         })
     return result
 
-# ─── Export CSV / Excel ──────────────────────────────────────
+# ─── Export CSV (no pandas needed) ──────────────────────────
+
+COLUMNS = [
+    ("capture_at",  "Date/Heure"),
+    ("type_api",    "Type"),
+    ("temperature", "Température (°C)"),
+    ("humidite",    "Humidité (%)"),
+    ("vpd",         "VPD (kPa)"),
+    ("co2",         "CO2 (PPM)"),
+    ("luminosite",  "Luminosité (lux)"),
+    ("ph",          "pH"),
+    ("ec",          "EC (mS/cm)"),
+    ("temp_eau",    "Temp. Eau (°C)"),
+    ("niveau_eau",  "Niveau Eau (m)"),
+]
 
 @router.get("/export/{serre_id}")
 async def export_data(
     serre_id: int,
-    format: str = "csv",   # csv ou excel
-    heures: int = 168,     # 7 jours par défaut
+    format: str = "csv",
+    heures: int = 168,
     db=Depends(get_db),
     user=Depends(get_current_user)
 ):
-    """Exporte les données d'une serre en CSV ou Excel."""
     serre = await db.fetchrow("SELECT * FROM serres WHERE id=$1", serre_id)
     if not serre:
         raise HTTPException(status_code=404, detail="Serre introuvable")
@@ -137,45 +145,38 @@ async def export_data(
         ORDER BY capture_at ASC
     """, serre_id, str(heures))
 
-    df = pd.DataFrame([dict(r) for r in rows])
-    if df.empty:
+    if not rows:
         raise HTTPException(status_code=404, detail="Aucune donnée disponible")
-
-    df["capture_at"] = pd.to_datetime(df["capture_at"]).dt.strftime("%Y-%m-%d %H:%M:%S")
-    df.columns = ["Date/Heure", "Type", "Température (°C)", "Humidité (%)",
-                  "VPD (kPa)", "CO2 (PPM)", "Luminosité (lux)",
-                  "pH", "EC (mS/cm)", "Temp. Eau (°C)", "Niveau Eau (m)"]
 
     nom_fichier = f"serre_{serre['code']}_{heures}h"
 
-    if format == "excel":
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name=serre["nom_fr"][:31])
-        buf.seek(0)
-        return StreamingResponse(
-            buf,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f"attachment; filename={nom_fichier}.xlsx"}
-        )
-    else:
-        buf = io.StringIO()
-        df.to_csv(buf, index=False)
-        buf.seek(0)
-        return StreamingResponse(
-            iter([buf.getvalue()]),
-            media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename={nom_fichier}.csv"}
-        )
+    # CSV — pure Python, no pandas
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow([label for _, label in COLUMNS])
+    for row in rows:
+        r = dict(row)
+        writer.writerow([
+            r["capture_at"].strftime("%Y-%m-%d %H:%M:%S") if r["capture_at"] else "",
+            r["type_api"],
+            r["temperature"], r["humidite"], r["vpd"], r["co2"], r["luminosite"],
+            r["ph"], r["ec"], r["temp_eau"], r["niveau_eau"],
+        ])
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={nom_fichier}.csv"}
+    )
 
 # ─── Utilisateurs (admin only) ───────────────────────────────
 
 class NouvelUtilisateur(BaseModel):
-    nom:         str
-    email:       str
+    nom:          str
+    email:        str
     mot_de_passe: str
-    role:        str = "gerant"
-    serre_id:    Optional[int] = None
+    role:         str = "gerant"
+    serre_id:     Optional[int] = None
 
 @router.get("/utilisateurs")
 async def list_users(db=Depends(get_db), user=Depends(get_current_user)):
@@ -191,7 +192,7 @@ async def create_user(data: NouvelUtilisateur, db=Depends(get_db), user=Depends(
     from auth import hash_password
     hashed = hash_password(data.mot_de_passe)
     await db.execute("""
-        INSERT INTO utilisateurs (nom, email, mot_de_passe, role, serre_id)
-        VALUES ($1, $2, $3, $4, $5)
-    """, data.nom, data.email, hashed, data.role, data.serre_id)
+        INSERT INTO utilisateurs (nom, email, mot_de_passe, role)
+        VALUES ($1, $2, $3, $4)
+    """, data.nom, data.email, hashed, data.role)
     return {"message": f"Utilisateur {data.email} créé"}
