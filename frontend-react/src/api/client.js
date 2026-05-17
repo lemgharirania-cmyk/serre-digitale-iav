@@ -1,5 +1,5 @@
 // src/api/client.js
-const API = 'https://serre-digitale-iav-production.up.railway.app'
+const API = 'https://serre-digitale-iav.onrender.com'
 
 function getToken() {
   return localStorage.getItem('sdi_token')
