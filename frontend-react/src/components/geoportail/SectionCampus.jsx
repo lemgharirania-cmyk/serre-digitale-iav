@@ -1,99 +1,113 @@
-// src/pages/Geoportail.jsx
-import { useState, useEffect } from 'react'
-import { iotAPI } from '../api/client'
+// src/components/geoportail/SectionCampus.jsx
+import { useEffect, useRef } from 'react'
+import 'leaflet/dist/leaflet.css'
 
-import Header           from '../components/geoportail/Header'
-import Sidebar          from '../components/geoportail/Sidebar'
-import SectionProjet    from '../components/geoportail/SectionProjet'
-import SectionApropos   from '../components/geoportail/SectionApropos'
-import SectionCampus    from '../components/geoportail/SectionCampus'
-import SectionPlan2D    from '../components/geoportail/SectionPlan2D'
-import SectionDonnees   from '../components/geoportail/SectionDonnees'
-import SectionVisite    from '../components/geoportail/SectionVisite'
-import FooterGeoportail from '../components/geoportail/FooterGeoportail'
+const LAT = 33.978659, LNG = -6.864096
 
-export default function Geoportail() {
-  const [lang,          setLang]          = useState('fr')
-  const [darkMode,      setDarkMode]      = useState(true)
-  const [sidebarOpen,   setSidebarOpen]   = useState(true)
-  const [liveData,      setLiveData]      = useState([])
-  const [stats,         setStats]         = useState({})
-  const [countdown,     setCountdown]     = useState(120)
-  const [activeSection, setActiveSection] = useState('projet')
+const UNITS = [
+  { code:'S01', color:'#22C55E', nameFr:'Génétique & Amélioration', nameEn:'Genetics & Improvement' },
+  { code:'S02', color:'#06B6D4', nameFr:'Horticulture',             nameEn:'Horticulture' },
+  { code:'S03', color:'#F59E0B', nameFr:'Agronomie',                nameEn:'Agronomy' },
+  { code:'S04', color:'#8B5CF6', nameFr:'Hydroponie',               nameEn:'Hydroponics' },
+  { code:'S05', color:'#EF4444', nameFr:'Protection des Plantes',   nameEn:'Plant Protection' },
+]
 
-  async function fetchAll() {
-    try {
-      const [live, st] = await Promise.all([iotAPI.getLive(), iotAPI.getStats()])
-      setLiveData(live.serres || [])
-      setStats(st)
-      setCountdown(120)
-    } catch(e) { console.error(e) }
-  }
+export default function SectionCampus({ lang, darkMode }) {
+  const mapRef      = useRef(null)
+  const mapInstance = useRef(null)
 
-  useEffect(() => { fetchAll() }, [])
+  const cardBg     = darkMode ? '#101B2E' : '#FFFFFF'
+  const cardBorder = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+  const textColor  = darkMode ? '#F8FAFC' : '#0F172A'
+  const textSecond = darkMode ? '#CBD5E1' : '#475569'
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(c => { if (c <= 1) { fetchAll(); return 120 } return c - 1 })
-    }, 1000)
-    return () => clearInterval(timer)
+    if (mapInstance.current) return
+    const timer = setTimeout(() => {
+      if (!mapRef.current || mapInstance.current) return
+      import('leaflet').then(L => {
+        const map = L.default.map(mapRef.current, {
+          zoomControl: true, attributionControl: false,
+          dragging: true, scrollWheelZoom: false,
+        })
+        L.default.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          { maxZoom: 20 }
+        ).addTo(map)
+        map.setView([LAT - 0.015, LNG], 14)
+        setTimeout(() => map.flyTo([LAT, LNG], 18, { animate: true, duration: 3 }), 500)
+        const icon = L.default.divIcon({
+          className: '',
+          html: `<div style="width:20px;height:20px;border-radius:50%;background:#22C55E;border:3px solid white;box-shadow:0 0 0 8px rgba(34,197,94,0.2)"></div>`,
+          iconSize: [20, 20], iconAnchor: [10, 10],
+        })
+        L.default.marker([LAT, LNG], { icon }).addTo(map)
+          .bindPopup('<b>AgroBioTech · IAV Hassan II</b><br><small>Rabat, Maroc</small>')
+        mapInstance.current = map
+      })
+    }, 200)
+    return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    const ids = ['projet','apropos','campus','plan2d','donnees','visite']
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id) })
-    }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 })
-    ids.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el) })
-    return () => observer.disconnect()
-  }, [])
-
-  const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
-  const sidebarWidth   = sidebarOpen ? 240 : 64
-  const bgColor        = darkMode ? '#07111F' : '#F4F7F5'
+  const T = {
+    fr: {
+      badge:  'Campus AgroBioTech · IAV Hassan II',
+      title:  'Un campus de recherche',
+      accent: 'connecté',
+      text:   "[Ici vous insérez l'introduction du campus AgroBioTech et le contexte marocain de l'agriculture intelligente — présentation de l'IAV Hassan II, de la mission du complexe, de l'importance stratégique de ce projet pour l'agriculture au Maroc, et du rôle pionnier de l'IAV dans la recherche agronomique nationale. Vous pouvez également présenter les partenariats institutionnels, les objectifs de recherche de chaque unité et la vision à long terme du complexe AgroBioTech dans le cadre de la transformation numérique de l'agriculture marocaine.]",
+      loc:    'AgroBioTech · IAV Hassan II',
+      coords: 'Rabat, Maroc · 33.9787°N 6.8641°W',
+    },
+    en: {
+      badge:  'AgroBioTech Campus · IAV Hassan II',
+      title:  'A connected research',
+      accent: 'campus',
+      text:   '[Insert the AgroBioTech campus introduction and Moroccan smart agriculture context here — presentation of IAV Hassan II, the complex mission, the strategic importance of this project for agriculture in Morocco, and the pioneering role of IAV in national agronomic research. You may also present institutional partnerships, research objectives of each unit and the long-term vision of the AgroBioTech complex within the digital transformation of Moroccan agriculture.]',
+      loc:    'AgroBioTech · IAV Hassan II',
+      coords: 'Rabat, Morocco · 33.9787°N 6.8641°W',
+    }
+  }[lang]
 
   return (
-    <div style={{ fontFamily: "'Outfit','Inter',sans-serif", background: bgColor, minHeight: '100vh', transition: 'background 0.4s ease' }}>
+    <section id="campus" style={{ padding: '6rem 3rem', scrollMarginTop: '64px' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
-      {/* Sidebar — zIndex 400, covers everything including header */}
-      <Sidebar
-        open={sidebarOpen} setOpen={setSidebarOpen}
-        active={activeSection} lang={lang} darkMode={darkMode}
-      />
+        {/* Section title */}
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '100px', padding: '6px 18px', marginBottom: '1rem' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E' }} />
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#22C55E', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{T.badge}</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 900, color: textColor, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.04em' }}>
+            {T.title} <span style={{ color: '#22C55E' }}>{T.accent}</span>
+          </h2>
+        </div>
 
-      {/* Header — full width left:0, zIndex 300, behind sidebar */}
-      <Header
-        lang={lang} setLang={setLang}
-        darkMode={darkMode} setDarkMode={setDarkMode}
-      />
+        {/* 40/60 grid — map smaller, text wider */}
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: '2.5rem', alignItems: 'start' }}>
 
-      {/* Main — offset by sidebar + header */}
-      <main style={{
-        marginLeft: `${sidebarWidth}px`,
-        marginTop:  '80px',
-        transition: 'margin-left 0.3s ease',
-        minHeight:  'calc(100vh - 80px)',
-      }}>
-        <SectionProjet  lang={lang} stats={stats}       darkMode={darkMode} />
-        <SectionApropos lang={lang}                     darkMode={darkMode} />
-        <SectionCampus  lang={lang}                     darkMode={darkMode} />
-        <SectionPlan2D  lang={lang} liveData={liveData} darkMode={darkMode} />
-        <SectionDonnees
-          lang={lang} liveData={liveData}
-          countdown={countdownLabel} onRefresh={fetchAll}
-          darkMode={darkMode}
-        />
-        <SectionVisite  lang={lang} liveData={liveData} darkMode={darkMode} />
-        <FooterGeoportail lang={lang} darkMode={darkMode} />
-      </main>
+          {/* Left — map */}
+          <div style={{ borderRadius: '24px', overflow: 'hidden', border: `1px solid ${cardBorder}`, position: 'relative', height: '460px', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.1)', flexShrink: 0 }}>
+            <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,0.75))', padding: '1rem 1.2rem', pointerEvents: 'none' }}>
+              <div style={{ color: 'white', fontSize: '14px', fontWeight: 700 }}>{T.loc}</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginTop: '2px' }}>{T.coords}</div>
+            </div>
+          </div>
 
-      <style>{`
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(34,197,94,0.4); }
-      `}</style>
-    </div>
+          {/* Right — text (wider) */}
+          <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px', padding: '2.5rem', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 2, marginBottom: '2rem' }}>{T.text}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {UNITS.map(u => (
+                <span key={u.code} style={{ background: `${u.color}12`, border: `1px solid ${u.color}30`, color: u.color, padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>
+                  {lang === 'fr' ? u.nameFr : u.nameEn}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
