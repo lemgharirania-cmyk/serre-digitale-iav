@@ -2,7 +2,22 @@
 import { useState, useEffect } from 'react'
 import { dashboardAPI } from '../../api/client'
 
-export default function Alertes() {
+const T = {
+  FR:{
+    title:'Alertes', markAll:'Tout marquer lu', refresh:'Actualiser',
+    nonLue:'non lue', nonLues:'non lues', aucune:'Aucune alerte.', lu:'Lu',
+    valeur:'Valeur',
+  },
+  EN:{
+    title:'Alerts', markAll:'Mark all read', refresh:'Refresh',
+    nonLue:'unread', nonLues:'unread', aucune:'No alerts.', lu:'Read',
+    valeur:'Value',
+  }
+}
+
+export default function Alertes({ theme, lang }) {
+  const isDark = theme === 'dark'
+  const t      = T[lang] || T.FR
   const [alertes, setAlertes] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -12,88 +27,85 @@ export default function Alertes() {
     setAlertes(data || [])
     setLoading(false)
   }
-
   useEffect(() => { load() }, [])
 
   async function markRead(id) {
     await dashboardAPI.markAlerteLue(id)
-    setAlertes(prev => prev.map(a => a.id === id ? { ...a, lu: true } : a))
+    setAlertes(prev => prev.map(a => a.id === id ? { ...a, lu:true } : a))
   }
-
   async function markAll() {
     await dashboardAPI.markAllLues()
-    setAlertes(prev => prev.map(a => ({ ...a, lu: true })))
+    setAlertes(prev => prev.map(a => ({ ...a, lu:true })))
   }
 
-  const nonLues = alertes.filter(a => !a.lu).length
+  const nonLues  = alertes.filter(a => !a.lu).length
+  const cardBg   = isDark ? 'rgba(16,27,46,0.82)' : 'white'
+  const border   = isDark ? 'rgba(255,255,255,0.07)' : 'var(--border)'
+  const rowBg    = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(16,48,36,0.02)'
+  const ink3     = isDark ? '#94A3B8' : 'var(--ink-3)'
+  const ink4     = isDark ? '#64748B' : 'var(--ink-4)'
+  const luBtnBg  = isDark ? 'rgba(34,197,94,0.12)' : 'var(--ok-bg)'
+  const luBtnClr = isDark ? '#4ADE80' : 'var(--green-600)'
+
+  const locale = lang === 'EN' ? 'en-US' : 'fr-FR'
 
   return (
     <>
       <div className="admin-top">
         <div>
-          <h1>Alertes</h1>
+          <h1>{t.title}</h1>
           <div className="admin-sub">
-            {nonLues} non lue{nonLues > 1 ? 's' : ''}
+            {nonLues} {nonLues > 1 ? t.nonLues : t.nonLue}
           </div>
         </div>
         <div className="admin-top-r">
-          <button className="btn btn-secondary btn-sm" onClick={markAll}>
-            Tout marquer lu
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={load}>
-            ↻ Actualiser
-          </button>
+          <button className="btn btn-secondary btn-sm" onClick={markAll}>{t.markAll}</button>
+          <button className="btn btn-secondary btn-sm" onClick={load}>↻ {t.refresh}</button>
         </div>
       </div>
 
-      <div className="panel">
+      <div className="panel" style={{ background:cardBg, borderColor:border }}>
         {loading ? (
-          <div style={{textAlign:'center',padding:'3rem'}}>
-            <div className="spinner"></div>
+          <div style={{ textAlign:'center', padding:'3rem' }}>
+            <div className="spinner" />
           </div>
         ) : alertes.length === 0 ? (
-          <div style={{textAlign:'center',padding:'3rem',color:'var(--ink-3)'}}>
-            Aucune alerte.
-          </div>
+          <div style={{ textAlign:'center', padding:'3rem', color:ink3 }}>{t.aucune}</div>
         ) : (
-          <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {alertes.map(a => (
               <div key={a.id} style={{
-                display:'flex', gap:'12px', padding:'12px',
-                borderRadius:'12px', border:'1px solid var(--border)',
-                background: a.lu ? 'transparent' : 'rgba(16,48,36,0.02)',
-                opacity: a.lu ? 0.6 : 1
+                display:'flex', gap:12, padding:12,
+                borderRadius:12, border:`1px solid ${border}`,
+                background: a.lu ? 'transparent' : rowBg,
+                opacity: a.lu ? 0.6 : 1,
+                transition:'all 0.2s',
               }}>
-                <div style={{
-                  width:'4px', borderRadius:'2px', flexShrink:0,
-                  background: a.lu ? 'var(--ok)' : 'var(--warn)'
-                }}></div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:'13px',fontWeight:500}}>
+                <div style={{ width:4, borderRadius:2, flexShrink:0, background: a.lu ? 'var(--ok)' : 'var(--warn)' }} />
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:500 }}>
                     {a.capteur} · {a.nom_fr || a.code}
                   </div>
-                  <div style={{fontSize:'12px',color:'var(--ink-3)',marginTop:'2px'}}>
-                    {a.message_fr || `Valeur: ${a.valeur}`}
+                  <div style={{ fontSize:12, color:ink3, marginTop:2 }}>
+                    {a.message_fr || `${t.valeur}: ${a.valeur}`}
                   </div>
-                  <div style={{
-                    fontFamily:'var(--font-mono)',fontSize:'10px',
-                    color:'var(--ink-4)',marginTop:'6px',textTransform:'uppercase'
-                  }}>
-                    {a.code} · {new Date(a.created_at).toLocaleString('fr-FR')}
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:ink4, marginTop:6, textTransform:'uppercase' }}>
+                    {a.code} · {new Date(a.created_at).toLocaleString(locale)}
                   </div>
                 </div>
                 {!a.lu && (
                   <button
                     onClick={() => markRead(a.id)}
                     style={{
-                      background:'var(--ok-bg)',color:'var(--green-600)',
-                      border:'1px solid rgba(47,154,100,0.2)',
-                      padding:'4px 10px',borderRadius:'8px',
-                      fontSize:'11px',fontWeight:500,cursor:'pointer',
-                      alignSelf:'center',fontFamily:'var(--font-mono)'
+                      background:luBtnBg, color:luBtnClr,
+                      border:`1px solid rgba(47,154,100,0.2)`,
+                      padding:'4px 10px', borderRadius:8,
+                      fontSize:11, fontWeight:500, cursor:'pointer',
+                      alignSelf:'center', fontFamily:'var(--font-mono)',
+                      transition:'all 0.15s',
                     }}
                   >
-                    Lu
+                    {t.lu}
                   </button>
                 )}
               </div>
