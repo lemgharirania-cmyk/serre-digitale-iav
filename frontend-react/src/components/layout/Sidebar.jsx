@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, LineChart, Bell, SlidersHorizontal,
   Download, FlaskConical, LogOut, Sun, Moon,
-  Globe, Leaf
+  Globe, Leaf, Settings
 } from 'lucide-react'
 
 const NAV = [
@@ -24,9 +24,9 @@ const NAV = [
   {
     section: { FR:'Configuration', EN:'Settings' },
     links: [
-      { to:'/dashboard/seuils',     labelFR:'Seuils agronomiques',labelEN:'Thresholds',   Icon:SlidersHorizontal },
-      { to:'/dashboard/export',     labelFR:'Export de données',  labelEN:'Export data',  Icon:Download },
-      { to:'/dashboard/parametres', labelFR:'Paramètres', labelEN:'Settings', Icon:Settings },
+      { to:'/dashboard/seuils',      labelFR:'Seuils agronomiques', labelEN:'Thresholds',      Icon:SlidersHorizontal },
+      { to:'/dashboard/export',      labelFR:'Export de données',   labelEN:'Export data',     Icon:Download },
+      { to:'/dashboard/parametres',  labelFR:'Paramètres',          labelEN:'Settings',        Icon:Settings },
     ]
   },
 ]
