@@ -26,6 +26,7 @@ const NAV = [
     links: [
       { to:'/dashboard/seuils',     labelFR:'Seuils agronomiques',labelEN:'Thresholds',   Icon:SlidersHorizontal },
       { to:'/dashboard/export',     labelFR:'Export de données',  labelEN:'Export data',  Icon:Download },
+      { to:'/dashboard/parametres', labelFR:'Paramètres', labelEN:'Settings', Icon:Settings },
     ]
   },
 ]
