@@ -193,7 +193,7 @@ export default function Login() {
         body: JSON.stringify({ first_name:sFirst, last_name:sLast, unit:sUnit, email:sEmail, password:sPwd, invite_code:sCode||'' })
       })
       const data = await res.json()
-      if (!res.ok) { setSErr(data.detail || 'Erreur création compte.'); return }
+     if (!res.ok) { setSErr(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail) || 'Erreur création compte.'); return }
       setVEmail(sEmail)
       setSOk('Compte créé ! Vérifiez votre email pour le code.')
       setTimeout(() => setTab('verify'), 2000)
