@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar'
 import { iotAPI, dashboardAPI } from '../api/client'
+import Parametres from './dashboard/Parametres'
 
 // Pages
 import Overview      from './dashboard/Overview'
@@ -92,7 +93,8 @@ export default function Dashboard() {
           <Route path="/alertes"     element={<Alertes       {...sharedProps} />} />
           <Route path="/seuils"      element={<Seuils        {...sharedProps} />} />
           <Route path="/export"      element={<Export        {...sharedProps} />} />
-          <Route path="/calculateur" element={<NSCalculateur theme={theme} lang={lang} />} />
+          <Route path="/calculateur" element={<NSCalculateur theme={theme} lang={lang} />}/>
+          <Route path="/parametres" element={<Parametres theme={theme} lang={lang} />} />
         </Routes>
       </main>
     </div>
