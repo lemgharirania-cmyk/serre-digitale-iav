@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../api/client'
 
-const API = import.meta.env.VITE_API_URL || 'https://serre-digitale-iav-production.up.railway.app'
+const API = import.meta.env.VITE_API_URL || 'https://serre-digitale-iav.onrender.com'
 
 const UNITS = [
   { value:'ALL', label:'Accès complet (Super Admin)' },
