@@ -190,7 +190,7 @@ export default function Login() {
     try {
       const res  = await fetch(`${API}/api/auth/register`, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ first_name:sFirst, last_name:sLast, unit:sUnit, email:sEmail, password:sPwd })
+        body: JSON.stringify({ first_name:sFirst, last_name:sLast, unit:sUnit, email:sEmail, password:sPwd, invite_code:sCode||'' })
       })
       const data = await res.json()
       if (!res.ok) { setSErr(data.detail || 'Erreur création compte.'); return }
