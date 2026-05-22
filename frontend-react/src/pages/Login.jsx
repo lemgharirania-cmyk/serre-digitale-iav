@@ -159,6 +159,7 @@ export default function Login() {
   const [sErr,     setSErr]     = useState('')
   const [sOk,      setSOk]      = useState('')
   const [sLoading, setSLoading] = useState(false)
+  const [sCode,    setSCode]    = useState('')
 
   // verify
   const [vEmail,   setVEmail]   = useState('')
@@ -190,10 +191,10 @@ export default function Login() {
     try {
       const res  = await fetch(`${API}/api/auth/register`, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ first_name:sFirst, last_name:sLast, unit:sUnit, email:sEmail, password:sPwd, invite_code:sCode||'' })
+        body: JSON.stringify({ first_name:sFirst, last_name:sLast, unit:sUnit, email:sEmail, password:sPwd, invite_code:sCode })
       })
       const data = await res.json()
-     if (!res.ok) { setSErr(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail) || 'Erreur création compte.'); return }
+      if (!res.ok) { setSErr(typeof data.detail === 'string' ? data.detail : 'Erreur création compte.'); return }
       setVEmail(sEmail)
       setSOk('Compte créé ! Vérifiez votre email pour le code.')
       setTimeout(() => setTab('verify'), 2000)
@@ -380,6 +381,27 @@ export default function Login() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
             Un code de vérification sera envoyé à votre email
           </div>
+          <Field>
+            <Label>Code d'invitation *</Label>
+            <input
+              type="text"
+              value={sCode}
+              onChange={e => setSCode(e.target.value)}
+              placeholder="Code fourni par l'administrateur"
+              style={{
+                width:'100%', padding:'12px 14px',
+                border:'1px solid rgba(255,255,255,0.09)',
+                borderRadius:'12px', fontSize:'14px', fontFamily:'inherit',
+                outline:'none', background:'rgba(255,255,255,0.06)',
+                color:'#F8FAFC', boxSizing:'border-box', transition:'border-color 0.2s',
+              }}
+              onFocus={e => e.target.style.borderColor='#22C55E'}
+              onBlur={e  => e.target.style.borderColor='rgba(255,255,255,0.09)'}
+            />
+            <div style={{fontSize:'11px',color:'#475569',marginTop:'5px'}}>
+              Contactez un administrateur IAV pour obtenir ce code
+            </div>
+          </Field>
           <BigBtn onClick={doSignup} loading={sLoading} label={sLoading ? 'Création…' : 'Créer mon compte'}/>
         </>)}
 
