@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroBioTech — Visite Virtuelle</title>
+<title>AgroBioTech — Extérieur</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,8 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
 
 /* ── VIGNETTE ── */
-#vignette{position:fixed;inset:0;z-index:10;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.45) 100%)}
+#vignette { display: none; }
 
 /* ── ATMOSPHERE ── */
 #atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
@@ -67,6 +66,26 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .arrow:hover{background:rgba(255,255,255,.2);color:white;border-color:rgba(255,255,255,.4)}
 .arrow.L{left:16px}.arrow.R{right:16px}
 .arrow.off{opacity:0;pointer-events:none}
+
+#toggle-ar{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:999;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(10px);
+  color:white;
+  font-size:12px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+#toggle-ar:hover{
+  background:rgba(255,255,255,.15);
+}
 
 /* ── ZONE LABEL — bottom right glass pill ── */
 .zf{
@@ -110,6 +129,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 <button class="arrow L off" id="prev" onclick="stepScene(-1)">‹</button>
 <button class="arrow R off" id="next" onclick="stepScene(1)">›</button>
+<button id="toggle-ar">AR ON</button>
 
 <div class="zf" id="zf">
   <div class="zf-label">Zone active</div>
@@ -121,8 +141,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 
 <script>
-const START_ZONE     = window.UNIT_ZONE     || 'exterieur';
-const RESTRICT_ZONES = window.UNIT_RESTRICT || null;
+const START_ZONE     = 'exterieur';
+const RESTRICT_ZONES = ['exterieur'];
 
 let manifest, zones={}, hotspots={};
 let curZone, curScene;

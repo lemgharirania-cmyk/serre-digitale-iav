@@ -26,8 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
 
 /* ── VIGNETTE ── */
-#vignette{position:fixed;inset:0;z-index:10;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.45) 100%)}
+#vignette { display: none; }
 
 /* ── ATMOSPHERE ── */
 #atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
@@ -121,8 +120,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 
 <script>
-const START_ZONE     = 'genetique';
-const RESTRICT_ZONES = ['genetique'];
+const START_ZONE     = window.UNIT_ZONE     || 'exterieur';
+const RESTRICT_ZONES = window.UNIT_RESTRICT || null;
 
 let manifest, zones={}, hotspots={};
 let curZone, curScene;

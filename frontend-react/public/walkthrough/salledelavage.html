@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroBioTech — Visite Virtuelle</title>
+<title>AgroBioTech — Salle de Lavage</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,8 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
 
 /* ── VIGNETTE ── */
-#vignette{position:fixed;inset:0;z-index:10;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.45) 100%)}
+#vignette { display: none; }
 
 /* ── ATMOSPHERE ── */
 #atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
@@ -121,8 +120,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 
 <script>
-const START_ZONE     = 'horticulture';
-const RESTRICT_ZONES = ['horticulture'];
+const START_ZONE     = 'salle-lavage';
+const RESTRICT_ZONES = ['salle-lavage'];
 
 let manifest, zones={}, hotspots={};
 let curZone, curScene;

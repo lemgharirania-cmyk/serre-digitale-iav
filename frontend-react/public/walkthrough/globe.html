@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroBioTech — Globe Intro</title>
+
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@200;300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  background:black;
+  font-family:'Space Grotesk', sans-serif;
+}
+
+#cesiumContainer { width:100vw; height:100vh; }
+
+.cesium-viewer-toolbar,
+.cesium-viewer-animationContainer,
+.cesium-viewer-timelineContainer,
+.cesium-viewer-bottom,
+.cesium-widget-credits,
+.cesium-viewer-fullscreenContainer { display:none !important; }
+
+#vignette {
+  position:fixed; inset:0; z-index:10; pointer-events:none;
+  background: radial-gradient(ellipse at center,
+    transparent 45%,
+    rgba(0,0,0,.15) 70%,
+    rgba(0,0,0,.55) 100%);
+}
+
+#scanlines {
+  position:fixed; inset:0; z-index:11; pointer-events:none;
+  background: repeating-linear-gradient(0deg,
+    transparent, transparent 2px,
+    rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+}
+
+/* HUD — bottom left */
+#hud {
+  position:fixed; left:34px; bottom:34px; z-index:20;
+  opacity:0; transition:opacity 2s ease;
+}
+#hud.show { opacity:1; }
+
+#hud-eyebrow {
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px; color:rgba(140,255,190,.65);
+  letter-spacing:.25em; text-transform:uppercase; margin-bottom:10px;
+}
+#hud-title { color:white; font-size:26px; font-weight:200; margin-bottom:6px; letter-spacing:.06em; }
+#hud-sub {
+  color:rgba(255,255,255,.38);
+  font-family:'Share Tech Mono', monospace;
+  font-size:10px; letter-spacing:.18em;
+}
+
+/* ── ARRIVAL ── */
+#arrival {
+  position:fixed; inset:0; z-index:30;
+  background:rgba(0,0,0,.22);
+  backdrop-filter:blur(7px);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity 1.8s ease;
+}
+#arrival.show { opacity:1; pointer-events:auto; }
+
+#arrival-tag {
+  font-family:'Share Tech Mono', monospace;
+  color:rgba(140,255,190,.65);
+  font-size:9px; letter-spacing:.3em;
+  text-transform:uppercase; margin-bottom:18px;
+}
+#arrival-title {
+  color:white; font-size:52px; font-weight:200;
+  letter-spacing:.1em; margin-bottom:8px;
+}
+#arrival-sub {
+  color:rgba(255,255,255,.38);
+  font-family:'Share Tech Mono', monospace;
+  font-size:11px; letter-spacing:.18em; margin-bottom:52px;
+}
+
+/* Mode selector grid */
+#mode-grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:16px;
+  width:min(820px, 92vw);
+}
+
+.mode-card {
+  position:relative;
+  padding:28px 24px 24px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.04);
+  cursor:pointer;
+  transition:all .35s cubic-bezier(.25,.8,.25,1);
+  display:flex; flex-direction:column; align-items:flex-start;
+  text-align:left;
+  overflow:hidden;
+}
+.mode-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background:var(--card-glow, rgba(140,255,190,.06));
+  opacity:0;
+  transition:opacity .35s;
+}
+.mode-card:hover {
+  border-color:rgba(255,255,255,.22);
+  background:rgba(255,255,255,.07);
+  transform:translateY(-3px);
+}
+.mode-card:hover::before { opacity:1; }
+
+.mode-card--auto  { --card-glow: rgba(140,255,190,.08); --accent: rgb(140,255,190); --accent-dim: rgba(140,255,190,.55); }
+.mode-card--manual{ --card-glow: rgba(96,165,250,.08);  --accent: rgb(96,165,250);  --accent-dim: rgba(96,165,250,.55); }
+.mode-card--salle { --card-glow: rgba(251,191,36,.08);  --accent: rgb(251,191,36);  --accent-dim: rgba(251,191,36,.55); }
+
+.mode-icon {
+  width:38px; height:38px; border-radius:10px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:18px;
+  font-size:18px;
+  color:var(--accent);
+  transition:background .3s, border-color .3s;
+}
+.mode-card:hover .mode-icon {
+  background: rgba(255,255,255,.1);
+  border-color: var(--accent-dim);
+}
+
+.mode-tag {
+  font-family:'Share Tech Mono', monospace;
+  font-size:8px; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--accent-dim);
+  margin-bottom:6px;
+}
+.mode-title {
+  color:white; font-size:15px; font-weight:400;
+  letter-spacing:.04em; margin-bottom:8px;
+  line-height:1.3;
+}
+.mode-desc {
+  color:rgba(255,255,255,.32);
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px; letter-spacing:.12em; line-height:1.7;
+}
+
+.mode-arrow {
+  position:absolute; right:20px; bottom:20px;
+  font-size:16px; color:var(--accent-dim);
+  opacity:0; transform:translateX(-4px);
+  transition:all .3s;
+}
+.mode-card:hover .mode-arrow { opacity:1; transform:translateX(0); }
+
+#arrival-skip {
+  margin-top:36px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(255,255,255,.2);
+  cursor:pointer; background:none; border:none;
+  transition:color .3s;
+}
+#arrival-skip:hover { color:rgba(255,255,255,.45); }
+
+/* ── FADE ── */
+#fade {
+  position:fixed; inset:0; z-index:9999;
+  background:black; opacity:0; pointer-events:none;
+  transition:opacity 1.5s ease;
+}
+#fade.show { opacity:1; }
+
+/* ── MARKER ── */
+@keyframes markerPulse {
+  0%,100% { transform:translate(-50%,-50%) scale(1);   opacity:.9; }
+  50%      { transform:translate(-50%,-50%) scale(1.15); opacity:1; }
+}
+@keyframes ringExpand {
+  0%   { transform:translate(-50%,-50%) scale(.5); opacity:.85; }
+  100% { transform:translate(-50%,-50%) scale(2.6); opacity:0; }
+}
+@keyframes ringExpand2 {
+  0%   { transform:translate(-50%,-50%) scale(.5); opacity:.55; }
+  100% { transform:translate(-50%,-50%) scale(3.4); opacity:0; }
+}
+
+#domMarker {
+  position:fixed; z-index:25;
+  width:0; height:0;
+  pointer-events:none;
+  opacity:0; transition:opacity 1.2s ease;
+}
+#domMarker.show { opacity:1; }
+
+.marker-ring {
+  position:absolute;
+  width:28px; height:28px; border-radius:50%;
+  border:1.5px solid rgba(140,255,190,.75);
+  transform:translate(-50%,-50%);
+  animation:ringExpand 2.6s ease-out infinite;
+}
+.marker-ring-2 {
+  position:absolute;
+  width:28px; height:28px; border-radius:50%;
+  border:1px solid rgba(140,255,190,.4);
+  transform:translate(-50%,-50%);
+  animation:ringExpand2 2.6s ease-out 1.3s infinite;
+}
+.marker-core {
+  position:absolute;
+  width:9px; height:9px; border-radius:50%;
+  background:rgb(140,255,190);
+  box-shadow:0 0 10px rgba(140,255,190,1), 0 0 24px rgba(140,255,190,.7), 0 0 48px rgba(140,255,190,.3);
+  transform:translate(-50%,-50%);
+  animation:markerPulse 2.2s ease-in-out infinite;
+}
+
+.marker-bracket {
+  position:absolute;
+  width:22px; height:22px;
+  transform:translate(-50%,-50%);
+}
+.marker-bracket::before,
+.marker-bracket::after,
+.marker-bracket span::before,
+.marker-bracket span::after {
+  content:'';
+  position:absolute;
+  width:6px; height:6px;
+  border-color:rgba(140,255,190,.6);
+  border-style:solid;
+}
+.marker-bracket::before  { top:0; left:0;   border-width:1.5px 0 0 1.5px; }
+.marker-bracket::after   { top:0; right:0;  border-width:1.5px 1.5px 0 0; }
+.marker-bracket span::before { bottom:0; left:0;  border-width:0 0 1.5px 1.5px; }
+.marker-bracket span::after  { bottom:0; right:0; border-width:0 1.5px 1.5px 0; }
+
+.marker-label {
+  position:absolute;
+  left:14px; top:-32px;
+  white-space:nowrap;
+  font-family:'Share Tech Mono', monospace;
+  font-size:10px;
+  color:rgba(140,255,190,.9);
+  letter-spacing:.12em; text-transform:uppercase;
+  text-shadow:0 0 10px rgba(140,255,190,.5);
+}
+.marker-sub {
+  position:absolute;
+  left:14px; top:-16px;
+  white-space:nowrap;
+  font-family:'Share Tech Mono', monospace;
+  font-size:8px;
+  color:rgba(255,255,255,.38);
+  letter-spacing:.14em;
+}
+</style>
+</head>
+<body>
+
+<div id="cesiumContainer"></div>
+<div id="vignette"></div>
+<div id="scanlines"></div>
+
+<div id="hud">
+  <div id="hud-eyebrow">✦ Smart Greenhouse Complex</div>
+  <div id="hud-title">AgroBioTech</div>
+  <div id="hud-sub">IAV Hassan II · Rabat · Maroc</div>
+</div>
+
+<!-- ARRIVAL — 3 mode cards -->
+<div id="arrival">
+  <div id="arrival-tag">▸ Destination Reached</div>
+  <div id="arrival-title">AgroBioTech</div>
+  <div id="arrival-sub">Choisissez votre mode de visite</div>
+
+  <div id="mode-grid">
+
+    <div class="mode-card mode-card--auto" onclick="enterMode('auto')">
+      <div class="mode-icon">▶</div>
+      <div class="mode-tag">Mode 01</div>
+      <div class="mode-title">Visite Immersive<br>Automatique</div>
+      <div class="mode-desc">Parcours guidé · transitions fluides<br>toutes serres en séquence</div>
+      <span class="mode-arrow">→</span>
+    </div>
+
+    <div class="mode-card mode-card--manual" onclick="enterMode('manual')">
+      <div class="mode-icon">⊕</div>
+      <div class="mode-tag">Mode 02</div>
+      <div class="mode-title">Visite<br>Manuelle</div>
+      <div class="mode-desc">Navigation libre · campus complet<br>contrôle total de l'exploration</div>
+      <span class="mode-arrow">→</span>
+    </div>
+
+    <div class="mode-card mode-card--salle" onclick="enterMode('salle')">
+      <div class="mode-icon">⊞</div>
+      <div class="mode-tag">Mode 03</div>
+      <div class="mode-title">Visite Salle<br>par Salle</div>
+      <div class="mode-desc">Sélection individuelle · données IoT live<br>focus sur chaque serre de recherche</div>
+      <span class="mode-arrow">→</span>
+    </div>
+
+  </div>
+
+  <button id="arrival-skip" onclick="enterMode('manual')">passer l'introduction →</button>
+</div>
+
+<!-- marker: label updated, top offset raised -->
+<div id="domMarker">
+  <div class="marker-ring"></div>
+  <div class="marker-ring-2"></div>
+  <div class="marker-core"></div>
+  <div class="marker-bracket"><span></span></div>
+  <div class="marker-label">Institut Agronomique et Vétérinaire Hassan II</div>
+  <div class="marker-sub">AgroBioTech · Rabat · Maroc</div>
+</div>
+
+<div id="fade"></div>
+
+<script>
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjYzNlMDg2Ni1lMjZhLTQ2ZmQtODFjZS00NmZkN2FjNTkwOGEiLCJpZCI6NDMzMTQ3LCJpc3MiOiJodHRwczovL2lvbi5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3NzkxMjA3MTV9.gN5CgfHMJ1yDjyrFQIVZylS-rRYBZWFXWVf2Ylf5Ovw';
+
+const viewer = new Cesium.Viewer('cesiumContainer', {
+  animation:false, timeline:false, geocoder:false,
+  homeButton:false, sceneModePicker:false,
+  navigationHelpButton:false, baseLayerPicker:false,
+  fullscreenButton:false, infoBox:false, selectionIndicator:false,
+  terrain: Cesium.Terrain.fromWorldTerrain()
+});
+
+viewer.scene.backgroundColor = Cesium.Color.BLACK;
+viewer.scene.skyAtmosphere.show = true;
+viewer.scene.sun.show = true;
+viewer.scene.moon.show = true;
+viewer.scene.globe.enableLighting = false;
+viewer.scene.globe.showGroundAtmosphere = true;
+viewer.scene.globe.depthTestAgainstTerrain = false;
+viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
+viewer.scene.fxaa = true;
+viewer.scene.globe.maximumScreenSpaceError = 1;
+viewer.scene.globe.tileCacheSize = 300;
+
+/* IAV Hassan II — corrected coordinates (serres AgroBioTech) */
+const TARGET_LON = -6.865181;
+const TARGET_LAT = 33.978618499999996;
+/* Raised height so the marker dot appears above ground level visually */
+const TARGET_CART = Cesium.Cartesian3.fromDegrees(TARGET_LON, TARGET_LAT, 18);
+
+/* Start directly on globe — no intro screen */
+viewer.camera.setView({
+  destination: Cesium.Cartesian3.fromDegrees(-0.859343, 20.152657, 43362161),
+  orientation: { heading:0, pitch:Cesium.Math.toRadians(-83.4), roll:0 }
+});
+
+const PHASES = [
+  { lon:-4.027117, lat:23.57211,    alt:8085773, heading:0, pitch:-83.3, duration:2.8, ease:Cesium.EasingFunction.QUINTIC_IN_OUT },
+  { lon:-7.899224, lat:31.856993,   alt:1971323, heading:0, pitch:-83.3, duration:2.5, ease:Cesium.EasingFunction.CUBIC_IN_OUT },
+  { lon:-6.868106, lat:33.913325,   alt:52000,   heading:0, pitch:-83.3, duration:2.6, ease:Cesium.EasingFunction.CUBIC_IN_OUT },
+  { lon:TARGET_LON, lat:TARGET_LAT, alt:420,     heading:0, pitch:-87,   duration:3.2, ease:Cesium.EasingFunction.QUADRATIC_IN_OUT, isFinal:true }
+];
+
+let markerVisible = false;
+
+viewer.scene.postRender.addEventListener(() => {
+  if (!markerVisible) return;
+  const sc = Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, TARGET_CART);
+  if (sc) {
+    const el = document.getElementById('domMarker');
+    el.style.left = sc.x + 'px';
+    el.style.top  = sc.y + 'px';
+  }
+});
+
+function showMarker() {
+  markerVisible = true;
+  document.getElementById('domMarker').classList.add('show');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function startSequence() {
+  for (let i = 0; i < PHASES.length; i++) {
+    const p = PHASES[i];
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.alt),
+      orientation: { heading:Cesium.Math.toRadians(p.heading), pitch:Cesium.Math.toRadians(p.pitch), roll:0 },
+      duration: p.duration,
+      maximumHeight: p.alt * 1.04,
+      easingFunction: p.ease
+    });
+    await sleep(p.duration * 1000 + 250);
+    if (p.isFinal) showMarker();
+  }
+  document.getElementById('hud').classList.add('show');
+  await sleep(400);
+  document.getElementById('arrival').classList.add('show');
+}
+
+/* Buttons communicate to parent React SPA via postMessage,
+   then also scroll the parent page to the right viewer section */
+function enterMode(mode) {
+
+  // notify React app
+  window.parent.postMessage({
+    type: 'agro-mode',
+    mode: mode
+  }, '*');
+
+  // subtle pulse feedback
+  const arrival = document.getElementById('arrival');
+
+  arrival.style.transform = 'scale(.98)';
+  arrival.style.opacity = '.85';
+
+  setTimeout(() => {
+    arrival.style.transform = '';
+    arrival.style.opacity = '1';
+  }, 250);
+
+  // cinematic camera loop back to earth
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(
+      -0.859343,
+      20.152657,
+      43362161
+    ),
+    orientation: {
+      heading: 0,
+      pitch: Cesium.Math.toRadians(-83.4),
+      roll: 0
+    },
+    duration: 7,
+    easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT
+  });
+
+  // restart sequence after zoom out
+  setTimeout(() => {
+    startSequence();
+  }, 8000);
+}
+/* Start immediately — no intro delay */
+startSequence();
+</script>
+</body>
+</html>

@@ -525,6 +525,55 @@
           "targetZoneId": "agronomie",
           "targetSceneId": "agronomie__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 67.5,
+          "yaw": 23.8,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": -0.6,
+          "yaw": -100.9,
+          "label": "blé",
+          "arDesc": "blé"
+        },
+        {
+          "type": "ar",
+          "pitch": 44,
+          "yaw": -143.2,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 39,
+          "yaw": 168.5,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.2,
+          "yaw": -172.1,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 50.2,
+          "yaw": -166.6,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 24.9,
+          "yaw": -80.9,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "agronomie__001": [
@@ -543,6 +592,55 @@
           "targetZoneId": "agronomie",
           "targetSceneId": "agronomie__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 61.6,
+          "yaw": 27.5,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": -2.2,
+          "yaw": -55.5,
+          "label": "blé",
+          "arDesc": "blé"
+        },
+        {
+          "type": "ar",
+          "pitch": 28.8,
+          "yaw": 27.5,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 35.1,
+          "yaw": 163.2,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 43.9,
+          "yaw": 105,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 73.3,
+          "yaw": 133.4,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 18.2,
+          "yaw": -44,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "agronomie__002": [
@@ -553,6 +651,55 @@
           "targetZoneId": "agronomie",
           "targetSceneId": "agronomie__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 71.8,
+          "yaw": 17.3,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 0.9,
+          "yaw": -52.2,
+          "label": "blé",
+          "arDesc": "blé"
+        },
+        {
+          "type": "ar",
+          "pitch": 18.8,
+          "yaw": 18.2,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 48.1,
+          "yaw": 93.8,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.8,
+          "yaw": 43.3,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 58.9,
+          "yaw": 40.4,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 27.1,
+          "yaw": -60.7,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ]
     },
@@ -733,6 +880,20 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.3,
+          "yaw": 82.8,
+          "label": "Salle de Lavage",
+          "arDesc": "Salle de Lavage"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.9,
+          "yaw": -90,
+          "label": "Salle Technique de Commandes",
+          "arDesc": "Salle Technique de Commandes"
         }
       ],
       "couloir-bloc__001": [
@@ -767,6 +928,20 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.9,
+          "yaw": -35.7,
+          "label": "Local Technique d'équipements",
+          "arDesc": "Local Technique d'équipements"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.5,
+          "yaw": 147,
+          "label": "Salle de Fertilisation et Traitement d'Eau",
+          "arDesc": "Salle de Fertilisation et Traitement d'Eau"
         }
       ],
       "couloir-bloc__002": [
@@ -785,6 +960,20 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 9.9,
+          "yaw": -28.1,
+          "label": "Salle de Réunion",
+          "arDesc": "Salle de Réunion"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.9,
+          "yaw": 147.6,
+          "label": "Salle de Préparation",
+          "arDesc": "Salle de Préparation"
         }
       ],
       "couloir-bloc__003": [
@@ -841,6 +1030,13 @@
           "targetZoneId": "couloir-serre",
           "targetSceneId": "couloir-serre__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.9,
+          "yaw": 92.3,
+          "label": "Unité Génétique et Amélioration des Plantes",
+          "arDesc": "Unité Génétique et Amélioration des Plantes"
         }
       ],
       "couloir-serre__002": [
@@ -885,6 +1081,13 @@
           "targetZoneId": "couloir-serre",
           "targetSceneId": "couloir-serre__002",
           "label": "→ sc.3"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.4,
+          "yaw": 90.6,
+          "label": "Unité Horticulture",
+          "arDesc": "Unité Horticulture"
         }
       ],
       "couloir-serre__004": [
@@ -929,6 +1132,20 @@
           "targetZoneId": "couloir-serre",
           "targetSceneId": "couloir-serre__004",
           "label": "→ sc.5"
+        },
+        {
+          "type": "ar",
+          "pitch": 13.5,
+          "yaw": 19.9,
+          "label": "Unité Agronomie",
+          "arDesc": "Unité Agronomie"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.1,
+          "yaw": -162,
+          "label": "Unité Hydroponie",
+          "arDesc": "Unité Hydroponie"
         }
       ]
     },
@@ -941,6 +1158,13 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 9.4,
+          "yaw": -101.2,
+          "label": "ventilation ext",
+          "arDesc": "ventilation ext"
         }
       ],
       "exterieur__001": [
@@ -967,6 +1191,28 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__000",
           "label": "🚪 Couloir Bloc Technique"
+        },
+        {
+          "type": "nav",
+          "pitch": -7.5,
+          "yaw": 170.2,
+          "targetZoneId": "exterieur",
+          "targetSceneId": "exterieur__000",
+          "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.1,
+          "yaw": 89.9,
+          "label": "Bloc Gestion Technique et Administrative",
+          "arDesc": "Bloc Gestion Technique et Administrative"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.5,
+          "yaw": -110.6,
+          "label": "Serre",
+          "arDesc": "Serre"
         }
       ],
       "exterieur__002": [
@@ -985,6 +1231,13 @@
           "targetZoneId": "bloc-protection",
           "targetSceneId": "bloc-protection__000",
           "label": "🔬 Bloc Protection des Plantes"
+        },
+        {
+          "type": "ar",
+          "pitch": 10.1,
+          "yaw": -147.9,
+          "label": "Bloc Protection des plantes",
+          "arDesc": "Bloc Protection des plantes"
         }
       ],
       "exterieur__003": [
@@ -995,6 +1248,13 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__004",
           "label": "→ sc.5"
+        },
+        {
+          "type": "ar",
+          "pitch": 2.1,
+          "yaw": -101,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__004": [
@@ -1005,6 +1265,13 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__005",
           "label": "→ sc.6"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.9,
+          "yaw": 46.6,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__005": [
@@ -1015,6 +1282,20 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__006",
           "label": "→ sc.7"
+        },
+        {
+          "type": "ar",
+          "pitch": 29.1,
+          "yaw": -68.3,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 22,
+          "yaw": 16.6,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__006": [
@@ -1025,6 +1306,27 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__007",
           "label": "→ sc.8"
+        },
+        {
+          "type": "ar",
+          "pitch": 16.1,
+          "yaw": -89.2,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 29,
+          "yaw": 11.2,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.3,
+          "yaw": 41.3,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__007": [
@@ -1035,6 +1337,13 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__008",
           "label": "→ sc.9"
+        },
+        {
+          "type": "ar",
+          "pitch": 16.7,
+          "yaw": -18.3,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__008": [
@@ -1065,6 +1374,20 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__011",
           "label": "→ sc.12"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.4,
+          "yaw": -14.1,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 9.3,
+          "yaw": 3.4,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__011": [
@@ -1075,6 +1398,13 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__012",
           "label": "→ sc.13"
+        },
+        {
+          "type": "ar",
+          "pitch": 17.5,
+          "yaw": -132.2,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__012": [
@@ -1085,6 +1415,27 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__013",
           "label": "→ sc.14"
+        },
+        {
+          "type": "ar",
+          "pitch": 20.9,
+          "yaw": -140.2,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 10.9,
+          "yaw": -113.3,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 19.8,
+          "yaw": 126.9,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__013": [
@@ -1095,6 +1446,27 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__014",
           "label": "→ sc.15"
+        },
+        {
+          "type": "ar",
+          "pitch": -0.3,
+          "yaw": -23.2,
+          "label": "le truc exterieur",
+          "arDesc": "le truc exterieur"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.5,
+          "yaw": 127.9,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 9.3,
+          "yaw": 109,
+          "label": "Ventilation ext",
+          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__014": [
@@ -1125,6 +1497,55 @@
           "targetZoneId": "couloir-serre",
           "targetSceneId": "couloir-serre__001",
           "label": "🚶 Couloir Serre"
+        },
+        {
+          "type": "ar",
+          "pitch": 54,
+          "yaw": -172.6,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.4,
+          "yaw": -159.9,
+          "label": "ventilation ext",
+          "arDesc": "ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 33,
+          "yaw": 117.3,
+          "label": "ventilation",
+          "arDesc": "ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 27,
+          "yaw": 153,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 51.4,
+          "yaw": 2.3,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 55.8,
+          "yaw": -145,
+          "label": "fenetre",
+          "arDesc": "fenetre"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.5,
+          "yaw": -127.9,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "genetique__001": [
@@ -1143,6 +1564,55 @@
           "targetZoneId": "genetique",
           "targetSceneId": "genetique__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 50.6,
+          "yaw": 8.8,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.1,
+          "yaw": -149.5,
+          "label": "ventilation ext",
+          "arDesc": "ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 36.3,
+          "yaw": 103.5,
+          "label": "ventilation",
+          "arDesc": "ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 41,
+          "yaw": 74.8,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.5,
+          "yaw": 9.1,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 51.5,
+          "yaw": -144.4,
+          "label": "fenetre",
+          "arDesc": "fenetre"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.2,
+          "yaw": -96.3,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "genetique__002": [
@@ -1153,6 +1623,55 @@
           "targetZoneId": "genetique",
           "targetSceneId": "genetique__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 48.6,
+          "yaw": -0.2,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 17.1,
+          "yaw": -132.7,
+          "label": "ventilation ext",
+          "arDesc": "ventilation ext"
+        },
+        {
+          "type": "ar",
+          "pitch": 39.1,
+          "yaw": 91.2,
+          "label": "ventilation",
+          "arDesc": "ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 19.1,
+          "yaw": 24.2,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.5,
+          "yaw": 3.3,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 36.1,
+          "yaw": -10.8,
+          "label": "fenetre",
+          "arDesc": "fenetre"
+        },
+        {
+          "type": "ar",
+          "pitch": 10,
+          "yaw": -100.4,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ]
     },
@@ -1173,6 +1692,62 @@
           "targetZoneId": "horticulture",
           "targetSceneId": "horticulture__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": -1.1,
+          "yaw": 58.3,
+          "label": "Courgette",
+          "arDesc": "Courgette"
+        },
+        {
+          "type": "ar",
+          "pitch": 66,
+          "yaw": -80,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.5,
+          "yaw": 77.4,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.8,
+          "yaw": 95.1,
+          "label": "Système de ventilation",
+          "arDesc": "Système de ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 46,
+          "yaw": -19.1,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 50.6,
+          "yaw": 82.6,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.7,
+          "yaw": 33.5,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 19.5,
+          "yaw": 105.7,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
         }
       ],
       "horticulture__001": [
@@ -1191,6 +1766,62 @@
           "targetZoneId": "horticulture",
           "targetSceneId": "horticulture__002",
           "label": "→ sc.3"
+        },
+        {
+          "type": "ar",
+          "pitch": -4.9,
+          "yaw": 68.7,
+          "label": "Courgette",
+          "arDesc": "Courgette"
+        },
+        {
+          "type": "ar",
+          "pitch": 26.8,
+          "yaw": -3.8,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 39.7,
+          "yaw": 71,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.1,
+          "yaw": 160.1,
+          "label": "Système de ventilation",
+          "arDesc": "Système de ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 24.2,
+          "yaw": 18.2,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 72.1,
+          "yaw": 93,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.6,
+          "yaw": 104.2,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 41.7,
+          "yaw": 174.1,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
         }
       ],
       "horticulture__002": [
@@ -1201,6 +1832,62 @@
           "targetZoneId": "horticulture",
           "targetSceneId": "horticulture__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": -3.2,
+          "yaw": 38.4,
+          "label": "Courgette",
+          "arDesc": "Courgette"
+        },
+        {
+          "type": "ar",
+          "pitch": 16.3,
+          "yaw": -10.8,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 20,
+          "yaw": 12.6,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.5,
+          "yaw": 140.7,
+          "label": "Système de ventilation",
+          "arDesc": "Système de ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.9,
+          "yaw": 0.3,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 72,
+          "yaw": 105,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 13.9,
+          "yaw": 103.7,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 60.6,
+          "yaw": -21.1,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
         }
       ]
     },
@@ -1221,6 +1908,76 @@
           "targetZoneId": "hydroponie",
           "targetSceneId": "hydroponie__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 68.5,
+          "yaw": 16.8,
+          "label": "CO2",
+          "arDesc": "CO2"
+        },
+        {
+          "type": "ar",
+          "pitch": 19.7,
+          "yaw": -175.2,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 33.5,
+          "yaw": 93.8,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": -20,
+          "yaw": -126.9,
+          "label": "Fraise",
+          "arDesc": "Fraise"
+        },
+        {
+          "type": "ar",
+          "pitch": -1.5,
+          "yaw": -174.8,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.4,
+          "yaw": 159.5,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 24.1,
+          "yaw": -151.1,
+          "label": "Sensors",
+          "arDesc": "Sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.8,
+          "yaw": 173.5,
+          "label": "Ventilation dehors",
+          "arDesc": "Ventilation dehors"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.4,
+          "yaw": 143.9,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 50.4,
+          "yaw": 162.3,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
         }
       ],
       "hydroponie__001": [
@@ -1242,45 +1999,73 @@
         },
         {
           "type": "ar",
-          "pitch": 29.6,
-          "yaw": 5,
-          "label": "truc qui lache co2",
-          "arDesc": "truc qui lache co2"
+          "pitch": 28.1,
+          "yaw": 34,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         },
         {
           "type": "ar",
-          "pitch": -21.3,
-          "yaw": -127.4,
-          "label": "fraise",
-          "arDesc": "fraise"
+          "pitch": 28.7,
+          "yaw": 5.8,
+          "label": "CO2",
+          "arDesc": "CO2"
         },
         {
           "type": "ar",
-          "pitch": 4.3,
-          "yaw": 165.4,
-          "label": "ventilation",
-          "arDesc": "ventilation"
-        },
-        {
-          "type": "ar",
-          "pitch": 46.7,
-          "yaw": -95.7,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": -1.7,
-          "yaw": -176.9,
-          "label": "fertigation automatique",
-          "arDesc": "fertigation automatique"
-        },
-        {
-          "type": "ar",
-          "pitch": 37.3,
-          "yaw": -178.3,
+          "pitch": 38,
+          "yaw": -178.1,
           "label": "brumisateur",
           "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": -20.9,
+          "yaw": -127.5,
+          "label": "Fraise",
+          "arDesc": "Fraise"
+        },
+        {
+          "type": "ar",
+          "pitch": -1.6,
+          "yaw": -176.8,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
+        },
+        {
+          "type": "ar",
+          "pitch": 39.6,
+          "yaw": 109.6,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 49.2,
+          "yaw": -97.1,
+          "label": "Sensors",
+          "arDesc": "Sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 3.7,
+          "yaw": 166.2,
+          "label": "Ventilation dehors",
+          "arDesc": "Ventilation dehors"
+        },
+        {
+          "type": "ar",
+          "pitch": 10.4,
+          "yaw": 117,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 47.1,
+          "yaw": 162.9,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
         }
       ],
       "hydroponie__002": [
@@ -1291,6 +2076,76 @@
           "targetZoneId": "hydroponie",
           "targetSceneId": "hydroponie__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 20.2,
+          "yaw": 4.1,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 18.6,
+          "yaw": -10.8,
+          "label": "CO2",
+          "arDesc": "CO2"
+        },
+        {
+          "type": "ar",
+          "pitch": 85.2,
+          "yaw": -48.2,
+          "label": "brumisateur",
+          "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": -17.1,
+          "yaw": -88.7,
+          "label": "Fraise",
+          "arDesc": "Fraise"
+        },
+        {
+          "type": "ar",
+          "pitch": -2.3,
+          "yaw": 171.6,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
+        },
+        {
+          "type": "ar",
+          "pitch": 45.3,
+          "yaw": 67.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 29.1,
+          "yaw": -43.2,
+          "label": "Sensors",
+          "arDesc": "Sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.7,
+          "yaw": 141.5,
+          "label": "Ventilation dehors",
+          "arDesc": "Ventilation dehors"
+        },
+        {
+          "type": "ar",
+          "pitch": 12.2,
+          "yaw": 72.1,
+          "label": "rideaux auto",
+          "arDesc": "rideaux auto"
+        },
+        {
+          "type": "ar",
+          "pitch": 67.2,
+          "yaw": 124.6,
+          "label": "fenetre auto",
+          "arDesc": "fenetre auto"
         }
       ]
     },
@@ -1311,6 +2166,76 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__001",
           "label": "🚪 Couloir Bloc Technique"
+        },
+        {
+          "type": "ar",
+          "pitch": 12.2,
+          "yaw": 86.8,
+          "label": "controle 1",
+          "arDesc": "controle 1"
+        },
+        {
+          "type": "ar",
+          "pitch": 9.8,
+          "yaw": 62.1,
+          "label": "controle 2",
+          "arDesc": "controle 2"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.7,
+          "yaw": 48.5,
+          "label": "controle 3",
+          "arDesc": "controle 3"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.3,
+          "yaw": 40.2,
+          "label": "controle 4",
+          "arDesc": "controle 4"
+        },
+        {
+          "type": "ar",
+          "pitch": 4,
+          "yaw": 34.5,
+          "label": "controle 5",
+          "arDesc": "controle 5"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.3,
+          "yaw": -44.3,
+          "label": "controle 11",
+          "arDesc": "controle 11"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.4,
+          "yaw": -17.6,
+          "label": "controle 12",
+          "arDesc": "controle 12"
+        },
+        {
+          "type": "ar",
+          "pitch": 6.2,
+          "yaw": -6.4,
+          "label": "controle 13",
+          "arDesc": "controle 13"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.3,
+          "yaw": -0.2,
+          "label": "controle 14",
+          "arDesc": "controle 14"
+        },
+        {
+          "type": "ar",
+          "pitch": 3.5,
+          "yaw": 4,
+          "label": "controle 15",
+          "arDesc": "controle 15"
         }
       ],
       "local-technique__001": [
@@ -1329,6 +2254,76 @@
           "targetZoneId": "local-technique",
           "targetSceneId": "local-technique__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.5,
+          "yaw": 146.2,
+          "label": "controle 1",
+          "arDesc": "controle 1"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.9,
+          "yaw": 127.3,
+          "label": "controle 2",
+          "arDesc": "controle 2"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.2,
+          "yaw": 95.7,
+          "label": "controle 3",
+          "arDesc": "controle 3"
+        },
+        {
+          "type": "ar",
+          "pitch": 10.2,
+          "yaw": 62.7,
+          "label": "controle 4",
+          "arDesc": "controle 4"
+        },
+        {
+          "type": "ar",
+          "pitch": 8,
+          "yaw": 41.5,
+          "label": "controle 5",
+          "arDesc": "controle 5"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.4,
+          "yaw": -139.4,
+          "label": "controle 11",
+          "arDesc": "controle 11"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.4,
+          "yaw": -107.4,
+          "label": "controle 12",
+          "arDesc": "controle 12"
+        },
+        {
+          "type": "ar",
+          "pitch": 12.4,
+          "yaw": -60.3,
+          "label": "controle 13",
+          "arDesc": "controle 13"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.8,
+          "yaw": -32.5,
+          "label": "controle 14",
+          "arDesc": "controle 14"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.4,
+          "yaw": -20.3,
+          "label": "controle 15",
+          "arDesc": "controle 15"
         }
       ],
       "local-technique__002": [
@@ -1347,6 +2342,76 @@
           "targetZoneId": "local-technique",
           "targetSceneId": "local-technique__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.2,
+          "yaw": -110.5,
+          "label": "controle 13",
+          "arDesc": "controle 13"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.7,
+          "yaw": -79.5,
+          "label": "controle 14",
+          "arDesc": "controle 14"
+        },
+        {
+          "type": "ar",
+          "pitch": 13.8,
+          "yaw": -33.3,
+          "label": "controle 15",
+          "arDesc": "controle 15"
+        },
+        {
+          "type": "ar",
+          "pitch": 3.4,
+          "yaw": -132.7,
+          "label": "controle 11",
+          "arDesc": "controle 11"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.6,
+          "yaw": -124.3,
+          "label": "controle 12",
+          "arDesc": "controle 12"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.1,
+          "yaw": -168.5,
+          "label": "controle 1",
+          "arDesc": "controle 1"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.7,
+          "yaw": -173.8,
+          "label": "controle 2",
+          "arDesc": "controle 2"
+        },
+        {
+          "type": "ar",
+          "pitch": 5.8,
+          "yaw": 177.2,
+          "label": "controle 3",
+          "arDesc": "controle 3"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.4,
+          "yaw": 164.3,
+          "label": "controle 4",
+          "arDesc": "controle 4"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.6,
+          "yaw": 139.8,
+          "label": "controle 5",
+          "arDesc": "controle 5"
         }
       ]
     },
@@ -1367,6 +2432,13 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__000",
           "label": "🚪 Couloir Bloc Technique"
+        },
+        {
+          "type": "ar",
+          "pitch": 5,
+          "yaw": -33.3,
+          "label": "Monitoring",
+          "arDesc": "Monitoring"
         }
       ],
       "salle-controle__001": [
@@ -1377,6 +2449,13 @@
           "targetZoneId": "salle-controle",
           "targetSceneId": "salle-controle__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 10.8,
+          "yaw": -16.5,
+          "label": "Monitoring",
+          "arDesc": "Monitoring"
         }
       ]
     },
@@ -1397,6 +2476,34 @@
           "targetZoneId": "couloir-bloc",
           "targetSceneId": "couloir-bloc__001",
           "label": "🚪 Couloir Bloc Technique"
+        },
+        {
+          "type": "ar",
+          "pitch": -18.7,
+          "yaw": -36.5,
+          "label": "Chaudière",
+          "arDesc": "Chaudière"
+        },
+        {
+          "type": "ar",
+          "pitch": -13.7,
+          "yaw": -1.2,
+          "label": "Chaudière",
+          "arDesc": "Chaudière"
+        },
+        {
+          "type": "ar",
+          "pitch": -5.9,
+          "yaw": 24.5,
+          "label": "Audoucisseur",
+          "arDesc": "Audoucisseur"
+        },
+        {
+          "type": "ar",
+          "pitch": -10.8,
+          "yaw": 67.5,
+          "label": "Station de fertigation",
+          "arDesc": "Station de fertigation"
         }
       ],
       "salle-fertigation__001": [
@@ -1415,9 +2522,46 @@
           "targetZoneId": "salle-fertigation",
           "targetSceneId": "salle-fertigation__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": -14.3,
+          "yaw": -128.4,
+          "label": "Chaudière",
+          "arDesc": "Chaudière"
+        },
+        {
+          "type": "ar",
+          "pitch": -20.9,
+          "yaw": -43.7,
+          "label": "Audoucisseur",
+          "arDesc": "Audoucisseur"
+        },
+        {
+          "type": "ar",
+          "pitch": -4.9,
+          "yaw": 132.1,
+          "label": "Station de fertigation",
+          "arDesc": "Station de fertigation"
         }
       ],
-      "salle-fertigation__002": []
+      "salle-fertigation__002": [
+        {
+          "type": "ar",
+          "pitch": -6.4,
+          "yaw": 97.5,
+          "label": "Station de fertigation",
+          "arDesc": "Station de fertigation"
+        },
+        {
+          "type": "nav",
+          "pitch": -27.7,
+          "yaw": -164.9,
+          "targetZoneId": "salle-fertigation",
+          "targetSceneId": "salle-fertigation__001",
+          "label": "→ sc.2"
+        }
+      ]
     },
     "salle-lavage": {
       "salle-lavage__000": [
@@ -1496,6 +2640,20 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.4,
+          "yaw": 101.2,
+          "label": "Avocatier",
+          "arDesc": "Avocatier"
+        },
+        {
+          "type": "ar",
+          "pitch": -5.7,
+          "yaw": -75.4,
+          "label": "cactus malade",
+          "arDesc": "cactus malade"
         }
       ],
       "unite-protection__001": [
@@ -1522,6 +2680,27 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__004",
           "label": "→ sc.5"
+        },
+        {
+          "type": "ar",
+          "pitch": -11.7,
+          "yaw": 137.2,
+          "label": "tomates malades",
+          "arDesc": "tomates malades"
+        },
+        {
+          "type": "ar",
+          "pitch": -4.8,
+          "yaw": 33.2,
+          "label": "ble malade",
+          "arDesc": "ble malade"
+        },
+        {
+          "type": "ar",
+          "pitch": -11.9,
+          "yaw": -140.4,
+          "label": "tomate malades",
+          "arDesc": "tomate malades"
         }
       ],
       "unite-protection__002": [
@@ -1540,6 +2719,27 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": -9.9,
+          "yaw": -122.6,
+          "label": "tomate malades",
+          "arDesc": "tomate malades"
+        },
+        {
+          "type": "ar",
+          "pitch": -5.2,
+          "yaw": -62.5,
+          "label": "cactus malade",
+          "arDesc": "cactus malade"
+        },
+        {
+          "type": "ar",
+          "pitch": -8.4,
+          "yaw": 120.9,
+          "label": "blé malade",
+          "arDesc": "blé malade"
         }
       ],
       "unite-protection__003": [
@@ -1550,6 +2750,27 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__002",
           "label": "→ sc.3"
+        },
+        {
+          "type": "ar",
+          "pitch": -10.2,
+          "yaw": 17.4,
+          "label": "cactus malade",
+          "arDesc": "cactus malade"
+        },
+        {
+          "type": "ar",
+          "pitch": -6.5,
+          "yaw": -53.8,
+          "label": "tomate malade",
+          "arDesc": "tomate malade"
+        },
+        {
+          "type": "ar",
+          "pitch": -1,
+          "yaw": -122.8,
+          "label": "ble malade",
+          "arDesc": "ble malade"
         }
       ],
       "unite-protection__004": [
@@ -1560,6 +2781,20 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__005",
           "label": "→ sc.6"
+        },
+        {
+          "type": "ar",
+          "pitch": -9.3,
+          "yaw": -72.4,
+          "label": "tomate malades",
+          "arDesc": "tomate malades"
+        },
+        {
+          "type": "ar",
+          "pitch": 4.3,
+          "yaw": 33.7,
+          "label": "plante x",
+          "arDesc": "plante x"
         }
       ],
       "unite-protection__005": [
@@ -1570,6 +2805,20 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__000",
           "label": "→ sc.1"
+        },
+        {
+          "type": "ar",
+          "pitch": 22.5,
+          "yaw": -93.8,
+          "label": "avocat",
+          "arDesc": "avocat"
+        },
+        {
+          "type": "ar",
+          "pitch": 14.5,
+          "yaw": 92.3,
+          "label": "avocat",
+          "arDesc": "avocat"
         }
       ]
     }

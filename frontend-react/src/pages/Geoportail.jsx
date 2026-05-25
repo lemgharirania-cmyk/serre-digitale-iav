@@ -9,7 +9,7 @@ import SectionApropos   from '../components/geoportail/SectionApropos'
 import SectionCampus    from '../components/geoportail/SectionCampus'
 import SectionPlan2D    from '../components/geoportail/SectionPlan2D'
 import SectionDonnees   from '../components/geoportail/SectionDonnees'
-import SectionVisite    from '../components/geoportail/SectionVisite'
+import SectionVisite from "../components/geoportail/visite/SectionVisite";
 import FooterGeoportail from '../components/geoportail/FooterGeoportail'
 
 export default function Geoportail() {

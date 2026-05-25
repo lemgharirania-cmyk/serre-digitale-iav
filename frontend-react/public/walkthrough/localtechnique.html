@@ -26,9 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .pnlm-hotspot-base .pnlm-sprite{display:none!important}
 
 /* ── VIGNETTE ── */
-#vignette{position:fixed;inset:0;z-index:10;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.45) 100%)}
-
+#vignette { display: none; }
 /* ── ATMOSPHERE ── */
 #atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
   background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.15) 100%)}
@@ -121,8 +119,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 
 <script>
-const START_ZONE     = 'agronomie';
-const RESTRICT_ZONES = ['agronomie'];
+const START_ZONE     = 'local-technique';
+const RESTRICT_ZONES = ['local-technique'];
 
 let manifest, zones={}, hotspots={};
 let curZone, curScene;

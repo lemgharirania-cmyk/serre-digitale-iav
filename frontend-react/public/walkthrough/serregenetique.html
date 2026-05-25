@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroBioTech — Visite Virtuelle</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;background:#000}
+
+/* ── PANNELLUM SLOTS ── */
+#pano-a,#pano-b{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:auto}
+#pano-a{opacity:1}
+#pano-b{opacity:0;pointer-events:none}
+
+/* Hide all Pannellum chrome */
+.pnlm-about-msg,.pnlm-panorama-info,.pnlm-controls-container,
+.pnlm-load-box,.pnlm-lbar,.pnlm-lbar-fill,.pnlm-load-button,
+.pnlm-loading,.pnlm-compass{display:none!important}
+.pnlm-hotspot-base{background:transparent!important;border:none!important;
+  width:auto!important;height:auto!important;overflow:visible!important}
+.pnlm-hotspot-base .pnlm-sprite{display:none!important}
+
+/* ── VIGNETTE ── */
+#vignette { display: none; }
+
+/* ── ATMOSPHERE ── */
+#atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.15) 100%)}
+
+/* ── NAV HOTSPOTS ── */
+.hs-nav{
+  width:58px;height:58px;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.38);
+  box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:center;
+  animation:nav-breathe 3.5s ease-in-out infinite;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.hs-cross{
+  width:58px;height:58px;border-radius:50%;cursor:pointer;
+  background:rgba(147,197,253,.13);
+  border:1px solid rgba(147,197,253,.4);
+  box-shadow:0 2px 20px rgba(30,80,200,.18),0 0 0 6px rgba(147,197,253,.06);
+  display:flex;align-items:center;justify-content:center;
+  animation:nav-breathe 3.5s ease-in-out infinite;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.hs-nav:hover{transform:scale(1.12);background:rgba(255,255,255,.22)}
+.hs-cross:hover{transform:scale(1.12);background:rgba(147,197,253,.24)}
+@keyframes nav-breathe{
+  0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05)}
+  50%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 14px rgba(255,255,255,.0)}}
+
+/* ── SIDE NAV ARROWS ── */
+.arrow{position:fixed;top:50%;z-index:50;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  cursor:pointer;color:rgba(255,255,255,.7);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;backdrop-filter:blur(8px)}
+.arrow:hover{background:rgba(255,255,255,.2);color:white;border-color:rgba(255,255,255,.4)}
+.arrow.L{left:16px}.arrow.R{right:16px}
+.arrow.off{opacity:0;pointer-events:none}
+
+/* ── ZONE LABEL — bottom right glass pill ── */
+.zf{
+  position:fixed;bottom:28px;right:28px;z-index:50;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:12px;padding:10px 16px;
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+  opacity:0;pointer-events:none;
+  transform:translateY(6px) scale(.97);
+  transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.2,.64,1)}
+.zf.show{opacity:1;transform:translateY(0) scale(1)}
+.zf-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);margin-bottom:3px}
+.zf-name{font-size:13px;font-weight:500;color:rgba(255,255,255,.9);letter-spacing:-.01em}
+.zf-unit{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;font-weight:300}
+
+/* ── SCENE COUNTER ── */
+.scene-ctr{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;
+  background:rgba(255,255,255,.1);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.18);border-radius:999px;
+  padding:5px 14px;font-size:11px;font-weight:500;color:rgba(255,255,255,.55);
+  letter-spacing:.04em;opacity:0;transition:opacity .4s}
+.scene-ctr.show{opacity:1}
+
+/* ── TRANSITION FLASH — brief exposure on scene change ── */
+#flash{position:fixed;inset:0;z-index:200;pointer-events:none;
+  background:rgba(255,255,255,0);transition:background .08s ease}
+#flash.on{background:rgba(255,255,255,.04)}
+
+.iot-hud{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:150;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+.iot-group{display:flex;align-items:stretch;gap:5px;padding:6px 7px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:22px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow:visible;box-shadow:0 2px 16px rgba(0,0,0,.12)}
+.iot-divider{width:1px;align-self:stretch;margin:4px 3px;flex-shrink:0;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.2) 30%,rgba(255,255,255,.2) 70%,transparent)}
+.iot-pill{position:relative;width:70px;padding:11px 6px 10px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:default;pointer-events:all;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 -1px 0 rgba(0,0,0,.06) inset,0 3px 14px rgba(0,0,0,.14);transition:transform .28s cubic-bezier(.34,1.35,.64,1),box-shadow .28s ease,background .28s ease,border-color .28s ease;overflow:visible}
+.iot-pill.env::after{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;border-radius:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(120,200,155,.55),transparent)}
+.iot-pill.irr::after{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;border-radius:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(100,175,225,.55),transparent)}
+.iot-pill:hover{transform:scale(1.12) translateY(-4px);background:rgba(255,255,255,.19);border-color:rgba(255,255,255,.34);box-shadow:0 1px 0 rgba(255,255,255,.22) inset,0 12px 30px rgba(0,0,0,.18)}
+.iot-icon{width:17px;height:17px;flex-shrink:0;opacity:.7}
+.iot-pill.env .iot-icon{color:rgba(140,215,170,1)}
+.iot-pill.irr .iot-icon{color:rgba(120,195,235,1)}
+.iot-pill:hover .iot-icon{opacity:.9}
+.iot-val{font-family:'DM Sans',system-ui,sans-serif;font-size:16px;font-weight:500;line-height:1;color:rgba(255,255,255,.88);letter-spacing:-.3px}
+.iot-unit{font-family:'DM Sans',system-ui,sans-serif;font-size:8px;font-weight:400;color:rgba(255,255,255,.42);letter-spacing:.8px;text-transform:uppercase}
+.iot-tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(5px);background:rgba(255,255,255,.14);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid rgba(255,255,255,.24);color:rgba(255,255,255,.86);font-family:'DM Sans',system-ui,sans-serif;font-size:10px;font-weight:400;letter-spacing:.2px;white-space:nowrap;padding:5px 11px;border-radius:9px;pointer-events:none;opacity:0;z-index:10;transition:opacity .18s ease,transform .18s ease;box-shadow:0 4px 18px rgba(0,0,0,.16),0 1px 0 rgba(255,255,255,.14) inset}
+.iot-pill:hover .iot-tip{opacity:1;transform:translateX(-50%) translateY(0)}
+.iot-pip{position:absolute;top:7px;right:7px;width:5px;height:5px;border-radius:50%;background:rgba(140,230,170,.9);box-shadow:0 0 5px rgba(140,230,170,.45);animation:pip-pulse 2.8s ease-in-out infinite}
+@keyframes pip-pulse{0%,100%{opacity:.88;transform:scale(1)}50%{opacity:.22;transform:scale(.72)}}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* Nav arrows */
+.arrow{position:fixed;top:50%;z-index:201;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.1);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);
+  cursor:pointer;color:rgba(255,255,255,.7);font-size:18px;
+  display:flex;align-items:center;justify-content:center;transition:.2s}
+.arrow:hover{background:rgba(255,255,255,.2);color:white}
+.arrow.L{left:14px}.arrow.R{right:14px}
+.arrow.off{opacity:0;pointer-events:none}
+
+/* Zone flash */
+.zf{position:fixed;bottom:24px;right:24px;z-index:300;
+  background:rgba(15,15,15,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.12);border-radius:14px;
+  padding:10px 18px;text-align:left;
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;
+  transform:translateY(8px);
+  transition:opacity .3s ease,transform .3s ease}
+.zf.show{opacity:1;transform:translateY(0)}
+.zf-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.92);letter-spacing:.01em}
+.zf-unit{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* ── AR Popup — dark glassmorphism premium ── */
+.ar-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;
+  display:flex;align-items:center;justify-content:flex-end;padding:20px}
+
+.ar-card{
+  width:320px;max-height:calc(100vh - 48px);
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:24px;
+  box-shadow:0 8px 40px rgba(0,20,60,.13),0 2px 8px rgba(0,20,60,.07),0 1px 0 rgba(255,255,255,.95) inset;
+  display:flex;flex-direction:column;overflow:hidden;pointer-events:all;
+  transform:translateX(360px) scale(.96);opacity:0;
+  transition:transform .38s cubic-bezier(.34,1.08,.64,1),opacity .28s ease}
+.ar-card.open{transform:translateX(0) scale(1);opacity:1}
+
+/* ── HERO ── */
+.ar-hero{
+  position:relative;height:130px;flex-shrink:0;overflow:hidden;
+  display:flex;align-items:flex-end;padding-bottom:18px}
+.ar-hero-bg{position:absolute;inset:0;opacity:.7}
+.ar-hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:50px;
+  background:linear-gradient(to bottom,transparent,rgba(0,0,0,.12));
+  pointer-events:none}
+.ar-hero-anim{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.ar-hero-content{
+  position:relative;z-index:1;
+  display:flex;align-items:flex-end;gap:12px;padding:0 16px;width:100%}
+.ar-hero-icon{
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.45);
+  box-shadow:0 2px 8px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,.8) inset;
+  margin-bottom:2px}
+.ar-hero-text{flex:1;min-width:0}
+.ar-hero-label{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:8.5px;font-weight:500;text-transform:uppercase;letter-spacing:1.1px;
+  color:rgba(255,255,255,.55);margin-bottom:3px}
+.ar-hero-text h3{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:16px;font-weight:700;color:#fff;
+  line-height:1.15;margin:0 0 8px;
+  text-shadow:0 1px 8px rgba(0,0,0,.22)}
+/* ── BIG STATE BADGE in hero ── */
+.ar-state-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:99px;
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11.5px;font-weight:700;letter-spacing:.3px;
+  border:1.5px solid rgba(255,255,255,.4);
+  backdrop-filter:blur(8px);
+  box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.ar-state-pill.on{background:rgba(34,197,94,.28);color:#fff}
+.ar-state-pill.off{background:rgba(0,0,0,.22);color:rgba(255,255,255,.8)}
+.ar-state-pill.unknown{background:rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+.ar-state-pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ar-state-pill.on .ar-state-pill-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+.ar-state-pill.off .ar-state-pill-dot{background:#f87171;box-shadow:0 0 6px #f87171}
+.ar-state-pill.unknown .ar-state-pill-dot{background:rgba(255,255,255,.4)}
+
+/* ── CLOSE ── */
+.ar-close{
+  position:absolute;top:10px;right:10px;z-index:10;
+  width:26px;height:26px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(0,0,0,.15);
+  cursor:pointer;color:rgba(255,255,255,.85);font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s}
+.ar-close:hover{background:rgba(0,0,0,.3)}
+
+/* ── REASON STRIP ── */
+.ar-reason-strip{
+  flex-shrink:0;
+  padding:10px 16px;
+  background:rgba(0,0,0,.025);
+  border-bottom:1px solid rgba(0,0,0,.055)}
+.ar-reason-text{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11px;color:rgba(0,0,0,.45);line-height:1.45;font-style:italic}
+
+/* ── CONTENT ── */
+.ar-content{
+  flex:1;overflow-y:auto;padding:16px 16px 20px;
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.07) transparent}
+.ar-content::-webkit-scrollbar{width:3px}
+.ar-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+
+/* ── SECTION HEADERS ── */
+.ar-section-title{
+  font-family:'DM Mono','JetBrains Mono',monospace;
+  font-size:8px;font-weight:600;text-transform:uppercase;
+  letter-spacing:1.1px;color:var(--accent,#059669);
+  margin:18px 0 8px;opacity:.75}
+.ar-section-title:first-child{margin-top:0}
+
+/* ── SENSOR ROW (value vs threshold) ── */
+.ar-sensor-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px solid rgba(0,0,0,.045)}
+.ar-sensor-row:last-child{border-bottom:none}
+.ar-sensor-label{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11.5px;color:rgba(0,0,0,.42);flex:1}
+.ar-sensor-val{
+  font-family:'DM Mono','JetBrains Mono',monospace;
+  font-size:14px;font-weight:600;color:rgba(0,0,0,.78);min-width:52px;text-align:right}
+.ar-sensor-unit{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:10px;color:rgba(0,0,0,.3);min-width:30px}
+.ar-sensor-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ar-sensor-dot.ok{background:#22c55e}.ar-sensor-dot.warn{background:#f59e0b}.ar-sensor-dot.err{background:#ef4444}.ar-sensor-dot.na{background:rgba(0,0,0,.15)}
+
+/* ── INFO ROWS ── */
+.ar-info-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.ar-info-row:last-child{border-bottom:none}
+.ar-info-label{font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:rgba(0,0,0,.4)}
+.ar-info-value{font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:rgba(0,0,0,.75);font-weight:500;text-align:right}
+.ar-badge{
+  display:inline-block;padding:2px 9px;border-radius:7px;
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:10.5px;font-weight:600;border:1px solid transparent}
+
+/* ── BULLETS ── */
+.ar-bullets{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+.ar-bullet{display:flex;align-items:flex-start;gap:8px;
+  font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:rgba(0,0,0,.52);line-height:1.6}
+.ar-bullet-dot{width:4px;height:4px;border-radius:50%;margin-top:7px;flex-shrink:0;
+  background:var(--accent,#059669);opacity:.65}
+
+/* ── IOT GRID ── */
+.iot-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.iot-card{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.055);border-radius:12px;padding:10px 11px}
+.iot-label{font-family:'DM Mono','JetBrains Mono',monospace;font-size:7.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.6px;color:rgba(0,0,0,.3);margin-bottom:3px}
+.iot-value{font-family:'DM Mono','JetBrains Mono',monospace;font-size:20px;font-weight:600;color:rgba(0,0,0,.8);line-height:1}
+.iot-unit{font-size:9.5px;color:rgba(0,0,0,.32);margin-top:2px;font-family:'DM Sans',system-ui,sans-serif}
+.iot-status{display:flex;align-items:center;gap:3px;margin-top:5px;
+  font-size:9px;color:rgba(0,0,0,.32);font-family:'DM Sans',system-ui,sans-serif}
+.iot-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.iot-dot.ok{background:#22c55e}.iot-dot.warn{background:#f59e0b}.iot-dot.err{background:#ef4444}
+.iot-refresh{font-family:'DM Mono','JetBrains Mono',monospace;font-size:9px;
+  color:rgba(0,0,0,.22);text-align:right;margin-top:8px;cursor:pointer;transition:color .15s}
+.iot-refresh:hover{color:rgba(0,0,0,.5)}
+.iot-loading{text-align:center;padding:22px;color:rgba(0,0,0,.28);font-size:11.5px;font-family:'DM Sans',system-ui,sans-serif}
+
+/* ── VIDEO ── */
+.video-wrap{border-radius:10px;overflow:hidden;aspect-ratio:16/9;
+  background:rgba(0,0,0,.04);margin-bottom:8px;border:1px solid rgba(0,0,0,.06)}
+.video-wrap iframe{width:100%;height:100%;border:none}
+.video-desc{font-size:11px;color:rgba(0,0,0,.38);line-height:1.55;font-family:'DM Sans',system-ui,sans-serif}
+
+/* ── ANIMATIONS ── */
+@keyframes ar-fade-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ar-stagger-1{animation:ar-fade-up .28s ease .04s both}
+.ar-stagger-2{animation:ar-fade-up .28s ease .10s both}
+.ar-stagger-3{animation:ar-fade-up .28s ease .16s both}
+@keyframes hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes hero-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes hero-drop{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) scaleY(1.1)}}
+@keyframes hero-pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.08)}}
+@keyframes hero-wave{0%,100%{d:path('M0 20 Q80 8 160 20 Q240 32 320 20')}50%{d:path('M0 20 Q60 32 120 20 Q180 8 240 20 Q300 32 360 20')}}
+@keyframes hero-bubble{0%{transform:translateY(30px);opacity:0}50%{opacity:.7}100%{transform:translateY(-10px);opacity:0}}
+
+.ar-thresh-block{margin-bottom:4px}
+.ar-thresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.ar-thresh-label{font-family:'DM Sans',system-ui,sans-serif;font-size:11.5px;color:rgba(0,0,0,.42)}
+.ar-thresh-val{font-family:'DM Mono','JetBrains Mono',monospace;font-size:13px;font-weight:600;color:rgba(0,0,0,.75)}
+.ar-thresh-unit{font-family:'DM Sans',system-ui,sans-serif;font-size:10px;color:rgba(0,0,0,.32)}
+.ar-thresh-bar-wrap{height:5px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.ar-thresh-bar{height:100%;border-radius:99px;transition:width .5s ease;min-width:3px}
+.ar-thresh-reason{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
+  font-family:'DM Sans',system-ui,sans-serif;font-size:11px;font-style:italic;margin-top:2px}
+.ar-thresh-reason.on{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);color:#15803d}
+.ar-thresh-reason.off{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.07);color:rgba(0,0,0,.42)}
+.ar-thresh-reason.unknown{background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.05);color:rgba(0,0,0,.3)}
+.ar-thresh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div id="pano-a"></div>
+<div id="pano-b"></div>
+<div id="vignette"></div>
+<div id="atmo"></div>
+<div id="flash"></div>
+
+<button class="arrow L off" id="prev" onclick="stepScene(-1)">‹</button>
+<button class="arrow R off" id="next" onclick="stepScene(1)">›</button>
+
+<div class="zf" id="zf">
+  <div class="zf-label">Zone active</div>
+  <div class="zf-name" id="zfn">—</div>
+  <div class="zf-unit" id="zfu"></div>
+</div>
+
+<div class="scene-ctr" id="scene-ctr">— / —</div>
+<div class="iot-hud" id="iot-hud">
+  <div class="iot-group">
+    <div class="iot-pill env" id="b-temp">
+      <div class="iot-pip"></div>
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+      <span class="iot-val" id="iot-temp">—</span>
+      <span class="iot-unit">°C</span>
+      <div class="iot-tip">Température air</div>
+    </div>
+    <div class="iot-pill env" id="b-hum">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      <span class="iot-val" id="iot-hum">—</span>
+      <span class="iot-unit">%</span>
+      <div class="iot-tip">Humidité relative</div>
+    </div>
+    <div class="iot-pill env" id="b-vpd">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M3 8h2M3 16h2M19 8h2M19 16h2M8 3v2M16 3v2M8 19v2M16 19v2"/></svg>
+      <span class="iot-val" id="iot-vpd">—</span>
+      <span class="iot-unit">kPa</span>
+      <div class="iot-tip">VPD</div>
+    </div>
+  </div>
+  <div class="iot-divider"></div>
+  <div class="iot-group">
+    <div class="iot-pill irr" id="b-ph">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h3a3 3 0 0 1 0 6H9V9z"/><path d="M15 15v3"/></svg>
+      <span class="iot-val" id="iot-ph">—</span>
+      <span class="iot-unit">pH</span>
+      <div class="iot-tip">pH solution</div>
+    </div>
+    <div class="iot-pill irr" id="b-ec">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="iot-val" id="iot-ec">—</span>
+      <span class="iot-unit">mS/cm</span>
+      <div class="iot-tip">Conductivité EC</div>
+    </div>
+    <div class="iot-pill irr" id="b-twater">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M12 12v4M10 14h4"/></svg>
+      <span class="iot-val" id="iot-twater">—</span>
+      <span class="iot-unit">°C eau</span>
+      <div class="iot-tip">Température eau</div>
+    </div>
+    <div class="iot-pill irr" id="b-level">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/><path d="M3 9h18" opacity=".4"/></svg>
+      <span class="iot-val" id="iot-level">—</span>
+      <span class="iot-unit">m</span>
+      <div class="iot-tip">Niveau réservoir</div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="ar-overlay">
+  <div class="ar-card" id="ar-card">
+    <div class="ar-hero" id="ar-hero">
+      <div class="ar-hero-anim" id="ar-hero-anim"></div>
+      <div class="ar-hero-bg" id="ar-hero-bg"></div>
+      <div class="ar-hero-content ar-stagger-1">
+        <div class="ar-hero-icon" id="ar-icon-wrap"></div>
+        <div class="ar-hero-text">
+          <div class="ar-hero-label" id="ar-category-label">DIGITAL TWIN</div>
+          <h3 id="ar-title">—</h3>
+          <div class="ar-state-pill unknown" id="ar-state-pill">
+            <div class="ar-state-pill-dot"></div>
+            <span id="ar-state-pill-text">—</span>
+          </div>
+        </div>
+      </div>
+      <button class="ar-close" onclick="closeAR()">✕</button>
+    </div>
+    <div class="ar-reason-strip ar-stagger-2" id="ar-reason-strip" style="display:none">
+      <div class="ar-reason-text" id="ar-reason-text"></div>
+    </div>
+    <div class="ar-content ar-stagger-3" id="ar-content"></div>
+  </div>
+</div>
+
+
+<script>
+const START_ZONE     = 'genetique';
+const RESTRICT_ZONES = ['genetique'];
+
+let manifest, zones={}, hotspots={};
+let curZone, curScene;
+const preloaded = new Set();
+let lastZoneId=null, flashT, sceneT;
+const navHistory=[];
+let viewers=[null,null], activeSlot=0;
+
+window.addEventListener('load', async ()=>{
+  const r = await fetch('images/manifest.json');
+  manifest = await r.json();
+  manifest.zones.forEach(z=>zones[z.id]=z);
+  hotspots = manifest.hotspots||{};
+  const p = new URLSearchParams(location.search);
+  const z = p.get('zone')||START_ZONE;
+  const s = p.get('scene')||zones[z]?.scenes[0]?.id;
+  load(z, s, true);
+  fetchIoT(); setInterval(fetchIoT,60000);
+  fetchThresholds();
+  fetchOutsideTemp(); setInterval(fetchOutsideTemp,600000);
+  document.addEventListener('keydown', e=>{
+    if(e.code==='ArrowRight') stepScene(1);
+    if(e.code==='ArrowLeft')  stepScene(-1);
+  });
+  // Show scene counter after short delay
+  setTimeout(()=>document.getElementById('scene-ctr').classList.add('show'), 800);
+});
+
+function goTo(zid, sid) {
+  if(RESTRICT_ZONES && !RESTRICT_ZONES.includes(zid)) return;
+  if(curZone && curScene) navHistory.push({zoneId:curZone, sceneId:curScene});
+  if(navHistory.length>50) navHistory.shift();
+  if(typeof closeAR==='function') closeAR();
+  load(zid, sid, false);
+}
+
+const pill=(r,g,b)=>`width:46px;height:46px;border-radius:50%;background:rgba(${r},${g},${b},.06);backdrop-filter:blur(14px) saturate(130%);-webkit-backdrop-filter:blur(14px) saturate(130%);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 14px rgba(${r},${g},${b},.15),0 1px 0 rgba(255,255,255,.5) inset;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .22s;overflow:hidden`;
+
+const aurora=(c1,c2,c3)=>`<div style="position:absolute;width:64px;height:64px;border-radius:50%;background:radial-gradient(ellipse at 65% 35%,${c1} 0%,${c2} 42%,${c3||'transparent'} 70%);top:-9px;left:-9px;pointer-events:none;z-index:0;opacity:.55"><\/div><div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(160deg,rgba(255,255,255,.28) 0%,transparent 50%);pointer-events:none;z-index:0"><\/div>`;
+
+const HS_DEFS = {
+  'fraise':{
+    style:pill(244,100,100)+';animation:hs-straw 3s ease-in-out infinite',
+    html:aurora('rgba(255,200,200,.95)','rgba(255,140,180,.6)','rgba(255,200,120,.25)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(220,80,80,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"\/>
+      <circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/>
+      <circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/>
+      <circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/>
+      <path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"\/>
+    <\/svg>`
+  },
+  'co2':{
+    style:pill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',
+    html:aurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1">
+      <circle cx="3" cy="7" r="2.5"\/>
+      <circle cx="12" cy="7" r="3.2"\/>
+      <circle cx="21" cy="7" r="2.5"\/>
+      <line x1="5.5" y1="7" x2="8.8" y2="7"\/>
+      <line x1="15.2" y1="7" x2="18.5" y2="7"\/>
+      <text x="1.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text>
+      <text x="9.8" y="9.2" font-size="4.5" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">C<\/text>
+      <text x="19.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text>
+    <\/svg>`
+  },
+  'brumisateur':{
+    style:pill(45,212,191)+';animation:hs-float 3s ease-in-out .2s infinite',
+    html:aurora('rgba(167,243,208,.95)','rgba(94,234,212,.6)','rgba(186,230,253,.25)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(13,148,136,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <rect x="2" y="9" width="10" height="6" rx="2"\/>
+      <path d="M12 12h3"\/>
+      <path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"\/>
+      <circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none" style="animation:hs-drop 1.6s ease-out infinite"\/>
+      <circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none" style="animation:hs-drop 1.6s ease-out .4s infinite"\/>
+      <circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none" style="animation:hs-drop 1.6s ease-out .8s infinite"\/>
+    <\/svg>`
+  },
+  'ventilation':{
+    style:pill(59,130,246),
+    html:aurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite">
+      <circle cx="12" cy="12" r="2"\/>
+      <path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/>
+      <path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/>
+      <path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/>
+    <\/svg>`
+  },
+  'système de refroidissement':{
+    style:pill(59,130,246)+';animation:hs-float 3.2s ease-in-out .6s infinite',
+    html:aurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="30" height="26" viewBox="0 0 24 20" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1">
+      <rect x="1" y="2" width="22" height="14" rx="2.5"\/>
+      <line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"\/>
+      <line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"\/>
+      <line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"\/>
+      <line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"\/>
+      <line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"\/>
+      <line x1="1" y1="9" x2="23" y2="9" stroke-width="1" stroke-dasharray="2 3" opacity=".35"\/>
+    <\/svg>`
+  },
+  'fertigation':{
+    style:pill(14,165,233)+';animation:hs-float 2.8s ease-in-out infinite',
+    html:aurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="30" viewBox="0 0 24 26" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <rect x="4" y="2" width="16" height="10" rx="2"\/>
+      <text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK<\/text>
+      <line x1="8" y1="12" x2="8" y2="18"\/>
+      <line x1="12" y1="12" x2="12" y2="18"\/>
+      <line x1="16" y1="12" x2="16" y2="18"\/>
+      <ellipse cx="8" cy="20" rx="1.5" ry="2" fill="rgba(56,189,248,.7)" stroke="none" style="animation:hs-drop 1.5s ease-in-out infinite"\/>
+      <ellipse cx="12" cy="20" rx="1.5" ry="2" fill="rgba(56,189,248,.7)" stroke="none" style="animation:hs-drop 1.5s ease-in-out .4s infinite"\/>
+      <ellipse cx="16" cy="20" rx="1.5" ry="2" fill="rgba(56,189,248,.7)" stroke="none" style="animation:hs-drop 1.5s ease-in-out .8s infinite"\/>
+    <\/svg>`
+  },
+  'sensors':{
+    style:pill(109,40,217)+';animation:hs-float 3s ease-in-out infinite',
+    html:aurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1">
+      <rect x="3" y="7" width="18" height="12" rx="2"\/>
+      <line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"\/>
+      <line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"\/>
+      <line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"\/>
+      <line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"\/>
+      <line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"\/>
+      <circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"\/>
+    <\/svg>`
+  },
+  'ventilation dehors':{
+    style:pill(6,182,212)+';animation:hs-float 2.6s ease-in-out .3s infinite',
+    html:aurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <rect x="2" y="4" width="12" height="16" rx="2"\/>
+      <line x1="5" y1="8" x2="11" y2="8" opacity=".6"\/>
+      <line x1="5" y1="11" x2="11" y2="11" opacity=".6"\/>
+      <line x1="5" y1="14" x2="11" y2="14" opacity=".6"\/>
+      <path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6" style="animation:hs-float 1.8s ease-in-out infinite"\/>
+      <path d="M18 6l2 2-2 2" style="animation:hs-float 1.8s ease-in-out infinite"\/>
+    <\/svg>`
+  },
+  'rideaux auto':{
+    style:pill(217,119,6)+';animation:hs-float 3.4s ease-in-out .1s infinite',
+    html:aurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.85)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1">
+      <line x1="2" y1="4" x2="22" y2="4"\/>
+      <circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/>
+      <circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/>
+      <circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/>
+      <circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/>
+      <path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"\/>
+      <path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"\/>
+    <\/svg>`
+  },
+  'fenetre auto':{
+    style:pill(6,182,212)+';animation:hs-float 3s ease-in-out .5s infinite',
+    html:aurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <rect x="2" y="3" width="20" height="18" rx="2"\/>
+      <line x1="12" y1="3" x2="12" y2="21" opacity=".35"\/>
+      <line x1="2" y1="12" x2="22" y2="12" opacity=".35"\/>
+      <path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"\/>
+      <path d="M16 6l3 0M17.5 4.5l1.5 1.5-1.5 1.5" stroke-width="1.4" style="animation:hs-float 1.8s ease-in-out infinite"\/>
+      <path d="M16 10l3 0M17.5 8.5l1.5 1.5-1.5 1.5" stroke-width="1.2" opacity=".6" style="animation:hs-float 1.8s ease-in-out .4s infinite"\/>
+    <\/svg>`
+  },
+  'courgette':{
+    style:pill(101,163,13)+';animation:hs-float 3.2s ease-in-out infinite',
+    html:aurora('rgba(187,247,208,.95)','rgba(134,197,22,.5)','rgba(217,249,157,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(77,124,15,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
+      <ellipse cx="12" cy="14" rx="7" ry="4.5" transform="rotate(-15 12 14)"\/>
+      <path d="M9 9.5C8 7 9 5 11 6"\/>
+      <path d="M11 6C12 4 14 5 13 7"\/>
+      <path d="M15 7C16 5.5 14 9.5 12 10"\/>
+    <\/svg>`
+  },
+  'systeme de ventilation':{
+    style:pill(59,130,246),
+    html:aurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite">
+      <circle cx="12" cy="12" r="2"\/>
+      <path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/>
+      <path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/>
+      <path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/>
+    <\/svg>`
+  },
+};
+
+      // Inject animations once — in global CSS order matters for Pannellum
+const animId = 'anim-hs-global';
+if(!document.getElementById(animId)){
+  const s=document.createElement('style');s.id=animId;
+  s.textContent=`
+    @keyframes hs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes hs-straw{0%,100%{transform:translateY(0);filter:drop-shadow(0 4px 12px rgba(244,100,100,.4))}50%{transform:translateY(-6px);filter:drop-shadow(0 8px 18px rgba(244,100,100,.25))}}
+    @keyframes hs-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes hs-drop{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-3px) scaleY(1.08)}}
+    @keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+    @keyframes hs-mist{0%{opacity:.9;transform:translateY(0) scale(1)}60%{opacity:.4;transform:translateY(-8px) scale(1.15)}100%{opacity:0;transform:translateY(-14px) scale(.8)}}
+    @keyframes hs-airflow{0%{opacity:0;transform:translateX(-4px)}40%{opacity:1}100%{opacity:0;transform:translateX(6px)}}
+    @keyframes hs-particle-l{0%{opacity:.8;transform:translateX(0)}50%{opacity:.3;transform:translateX(-7px)}100%{opacity:0;transform:translateX(-12px)}}
+    @keyframes hs-curtain{0%,100%{d:path('M4 8C5 12 5 20 7 26C8 30 6 34 8 39L4 39Z')}50%{d:path('M4 8C6 13 4 21 8 26C9 30 5 34 7 39L4 39Z')}}
+  `;
+  document.head.appendChild(s);
+}
+
+
+function load(zid, sid, instant) {
+  const zone  = zones[zid];
+  const scene = zone?.scenes.find(s=>s.id===sid);
+  if(!zone||!scene) return;
+  curZone=zid; curScene=sid;
+  const idx = zone.scenes.indexOf(scene);
+
+  // UI updates
+  document.getElementById('prev').className = 'arrow L'+(idx===0?' off':'');
+  document.getElementById('next').className = 'arrow R'+(idx===zone.scenes.length-1?' off':'');
+  document.getElementById('scene-ctr').textContent = `${idx+1} / ${zone.scenes.length}`;
+
+  // Zone label
+  if(zid!==lastZoneId) {
+    lastZoneId=zid;
+    document.getElementById('zfn').textContent = zone.label;
+    document.getElementById('zfu').textContent = zone.unit!=='—' ? `Unité ${zone.unit}` : '';
+    const zf=document.getElementById('zf');
+    zf.classList.remove('show');
+    requestAnimationFrame(()=>{ zf.classList.add('show'); });
+    clearTimeout(sceneT);
+    sceneT=setTimeout(()=>zf.classList.remove('show'), 3000);
+  }
+
+  // Build hotspots — filter AR
+  const shs=(hotspots[zid]?.[sid]||[]).slice();
+  const fwdNav=shs.find(h=>h.type==='nav'&&h.targetSceneId!==sid&&h.targetZoneId===zid);
+  const hasAnyBack=shs.some(h=>zones[h.targetZoneId]?.scenes.findIndex(s=>s.id===h.targetSceneId)===idx-1);
+  if(fwdNav&&idx>0&&!hasAnyBack){
+    const by=((fwdNav.yaw+180)+360)%360;
+    shs.push({type:'nav',pitch:fwdNav.pitch,yaw:by>180?by-360:by,
+      targetZoneId:zid,targetSceneId:zone.scenes[idx-1].id,auto:true});
+  }
+  const prev=navHistory.length>0?navHistory[navHistory.length-1]:null;
+  const hasAnyCross=shs.some(h=>h.type==='cross');
+  const hasForward=shs.some(h=>!h.auto&&h.targetSceneId!==sid);
+  if(prev&&!hasAnyCross&&!hasForward){
+    const pz=zones[prev.zoneId];
+    if(pz&&(!RESTRICT_ZONES||RESTRICT_ZONES.includes(prev.zoneId))){
+      const refYaw=fwdNav?.yaw??(shs[0]?.yaw??0);
+      const by=((refYaw+180)+360)%360;
+      shs.push({type:'cross',pitch:fwdNav?.pitch??-20,yaw:by>180?by-360:by,
+        targetZoneId:prev.zoneId,targetSceneId:prev.sceneId,auto:true});
+    }
+  }
+
+  const fst=shs.find(h=>!h.auto)||shs[0];
+  const sy=fst?.yaw??0;
+  const sp=fst?Math.min(fst.pitch+20,5):0;
+
+  const phs=shs.map(hs=>{
+    if(hs.type==='ar'){
+      const desc=hs.arDesc||hs.label||'';
+      const rawKey=desc.toLowerCase().trim();
+      const _al={'ventilation':'ventilation', 'brumisateur':'brumisateur', 'co2':'co2', 'sensors':'sensors', 'fenetre':'fenetre auto', 'fenetres':'fenetre auto', 'rideaux':'rideaux auto', 'ventilation ext':'ventilation dehors'};
+      const hsKey=_al[rawKey]||rawKey;
+      const stateKey=hsGetState(hsKey);
+      const def=HS_DEFS[hsKey]||HS_DEFS['co2'];
+      const dotColor=stateKey==='on'?'#22c55e':'#ef4444';
+      const glowColor=stateKey==='on'?'rgba(34,197,94,.6)':'rgba(239,68,68,.5)';
+      return {
+        pitch:hs.pitch,yaw:hs.yaw,type:'custom',cssClass:'hs-ar-base',
+        createTooltipFunc:function(div){
+          div.style.cssText='background:transparent;border:none;width:auto;height:auto';
+          const inner=document.createElement('div');
+          inner.style.cssText=def.style+';position:relative';
+          inner.innerHTML=def.html;
+          if(stateKey!==null){
+            const dot=document.createElement('div');
+            dot.setAttribute('data-state-dot',hsKey);
+            dot.style.cssText='position:absolute;bottom:4px;right:4px;width:7px;height:7px;border-radius:50%;background:'+dotColor+';border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 4px '+glowColor+';animation:dot-pulse 2.4s ease-in-out infinite;z-index:10';
+            inner.appendChild(dot);
+          }
+          inner.addEventListener('mouseenter',()=>{inner.style.transform='scale(1.12)';});
+          inner.addEventListener('mouseleave',()=>{inner.style.transform='';});
+          div.appendChild(inner);
+          div.addEventListener('mousedown',e=>{e.stopPropagation();e.preventDefault();});
+        },
+        createTooltipArgs:{},
+        clickHandlerFunc:function(){openSimpleAR(desc);}
+      };
+    }
+    return ({
+    pitch:hs.pitch, yaw:hs.yaw, type:'custom',
+    cssClass:hs.type==='cross'?'hs-cross':'hs-nav',
+    createTooltipFunc:function(div){
+      const isX = hs.type==='cross';
+      const c = isX?'rgba(200,225,255,.9)':'rgba(255,255,255,.9)';
+      div.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"/>
+        <polyline points="5 12 12 5 19 12"/>
+      <\/svg>`;
+    },
+    createTooltipArgs:{},
+    clickHandlerFunc:function(){goTo(hs.targetZoneId,hs.targetSceneId);}
+    });
+  }).filter(Boolean);
+
+  // Dual-buffer crossfade
+  const nextSlot = instant?activeSlot:(activeSlot===0?1:0);
+  const nextId   = nextSlot===0?'pano-a':'pano-b';
+  const curId    = activeSlot===0?'pano-a':'pano-b';
+  const nextEl   = document.getElementById(nextId);
+  const curEl    = document.getElementById(curId);
+
+  if(window._fadeTimer){clearTimeout(window._fadeTimer);window._fadeTimer=null;}
+  if(viewers[nextSlot]){try{viewers[nextSlot].destroy();}catch(e){}viewers[nextSlot]=null;}
+  nextEl.innerHTML='';
+  nextEl.style.transition='none';
+  nextEl.style.opacity='0';
+  nextEl.style.pointerEvents='none';
+
+  // Brief flash on transition
+  if(!instant){
+    const fl=document.getElementById('flash');
+    fl.classList.add('on');
+    setTimeout(()=>fl.classList.remove('on'),80);
+  }
+
+  const v=pannellum.viewer(nextId,{
+    type:'equirectangular', panorama:scene.file,
+    autoLoad:true, autoRotate:0,
+    hfov:100, minHfov:60, maxHfov:120,
+    pitch:sp, yaw:sy, hotSpots:phs
+  });
+  viewers[nextSlot]=v;
+
+  v.on('load',()=>{
+    if(viewers[nextSlot]!==v) return;
+
+    if(instant){
+      nextEl.style.transition='none';
+      nextEl.style.opacity='1';
+      nextEl.style.pointerEvents='all';
+      activeSlot=nextSlot;
+    } else {
+      requestAnimationFrame(()=>{
+        nextEl.style.transition='opacity .55s cubic-bezier(.4,0,.2,1)';
+        nextEl.style.opacity='1';
+        nextEl.style.pointerEvents='all';
+        curEl.style.transition='opacity .55s cubic-bezier(.4,0,.2,1)';
+        curEl.style.opacity='0';
+        curEl.style.pointerEvents='none';
+      });
+      const slotToClean=activeSlot;
+      activeSlot=nextSlot;
+      window._fadeTimer=setTimeout(()=>{
+        if(viewers[slotToClean]){try{viewers[slotToClean].destroy();}catch(e){}viewers[slotToClean]=null;}
+        document.getElementById(slotToClean===0?'pano-a':'pano-b').innerHTML='';
+        window._fadeTimer=null;
+      },600);
+    }
+
+    setTimeout(updateHotspotDots,200);
+    // Preload neighbours
+    [-1,1,2].forEach(d=>{
+      const sc=zone.scenes[idx+d];
+      if(sc&&!preloaded.has(sc.file)){preloaded.add(sc.file);new Image().src=sc.file;}
+    });
+  });
+}
+
+// ── NO CAMERA BREATHING — causes hotspot drift ──
+
+
+const API = 'https://serre-digitale-iav.onrender.com';
+let iotData=null, outsideTemp=null, thresholds=[], activeAR=null;
+let arPositions={};
+
+const AR_CONTENT = {
+
+  'fraise': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"/>
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="13" cy="8.5" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/>
+      <path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"/>
+    <\/svg>`,
+    iconBg:'rgba(224,80,80,.18)', iconBorder:'rgba(252,165,165,.3)',
+    color:'#f87171', statusText:'En production', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 20% 50%, rgba(224,80,80,.38) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5,6,7].map(i=>`<ellipse cx="${180+i*22}" cy="${55+Math.sin(i)*12}" rx="${6+i%3}" ry="${8+i%2}" fill="rgba(224,80,80,${.08+i*.015})" style="animation:hero-float ${2.5+i*.3}s ease-in-out ${i*.25}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Fraisier en Production',
+    tabs:['Info','Vidéo'],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Culture hors-sol en système NFT — les racines baignent en continu dans un film nutritif fin, garantissant un apport constant en eau et nutriments.',
+        'La gestion précise du pH et de la conductivité électrique assure une absorption optimale des éléments minéraux par la plante.',
+        'Environnement contrôlé permettant une production continue toute l\'année.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Espèce',v:'Fragaria × ananassa'},
+        {k:'Méthode',v:'NFT Hors-sol'},
+        {k:'pH solution',v:'À COMPLÉTER'},
+        {k:'EC solution',v:'À COMPLÉTER'},
+        {k:'Température cible',v:'À COMPLÉTER'},
+      ]},
+    ],
+    video:{id:'q9jFwMe6tj4',desc:'Culture de fraisiers en système hydroponique NFT.'}
+  },
+
+  'co2': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="5" cy="12" r="3"/>
+      <circle cx="12" cy="12" r="4"/>
+      <circle cx="19" cy="12" r="3"/>
+      <line x1="8" y1="12" x2="8" y2="12"/>
+      <line x1="16" y1="12" x2="16" y2="12"/>
+      <text x="3.2" y="14.5" font-size="4.5" font-weight="700" fill="currentColor" stroke="none" font-family="monospace">O<\/text>
+      <text x="9.5" y="14.8" font-size="5.5" font-weight="700" fill="currentColor" stroke="none" font-family="monospace">C<\/text>
+      <text x="16.8" y="14.5" font-size="4.5" font-weight="700" fill="currentColor" stroke="none" font-family="monospace">O<\/text>
+    <\/svg>`,
+    iconBg:'rgba(16,185,129,.18)', iconBorder:'rgba(110,231,183,.3)',
+    color:'#34d399', statusText:'Enrichissement actif', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 25% 50%, rgba(16,185,129,.32) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4].map(i=>`<circle cx="${150+i*30}" cy="${60+Math.sin(i*1.5)*15}" r="${5+i%3}" fill="rgba(110,231,183,.08)" stroke="rgba(110,231,183,.2)" stroke-width="1" style="animation:hero-pulse ${2+i*.35}s ease-in-out ${i*.4}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Enrichissement CO₂',
+    tabs:['Info'],
+    stateKey:'co2',
+    thresholds:[
+      {label:'VPD',key:'vpd',unit:'kPa',min:0,max:3,
+       onWhen:'VPD dépasse le seuil minimum — enrichissement déclenché',
+       offWhen:'VPD dans la plage nominale'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Augmente le taux de photosynthèse et accélère la croissance végétative.',
+        'Le déclenchement est conditionné au VPD foliaire — plus le VPD est élevé, plus la transpiration est forte et plus la demande en CO₂ est importante.',
+        'Concentration maintenue entre 800 et 1200 ppm pour maximiser le rendement.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Concentration cible',v:'À COMPLÉTER'},
+        {k:'Seuil déclenchement VPD',v:'À COMPLÉTER'},
+        {k:'Source',v:'À COMPLÉTER'},
+        {k:'Contrôle',v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'brumisateur': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="9" width="10" height="6" rx="2"/>
+      <path d="M12 12h3"/>
+      <path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"/>
+      <circle cx="20" cy="8" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="20" cy="16" r="1" fill="currentColor" stroke="none"/>
+    <\/svg>`,
+    iconBg:'rgba(20,184,166,.18)', iconBorder:'rgba(94,234,212,.3)',
+    color:'#2dd4bf', statusText:'Brumisation active', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 70% 40%, rgba(45,212,191,.28) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5,6,7,8].map(i=>`<circle cx="${160+i*18}" cy="${25+i*10}" r="${1.5+i%3}" fill="rgba(94,234,212,.${3+i%4})" style="animation:hero-bubble ${1.4+i*.2}s ease-out ${i*.18}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Brumisation Climatique',
+    tabs:['Info'],
+    stateKey:'brumisateur',
+    thresholds:[
+      {label:'Température',key:'temperature',unit:'°C',min:15,max:40,
+       onWhen:'Température dépasse le seuil ou humidité trop basse',
+       offWhen:'Conditions climatiques dans les seuils'},
+      {label:'Humidité',key:'humidite',unit:'%',min:30,max:100,
+       onWhen:'Humidité en dessous du seuil minimum',
+       offWhen:'Humidité dans la plage cible'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Projette de fines gouttelettes qui s\'évaporent instantanément dans l\'air, abaissant la température par refroidissement adiabatique sans mouiller les cultures.',
+        'Réhumidifie l\'air en cas de sécheresse excessive, réduisant le stress hydrique des plantes et maintenant le VPD foliaire dans la plage optimale.',
+        'Agit en complément du système de refroidissement pour un contrôle climatique combiné et plus réactif.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Pression de fonctionnement',v:'À COMPLÉTER'},
+        {k:'Diamètre gouttelettes',v:'À COMPLÉTER'},
+        {k:'Débit par buse',v:'À COMPLÉTER'},
+        {k:'Nombre de buses',v:'À COMPLÉTER'},
+      ]},
+    ],
+  },
+
+  'système de refroidissement': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="3"/>
+      <line x1="6" y1="8" x2="6" y2="16" stroke-width="1.3" opacity=".7"/>
+      <line x1="9" y1="8" x2="9" y2="16" stroke-width="1.3" opacity=".7"/>
+      <line x1="12" y1="8" x2="12" y2="16" stroke-width="1.3" opacity=".7"/>
+      <line x1="15" y1="8" x2="15" y2="16" stroke-width="1.3" opacity=".7"/>
+      <line x1="18" y1="8" x2="18" y2="16" stroke-width="1.3" opacity=".7"/>
+      <line x1="2" y1="12" x2="22" y2="12" stroke-width="1" stroke-dasharray="2 3" opacity=".4"/>
+    <\/svg>`,
+    iconBg:'rgba(59,130,246,.18)', iconBorder:'rgba(147,197,253,.3)',
+    color:'#60a5fa', statusText:'Refroidissement actif', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 60% 40%, rgba(59,130,246,.25) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<path d="M${100+i*25} 40 L${120+i*25} 80" stroke="rgba(147,197,253,.${2+i%3})" stroke-width="${1+i%2}" stroke-linecap="round" stroke-dasharray="3 4" style="animation:hero-float ${1.5+i*.25}s ease-in-out ${i*.22}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Système de Refroidissement',
+    tabs:['Info'],
+    stateKey:'système de refroidissement',
+    thresholds:[
+      {label:'Température',key:'temperature',unit:'°C',min:15,max:40,
+       onWhen:'Température dépasse le seuil maximum',
+       offWhen:'Température dans la plage optimale'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Extrait la chaleur par convection forcée dès que la température dépasse le seuil défini.',
+        'Couplé à la brumisation pour un refroidissement combiné mécanique et adiabatique.',
+        'Maintient la température dans la plage optimale de croissance, préservant l\'efficacité photosynthétique et le rendement des cultures.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Type',v:'À COMPLÉTER'},
+        {k:'Plage cible',v:'À COMPLÉTER'},
+        {k:'Déclenchement',v:'Seuil température max'},
+        {k:'Contrôle',v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'fertigation': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="3" width="16" height="10" rx="2"/>
+      <text x="7.5" y="11" font-size="4" font-weight="700" fill="currentColor" stroke="none" font-family="monospace">NPK<\/text>
+      <line x1="8" y1="13" x2="8" y2="18"/>
+      <line x1="12" y1="13" x2="12" y2="18"/>
+      <line x1="16" y1="13" x2="16" y2="18"/>
+      <path d="M7 18 Q8 21 8 21M11 18 Q12 21 12 21M15 18 Q16 21 16 21" stroke-width="1.3"/>
+    <\/svg>`,
+    iconBg:'rgba(14,165,233,.18)', iconBorder:'rgba(125,211,252,.3)',
+    color:'#38bdf8', statusText:'Fertigation active', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 30% 60%, rgba(14,165,233,.28) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<line x1="${130+i*20}" y1="20" x2="${130+i*20}" y2="${50+i*8}" stroke="rgba(125,211,252,.${2+i%3})" stroke-width="1.5" stroke-linecap="round" style="animation:hero-float ${1.2+i*.2}s ease-in-out ${i*.15}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Système de Fertigation',
+    tabs:['Info','IoT'],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Apporte en continu aux racines une solution nutritive dosée avec précision en macro et microéléments — azote, phosphore, potassium et oligo-éléments.',
+        'Le pH de la solution conditionne la disponibilité des ions pour la plante. Un contrôle rigoureux entre 5.8 et 6.2 est critique en culture hydroponique.',
+        'La conductivité électrique (EC) reflète la concentration totale en sels dissous et indique le niveau global de nutrition de la solution.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'pH cible',v:'À COMPLÉTER'},
+        {k:'EC cible',v:'À COMPLÉTER'},
+        {k:'Fréquence',v:'Continue (NFT)'},
+        {k:'Éléments apportés',v:'À COMPLÉTER'},
+      ]},
+    ],
+  },
+
+  'ventilation': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:hero-spin 4s linear infinite">
+      <circle cx="12" cy="12" r="2"\/>
+      <path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/>
+      <path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/>
+      <path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/>
+    <\/svg>`,
+    iconBg:'rgba(59,130,246,.18)', iconBorder:'rgba(147,197,253,.3)',
+    color:'#93c5fd', statusText:'En rotation', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 50% 50%, rgba(59,130,246,.22) 0%, transparent 60%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<path d="M${130+i*18} 30 L${155+i*18} 60" stroke="rgba(147,197,253,.${2+i%3})" stroke-width="${1+i%2}" stroke-linecap="round" stroke-dasharray="3 4" style="animation:hero-float ${1.5+i*.25}s ease-in-out ${i*.22}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Ventilation Mécanique',
+    tabs:['Info'],
+    stateKey:'ventilation',
+    thresholds:[
+      {label:'Température',key:'temperature',unit:'°C',min:15,max:35,
+       onWhen:'Température approche du seuil maximum',
+       offWhen:'Température dans la plage optimale'},
+      {label:'Humidité',key:'humidite',unit:'%',min:30,max:100,
+       onWhen:'Humidité dépasse le seuil maximum',
+       offWhen:'Humidité dans la plage cible'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Brassage de l\'air — fait circuler l\'air pour éviter les zones chaudes ou froides et garder une température homogène dans toute la serre.',
+        'Contrôle de l\'humidité — évacue l\'excès d\'humidité qui favorise les maladies fongiques sur les cultures.',
+        'Échanges gazeux — améliore l\'accès des plantes au CO₂ et renforce leur transpiration naturelle.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Type',v:'Ventilateurs axiaux'},
+        {k:'Taux de brassage',v:'45 – 60 vol./h'},
+        {k:'Contrôle',v:'Thermostat auto'},
+      ]},
+    ],
+  },
+
+  'sensors': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="12" rx="2"/>
+      <line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"/>
+      <line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"/>
+      <line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"/>
+      <line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"/>
+      <line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"/>
+      <circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"/>
+    <\/svg>`,
+    iconBg:'rgba(109,40,217,.18)', iconBorder:'rgba(196,181,253,.3)',
+    color:'#a78bfa', statusText:'Télémétrie active', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 40% 50%, rgba(109,40,217,.2) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4].map(i=>`<circle cx="${140+i*22}" cy="${60+Math.sin(i)*10}" r="${3+i%3}" fill="rgba(196,181,253,.1)" stroke="rgba(196,181,253,.3)" stroke-width="1" style="animation:hero-pulse ${2+i*.3}s ease-in-out ${i*.35}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Capteurs IoT',
+    tabs:['Info','IoT'],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Mesure en continu la température, l\'humidité, le pH et la conductivité électrique.',
+        'Les données sont transmises en temps réel à la plateforme via l\'API Guardian Pro et stockées pour analyse et visualisation.',
+        'Alimentent les systèmes de régulation automatique — ventilation, brumisation, refroidissement — en déclenchant les actions selon les seuils définis.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Capteur T°/Humidité',v:'À COMPLÉTER'},
+        {k:'Capteur pH',v:'À COMPLÉTER'},
+        {k:'Capteur EC',v:'À COMPLÉTER'},
+        {k:'Fréquence de lecture',v:'60 secondes'},
+        {k:'API',v:'Guardian Pro'},
+      ]},
+    ],
+  },
+
+  'ventilation dehors': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="12" height="16" rx="2"/>
+      <line x1="5" y1="8" x2="11" y2="8" opacity=".6"/>
+      <line x1="5" y1="11" x2="11" y2="11" opacity=".6"/>
+      <line x1="5" y1="14" x2="11" y2="14" opacity=".6"/>
+      <line x1="5" y1="17" x2="11" y2="17" opacity=".6"/>
+      <path d="M15 9l3 0M16 12l4 0M15 15l3 0" stroke-width="1.8"/>
+      <path d="M17 7l2 2-2 2" stroke-width="1.5"/>
+    <\/svg>`,
+    iconBg:'rgba(6,182,212,.18)', iconBorder:'rgba(103,232,249,.3)',
+    color:'#67e8f9', statusText:'Extraction active', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 55% 45%, rgba(6,182,212,.25) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<path d="M${120+i*20} 50 L${145+i*20} 50" stroke="rgba(103,232,249,.${2+i%3})" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 4" style="animation:hero-float ${1.3+i*.2}s ease-in-out ${i*.18}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Ventilation Extérieure',
+    tabs:['Info'],
+    stateKey:'ventilation dehors',
+    thresholds:[
+      {label:'Température',key:'temperature',unit:'°C',min:15,max:35,
+       onWhen:'Température approche du seuil ou humidité excessive',
+       offWhen:'Climat stable dans les seuils'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        `Renouvelle l\'air intérieur de la serre en évacuant l\'air chaud et humide vers l'extérieur, créant un flux directionnel avec la ventilation interne.`,
+        'Prévient l\'accumulation excessive de CO₂ et d\'humidité qui nuisent à la croissance et favorisent les pathogènes.',
+        'Synchronisé avec la ventilation mécanique interne pour un échange d\'air cohérent et efficace sur tout le volume de la serre.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Type',v:'À COMPLÉTER'},
+        {k:'Débit',v:'À COMPLÉTER'},
+        {k:'Déclenchement',v:'Couplé ventilation interne'},
+        {k:'Contrôle',v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'rideaux auto': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="2" y1="4" x2="22" y2="4"/>
+      <circle cx="5" cy="4" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="9" cy="4" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="13" cy="4" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="17" cy="4" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="21" cy="4" r="1" fill="currentColor" stroke="none"/>
+      <path d="M4 5 Q5 10 4 15 Q3.5 18 5 21" stroke-width="1.3"/>
+      <path d="M20 5 Q19 10 20 15 Q20.5 18 19 21" stroke-width="1.3"/>
+    <\/svg>`,
+    iconBg:'rgba(217,119,6,.18)', iconBorder:'rgba(251,191,36,.3)',
+    color:'#fbbf24', statusText:'Rideaux déployés', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 35% 55%, rgba(217,119,6,.22) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      <rect x="130" y="10" width="110" height="3" rx="1.5" fill="rgba(251,191,36,.3)"/>
+      ${[0,1,2].map(i=>`<path d="M${135+i*35} 13 Q${138+i*35} 40 ${135+i*35} 70" stroke="rgba(251,191,36,.${2+i})" stroke-width="1.5" fill="none" style="animation:hero-float ${2.5+i*.4}s ease-in-out ${i*.3}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Rideaux Automatiques',
+    tabs:['Info'],
+    stateKey:'rideaux auto',
+    thresholds:[
+      {label:'Température extérieure',key:'outsideTemp',unit:'°C',min:-5,max:45,
+       onWhen:'Température extérieure entre 10°C et 32°C',
+       offWhen:'Température extérieure hors plage de déploiement'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Réduit les pertes thermiques nocturnes en formant une barrière isolante sous la toiture.',
+        'Assure un ombrage thermique en journée pour prévenir la surchauffe estivale.',
+        'Le déploiement est conditionné par la température extérieure pour éviter le confinement et préserver la ventilation naturelle.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Matériau',v:'À COMPLÉTER'},
+        {k:'Transmission lumière',v:'À COMPLÉTER'},
+        {k:'Plage de déploiement',v:'10 – 32 °C ext.'},
+        {k:'Contrôle',v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'fenetre auto': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="18" rx="2"/>
+      <line x1="12" y1="3" x2="12" y2="21" opacity=".4"/>
+      <line x1="2" y1="12" x2="22" y2="12" opacity=".4"/>
+      <path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.2)"/>
+      <path d="M18 5l3 0M19.5 3.5l1.5 1.5-1.5 1.5" stroke-width="1.4"/>
+      <path d="M18 9l3 0M19.5 7.5l1.5 1.5-1.5 1.5" stroke-width="1.2" opacity=".6"/>
+    <\/svg>`,
+    iconBg:'rgba(6,182,212,.18)', iconBorder:'rgba(103,232,249,.3)',
+    color:'#22d3ee', statusText:'Ouverture active', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 45% 50%, rgba(6,182,212,.25) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3].map(i=>`<path d="M${140+i*22} 40 L${155+i*22} 55 L${140+i*22} 70" stroke="rgba(103,232,249,.${2+i%3})" stroke-width="1.3" fill="none" style="animation:hero-float ${1.8+i*.2}s ease-in-out ${i*.25}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Fenêtres Automatiques',
+    tabs:['Info'],
+    stateKey:'fenetre auto',
+    thresholds:[
+      {label:'Température serre',key:'temperature',unit:'°C',min:15,max:40,
+       onWhen:'T° intérieure > seuil max et T° extérieure plus fraîche',
+       offWhen:'Conditions non favorables à l\'ouverture'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        `Assure une ventilation naturelle par effet cheminée — l\'air chaud monte et s'échappe par les châssis zénithaux, remplacé par l\'air extérieur plus frais.`,
+        'Ouverture conditionnée : T° intérieure > seuil max ET T° extérieure plus fraîche.',
+        'Extraction passive silencieuse, complémentaire à la ventilation mécanique.',
+      ]},
+      {label:'PARAMÈTRES',items:[
+        {k:'Type',v:'Châssis zénithaux'},
+        {k:'Ouverture',v:'À COMPLÉTER'},
+        {k:'Déclenchement',v:'ΔT intérieur / extérieur'},
+        {k:'Sécurité',v:'À COMPLÉTER'},
+      ]},
+    ],
+  },
+
+  'courgette': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="14" rx="7" ry="4.5" transform="rotate(-15 12 14)"\/>
+      <path d="M9 9.5C8 7 9 5 11 6"\/>
+      <path d="M11 6C12 4 14 5 13 7"\/>
+    <\/svg>`,
+    iconBg:'rgba(101,163,13,.18)', iconBorder:'rgba(163,230,53,.3)',
+    color:'#84cc16', statusText:'En production', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 30% 50%, rgba(101,163,13,.35) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<ellipse cx="${160+i*22}" cy="${55+Math.sin(i)*10}" rx="${8+i%4}" ry="${5+i%3}" fill="rgba(101,163,13,${.06+i*.01})" style="animation:hero-float ${2.5+i*.3}s ease-in-out ${i*.25}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Courgette en Production',
+    tabs:['Info'],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Culture hors-sol sous serre controllee — un environnement stable garantit une production optimisee.',
+        'Sensible aux variations de temperature et d\'humidite — le controle climatique est essentiel.',
+        'Pollinisation manuelle ou par insectes auxiliaires en culture protegee.',
+      ]},
+      {label:'PARAMETRES',items:[
+        {k:'Espece',v:'Cucurbita pepo'},
+        {k:'Methode',v:'A COMPLETER'},
+        {k:'pH solution',v:'A COMPLETER'},
+        {k:'EC solution',v:'A COMPLETER'},
+      ]},
+    ],
+  },
+
+  'systeme de ventilation': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:hero-spin 4s linear infinite">
+      <circle cx="12" cy="12" r="2"\/>
+      <path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/>
+      <path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/>
+      <path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/>
+    <\/svg>`,
+    iconBg:'rgba(59,130,246,.18)', iconBorder:'rgba(147,197,253,.3)',
+    color:'#93c5fd', statusText:'En rotation', statusColor:'#4ade80',
+    heroGradient:'radial-gradient(ellipse at 50% 50%, rgba(59,130,246,.22) 0%, transparent 60%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2,3,4,5].map(i=>`<path d="M${130+i*18} 30 L${155+i*18} 60" stroke="rgba(147,197,253,.${2+i%3})" stroke-width="${1+i%2}" stroke-linecap="round" stroke-dasharray="3 4" style="animation:hero-float ${1.5+i*.25}s ease-in-out ${i*.22}s infinite"/>`).join('')}
+    <\/svg>`,
+    title:'Ventilation Mecanique',
+    tabs:['Info'],
+    stateKey:'ventilation',
+    thresholds:[
+      {label:'Temperature',key:'temperature',unit:'C',min:15,max:35,
+       onWhen:'Temperature approche du seuil maximum',
+       offWhen:'Temperature dans la plage optimale'},
+      {label:'Humidite',key:'humidite',unit:'%',min:30,max:100,
+       onWhen:'Humidite depasse le seuil maximum',
+       offWhen:'Humidite dans la plage cible'},
+    ],
+    sections:[
+      {label:'FONCTIONS',bullets:[
+        'Brassage de l\'air — homogeneise la temperature sur tout le volume de la serre.',
+        'Controle de l\'humidite — evacue l\'exces d\'humidite et previent les maladies fongiques.',
+        'Echanges gazeux — ameliore l\'acces des plantes au CO2 et leur transpiration.',
+      ]},
+      {label:'PARAMETRES',items:[
+        {k:'Type',v:'Ventilateurs axiaux'},
+        {k:'Taux de brassage',v:'A COMPLETER'},
+        {k:'Controle',v:'Thermostat auto'},
+      ]},
+    ],
+  },
+
+};
+
+
+
+function getARDef(desc){
+  if(!desc) return null;
+  let key = desc.toLowerCase().trim();
+  const _al = {
+    'ventilation':'ventilation',
+    'brumisateur':'brumisateur',
+    'co2':'co2',
+    'sensors':'sensors',
+    'fenetre':'fenetre auto',
+    'fenetres':'fenetre auto',
+    'rideaux':'rideaux auto',
+    'ventilation ext':'ventilation dehors',
+  };
+  key = _al[key] || key;
+  return AR_CONTENT[key] || null;
+}
+
+function getIcon(arKey){
+  if(arKey==='strawberry') return ICONS.plant;
+  if(arKey==='sensor_irr') return ICONS.probe;
+  if(arKey==='sensor_env') return ICONS.sensor;
+  return ICONS.system;
+}
+function getCssClass(arKey){
+  const t = AR_CONTENT[arKey]?.type;
+  return t==='plant'?'hs-ar-plant':t==='sensor'?'hs-ar-sensor':'hs-ar-system';
+}
+
+window.addEventListener('load', async ()=>{
+  const r = await fetch('images/manifest.json');
+  manifest = await r.json();
+  manifest.zones.forEach(z=>zones[z.id]=z);
+  hotspots = manifest.hotspots||{};
+  const p = new URLSearchParams(location.search);
+  const z = p.get('zone')||START_ZONE;
+  const s = p.get('scene')||zones[z]?.scenes[0]?.id;
+  load(z,s,true);
+  fetchThresholds();
+  fetchOutsideTemp(); setInterval(fetchOutsideTemp,600000);
+  fetchIoT(); setInterval(fetchIoT,60000);
+  document.addEventListener('keydown',e=>{
+    if(e.code==='ArrowRight') stepScene(1);
+    if(e.code==='ArrowLeft')  stepScene(-1);
+    if(e.code==='Escape')     closeAR();
+  });
+});
+
+async function fetchIoT(){
+  try{
+    const d = await fetch(`${API}/api/iot/live`).then(r=>r.json());
+    iotData = (d.serres||[]).find(s=>s.code==='S01')||null;
+    if(iotData){ updateIoTOverlay(); window._iotData=iotData; updateHotspotDots(); }
+  }catch(e){}
+}
+
+function updateHotspotDots(){
+  document.querySelectorAll('[data-state-dot]').forEach(dot=>{
+    const key = dot.getAttribute('data-state-dot');
+    const state = hsGetState(key);
+    if(state === null) return;
+    const on = state === 'on';
+    dot.style.background = on ? '#22c55e' : '#ef4444';
+    dot.style.boxShadow = on ? '0 0 4px rgba(34,197,94,.6)' : '0 0 4px rgba(239,68,68,.5)';
+    dot.style.display = 'block';
+  });
+}
+
+async function fetchThresholds(){
+  try{
+    const r = await fetch(`${API}/api/dashboard/thresholds/1/public`);
+    if(!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    thresholds = {};
+    (data||[]).forEach(t=>{ if(t.actif!==false) thresholds[t.capteur]=t; });
+    window._thresholds = thresholds;
+  }catch(e){ console.warn('Thresholds: using defaults',e.message); }
+}
+
+async function fetchOutsideTemp(){
+  try{
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416&current_weather=true');
+    const d = await r.json();
+    outsideTemp = d?.current_weather?.temperature ?? null;
+    window._outsideTemp = outsideTemp;
+  }catch(e){ outsideTemp=null; }
+}
+
+function getThresh(key){
+  const DEFAULTS={
+    temperature:{valeur_min:18,valeur_max:28},
+    humidite:   {valeur_min:55,valeur_max:85},
+    vpd:        {valeur_min:0.4,valeur_max:1.2},
+    ph:         {valeur_min:5.5,valeur_max:6.5},
+    ec:         {valeur_min:1.0,valeur_max:2.2},
+    niveau_eau: {valeur_min:0.3,valeur_max:1.5},
+  };
+  return thresholds[key] || DEFAULTS[key] || {valeur_min:null,valeur_max:null};
+}
+
+// Returns 'on' | 'off' | null (null = no state for this equipment)
+function hsGetState(key){
+  const env = iotData?.env||{};
+  const tT  = getThresh('temperature');
+  const hT  = getThresh('humidite');
+  const vT  = getThresh('vpd');
+  switch(key){
+    case 'ventilation':
+    case 'ventilation dehors':
+      if(env.temperature==null) return null;
+      return (env.temperature > tT.valeur_max-2 || (env.humidite!=null && env.humidite > hT.valeur_max)) ? 'on' : 'off';
+    case 'brumisateur':
+      if(env.temperature==null) return null;
+      return (env.temperature > tT.valeur_max || (env.humidite!=null && env.humidite < hT.valeur_min)) ? 'on' : 'off';
+    case 'co2':
+      if(env.vpd==null) return null;
+      return env.vpd > vT.valeur_min ? 'on' : 'off';
+    case 'système de refroidissement':
+      if(env.temperature==null) return null;
+      return env.temperature > tT.valeur_max ? 'on' : 'off';
+    case 'fenetre auto':
+      if(env.temperature==null || outsideTemp==null) return null;
+      return (env.temperature > tT.valeur_max && outsideTemp < env.temperature-2) ? 'on' : 'off';
+    case 'rideaux auto':
+      if(outsideTemp==null) return null;
+      return (outsideTemp > 10 && outsideTemp < 32) ? 'on' : 'off';
+    default: return null;
+  }
+}
+
+function updateIoTOverlay(){
+  if(!iotData) return;
+  const env=iotData.env||{}, irr=iotData.irr||{};
+  const set=(id,val,dec=1)=>{ const el=document.getElementById(id); if(el) el.textContent=val!=null?Number(val).toFixed(dec):'—'; };
+  set('iot-temp',  env.temperature, 1);
+  set('iot-hum',   env.humidite,    1);
+  set('iot-vpd',   env.vpd,         2);
+  set('iot-ph',    irr.ph,          2);
+  set('iot-ec',    irr.ec,          2);
+  set('iot-twater',irr.temp_eau,    1);
+  set('iot-level', irr.niveau_eau,  2);
+}
+
+function goTo(zid,sid){
+  if(RESTRICT_ZONES&&!RESTRICT_ZONES.includes(zid)) return;
+  if(curZone&&curScene) navHistory.push({zoneId:curZone,sceneId:curScene});
+  if(navHistory.length>50) navHistory.shift();
+  closeAR();
+  setTimeout(()=>load(zid,sid),80);
+}
+
+
+function openSimpleAR(desc){
+  const def = getARDef(desc);
+  if(!def){ console.warn('No AR content for:', desc); return; }
+  activeAR = desc; activeTab = 0;
+
+  // ── Hero background gradient ──
+  const bg = document.getElementById('ar-hero-bg');
+  const c = def.color || '#059669';
+  bg.style.background = `linear-gradient(135deg, ${c}cc 0%, ${c}88 100%)`;
+  const hero = document.getElementById('ar-hero');
+  hero.style.background = def.heroGradient
+    ? `linear-gradient(135deg, ${c}bb 0%, ${c}77 100%), ${def.heroGradient}`
+    : `linear-gradient(135deg, ${c}bb 0%, ${c}55 100%)`;
+
+  // ── Hero animated SVG ──
+  const anim = document.getElementById('ar-hero-anim');
+  anim.innerHTML = def.heroAnim || '';
+
+  // ── Icon ──
+  const iw = document.getElementById('ar-icon-wrap');
+  iw.style.background = 'rgba(255,255,255,.25)';
+  iw.style.borderColor = 'rgba(255,255,255,.5)';
+  iw.innerHTML = def.icon;
+
+  // ── Category label + title ──
+  const catMap = {
+    fraise:'SYSTÈME BIOLOGIQUE', co2:'CONTRÔLE CLIMATIQUE',
+    brumisateur:'CONTRÔLE CLIMATIQUE', ventilation:'CONTRÔLE CLIMATIQUE',
+    'système de refroidissement':'CONTRÔLE CLIMATIQUE',
+    fertigation:'SYSTÈME HYDROPONIQUE', sensors:'TÉLÉMÉTRIE IOT',
+    'ventilation dehors':'CONTRÔLE CLIMATIQUE',
+    'rideaux auto':'CONTRÔLE CLIMATIQUE', 'fenetre auto':'CONTRÔLE CLIMATIQUE'
+  };
+  document.getElementById('ar-category-label').textContent = catMap[desc] || 'DIGITAL TWIN';
+  document.getElementById('ar-title').textContent = def.title;
+
+
+  // ── Big state pill ──
+  const _pill = document.getElementById('ar-state-pill');
+  const _pillTxt = document.getElementById('ar-state-pill-text');
+  const _reasonStrip = document.getElementById('ar-reason-strip');
+  const _reasonTxt = document.getElementById('ar-reason-text');
+  const _state = def.stateKey ? hsGetState(def.stateKey) : null;
+  if(_state === null){
+    _pill.className = 'ar-state-pill unknown';
+    _pillTxt.textContent = def.statusText || '—';
+    _reasonStrip.style.display = 'none';
+  } else {
+    const _on = _state === 'on';
+    _pill.className = 'ar-state-pill ' + (_on ? 'on' : 'off');
+    _pillTxt.textContent = _on ? 'ACTIF' : 'INACTIF';
+    const _reason = def.thresholds?.length
+      ? (_on ? def.thresholds[0].onWhen : def.thresholds[0].offWhen)
+      : (_on ? 'Système en fonctionnement' : 'Système en veille');
+    _reasonStrip.style.display = 'block';
+    _reasonTxt.textContent = _reason;
+  }
+
+  // ── Tab accent color via CSS var ──
+  document.getElementById('ar-card').style.setProperty('--accent', def.color || '#059669');
+
+  // ── Render first tab directly (no tab bar) ──
+  renderARTab(0, def);
+
+  // ── Stagger reset (replay animation on each open) ──
+  ['ar-stagger-1','ar-stagger-2','ar-stagger-3'].forEach(cls=>{
+    document.querySelectorAll('.'+cls).forEach(el=>{
+      el.style.animation='none';
+      requestAnimationFrame(()=>{ el.style.animation=''; });
+    });
+  });
+
+  renderARTab(0, def);
+  document.getElementById('ar-card').classList.add('open');
+}
+
+function switchTab(i, isAR){
+  activeTab=i;
+  document.querySelectorAll('.ar-tab').forEach((t,ti)=>t.classList.toggle('active',ti===i));
+  if(activeAR) {
+    const def = getARDef(activeAR);
+    if(def) renderARTab(i, def);
+  }
+}
+
+function renderARTab(i, def){
+  const el = document.getElementById('ar-content');
+  el.style.animation='none';
+  requestAnimationFrame(()=>{ el.style.animation='ar-fade-up .22s ease both'; });
+
+  const tagColors = {
+    green:'background:#f0fdf4;border-color:#86efac;color:#15803d',
+    blue:'background:#eff6ff;border-color:#93c5fd;color:#1d4ed8',
+    purple:'background:#f5f3ff;border-color:#c4b5fd;color:#6d28d9',
+    teal:'background:#f0fdfa;border-color:#5eead4;color:#0f766e',
+    amber:'background:#fffbeb;border-color:#fcd34d;color:#b45309',
+  };
+
+  let html = '';
+
+  // ── Live sensor readings section (if IoT tab exists) ──
+  if(def.tabs.includes('IoT')){
+    if(!iotData){
+      html += `<div class="ar-section-title">DONNÉES EN DIRECT</div>
+        <div class="iot-loading">Interrogation capteurs…</div>`;
+    } else {
+      const env=iotData.env||{}, irr=iotData.irr||{};
+      const fmt = v => v!=null ? Number(v).toFixed(1) : '—';
+      const rows=[
+        {label:'Température',val:env.temperature,unit:'°C',ok:env.temperature>15&&env.temperature<30},
+        {label:'Humidité',val:env.humidite,unit:'%',ok:env.humidite>50&&env.humidite<85},
+        {label:'pH solution',val:irr.ph,unit:'pH',ok:irr.ph>5.5&&irr.ph<6.5},
+        {label:'Conductivité EC',val:irr.ec,unit:'mS/cm',ok:irr.ec>1.0&&irr.ec<2.0},
+      ];
+      html += `<div class="ar-section-title">DONNÉES EN DIRECT</div>`;
+      html += rows.map(r=>`
+        <div class="ar-sensor-row">
+          <span class="ar-sensor-label">${r.label}</span>
+          <span class="ar-sensor-val">${fmt(r.val)}</span>
+          <span class="ar-sensor-unit">${r.unit}</span>
+          <div class="ar-sensor-dot ${r.val==null?'na':r.ok?'ok':'warn'}"></div>
+        </div>`).join('');
+      html += `<div class="iot-refresh" onclick="fetchIoT().then(()=>renderARTab(0,getARDef(activeAR)))">⟳ &nbsp;Actualiser</div>`;
+    }
+  }
+
+  // ── État du système: threshold bars (for state-aware cards) ──
+  if(def.thresholds && def.thresholds.length && iotData){
+    const env = iotData.env||{};
+    html += `<div class="ar-section-title">ÉTAT DU SYSTÈME</div>
+      <div class="ar-thresh-block">`;
+    def.thresholds.forEach(t => {
+      let val = t.key === 'outsideTemp' ? outsideTemp : env[t.key];
+      const fmt = val != null ? Number(val).toFixed(1) : '—';
+      const pct = val != null ? Math.min(100,Math.max(0,((val-t.min)/(t.max-t.min))*100)) : 0;
+      const state = hsGetState(def.stateKey);
+      const barColor = state==='on' ? 'var(--accent,#059669)' : 'rgba(0,0,0,.18)';
+      html += `<div class="ar-thresh-row">
+        <span class="ar-thresh-label">${t.label}</span>
+        <span><span class="ar-thresh-val">${fmt}</span><span class="ar-thresh-unit"> ${t.unit}</span></span>
+      </div>
+      <div class="ar-thresh-bar-wrap">
+        <div class="ar-thresh-bar" style="width:${pct}%;background:${barColor}"></div>
+      </div>`;
+    });
+    // Reason
+    const _st = hsGetState(def.stateKey);
+    const _reason = _st === null ? 'En attente des données…'
+      : _st === 'on' ? def.thresholds[0].onWhen : def.thresholds[0].offWhen;
+    const _rc = _st === 'on' ? 'on' : _st === null ? 'unknown' : 'off';
+    html += `<div class="ar-thresh-reason ${_rc}">
+      <span class="ar-thresh-dot" style="background:${_st==='on'?'#22c55e':_st===null?'rgba(0,0,0,.2)':'#f59e0b'}"></span>
+      ${_reason}
+    </div></div>`;
+  }
+
+  // ── Static info sections ──
+  html += def.sections.map(sec => {
+    let s = `<div class="ar-section-title">${sec.label}</div>`;
+    if(sec.items) s += sec.items.map(item=>`
+      <div class="ar-info-row">
+        <span class="ar-info-label">${item.k}</span>
+        ${item.tag
+          ? `<span class="ar-badge" style="${tagColors[item.tag]||''}">${item.v}</span>`
+          : `<span class="ar-info-value">${item.v}</span>`}
+      </div>`).join('');
+    if(sec.bullets) s += `<div class="ar-bullets">${sec.bullets.map(b=>
+      `<div class="ar-bullet"><div class="ar-bullet-dot"></div><span>${b}</span></div>`).join('')}</div>`;
+    return s;
+  }).join('');
+
+  // ── Video if present ──
+  if(def.video){
+    html += `<div class="ar-section-title">RESSOURCE</div>
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/${def.video.id}?rel=0" allowfullscreen></iframe>
+      </div>
+      <p class="video-desc">${def.video.desc}</p>`;
+  }
+
+  el.innerHTML = html;
+}
+
+
+function openAR(key, defOverride){ openSimpleAR(key); }
+
+function closeAR(){
+  document.getElementById('ar-card').classList.remove('open');
+  activeAR=null;
+}
+
+function stepScene(d){
+  const zone=zones[curZone];
+  const idx=zone?.scenes.findIndex(s=>s.id===curScene);
+  const next=zone?.scenes[idx+d];
+  if(next) goTo(curZone,next.id);
+}
+</script>
+</body>
+</html>
