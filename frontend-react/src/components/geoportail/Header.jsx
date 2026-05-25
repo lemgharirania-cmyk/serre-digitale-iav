@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Sun, Moon } from 'lucide-react'
 
-export default function Header({ lang, setLang, darkMode, setDarkMode }) {
+export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWidth = 240 }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
 
   return (
     <header style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 300,
+      position: 'fixed', top: 0, left: `${sidebarWidth}px`, right: 0, zIndex: 300,
       height: '80px',
       background: bg,
       backdropFilter: 'blur(20px)',
@@ -55,7 +55,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
       boxShadow: shadow,
       display: 'flex', alignItems: 'center',
       padding: '0 48px', gap: '32px',
-      transition: 'background 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease',
+      transition: 'background 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease, left 0.3s ease',
     }}>
 
       {/* Logo + Title */}
