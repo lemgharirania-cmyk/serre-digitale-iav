@@ -60,35 +60,33 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
 
       {/* Logo + Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
-        <div
-          style={{
-            width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
-            background: 'linear-gradient(135deg, #16a34a 0%, #06b6d4 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: darkMode
-              ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
-              : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'scale(1.07) rotate(-3deg)'
-            e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45), 0 8px 20px rgba(0,0,0,0.2)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
-            e.currentTarget.style.boxShadow = darkMode
-              ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
-              : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)'
-          }}
-        >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3C12 3 5 7 5 13c0 4 3 7 7 7s7-3 7-7c0-6-7-10-7-10z"
-              stroke="white" strokeWidth="1.8" strokeLinejoin="round"/>
-            <path d="M12 20V10M9 14l3-2 3 2"
-              stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
+      <div
+  style={{
+    width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
+    overflow: 'hidden',
+    boxShadow: darkMode
+      ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
+      : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    cursor: 'pointer',
+  }}
+  onMouseEnter={e => {
+    e.currentTarget.style.transform = 'scale(1.07) rotate(-3deg)'
+    e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45), 0 8px 20px rgba(0,0,0,0.2)'
+  }}
+  onMouseLeave={e => {
+    e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
+    e.currentTarget.style.boxShadow = darkMode
+      ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
+      : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)'
+  }}
+>
+  <img
+    src="/iav_logo.png"
+    alt="IAV Logo"
+    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+  />
+</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <div style={{
