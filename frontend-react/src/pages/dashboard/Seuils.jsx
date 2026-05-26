@@ -121,7 +121,7 @@ export default function Seuils({ theme, lang }) {
 
   const inputStyle = {
     background: inputBg, border: `1px solid ${inputBdr}`, borderRadius: 8,
-    fontFamily: 'var(--font-mono)', fontSize: 12, outline: 'none',
+    fontFamily: 'var(--font-sans)', fontSize: 13, outline: 'none',
     color: isDark ? '#F8FAFC' : 'inherit', transition: 'border-color 0.15s',
   }
 
@@ -223,7 +223,7 @@ export default function Seuils({ theme, lang }) {
               <thead>
                 <tr>
                   {t.cols.map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: ink3, borderBottom: `1px solid ${border}` }}>
+                    <th key={h} style={{ textAlign: 'left', padding: '10px 12px', fontFamily: 'var(--font-sans)', fontSize: 12, letterSpacing: '0.02em', textTransform: 'uppercase', color: ink3, borderBottom: `1px solid ${border}` }}>
                       {h}
                     </th>
                   ))}
@@ -241,12 +241,12 @@ export default function Seuils({ theme, lang }) {
                       onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <td style={{ padding: 12, borderBottom: `1px solid ${border}` }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 999, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,48,36,0.04)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,48,36,0.04)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500 }}>
                           {opt && <span style={{ width: 6, height: 6, borderRadius: '50%', background: opt.color, flexShrink: 0 }} />}
                           {labels[s.capteur] || s.capteur}
                         </span>
                       </td>
-                      <td style={{ padding: 12, borderBottom: `1px solid ${border}`, fontFamily: 'var(--font-mono)', fontSize: 11, color: ink3 }}>
+                      <td style={{ padding: 12, borderBottom: `1px solid ${border}`, fontFamily: 'var(--font-mono)', fontSize: 12, color: ink3 }}>
                         {UNITS[s.capteur] || ''}
                       </td>
                       <td style={{ padding: 12, borderBottom: `1px solid ${border}` }}>
