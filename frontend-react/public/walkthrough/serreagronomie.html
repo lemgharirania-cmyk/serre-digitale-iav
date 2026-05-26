@@ -322,6 +322,29 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 .ar-thresh-reason.off{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.07);color:rgba(0,0,0,.42)}
 .ar-thresh-reason.unknown{background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.05);color:rgba(0,0,0,.3)}
 .ar-thresh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── AR TOGGLE BUTTON ── */
+#ar-toggle{
+  position:fixed;bottom:28px;left:28px;z-index:500;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:12px;padding:10px 16px;
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  font-family:inherit;font-size:11px;font-weight:500;
+  color:rgba(255,255,255,.7);letter-spacing:.04em;
+  transition:background .2s,border-color .2s,color .2s}
+#ar-toggle:hover{background:rgba(255,255,255,.18);color:white}
+#ar-toggle.ar-on{border-color:rgba(140,255,190,.35);color:rgba(140,255,190,.9)}
+#ar-toggle.ar-on:hover{background:rgba(140,255,190,.1)}
+#ar-toggle-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.3);transition:background .2s,box-shadow .2s}
+#ar-toggle.ar-on #ar-toggle-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+body.ar-hidden .hs-ar-base{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
+body.ar-hidden .ar-overlay{pointer-events:none!important}
+body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity:0!important;pointer-events:none!important;transition:none!important}
 </style>
 </head>
 <body>
@@ -330,6 +353,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 <div id="pano-b"></div>
 <div id="vignette"></div>
 <div id="atmo"></div>
+
+<button id="ar-toggle" class="ar-on" onclick="toggleAR()">
+  <span id="ar-toggle-dot"></span>
+  <span id="ar-toggle-label">AR ON</span>
+</button>
 <div id="flash"></div>
 
 <button class="arrow L off" id="prev" onclick="stepScene(-1)">‹</button>
@@ -422,6 +450,21 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,s
 
 
 <script>
+let arEnabled = true;
+
+function applyARState(){
+  document.body.classList.toggle('ar-hidden', !arEnabled);
+  if(!arEnabled && typeof closeAR==='function') closeAR();
+}
+
+function toggleAR(){
+  arEnabled = !arEnabled;
+  const btn = document.getElementById('ar-toggle');
+  const lbl = document.getElementById('ar-toggle-label');
+  if(arEnabled){ btn.classList.add('ar-on'); lbl.textContent='AR ON'; }
+  else { btn.classList.remove('ar-on'); lbl.textContent='AR OFF'; }
+  applyARState();
+}
 const START_ZONE     = 'agronomie';
 const RESTRICT_ZONES = ['agronomie'];
 
