@@ -11,6 +11,8 @@ const SERRES = [
     culturesEn: 'Tomato, Pepper, Melon',
     capteursFr: '2 capteurs ENV · 2 capteurs IRR',
     capteursEn: '2 ENV sensors · 2 IRR sensors',
+    // Coordonnées exactes dans le SVG original (viewBox 620 155 440 355)
+    rx: 642, ry: 173, rw: 130, rh: 130,
   },
   {
     code: 'S02', color: '#06B6D4',
@@ -21,6 +23,7 @@ const SERRES = [
     culturesEn: 'Roses, Lettuce, Strawberry',
     capteursFr: '2 capteurs ENV · 2 capteurs IRR',
     capteursEn: '2 ENV sensors · 2 IRR sensors',
+    rx: 772, ry: 173, rw: 130, rh: 130,
   },
   {
     code: 'S03', color: '#F59E0B',
@@ -31,6 +34,7 @@ const SERRES = [
     culturesEn: 'Wheat, Barley, Legumes',
     capteursFr: '2 capteurs ENV · 2 capteurs IRR',
     capteursEn: '2 ENV sensors · 2 IRR sensors',
+    rx: 901, ry: 173, rw: 129, rh: 130,
   },
   {
     code: 'S04', color: '#8B5CF6',
@@ -41,6 +45,7 @@ const SERRES = [
     culturesEn: 'Basil, Tomato, Lettuce, Strawberry',
     capteursFr: '2 capteurs ENV · 2 capteurs IRR',
     capteursEn: '2 ENV sensors · 2 IRR sensors',
+    rx: 901, ry: 363, rw: 129, rh: 129,
   },
   {
     code: 'S05', color: '#EF4444',
@@ -51,19 +56,12 @@ const SERRES = [
     culturesEn: 'Test plants, Control cultures',
     capteursFr: '2 capteurs ENV · 2 capteurs IRR',
     capteursEn: '2 ENV sensors · 2 IRR sensors',
+    rx: 642, ry: 363, rw: 259, rh: 129,
   },
 ]
 
-// Zones cliquables en % de la largeur/hauteur du conteneur SVG
-// Le SVG original a un viewBox centré autour des serres (~620–1050 en x, ~163–510 en y)
-// On mappe ces coordonnées en pourcentages relatifs au conteneur affiché
-const ZONES = [
-  { code: 'S01', left: '14%',  top: '2%',  width: '20%', height: '47%' },
-  { code: 'S02', left: '34%',  top: '2%',  width: '20%', height: '47%' },
-  { code: 'S03', left: '54%',  top: '2%',  width: '20%', height: '47%' },
-  { code: 'S04', left: '54%',  top: '51%', width: '20%', height: '47%' },
-  { code: 'S05', left: '14%',  top: '51%', width: '40%', height: '47%' },
-]
+// ViewBox cadré exactement sur les 5 serres avec petite marge
+const VB = { x: 628, y: 158, w: 415, h: 350 }
 
 export default function SectionPlan2D({ lang, liveData, darkMode }) {
   const [selected, setSelected] = useState(null)
@@ -124,22 +122,18 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
           <p style={{ fontSize: '13px', color: mutedColor, marginTop: '10px' }}>{T.hint}</p>
         </div>
 
-        {/* ── Legend buttons ── */}
+        {/* ── Legend ── */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '1.5rem' }}>
           {SERRES.map(s => (
-            <button
-              key={s.code}
-              onClick={() => { setSelected(selected === s.code ? null : s.code); setTab('info') }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '6px 14px', borderRadius: '20px', cursor: 'pointer',
-                fontFamily: 'inherit', fontSize: '12px', fontWeight: 600,
-                border: `1.5px solid ${s.color}50`,
-                background: selected === s.code ? `${s.color}20` : (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
-                color: selected === s.code ? s.color : mutedColor,
-                transition: 'all 0.2s',
-              }}
-            >
+            <button key={s.code} onClick={() => { setSelected(selected === s.code ? null : s.code); setTab('info') }} style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '20px', cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: '12px', fontWeight: 600,
+              border: `1.5px solid ${s.color}50`,
+              background: selected === s.code ? `${s.color}20` : (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+              color: selected === s.code ? s.color : mutedColor,
+              transition: 'all 0.2s',
+            }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
               {s.code} — {lang === 'fr' ? s.nameFr.split('&')[0].trim() : s.nameEn.split('&')[0].trim()}
             </button>
@@ -149,80 +143,121 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
         {/* ── Main grid ── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'start' }}>
 
-          {/* ── SVG Plan with overlay zones ── */}
+          {/* ── SVG inline avec viewBox cadré ── */}
           <div style={{
             background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px',
             overflow: 'hidden',
             boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)',
           }}>
-            {/* Image container */}
-            <div style={{ position: 'relative', width: '100%' }}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
+              style={{
+                width: '100%', height: 'auto', display: 'block',
+                filter: darkMode ? 'invert(1) hue-rotate(180deg) saturate(1.1) brightness(0.85)' : 'none',
+                transition: 'filter 0.4s ease',
+              }}
+            >
+              {/* ── Fond blanc ── */}
+              <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill="white" />
 
-              {/* SVG image */}
-              <img
-                src="/plan_2d.svg"
-                alt="Coupe 2D des serres AgroBioTech"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  display: 'block',
-                  filter: darkMode
-                    ? 'invert(1) hue-rotate(180deg) saturate(1.1) brightness(0.8)'
-                    : 'none',
-                  transition: 'filter 0.4s ease',
-                }}
-              />
+              {/* ── Contenu SVG original — tous les paths/clips du plan ── */}
+              {/* Bâtiment droit (les 5 serres) */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 621.233519, 163.155101)" fill="none" strokeLinejoin="miter" d="M 0.00114137 0.00153254 L 574.360545 0.00153254 L 574.360545 456.277597 L 0.00114137 456.277597 Z" stroke="#48392e" strokeWidth="8" strokeOpacity="1" strokeMiterlimit="4"/>
 
-              {/* Clickable zones overlay */}
-              {ZONES.map(zone => {
-                const serre = SERRES.find(s => s.code === zone.code)
-                const isHov = hovered  === zone.code
-                const isSel = selected === zone.code
+              {/* S01 — vert */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 642.895582, 173.623355)" fill="none" strokeLinejoin="miter" d="M -0.00140084 0.00219298 L -0.00140084 172.189713 L 172.186119 172.189713 L 172.186119 0.00219298 L -0.00140084 0.00219298" stroke="#22c55e" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path fill="#22c55e" d="M 642.894531 185.457031 L 646.753906 185.457031 L 646.753906 290.929688 L 642.894531 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#22c55e" d="M 768.175781 185.457031 L 772.035156 185.457031 L 772.035156 290.929688 L 768.175781 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#22c55e" d="M 654.730469 173.625 L 760.203125 173.625 L 760.203125 177.480469 L 654.730469 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#22c55e" d="M 654.730469 298.90625 L 760.203125 298.90625 L 760.203125 302.765625 L 654.730469 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
+
+              {/* S02 — cyan */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 772.045575, 173.623355)" fill="none" strokeLinejoin="miter" d="M 0.00173282 0.00219298 L 0.00173282 172.189713 L 172.189253 172.189713 L 172.189253 0.00219298 L 0.00173282 0.00219298" stroke="#06b6d4" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path fill="#06b6d4" d="M 772.046875 185.457031 L 775.90625 185.457031 L 775.90625 290.929688 L 772.046875 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#06b6d4" d="M 897.328125 185.457031 L 901.1875 185.457031 L 901.1875 290.929688 L 897.328125 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#06b6d4" d="M 783.878906 173.625 L 889.351562 173.625 L 889.351562 177.480469 L 783.878906 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#06b6d4" d="M 783.878906 298.90625 L 889.351562 298.90625 L 889.351562 302.765625 L 783.878906 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
+
+              {/* S03 — amber */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 901.195569, 173.623355)" fill="none" strokeLinejoin="miter" d="M -0.000341846 0.00219298 L -0.000341846 172.189713 L 172.187178 172.189713 L 172.187178 0.00219298 L -0.000341846 0.00219298" stroke="#f59e0b" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path fill="#f59e0b" d="M 901.195312 185.457031 L 905.054688 185.457031 L 905.054688 290.929688 L 901.195312 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#f59e0b" d="M 1026.476562 185.457031 L 1030.335938 185.457031 L 1030.335938 290.929688 L 1026.476562 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#f59e0b" d="M 913.027344 173.625 L 1018.503906 173.625 L 1018.503906 177.480469 L 913.027344 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#f59e0b" d="M 913.027344 298.90625 L 1018.503906 298.90625 L 1018.503906 302.765625 L 913.027344 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
+
+              {/* S05 — rouge */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 642.895582, 363.148331)" fill="none" strokeLinejoin="miter" d="M -0.00140084 0.000141559 L -0.00140084 172.187661 L 172.186119 172.187661 L 172.186119 0.000141559 L -0.00140084 0.000141559" stroke="#ef4444" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 772.045575, 363.148331)" fill="none" strokeLinejoin="miter" d="M 0.00173282 0.000141559 L 0.00173282 172.187661 L 172.189253 172.187661 L 172.189253 0.000141559 L 0.00173282 0.000141559" stroke="#ef4444" strokeWidth="10" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path fill="#ef4444" d="M 642.894531 374.980469 L 646.753906 374.980469 L 646.753906 480.457031 L 642.894531 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#ef4444" d="M 897.328125 374.980469 L 901.1875 374.980469 L 901.1875 480.457031 L 897.328125 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#ef4444" d="M 654.730469 363.148438 L 889.351562 363.148438 L 889.351562 367.007812 L 654.730469 367.007812 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#ef4444" d="M 654.730469 488.429688 L 889.351562 488.429688 L 889.351562 492.289062 L 654.730469 492.289062 Z" fillOpacity="1" fillRule="nonzero"/>
+
+              {/* S04 — violet */}
+              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 901.195569, 363.148331)" fill="none" strokeLinejoin="miter" d="M -0.000341846 0.000141559 L -0.000341846 172.187661 L 172.187178 172.187661 L 172.187178 0.000141559 L -0.000341846 0.000141559" stroke="#8b5cf6" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
+              <path fill="#8b5cf6" d="M 901.195312 374.980469 L 905.054688 374.980469 L 905.054688 480.457031 L 901.195312 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#8b5cf6" d="M 1026.476562 374.980469 L 1030.335938 374.980469 L 1030.335938 480.457031 L 1026.476562 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#8b5cf6" d="M 913.027344 363.148438 L 1018.503906 363.148438 L 1018.503906 367.007812 L 913.027344 367.007812 Z" fillOpacity="1" fillRule="nonzero"/>
+              <path fill="#8b5cf6" d="M 913.027344 488.429688 L 1018.503906 488.429688 L 1018.503906 492.289062 L 913.027344 492.289062 Z" fillOpacity="1" fillRule="nonzero"/>
+
+              {/* ── Textes des serres (en SVG natif — parfaitement positionnés) ── */}
+              {/* S01 */}
+              <text x="707" y="228" textAnchor="middle" fontSize="10" fill="#22c55e" fontFamily="Arial, sans-serif" fontWeight="700">Unité - Génétique</text>
+              <text x="707" y="243" textAnchor="middle" fontSize="9"  fill="#22c55e" fontFamily="Arial, sans-serif">&amp; Amélioration</text>
+              {/* S02 */}
+              <text x="836" y="228" textAnchor="middle" fontSize="10" fill="#06b6d4" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
+              <text x="836" y="243" textAnchor="middle" fontSize="9"  fill="#06b6d4" fontFamily="Arial, sans-serif">Horticulture</text>
+              {/* S03 */}
+              <text x="965" y="228" textAnchor="middle" fontSize="10" fill="#f59e0b" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
+              <text x="965" y="243" textAnchor="middle" fontSize="9"  fill="#f59e0b" fontFamily="Arial, sans-serif">Agronomie</text>
+              {/* S04 */}
+              <text x="965" y="418" textAnchor="middle" fontSize="10" fill="#8b5cf6" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
+              <text x="965" y="433" textAnchor="middle" fontSize="9"  fill="#8b5cf6" fontFamily="Arial, sans-serif">Hydroponie</text>
+              {/* S05 */}
+              <text x="772" y="418" textAnchor="middle" fontSize="10" fill="#ef4444" fontFamily="Arial, sans-serif" fontWeight="700">Unité - Protection</text>
+              <text x="772" y="433" textAnchor="middle" fontSize="9"  fill="#ef4444" fontFamily="Arial, sans-serif">des Plantes</text>
+
+              {/* ── Zones interactives — MÊMES coordonnées que les serres ── */}
+              {SERRES.map(s => {
+                const isHov = hovered  === s.code
+                const isSel = selected === s.code
                 return (
-                  <div
-                    key={zone.code}
-                    onMouseEnter={() => setHovered(zone.code)}
-                    onMouseLeave={() => setHovered(null)}
-                    onClick={() => { setSelected(selected === zone.code ? null : zone.code); setTab('info') }}
-                    style={{
-                      position: 'absolute',
-                      left: zone.left, top: zone.top,
-                      width: zone.width, height: zone.height,
-                      cursor: 'pointer',
-                      background: isSel
-                        ? `${serre.color}30`
-                        : isHov ? `${serre.color}18` : 'transparent',
-                      border: isSel
-                        ? `2px solid ${serre.color}`
-                        : isHov ? `2px solid ${serre.color}80` : '2px solid transparent',
-                      borderRadius: '6px',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'flex-end',
-                      padding: '6px',
-                    }}
-                  >
-                    {/* Code badge on hover/select */}
+                  <g key={s.code}>
+                    <rect
+                      x={s.rx} y={s.ry} width={s.rw} height={s.rh}
+                      fill={isSel ? `${s.color}35` : isHov ? `${s.color}20` : 'transparent'}
+                      stroke={isSel || isHov ? s.color : 'transparent'}
+                      strokeWidth={isSel ? 3 : 2}
+                      rx="3"
+                      style={{ cursor: 'pointer', transition: 'fill 0.2s, stroke 0.2s' }}
+                      onMouseEnter={() => setHovered(s.code)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => { setSelected(selected === s.code ? null : s.code); setTab('info') }}
+                    />
+                    {/* Badge code sur hover/sélection */}
                     {(isHov || isSel) && (
-                      <div style={{
-                        background: serre.color,
-                        color: 'white',
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        padding: '2px 8px',
-                        borderRadius: '10px',
-                        fontFamily: 'inherit',
-                        boxShadow: `0 2px 8px ${serre.color}60`,
-                        animation: 'fadeInBadge 0.15s ease',
-                      }}>
-                        {zone.code}
-                      </div>
+                      <g>
+                        <rect
+                          x={s.rx + s.rw / 2 - 18} y={s.ry + 6}
+                          width="36" height="16" rx="8"
+                          fill={s.color}
+                          style={{ pointerEvents: 'none' }}
+                        />
+                        <text
+                          x={s.rx + s.rw / 2} y={s.ry + 18}
+                          textAnchor="middle" fontSize="9"
+                          fill="white" fontFamily="Arial, sans-serif" fontWeight="700"
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          {s.code}
+                        </text>
+                      </g>
                     )}
-                  </div>
+                  </g>
                 )
               })}
-            </div>
+            </svg>
 
             {/* Hint bar */}
             <div style={{
@@ -247,7 +282,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
             minHeight: '320px',
           }}>
             {!selected ? (
-              <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: mutedColor, fontSize: '14px' }}>
+              <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: mutedColor }}>
                 <div style={{
                   width: '52px', height: '52px', borderRadius: '14px',
                   background: darkMode ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)',
@@ -260,21 +295,17 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                     <polyline points="9 22 9 12 15 12 15 22"/>
                   </svg>
                 </div>
-                <p style={{ marginBottom: '1.5rem', lineHeight: 1.6 }}>{T.select}</p>
+                <p style={{ fontSize: '14px', marginBottom: '1.5rem', lineHeight: 1.6 }}>{T.select}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {SERRES.map(s => (
-                    <button
-                      key={s.code}
-                      onClick={() => { setSelected(s.code); setTab('info') }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '8px 12px', borderRadius: '10px', cursor: 'pointer',
-                        fontFamily: 'inherit', fontSize: '12px', fontWeight: 500,
-                        border: `1px solid ${s.color}25`,
-                        background: `${s.color}08`, color: s.color,
-                        transition: 'all 0.2s', textAlign: 'left',
-                      }}
-                    >
+                    <button key={s.code} onClick={() => { setSelected(s.code); setTab('info') }} style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px', borderRadius: '10px', cursor: 'pointer',
+                      fontFamily: 'inherit', fontSize: '12px', fontWeight: 500,
+                      border: `1px solid ${s.color}25`,
+                      background: `${s.color}08`, color: s.color,
+                      transition: 'all 0.2s', textAlign: 'left',
+                    }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
                       <span style={{ flex: 1 }}>{s.code} — {lang === 'fr' ? s.nameFr : s.nameEn}</span>
                     </button>
@@ -283,12 +314,9 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
               </div>
             ) : (
               <>
-                {/* Color bar */}
                 <div style={{ height: '4px', background: `linear-gradient(90deg, ${info.color}, transparent)` }} />
-
-                {/* Tabs */}
                 <div style={{ display: 'flex', borderBottom: `1px solid ${cardBorder}` }}>
-                  {['info', 'data'].map(t => (
+                  {['info','data'].map(t => (
                     <button key={t} onClick={() => setTab(t)} style={{
                       flex: 1, padding: '13px 10px', fontSize: '13px', fontWeight: 600,
                       background: tab === t ? `${info.color}10` : 'transparent',
@@ -301,7 +329,6 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                   ))}
                 </div>
 
-                {/* ── INFO tab ── */}
                 {tab === 'info' && (
                   <div style={{ padding: '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
@@ -332,7 +359,6 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                   </div>
                 )}
 
-                {/* ── LIVE DATA tab ── */}
                 {tab === 'data' && (
                   <div style={{ padding: '1.5rem' }}>
                     {live ? (
@@ -358,10 +384,10 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                             <div style={{ fontSize: '11px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.irr}</div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                               {[
-                                { label: 'pH',    unit: '',        color: '#06B6D4', val: live.irr?.ph },
-                                { label: 'EC',    unit: ' mS/cm', color: '#22C55E', val: live.irr?.ec },
-                                { label: T.tEau,  unit: '°C',     color: '#F59E0B', val: live.irr?.temp_eau },
-                                { label: T.nEau,  unit: ' m',     color: '#8B5CF6', val: live.irr?.niveau_eau },
+                                { label: 'pH',   unit: '',        color: '#06B6D4', val: live.irr?.ph },
+                                { label: 'EC',   unit: ' mS/cm', color: '#22C55E', val: live.irr?.ec },
+                                { label: T.tEau, unit: '°C',     color: '#F59E0B', val: live.irr?.temp_eau },
+                                { label: T.nEau, unit: ' m',     color: '#8B5CF6', val: live.irr?.niveau_eau },
                               ].map(p => (
                                 <div key={p.label} style={{ background: `${p.color}10`, border: `1px solid ${p.color}25`, borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
                                   <div style={{ fontSize: '10px', color: mutedColor, marginBottom: '4px' }}>{p.label}</div>
@@ -384,10 +410,6 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeInBadge { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
-      `}</style>
     </section>
   )
 }
