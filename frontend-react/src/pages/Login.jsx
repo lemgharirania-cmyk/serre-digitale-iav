@@ -289,16 +289,13 @@ export default function Login() {
         {/* Logo */}
         <div style={{ textAlign:'center', marginBottom:'22px' }}>
           <div style={{
-            width:'58px', height:'58px', borderRadius:'17px',
-            background:'linear-gradient(135deg,#22C55E,#06B6D4)',
+            width:'68px', height:'68px', borderRadius:'17px',
+            overflow:'hidden', background:'white',
             display:'flex', alignItems:'center', justifyContent:'center',
             margin:'0 auto 12px',
             boxShadow:'0 0 28px rgba(34,197,94,0.3)',
           }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3C12 3 5 7 5 13c0 4 3 7 7 7s7-3 7-7c0-6-7-10-7-10z" stroke="white" strokeWidth="1.6"/>
-              <path d="M12 20V10M9 14l3-2 3 2" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src="/iav_logo.png" alt="IAV Hassan II" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
           </div>
           <div style={{ fontSize:'24px', fontWeight:'800', color:'#F8FAFC', letterSpacing:'-0.5px' }}>
             Espace Gérant
