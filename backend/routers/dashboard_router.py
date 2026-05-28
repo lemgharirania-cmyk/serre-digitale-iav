@@ -146,28 +146,84 @@ async def export_data(
     """, serre_id, str(heures))
 
     if not rows:
-        raise HTTPException(status_code=404, detail="Aucune donnée disponible")
+        raise HTTPException(status_code=404, detail="Aucune donnée disponible pour cette période.")
 
-    nom_fichier = f"serre_{serre['code']}_{heures}h"
+    nom_fichier = f"SDI_{serre['code']}_{heures}h"
+    col_labels  = [label for _, label in COLUMNS]
 
-    # CSV — pure Python, no pandas
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow([label for _, label in COLUMNS])
-    for row in rows:
-        r = dict(row)
-        writer.writerow([
+    def row_to_list(r):
+        return [
             r["capture_at"].strftime("%Y-%m-%d %H:%M:%S") if r["capture_at"] else "",
-            r["type_api"],
+            r["type_api"] or "",
             r["temperature"], r["humidite"], r["vpd"], r["co2"], r["luminosite"],
             r["ph"], r["ec"], r["temp_eau"], r["niveau_eau"],
-        ])
-    buf.seek(0)
-    return StreamingResponse(
-        iter([buf.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={nom_fichier}.csv"}
-    )
+        ]
+
+    # ── CSV ──────────────────────────────────────────────────
+    if format == "csv":
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(col_labels)
+        for row in rows:
+            writer.writerow(row_to_list(dict(row)))
+        csv_bytes = buf.getvalue().encode("utf-8-sig")  # utf-8-sig = lisible Excel FR
+        return StreamingResponse(
+            io.BytesIO(csv_bytes),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.csv"'}
+        )
+
+    # ── EXCEL ────────────────────────────────────────────────
+    if format == "excel":
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment
+            from openpyxl.utils import get_column_letter
+        except ImportError:
+            raise HTTPException(
+                status_code=500,
+                detail="openpyxl non installé sur le serveur. Utilisez le format CSV."
+            )
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f"{serre['code']} — {heures}h"
+
+        # Header style
+        hdr_fill = PatternFill("solid", fgColor="1B4332")
+        hdr_font = Font(color="FFFFFF", bold=True, name="Calibri", size=11)
+
+        for ci, label in enumerate(col_labels, 1):
+            cell = ws.cell(row=1, column=ci, value=label)
+            cell.fill = hdr_fill
+            cell.font = hdr_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            ws.column_dimensions[get_column_letter(ci)].width = max(len(label) + 4, 16)
+        ws.row_dimensions[1].height = 24
+
+        # Data rows
+        alt_fill = PatternFill("solid", fgColor="F0FDF4")
+        for ri, row in enumerate(rows, 2):
+            data = row_to_list(dict(row))
+            for ci, val in enumerate(data, 1):
+                cell = ws.cell(row=ri, column=ci, value=val if val != "" else None)
+                cell.alignment = Alignment(horizontal="center")
+                if ri % 2 == 0:
+                    cell.fill = alt_fill
+
+        ws.freeze_panes = "A2"
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        return StreamingResponse(
+            buf,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.xlsx"'}
+        )
+
+    raise HTTPException(status_code=400, detail="Format non supporté. Utilisez 'csv' ou 'excel'.")
 
 # ─── Utilisateurs (admin only) ───────────────────────────────
 
