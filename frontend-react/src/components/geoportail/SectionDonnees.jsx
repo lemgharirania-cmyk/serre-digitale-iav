@@ -276,9 +276,17 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
         </div>
 
         {/* Icon */}
-        <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-          {(() => { const IconCmp = PARAM_ICONS[paramKey]; return IconCmp ? <IconCmp size={20} color={hovered ? cardColor : (darkMode ? '#64748B' : '#94A3B8')}
-        </div>
+<div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+  {(() => {
+    const IconCmp = PARAM_ICONS[paramKey];
+    return IconCmp ? (
+      <IconCmp
+        size={20}
+        color={hovered ? cardColor : (darkMode ? '#64748B' : '#94A3B8')}
+      />
+    ) : null;
+  })()}
+</div>
 
         {/* Label */}
         <div style={{ fontSize: '10px', color: darkMode ? '#64748B' : '#94A3B8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>
