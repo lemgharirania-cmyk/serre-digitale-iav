@@ -35,6 +35,17 @@ async def get_serre_thresholds(serre_id: int, db=Depends(get_db), user=Depends(g
     )
     return [dict(r) for r in rows]
 
+# ── PUBLIC endpoint for the AR viewer (no auth required) ────
+@router.get("/thresholds/{serre_id}/public")
+async def get_serre_thresholds_public(serre_id: int, db=Depends(get_db)):
+    """Read-only, unauthenticated. Returns only min/max/actif — no emails."""
+    rows = await db.fetch(
+        "SELECT capteur, valeur_min, valeur_max, actif FROM thresholds WHERE serre_id=$1 ORDER BY capteur",
+        serre_id
+    )
+    return [dict(r) for r in rows]
+# ────────────────────────────────────────────────────────────
+
 @router.put("/thresholds/{serre_id}/{capteur}")
 async def update_threshold(
     serre_id: int, capteur: str,
@@ -151,8 +162,17 @@ async def export_data(
     nom_fichier = f"SDI_{serre['code']}_{heures}h"
     col_labels  = [label for _, label in COLUMNS]
 
+<<<<<<< Updated upstream
     def row_to_list(r):
         return [
+=======
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow([label for _, label in COLUMNS])
+    for row in rows:
+        r = dict(row)
+        writer.writerow([
+>>>>>>> Stashed changes
             r["capture_at"].strftime("%Y-%m-%d %H:%M:%S") if r["capture_at"] else "",
             r["type_api"] or "",
             r["temperature"], r["humidite"], r["vpd"], r["co2"], r["luminosite"],
@@ -245,6 +265,7 @@ async def list_users(db=Depends(get_db), user=Depends(get_current_user)):
 async def create_user(data: NouvelUtilisateur, db=Depends(get_db), user=Depends(get_current_user)):
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin requis")
+    from auth import get_current_user
     from auth import hash_password
     hashed = hash_password(data.mot_de_passe)
     await db.execute("""
