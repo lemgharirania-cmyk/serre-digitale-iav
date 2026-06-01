@@ -1,7 +1,19 @@
 // src/components/geoportail/SectionDonnees.jsx
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, RefreshCw, Info, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, RefreshCw, Info, AlertTriangle, CheckCircle, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
 import { iotAPI } from '../../api/client'
+
+// Lucide icon components mapped per parameter
+const PARAM_ICONS = {
+  temperature: Thermometer,
+  humidite:    Droplets,
+  vpd:         Wind,
+  co2:         Leaf,
+  ph:          FlaskConical,
+  ec:          Zap,
+  temp_eau:    Waves,
+  niveau_eau:  BarChart2,
+}
 
 const SERRES = [
   { code:'S01', color:'#22C55E', nameFr:'Génétique & Amélioration des Plantes', nameEn:'Plant Genetics & Improvement' },
@@ -14,7 +26,7 @@ const SERRES = [
 // ── Descriptions détaillées par paramètre ET par serre ───────
 const POPUP_INFO = {
   temperature: {
-    icon: '🌡️',
+    icon: null,
     labelFr: 'Température de l\'air',
     labelEn: 'Air Temperature',
     unit: '°C',
@@ -43,7 +55,7 @@ const POPUP_INFO = {
     },
   },
   humidite: {
-    icon: '💧',
+    icon: null,
     labelFr: 'Humidité relative',
     labelEn: 'Relative Humidity',
     unit: '%',
@@ -72,7 +84,7 @@ const POPUP_INFO = {
     },
   },
   vpd: {
-    icon: '🌬️',
+    icon: null,
     labelFr: 'Déficit de Pression de Vapeur',
     labelEn: 'Vapour Pressure Deficit',
     unit: 'kPa',
@@ -101,7 +113,7 @@ const POPUP_INFO = {
     },
   },
   co2: {
-    icon: '🌿',
+    icon: null,
     labelFr: 'Dioxyde de Carbone',
     labelEn: 'Carbon Dioxide',
     unit: 'ppm',
@@ -130,7 +142,7 @@ const POPUP_INFO = {
     },
   },
   ph: {
-    icon: '⚗️',
+    icon: null,
     labelFr: 'Potentiel Hydrogène (pH)',
     labelEn: 'Hydrogen Potential (pH)',
     unit: '',
@@ -159,7 +171,7 @@ const POPUP_INFO = {
     },
   },
   ec: {
-    icon: '⚡',
+    icon: null,
     labelFr: 'Conductivité Électrique',
     labelEn: 'Electrical Conductivity',
     unit: 'mS/cm',
@@ -188,7 +200,7 @@ const POPUP_INFO = {
     },
   },
   temp_eau: {
-    icon: '🌊',
+    icon: null,
     labelFr: 'Température de l\'eau',
     labelEn: 'Water Temperature',
     unit: '°C',
@@ -202,7 +214,7 @@ const POPUP_INFO = {
     },
   },
   niveau_eau: {
-    icon: '📊',
+    icon: null,
     labelFr: 'Niveau d\'eau',
     labelEn: 'Water Level',
     unit: 'm',
@@ -264,7 +276,9 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
         </div>
 
         {/* Icon */}
-        <div style={{ fontSize: '22px', marginBottom: '8px' }}>{info.icon}</div>
+        <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+          {(() => { const IconCmp = PARAM_ICONS[paramKey]; return IconCmp ? <IconCmp size={20} color={hovered || isSel ? cardColor : (darkMode ? '#64748B' : '#94A3B8')} strokeWidth={1.8} /> : null; })()}
+        </div>
 
         {/* Label */}
         <div style={{ fontSize: '10px', color: darkMode ? '#64748B' : '#94A3B8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>
@@ -307,7 +321,9 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
 
           {/* Popup header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-            <span style={{ fontSize: '18px' }}>{info.icon}</span>
+            <span style={{ display:'flex', alignItems:'center', justifyContent:'center', width:28, height:28, borderRadius:8, background:`${cardColor}15` }}>
+              {(() => { const IconCmp = PARAM_ICONS[paramKey]; return IconCmp ? <IconCmp size={15} color={cardColor} strokeWidth={1.8} /> : null; })()}
+            </span>
             <div>
               <div style={{ fontSize: '13px', fontWeight: 700, color: cardColor }}>
                 {lang === 'fr' ? info.labelFr : info.labelEn}
