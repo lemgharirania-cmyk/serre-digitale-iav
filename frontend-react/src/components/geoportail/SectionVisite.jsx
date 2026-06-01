@@ -49,7 +49,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     blocLabel:   lang==='fr' ? 'Bloc technique'              : 'Technical Block',
     blocSub:     lang==='fr' ? 'Espaces techniques et de service' : 'Technical and service spaces',
     full:        lang==='fr' ? 'Plein écran'                 : 'Fullscreen',
-    live:        lang==='fr' ? 'En direct'                   : 'Live',
+    live:        lang==='fr' ? 'Visite 360°'                : '360° Tour',
     launch:      lang==='fr' ? 'Lancer'                      : 'Launch',
     selectTour:  lang==='fr' ? 'Sélectionnez une visite pour la démarrer' : 'Select a tour to start',
     selectSalle: lang==='fr' ? 'Sélectionnez un espace pour commencer'    : 'Select a space to begin',
@@ -226,7 +226,7 @@ function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, onHove
       transition:'all 0.22s',
       boxShadow: active?`0 12px 32px ${item.color}30,0 0 0 1px ${item.color}25`:isHov?`0 8px 24px ${item.color}18`:'none',
       transform: isHov&&!active?'translateY(-4px)':active?'translateY(-2px)':'none',
-      height:'110px',
+      height:'96px',
     }}>
       <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', justifyContent:'space-between', padding:'14px' }}>
         {/* Top: badge */}
@@ -257,8 +257,8 @@ function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, onHove
             {item.desc}
           </div>
           {active && (
-            <div style={{ marginTop:'8px', display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'9px', fontWeight:700, letterSpacing:'0.1em', color:'rgba(255,255,255,0.8)', background:'rgba(255,255,255,0.12)', borderRadius:'100px', padding:'2px 8px', fontFamily:"'Outfit',sans-serif" }}>
-              <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:'#fff', display:'inline-block' }} />
+            <div style={{ marginTop:'8px', display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'9px', fontWeight:700, letterSpacing:'0.1em', color:'rgba(255,255,255,0.85)', background:'rgba(255,255,255,0.12)', borderRadius:'100px', padding:'2px 8px', fontFamily:"'Outfit',sans-serif" }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
               {liveLabel}
             </div>
           )}
@@ -287,7 +287,7 @@ function SectionLabel({ label, sub, gradient, ink, inkSub }) {
 
 function EmptyViewer({ text, isDark, inkSub, glassBorder }) {
   return (
-    <div style={{ borderRadius:'20px', border:`1px solid ${glassBorder}`, background: isDark?'rgba(11,23,40,0.4)':'rgba(255,255,255,0.5)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'180px', color:inkSub, fontSize:'13px', fontFamily:"'Outfit',sans-serif" }}>
+    <div style={{ borderRadius:'20px', border:`1px solid ${glassBorder}`, background: isDark?'rgba(11,23,40,0.4)':'rgba(255,255,255,0.5)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'140px', color:inkSub, fontSize:'13px', fontFamily:"'Outfit',sans-serif" }}>
       {text}
     </div>
   )
@@ -306,12 +306,15 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T }) {
           <span style={{ fontSize:'13px', fontWeight:600, color:ink, fontFamily:"'Outfit',sans-serif" }}>{viewer.title}</span>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-          <span style={{ fontSize:'10px', fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.1)', border:'1px solid rgba(34,197,94,0.22)', borderRadius:'100px', padding:'2px 9px', letterSpacing:'0.08em', fontFamily:"'Outfit',sans-serif" }}>{T.live}</span>
+          <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'10px', fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.1)', border:'1px solid rgba(34,197,94,0.22)', borderRadius:'100px', padding:'2px 9px', letterSpacing:'0.08em', fontFamily:"'Outfit',sans-serif" }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              {T.live}
+            </span>
           <a href={viewer.file} target="_blank" rel="noopener noreferrer" style={{ fontSize:'11px', fontWeight:600, color:inkSub, textDecoration:'none', background: isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)', border:`1px solid ${glassBorder}`, borderRadius:'8px', padding:'5px 11px' }}>{T.full}</a>
         </div>
       </div>
       <div style={{ height:'2px', background:`linear-gradient(90deg,transparent,${viewer.color},transparent)` }} />
-      <div style={{ position:'relative', paddingBottom:'56%', background: isDark?'#07111F':'#F0FAF4' }}>
+      <div style={{ position:'relative', paddingBottom:'46%', background: isDark?'#07111F':'#F0FAF4' }}>
         <iframe key={viewer.file} src={viewer.file} allowFullScreen style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:'none' }} />
       </div>
     </div>

@@ -829,6 +829,13 @@
           "targetZoneId": "unite-protection",
           "targetSceneId": "unite-protection__000",
           "label": "🌱 Unité Protection des Plantes"
+        },
+        {
+          "type": "ar",
+          "pitch": 11.1,
+          "yaw": -20.1,
+          "label": "Unité protection des plantes",
+          "arDesc": "Unité protection des plantes"
         }
       ],
       "bloc-protection__005": [

@@ -17,6 +17,26 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .pnlm-about-msg,.pnlm-panorama-info,.pnlm-controls-container,
 .pnlm-load-box,.pnlm-lbar,.pnlm-lbar-fill,.pnlm-load-button,
 .pnlm-loading,.pnlm-compass{display:none!important}
+.pnlm-hotspot-base{background:transparent!important;border:none!important;
+  width:auto!important;height:auto!important;overflow:visible!important}
+.pnlm-hotspot-base .pnlm-sprite{display:none!important}
+.hs-nav{width:58px;height:58px;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.38);
+  box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:center;
+  animation:nav-breathe 3.5s ease-in-out infinite;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.hs-cross{width:58px;height:58px;border-radius:50%;cursor:pointer;
+  background:rgba(147,197,253,.13);border:1px solid rgba(147,197,253,.4);
+  box-shadow:0 2px 20px rgba(30,80,200,.18),0 0 0 6px rgba(147,197,253,.06);
+  display:flex;align-items:center;justify-content:center;
+  animation:nav-breathe 3.5s ease-in-out infinite;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.hs-nav:hover{transform:scale(1.12);background:rgba(255,255,255,.22)}
+.hs-cross:hover{transform:scale(1.12);background:rgba(147,197,253,.24)}
+@keyframes nav-breathe{
+  0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05)}
+  50%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 14px rgba(255,255,255,.0)}}
 #vignette { display: none; }
 #atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
   background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.15) 100%)}
@@ -85,71 +105,6 @@ transform:scale(1.05);
 box-shadow:0 0 18px rgba(255,255,255,.35);
 }
 
-/* ── AR Popup System ── */
-#ar-layer{position:fixed;inset:0;z-index:80;pointer-events:none}
-
-.ar-popup{
-  position:absolute;
-  pointer-events:auto;
-  min-width:200px;max-width:280px;
-  background:rgba(0,8,20,.72);
-  border:1px solid rgba(0,200,255,.28);
-  border-radius:12px;
-  padding:16px 18px 14px;
-  backdrop-filter:blur(18px);
-  opacity:0;
-  transform:translateY(10px) scale(.97);
-  transition:opacity .5s cubic-bezier(.4,0,.2,1), transform .5s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 28px rgba(0,180,255,.12), inset 0 0 20px rgba(0,180,255,.04);
-}
-.ar-popup.visible{
-  opacity:1;
-  transform:translateY(0) scale(1);
-  animation:arFloat 4s ease-in-out infinite;
-}
-@keyframes arFloat{
-  0%,100%{transform:translateY(0) scale(1)}
-  50%{transform:translateY(-5px) scale(1)}
-}
-.ar-popup-tag{
-  font-size:8px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(0,200,255,.7);margin-bottom:8px;display:flex;align-items:center;gap:6px;
-}
-.ar-popup-tag::before{
-  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:rgba(0,200,255,.9);box-shadow:0 0 8px rgba(0,200,255,.8);
-  animation:arPulse 1.8s ease-in-out infinite;
-}
-@keyframes arPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-.ar-popup-title{
-  font-size:14px;font-weight:600;color:#fff;margin-bottom:6px;line-height:1.3;
-}
-.ar-popup-body{
-  font-size:11px;font-weight:400;color:rgba(255,255,255,.55);line-height:1.6;
-}
-.ar-popup-stat{
-  display:flex;justify-content:space-between;align-items:baseline;
-  margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);
-}
-.ar-popup-stat-val{
-  font-size:18px;font-weight:300;color:rgba(0,220,255,.9);letter-spacing:-.02em;
-}
-.ar-popup-stat-unit{
-  font-size:10px;color:rgba(255,255,255,.35);
-}
-.ar-popup-close{
-  position:absolute;top:10px;right:12px;font-size:14px;color:rgba(255,255,255,.25);
-  cursor:pointer;line-height:1;transition:color .2s;background:none;border:none;
-}
-.ar-popup-close:hover{color:rgba(255,255,255,.7)}
-
-/* corner brackets */
-.ar-popup::before,.ar-popup::after{
-  content:'';position:absolute;width:10px;height:10px;
-  border-color:rgba(0,200,255,.5);border-style:solid;
-}
-.ar-popup::before{top:6px;left:6px;border-width:1px 0 0 1px;border-radius:2px 0 0 0}
-.ar-popup::after{bottom:6px;right:6px;border-width:0 1px 1px 0;border-radius:0 0 2px 0}
 
 /* Scene narration subtitle bar */
 #narration-bar{
@@ -291,6 +246,24 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
   background:rgba(255,255,255,.3);transition:background .2s,box-shadow .2s}
 #ar-toggle.ar-on #ar-toggle-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
 
+/* IoT HUD */
+.iot-hud{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:150;display:flex;align-items:flex-end;gap:6px;pointer-events:none;display:none}
+.iot-hud.visible{display:flex}
+.iot-group{display:flex;align-items:stretch;gap:5px;padding:6px 7px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:22px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 2px 16px rgba(0,0,0,.12)}
+.iot-divider{width:1px;align-self:stretch;margin:4px 3px;flex-shrink:0;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.2) 30%,rgba(255,255,255,.2) 70%,transparent)}
+.iot-pill{position:relative;width:70px;padding:11px 6px 10px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:default;pointer-events:all;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 3px 14px rgba(0,0,0,.14);transition:transform .28s cubic-bezier(.34,1.35,.64,1),background .28s;overflow:visible}
+.iot-pill.env::after{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;border-radius:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(120,200,155,.55),transparent)}
+.iot-pill.irr::after{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;border-radius:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(100,175,225,.55),transparent)}
+.iot-pill:hover{transform:scale(1.12) translateY(-4px);background:rgba(255,255,255,.19)}
+.iot-icon{width:17px;height:17px;flex-shrink:0;opacity:.7}
+.iot-pill.env .iot-icon{color:rgba(140,215,170,1)}
+.iot-pill.irr .iot-icon{color:rgba(120,195,235,1)}
+.iot-val{font-size:16px;font-weight:500;line-height:1;color:rgba(255,255,255,.88);letter-spacing:-.3px}
+.iot-unit{font-size:8px;font-weight:400;color:rgba(255,255,255,.42);letter-spacing:.8px;text-transform:uppercase}
+.iot-tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(5px);background:rgba(255,255,255,.14);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.24);color:rgba(255,255,255,.86);font-size:10px;white-space:nowrap;padding:5px 11px;border-radius:9px;pointer-events:none;opacity:0;z-index:10;transition:opacity .18s ease,transform .18s ease}
+.iot-pill:hover .iot-tip{opacity:1;transform:translateX(-50%) translateY(0)}
+.iot-pip{position:absolute;top:7px;right:7px;width:5px;height:5px;border-radius:50%;background:rgba(140,230,170,.9);box-shadow:0 0 5px rgba(140,230,170,.45);animation:pip-pulse 2.8s ease-in-out infinite}
+@keyframes pip-pulse{0%,100%{opacity:.88;transform:scale(1)}50%{opacity:.22;transform:scale(.72)}}
 </style>
 </head>
 
@@ -315,7 +288,7 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
   <button onclick="setLang('ar')">AR</button>
 </div>
 
-<div id="ar-layer"></div>
+
 <div id="narration-bar"><div id="narration-text"></div></div>
 
 <div class="zf" id="zf">
@@ -750,6 +723,29 @@ const AR_CONTENT = {
         {k:'Code serre',v:'S03',tag:'amber'},
         {k:'Surface',v:'À COMPLÉTER m²'},
         {k:'Cultures',v:'Grandes cultures'},
+        {k:'Accès',v:'Étudiants et personnel'},
+      ]},
+    ],
+  },
+
+  'unité protection des plantes': {
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/></svg>`,
+    iconBg:'rgba(239,68,68,.18)', iconBorder:'rgba(252,165,165,.3)',
+    color:'#ef4444', statusText:'Unité S05', type:'system',
+    heroGradient:'radial-gradient(ellipse at 40% 55%, rgba(239,68,68,.22) 0%, transparent 65%)',
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">${[0,1,2,3].map(i=>`<path d="M${95+i*55} ${65-i*4} Q${100+i*55} 42 ${105+i*55} ${65-i*4}" stroke="rgba(252,165,165,.${3+i%2})" stroke-width="1.5" fill="none" style="animation:hero-float ${2+i*.3}s ease-in-out ${i*.2}s infinite"/>`).join('')}</svg>`,
+    title:'Unité Protection des Plantes',
+    tabs:['Info'],
+    sections:[
+      {label:'MISSION',bullets:[
+        'Étude et gestion des maladies, ravageurs et adventices affectant les cultures.',
+        'Développement de méthodes de lutte biologique et intégrée contre les bioagresseurs.',
+        'Formation aux techniques phytosanitaires et à la protection raisonnée des végétaux.',
+      ]},
+      {label:'INFORMATIONS',items:[
+        {k:'Code serre',v:'S05',tag:'red'},
+        {k:'Surface',v:'À COMPLÉTER m²'},
+        {k:'Spécialité',v:'Phytopathologie & entomologie'},
         {k:'Accès',v:'Étudiants et personnel'},
       ]},
     ],
@@ -1382,7 +1378,22 @@ function buildControleCard(num) {
 
 function getARDef(desc){
   if(!desc) return null;
-  return AR_CONTENT[desc.toLowerCase().trim()]||null;
+  const rawKey=desc.toLowerCase().trim();
+  const _AL={
+    'capteurs':'sensors','ventilation ext':'ventilation dehors',
+    'syst de refroidissement':'système de refroidissement',
+    'syst de refroidissment':'système de refroidissement',
+    'système de ventilation':'ventilation','systeme de ventilation':'ventilation',
+    'fenetre':'fenetre auto','fenetres':'fenetre auto',
+    'rideaux':'rideaux auto',
+    'avocat':'avocatier',
+    'tomate malades':'tomates malades','tomate malade':'tomates malades',
+    'blé malade':'ble malade','blé':'ble malade',
+    'audoucisseur':'audoucisseur',
+    'unité protection des plantes':'unité protection des plantes',
+  };
+  const key=_AL[rawKey]||rawKey;
+  return AR_CONTENT[key]||null;
 }
 
 const CAT_MAP = {
@@ -1402,7 +1413,7 @@ const CAT_MAP = {
   sensors:'TÉLÉMÉTRIE IOT', monitoring:'SUPERVISION IoT',
   'unité génétique et amélioration des plantes':'UNITÉ DE RECHERCHE',
   'unité horticulture':'UNITÉ DE RECHERCHE', 'unité agronomie':'UNITÉ DE RECHERCHE',
-  'unité hydroponie':'UNITÉ DE RECHERCHE',
+  'unité hydroponie':'UNITÉ DE RECHERCHE', 'unité protection des plantes':'UNITÉ DE RECHERCHE',
   'salle de lavage':'SERVICE CAMPUS', 'salle technique de commandes':'SERVICE CAMPUS',
   'local technique d\'équipements':'SERVICE CAMPUS',
   'salle de fertilisation et traitement d\'eau':'SERVICE CAMPUS',
@@ -1422,29 +1433,92 @@ function buildAurora(c1,c2,c3){
 
 const HS_VISUALS = {
   'fraise':{style:buildPill(244,100,100)+';animation:hs-straw 3s ease-in-out infinite',html:buildAurora('rgba(255,200,200,.95)','rgba(255,140,180,.6)','rgba(255,200,120,.25)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(220,80,80,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"\/><circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"\/><\/svg>`},
-  'co2':{style:buildPill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="3" cy="7" r="2.5"\/><circle cx="12" cy="7" r="3.2"\/><circle cx="21" cy="7" r="2.5"\/><line x1="5.5" y1="7" x2="8.8" y2="7"\/><line x1="15.2" y1="7" x2="18.5" y2="7"\/><\/svg>`},
+  'co2':{style:buildPill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="3" cy="7" r="2.5"\/><circle cx="12" cy="7" r="3.2"\/><circle cx="21" cy="7" r="2.5"\/><line x1="5.5" y1="7" x2="8.8" y2="7"\/><line x1="15.2" y1="7" x2="18.5" y2="7"\/><text x="1.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text><text x="9.8" y="9.2" font-size="4.5" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">C<\/text><text x="19.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text><\/svg>`},
   'brumisateur':{style:buildPill(45,212,191)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(167,243,208,.95)','rgba(94,234,212,.6)','rgba(186,230,253,.25)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(13,148,136,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="9" width="10" height="6" rx="2"\/><path d="M12 12h3"\/><path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"\/><circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><\/svg>`},
   'ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"\/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/><\/svg>`},
+  'systeme de ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"\/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/><\/svg>`},
+  'audoucisseur':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="10" rx="5" ry="7"\/><path d="M7 14c0 3 2.5 5 5 5s5-2 5-5"\/><path d="M9 7l3-2 3 2" opacity=".5"\/><\/svg>`},
+  'unité protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"\/><path d="M9 12l2 2 4-4" opacity=".7"\/><\/svg>`},
   'système de refroidissement':{style:buildPill(59,130,246)+';animation:hs-float 3.2s ease-in-out .6s infinite',html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="30" height="26" viewBox="0 0 24 20" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="1" y="2" width="22" height="14" rx="2.5"\/><line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"\/><\/svg>`},
   'fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="30" viewBox="0 0 24 26" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="4" y="2" width="16" height="10" rx="2"\/><text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK<\/text><line x1="8" y1="12" x2="8" y2="18"\/><line x1="12" y1="12" x2="12" y2="18"\/><line x1="16" y1="12" x2="16" y2="18"\/><\/svg>`},
   'sensors':{style:buildPill(109,40,217)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="7" width="18" height="12" rx="2"\/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"\/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"\/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"\/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"\/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"\/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
   'ventilation dehors':{style:buildPill(6,182,212)+';animation:hs-float 2.6s ease-in-out .3s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="4" width="12" height="16" rx="2"\/><line x1="5" y1="8" x2="11" y2="8" opacity=".6"\/><line x1="5" y1="11" x2="11" y2="11" opacity=".6"\/><line x1="5" y1="14" x2="11" y2="14" opacity=".6"\/><path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6"\/><\/svg>`},
   'rideaux auto':{style:buildPill(217,119,6)+';animation:hs-float 3.4s ease-in-out .1s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.85)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><line x1="2" y1="4" x2="22" y2="4"\/><circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"\/><path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"\/><\/svg>`},
   'fenetre auto':{style:buildPill(6,182,212)+';animation:hs-float 3s ease-in-out .5s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="18" rx="2"\/><line x1="12" y1="3" x2="12" y2="21" opacity=".35"\/><line x1="2" y1="12" x2="22" y2="12" opacity=".35"\/><path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"\/><\/svg>`},
+
+  /* ── Unités de recherche — Lucide Building2 / FlaskConical / Leaf ── */
+  'unité génétique et amélioration des plantes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 1-2-2V3m6 11h10m0 0a2 2 0 0 0 2-2V7m-2 7v4a2 2 0 0 1-2 2H9m10-4H9m0 0v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"\/><circle cx="12" cy="11" r="1.5" fill="rgba(109,40,217,.7)" stroke="none"\/><\/svg>`},
+  'unité horticulture':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .1s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"\/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"\/><\/svg>`},
+  'unité agronomie':{style:buildPill(245,158,11)+';animation:hs-float 3.1s ease-in-out .2s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22V11"/><path d="M12 11C12 11 6 9 6 4c0 0 4 0 6 4 2-4 6-4 6-4 0 5-6 7-6 7z"\/><path d="M6 20h12"\/><\/svg>`},
+  'unité hydroponie':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"\/><path d="M8 14c0 2 2 4 4 4s4-2 4-4" opacity=".55"\/><\/svg>`},
+
+  /* ── Salles du bloc — Lucide icons ── */
+  'salle de lavage':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M4 12h16M4 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M6 12v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/><path d="M10 16v-4M14 16v-4"\/><\/svg>`},
+  'salle technique de commandes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out .1s infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"\/><path d="M8 21h8M12 17v4"\/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"\/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
+  'local technique d\'équipements':{style:buildPill(107,114,128)+';animation:hs-float 3.2s ease-in-out .2s infinite',html:buildAurora('rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(75,85,99,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"\/><\/svg>`},
+  'salle de fertilisation et traitement d\'eau':{style:buildPill(14,165,233)+';animation:hs-float 2.7s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"\/><line x1="9" y1="14" x2="15" y2="14"\/><line x1="12" y1="11" x2="12" y2="17"\/><\/svg>`},
+  'salle de réunion':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"\/><circle cx="9" cy="7" r="4"\/><path d="M23 21v-2a4 4 0 0 0-3-3.87"\/><path d="M16 3.13a4 4 0 0 1 0 7.75"\/><\/svg>`},
+  'salle de préparation':{style:buildPill(234,179,8)+';animation:hs-float 3.1s ease-in-out .1s infinite',html:buildAurora('rgba(254,249,195,.95)','rgba(253,224,71,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(161,98,7,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"\/><rect x="9" y="3" width="6" height="4" rx="2"\/><path d="M9 12h6M9 16h4"\/><\/svg>`},
+
+  /* ── Extérieur / Infrastructure — Lucide Building / TreePine ── */
+  'bloc gestion technique et administrative':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="3" y="3" width="18" height="18" rx="2"\/><path d="M3 9h18M9 21V9"\/><\/svg>`},
+  'serre':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .2s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M3 12L12 4l9 8"\/><rect x="5" y="12" width="14" height="9" rx="1"\/><path d="M9 21v-6h6v6"\/><\/svg>`},
+  'bloc protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"\/><path d="M9 12l2 2 4-4" opacity=".7"\/><\/svg>`},
+  'le truc exterieur':{style:buildPill(34,197,94)+';animation:hs-float 3.2s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 14l-5-5-5 5"\/><path d="M12 9v13"\/><path d="M5 20a7 7 0 0 1 14 0"\/><\/svg>`},
+
+  /* ── Salle de contrôle / Monitoring ── */
+  'monitoring':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"\/><path d="M8 21h8M12 17v4"\/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"\/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
+
+  /* ── Equipment ── */
+  'station de fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .1s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="5" width="7" height="10" rx="1.5"\/><rect x="14" y="5" width="7" height="10" rx="1.5"\/><path d="M10 10h4M12 7v6"\/><path d="M6 15v4M18 15v4M10 19h4"\/><\/svg>`},
+  'chaudière':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="4" y="5" width="16" height="14" rx="2"\/><circle cx="9" cy="12" r="2"\/><circle cx="15" cy="12" r="2"\/><path d="M9 5V3M15 5V3"\/><path d="M7 19v2M17 19v2"\/><\/svg>`},
+
+  /* ── Plants (avocatier, fraise spécifique, courgette…) ── */
+  'avocatier':{style:buildPill(34,197,94)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(134,239,172,.6)','rgba(167,243,208,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(21,128,61,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="13" rx="5" ry="7"\/><circle cx="12" cy="14" r="2.5" fill="rgba(21,128,61,.4)" stroke="none"\/><path d="M12 6C12 4 10 2 9 3"\/><path d="M12 6C12 4 14 2 15 3"\/><\/svg>`},
+  'avocat':{style:buildPill(34,197,94)+';animation:hs-float 3.1s ease-in-out .15s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(134,239,172,.6)','rgba(167,243,208,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(21,128,61,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="13" rx="5" ry="7"\/><circle cx="12" cy="14" r="2.5" fill="rgba(21,128,61,.4)" stroke="none"\/><path d="M12 6C12 4 10 2 9 3"\/><path d="M12 6C12 4 14 2 15 3"\/><\/svg>`},
+  'courgette':{style:buildPill(45,142,80)+';animation:hs-float 2.9s ease-in-out .3s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,101,52,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><ellipse cx="12" cy="13" rx="7" ry="5"\/><path d="M12 8V5M9 7l3-2 3 2"\/><path d="M9 13c0 1.5 1.5 3 3 3"\/><\/svg>`},
+  'cactus malade':{style:buildPill(239,68,68)+';animation:hs-float 3.2s ease-in-out .2s infinite',html:buildAurora('rgba(254,202,202,.95)','rgba(252,165,165,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 20V8M12 8C12 5 10 4 10 4M12 8C12 5 14 4 14 4"\/><path d="M12 12H8V9"\/><path d="M12 15H16V12"\/><\/svg>`},
+  'tomates malades':{style:buildPill(239,68,68)+';animation:hs-float 2.8s ease-in-out .4s infinite',html:buildAurora('rgba(254,202,202,.95)','rgba(252,165,165,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="12" cy="14" r="6"\/><path d="M12 8V6M12 8C11 6 10 4 10 4M12 8C13 6 14 4 14 4"\/><circle cx="9" cy="13" r="1.5" fill="rgba(185,28,28,.45)" stroke="none"\/><circle cx="14" cy="15" r="1.2" fill="rgba(185,28,28,.35)" stroke="none"\/><\/svg>`},
+  'tomate malades':{style:buildPill(239,68,68)+';animation:hs-float 2.8s ease-in-out .4s infinite',html:buildAurora('rgba(254,202,202,.95)','rgba(252,165,165,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="12" cy="14" r="6"\/><path d="M12 8V6M12 8C11 6 10 4 10 4M12 8C13 6 14 4 14 4"\/><circle cx="9" cy="13" r="1.5" fill="rgba(185,28,28,.45)" stroke="none"\/><circle cx="14" cy="15" r="1.2" fill="rgba(185,28,28,.35)" stroke="none"\/><\/svg>`},
+  'tomate malade':{style:buildPill(239,68,68)+';animation:hs-float 3.2s ease-in-out .2s infinite',html:buildAurora('rgba(254,202,202,.95)','rgba(252,165,165,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="12" cy="14" r="6"\/><path d="M12 8V6M12 8C11 6 10 4 10 4M12 8C13 6 14 4 14 4"\/><circle cx="9" cy="13" r="1.5" fill="rgba(185,28,28,.45)" stroke="none"\/><\/svg>`},
+  'ble malade':{style:buildPill(245,158,11)+';animation:hs-float 3s ease-in-out .6s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(253,230,138,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(146,64,14,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 20V6"/><path d="M12 10L9 7M12 10L15 7"/><path d="M12 13L9 10M12 13L15 10"/></svg>`},
+  'blé malade':{style:buildPill(245,158,11)+';animation:hs-float 3s ease-in-out .6s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(253,230,138,.6)','rgba(254,215,170,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(146,64,14,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 20V6"/><path d="M12 10L9 7M12 10L15 7"/><path d="M12 13L9 10M12 13L15 10"/></svg>`},
+  'plante x':{style:buildPill(148,163,184)+';animation:hs-float 3.5s ease-in-out infinite',html:buildAurora('rgba(226,232,240,.95)','rgba(203,213,225,.6)','rgba(241,245,249,.2)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(71,85,105,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 20V10"/><path d="M12 14C10 12 7 12 6 10C8 10 10 11 12 14Z" fill="rgba(71,85,105,.2)" stroke="none"/><path d="M12 11C14 9 17 9 18 7C16 7 14 8 12 11Z" fill="rgba(71,85,105,.2)" stroke="none"/></svg>`},
+};
+
+// Lucide-style fallback icons per type
+const FALLBACK_ICONS = {
+  plant: (r,g,b) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"\/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"\/><\/svg>`,
+  sensor: (r,g,b) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"\/><\/svg>`,
+  system: (r,g,b) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><circle cx="12" cy="12" r="3"\/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"\/><\/svg>`,
+};
+const FALLBACK_COLORS = {plant:[45,142,80], sensor:[109,40,217], system:[100,116,139]};
+const FALLBACK_AURORA = {
+  plant:['rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)'],
+  sensor:['rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)'],
+  system:['rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)'],
 };
 
 function getHSVisual(key){
   if(HS_VISUALS[key]) return HS_VISUALS[key];
   const def = getARDef(key);
   const t = def?.type||'system';
-  const colors = {plant:[45,142,80], sensor:[109,40,217], system:[100,116,139]};
-  const [r,g,b] = colors[t]||colors.system;
+  const [r,g,b] = FALLBACK_COLORS[t]||FALLBACK_COLORS.system;
+  const ac = FALLBACK_AURORA[t]||FALLBACK_AURORA.system;
+  const iconFn = FALLBACK_ICONS[t]||FALLBACK_ICONS.system;
   return {
     style:buildPill(r,g,b)+';animation:hs-float 3s ease-in-out infinite',
-    html:buildAurora(`rgba(${r},${g},${b},.6)`,`rgba(${r},${g},${b},.3)`,'transparent')+
-      `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="12" cy="12" r="5"\/><line x1="12" y1="2" x2="12" y2="6"\/><line x1="12" y1="18" x2="12" y2="22"\/><line x1="2" y1="12" x2="6" y2="12"\/><line x1="18" y1="12" x2="22" y2="12"\/><\/svg>`
+    html:buildAurora(ac[0],ac[1],ac[2]) + iconFn(r,g,b)
   };
 }
+
+// ── Populate contrôle HS_VISUALS entries 1-15 (armoire/rack icon) ──
+(function(){
+  const s = buildPill(107,114,128)+';animation:hs-float 3s ease-in-out infinite';
+  const h = buildAurora('rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)')+
+    `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(75,85,99,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="2" width="20" height="8" rx="2"\/><rect x="2" y="14" width="20" height="8" rx="2"\/><line x1="6" y1="6" x2="6.01" y2="6" stroke-width="2"\/><line x1="6" y1="18" x2="6.01" y2="18" stroke-width="2"\/><\/svg>`;
+  for(let i=1;i<=15;i++) HS_VISUALS[`controle ${i}`]={style:s,html:h};
+})();
 
 async function fetchAllIoT(){
   try{
@@ -1454,12 +1528,13 @@ async function fetchAllIoT(){
 }
 
 function setIoTZone(zoneId){
+  const hud = document.getElementById('iot-hud');
   const code = IOT_ZONES[zoneId];
-  if(!code){ iotData=null; updateIoTOverlay(); document.getElementById('iot-hud').style.opacity='0'; return; }
+  if(!code){ iotData=null; updateIoTOverlay(); if(hud) hud.classList.remove('visible'); return; }
   fetchAllIoT().then(serres=>{
     iotData = serres.find(s=>s.code===code)||null;
-    document.getElementById('iot-hud').style.opacity=iotData?'1':'0';
-    if(iotData){ updateIoTOverlay(); updateHotspotDots(); }
+    if(iotData){ if(hud) hud.classList.add('visible'); updateIoTOverlay(); updateHotspotDots(); }
+    else { if(hud) hud.classList.remove('visible'); }
   });
   fetchThresholds(code);
 }
@@ -2617,55 +2692,7 @@ const NarrationMgr = (() => {
 })();
 
 // ── Popup Manager ──
-const PopupMgr = (() => {
-  let _current = null;
-  let _hideTimer = null;
-
-  function _dismiss() {
-    if (!_current) return;
-    _current.classList.remove('visible');
-    const el = _current;
-    setTimeout(() => { el.remove(); }, 520);
-    _current = null;
-    clearTimeout(_hideTimer);
-  }
-
-  return {
-    show(cfg, autoDismissMs = 0) {
-      _dismiss();
-      if (!cfg) return;
-
-      const el = document.createElement('div');
-      el.className = 'ar-popup';
-      el.style.top  = cfg.pos?.top  || '30%';
-      el.style.left = cfg.pos?.left || '55%';
-
-      const title = cfg.title?.[currentLang] || cfg.title?.fr || '';
-      const body  = cfg.body?.[currentLang]  || cfg.body?.fr  || '';
-
-      el.innerHTML = `
-        <button class="ar-popup-close" onclick="PopupMgr.dismiss()">×</button>
-        <div class="ar-popup-tag">${cfg.tag || 'AR'}</div>
-        <div class="ar-popup-title">${title}</div>
-        <div class="ar-popup-body">${body}</div>
-        ${cfg.stat ? `<div class="ar-popup-stat">
-          <span class="ar-popup-stat-val">${cfg.stat.val}</span>
-          <span class="ar-popup-stat-unit">${cfg.stat.unit}</span>
-        </div>` : ''}
-      `;
-
-      document.getElementById('ar-layer').appendChild(el);
-      _current = el;
-
-      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
-
-      if (autoDismissMs > 0) {
-        _hideTimer = setTimeout(() => _dismiss(), autoDismissMs);
-      }
-    },
-    dismiss: _dismiss
-  };
-})();
+const PopupMgr = { show(){}, dismiss(){} };
 
 // ── Narration Bar ──
 const NarrationBar = (() => {
@@ -2755,6 +2782,7 @@ function load(zid, sid, instant, tourCfg){
   const scene=zone?.scenes.find(s=>s.id===sid);
   if(!scene) return;
   curZone=zid; curScene=sid;
+  setIoTZone(zid);
 
   document.getElementById('scene-ctr').textContent=`${tourStep+1} / ${TOUR_CONFIG.length}`;
   document.getElementById('prev').className='arrow L'+(tourStep===0?' off':'');
@@ -2797,7 +2825,31 @@ function load(zid, sid, instant, tourCfg){
   const phs = _shs.map(hs => {
     if(hs.type==='ar'){
       const desc=hs.arDesc||hs.label||'';
-      const key=desc.toLowerCase().trim();
+      const rawKey=desc.toLowerCase().trim();
+      const _AL={
+        // climate
+        'ventilation':'ventilation','brumisateur':'brumisateur','co2':'co2',
+        'sensors':'sensors','capteurs':'sensors',
+        'fenetre auto':'fenetre auto','fenetre':'fenetre auto','fenetres':'fenetre auto',
+        'rideaux auto':'rideaux auto','rideaux':'rideaux auto',
+        'système de refroidissement':'système de refroidissement',
+        'syst de refroidissement':'système de refroidissement',
+        'syst de refroidissment':'système de refroidissement',
+        'ventilation dehors':'ventilation dehors','ventilation ext':'ventilation dehors',
+        'système de ventilation':'ventilation','systeme de ventilation':'ventilation',
+        // water treatment
+        'audoucisseur':'audoucisseur',
+        // units
+        'unité protection des plantes':'unité protection des plantes',
+        // plants
+        'fraise':'fraise','courgette':'courgette',
+        'avocatier':'avocatier','avocat':'avocatier',
+        'cactus malade':'cactus malade',
+        'tomates malades':'tomates malades','tomate malades':'tomates malades','tomate malade':'tomates malades',
+        'ble malade':'ble malade','blé malade':'ble malade','blé':'ble malade',
+        'plante x':'plante x',
+      };
+      const key=_AL[rawKey]||rawKey;
       const vis=getHSVisual(key);
       const stateKey=hsGetState(key);
       return {
@@ -2949,6 +3001,57 @@ function load(zid, sid, instant, tourCfg){
       <div class="ar-reason-text" id="ar-reason-text"></div>
     </div>
     <div class="ar-content ar-stagger-3" id="ar-content"></div>
+  </div>
+</div>
+
+<div class="iot-hud" id="iot-hud">
+  <div class="iot-group">
+    <div class="iot-pill env" id="b-temp">
+      <div class="iot-pip"></div>
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+      <span class="iot-val" id="iot-temp">&#8212;</span>
+      <span class="iot-unit">&#176;C</span>
+      <div class="iot-tip">Temp&#233;rature air</div>
+    </div>
+    <div class="iot-pill env" id="b-hum">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      <span class="iot-val" id="iot-hum">&#8212;</span>
+      <span class="iot-unit">%</span>
+      <div class="iot-tip">Humidit&#233; relative</div>
+    </div>
+    <div class="iot-pill env" id="b-vpd">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M3 8h2M3 16h2M19 8h2M19 16h2M8 3v2M16 3v2M8 19v2M16 19v2"/></svg>
+      <span class="iot-val" id="iot-vpd">&#8212;</span>
+      <span class="iot-unit">kPa</span>
+      <div class="iot-tip">VPD</div>
+    </div>
+  </div>
+  <div class="iot-divider"></div>
+  <div class="iot-group">
+    <div class="iot-pill irr" id="b-ph">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h3a3 3 0 0 1 0 6H9V9z"/><path d="M15 15v3"/></svg>
+      <span class="iot-val" id="iot-ph">&#8212;</span>
+      <span class="iot-unit">pH</span>
+      <div class="iot-tip">pH solution</div>
+    </div>
+    <div class="iot-pill irr" id="b-ec">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="iot-val" id="iot-ec">&#8212;</span>
+      <span class="iot-unit">mS/cm</span>
+      <div class="iot-tip">Conductivit&#233; EC</div>
+    </div>
+    <div class="iot-pill irr" id="b-twater">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M12 12v4M10 14h4"/></svg>
+      <span class="iot-val" id="iot-twater">&#8212;</span>
+      <span class="iot-unit">&#176;C eau</span>
+      <div class="iot-tip">Temp&#233;rature eau</div>
+    </div>
+    <div class="iot-pill irr" id="b-level">
+      <svg class="iot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/><path d="M3 9h18" opacity=".4"/></svg>
+      <span class="iot-val" id="iot-level">&#8212;</span>
+      <span class="iot-unit">m</span>
+      <div class="iot-tip">Niveau r&#233;servoir</div>
+    </div>
   </div>
 </div>
 </body>
