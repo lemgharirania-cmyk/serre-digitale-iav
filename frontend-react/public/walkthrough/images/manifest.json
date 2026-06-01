@@ -574,6 +574,13 @@
           "yaw": -80.9,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 34,
+          "yaw": -48.9,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ],
       "agronomie__001": [
@@ -641,6 +648,13 @@
           "yaw": -44,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 27.2,
+          "yaw": 50.2,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ],
       "agronomie__002": [
@@ -700,6 +714,13 @@
           "yaw": -60.7,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 18.5,
+          "yaw": 30.4,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ]
     },
@@ -1546,6 +1567,13 @@
           "yaw": -127.9,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 32.5,
+          "yaw": 75.8,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ],
       "genetique__001": [
@@ -1613,6 +1641,13 @@
           "yaw": -96.3,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 25.6,
+          "yaw": 30.4,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ],
       "genetique__002": [
@@ -1672,6 +1707,13 @@
           "yaw": -100.4,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 17,
+          "yaw": 14.6,
+          "label": "syst de refroidissment",
+          "arDesc": "syst de refroidissment"
         }
       ]
     },
@@ -2654,6 +2696,55 @@
           "yaw": -75.4,
           "label": "cactus malade",
           "arDesc": "cactus malade"
+        },
+        {
+          "type": "ar",
+          "pitch": 41.1,
+          "yaw": -61.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 31.8,
+          "yaw": -25.8,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 51.6,
+          "yaw": -14.8,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": 19.1,
+          "yaw": -38.2,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 20.9,
+          "yaw": -55.4,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 47.8,
+          "yaw": 7.2,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 16.7,
+          "yaw": -125.3,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "unite-protection__001": [
@@ -2701,6 +2792,55 @@
           "yaw": -140.4,
           "label": "tomate malades",
           "arDesc": "tomate malades"
+        },
+        {
+          "type": "ar",
+          "pitch": 30.8,
+          "yaw": -165.7,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 43,
+          "yaw": -93.7,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 33.6,
+          "yaw": -146.9,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": 23.7,
+          "yaw": -69.4,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 20.1,
+          "yaw": -86.5,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 64.8,
+          "yaw": -166.7,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 7.4,
+          "yaw": -142.1,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "unite-protection__002": [
@@ -2740,6 +2880,55 @@
           "yaw": 120.9,
           "label": "blé malade",
           "arDesc": "blé malade"
+        },
+        {
+          "type": "ar",
+          "pitch": 28,
+          "yaw": -91.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 59.9,
+          "yaw": -134.2,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 27.1,
+          "yaw": -114.2,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": 43.2,
+          "yaw": 53.8,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 43.2,
+          "yaw": 11.1,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 59.7,
+          "yaw": -179.8,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 8.1,
+          "yaw": -72.6,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "unite-protection__003": [
@@ -2771,6 +2960,55 @@
           "yaw": -122.8,
           "label": "ble malade",
           "arDesc": "ble malade"
+        },
+        {
+          "type": "ar",
+          "pitch": 43.7,
+          "yaw": 1.6,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 47.3,
+          "yaw": -76.5,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 27.2,
+          "yaw": -36,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": 33.5,
+          "yaw": -166.9,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 49.3,
+          "yaw": 159.1,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 55.9,
+          "yaw": -32.4,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 13.9,
+          "yaw": 18.7,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "unite-protection__004": [
@@ -2795,6 +3033,55 @@
           "yaw": 33.7,
           "label": "plante x",
           "arDesc": "plante x"
+        },
+        {
+          "type": "ar",
+          "pitch": 36.6,
+          "yaw": 24.4,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 44.7,
+          "yaw": -61.2,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 17.9,
+          "yaw": -82.6,
+          "label": "capteurs",
+          "arDesc": "capteurs"
+        },
+        {
+          "type": "ar",
+          "pitch": 15.1,
+          "yaw": -52.7,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 13.7,
+          "yaw": -63,
+          "label": "co2",
+          "arDesc": "co2"
+        },
+        {
+          "type": "ar",
+          "pitch": 72,
+          "yaw": 27.6,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 12.3,
+          "yaw": -0.6,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ],
       "unite-protection__005": [
@@ -2819,6 +3106,41 @@
           "yaw": 92.3,
           "label": "avocat",
           "arDesc": "avocat"
+        },
+        {
+          "type": "ar",
+          "pitch": 70.6,
+          "yaw": -156.3,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
+        },
+        {
+          "type": "ar",
+          "pitch": 36.4,
+          "yaw": 162.1,
+          "label": "Brumisateur",
+          "arDesc": "Brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 64,
+          "yaw": -38.2,
+          "label": "syst de refroidissement",
+          "arDesc": "syst de refroidissement"
+        },
+        {
+          "type": "ar",
+          "pitch": 52.5,
+          "yaw": -166.5,
+          "label": "fenetres",
+          "arDesc": "fenetres"
+        },
+        {
+          "type": "ar",
+          "pitch": 35.3,
+          "yaw": 24.2,
+          "label": "rideaux",
+          "arDesc": "rideaux"
         }
       ]
     }
