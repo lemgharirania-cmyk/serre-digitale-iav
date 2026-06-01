@@ -1,5 +1,5 @@
 // src/components/geoportail/SectionCampus.jsx
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import 'leaflet/dist/leaflet.css'
 
 const LAT = 33.978659, LNG = -6.864096
@@ -15,6 +15,7 @@ const UNITS = [
 export default function SectionCampus({ lang, darkMode }) {
   const mapRef      = useRef(null)
   const mapInstance = useRef(null)
+  const [expanded, setExpanded] = useState(false)
 
   const cardBg     = darkMode ? '#101B2E' : '#FFFFFF'
   const cardBorder = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
@@ -97,7 +98,29 @@ export default function SectionCampus({ lang, darkMode }) {
 
           {/* Right — text (wider) */}
           <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px', padding: '2.5rem', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 2, marginBottom: '2rem' }}>{T.text}</p>
+            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 2, marginBottom: '1rem',
+              overflow: expanded ? 'visible' : 'hidden',
+              display: expanded ? 'block' : '-webkit-box',
+              WebkitLineClamp: expanded ? 'unset' : 4,
+              WebkitBoxOrient: 'vertical',
+            }}>{T.text}</p>
+            <button
+              onClick={() => setExpanded(e => !e)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#22C55E', fontFamily: "'Outfit',sans-serif",
+                fontSize: '13px', fontWeight: 600, padding: '0 0 1.25rem',
+                display: 'flex', alignItems: 'center', gap: '4px',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity='0.75'}
+              onMouseLeave={e => e.currentTarget.style.opacity='1'}
+            >
+              {expanded
+                ? (lang === 'fr' ? '← Réduire' : '← Show less')
+                : (lang === 'fr' ? 'Lire la suite →' : 'Read more →')
+              }
+            </button>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {UNITS.map(u => (
                 <span key={u.code} style={{ background: `${u.color}12`, border: `1px solid ${u.color}30`, color: u.color, padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>
