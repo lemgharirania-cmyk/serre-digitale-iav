@@ -1,285 +1,738 @@
 import { useEffect, useState, useRef } from 'react'
 
+/* ─────────────────────── DATA ─────────────────────── */
 const VISITE_MODES = [
-  { id:'auto',   title:{fr:'Visite automatique',en:'Auto Tour'},   desc:{fr:'Parcours guidé animé du campus complet',en:'Animated guided campus walkthrough'}, file:'/walkthrough/visiteauto.html',    color:'#22C55E', tag:{fr:'Guidé',en:'Guided'} },
-  { id:'manual', title:{fr:'Visite manuelle',   en:'Manual Tour'},  desc:{fr:'Navigation libre dans toutes les zones',en:'Free navigation across all zones'},   file:'/walkthrough/visitemanuelle.html', color:'#06B6D4', tag:{fr:'Libre',en:'Free'}  },
+  {
+    id: 'auto',
+    title: { fr: 'Visite automatique', en: 'Auto Tour' },
+    desc:  { fr: 'Parcours guidé animé du campus complet avec narration', en: 'Animated guided campus walkthrough with narration' },
+    sub:   { fr: 'Guidé · Audio · Toutes zones', en: 'Guided · Audio · All zones' },
+    file:  '/walkthrough/visiteautomatique.html',
+    color: '#22C55E',
+    tag:   { fr: 'Guidé', en: 'Guided' },
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'manual',
+    title: { fr: 'Visite manuelle', en: 'Manual Tour' },
+    desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
+    sub:   { fr: 'Libre · Campus complet · 360°', en: 'Free · Full campus · 360°' },
+    file:  '/walkthrough/visitemanuelle.html',
+    color: '#06B6D4',
+    tag:   { fr: 'Libre', en: 'Free' },
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+      </svg>
+    ),
+  },
 ]
 
 const SERRES = [
-  { title:{fr:'Génétique',             en:'Genetics'        }, badge:'S01', file:'/walkthrough/serregenetique.html',    color:'#22C55E', gradient:'linear-gradient(160deg,#052e16 0%,#166534 60%,#14532d 100%)', desc:'Sélection variétale · Culture in vitro' },
-  { title:{fr:'Horticulture',          en:'Horticulture'    }, badge:'S02', file:'/walkthrough/serrehorticulture.html', color:'#06B6D4', gradient:'linear-gradient(160deg,#082f49 0%,#0e7490 60%,#0c4a6e 100%)', desc:'Production florale · Maraîchage'       },
-  { title:{fr:'Agronomie',             en:'Agronomy'        }, badge:'S03', file:'/walkthrough/serreagronomie.html',    color:'#F59E0B', gradient:'linear-gradient(160deg,#431407 0%,#92400e 60%,#78350f 100%)', desc:'Essais culturaux · Recherche'          },
-  { title:{fr:'Hydroponie',            en:'Hydroponics'     }, badge:'S04', file:'/walkthrough/serrehydroponie.html',   color:'#8B5CF6', gradient:'linear-gradient(160deg,#2e1065 0%,#5b21b6 60%,#4c1d95 100%)', desc:'Culture hors-sol · NFT & DWC'          },
-  { title:{fr:'Protection des plantes',en:'Plant Protection'}, badge:'S05', file:'/walkthrough/serreprotection.html',   color:'#EF4444', gradient:'linear-gradient(160deg,#450a0a 0%,#991b1b 60%,#7f1d1d 100%)', desc:'Phytopathologie · Entomologie'         },
+  { title: { fr: 'Génétique',              en: 'Genetics'         }, badge: 'S01', file: '/walkthrough/serregenetique.html',    color: '#22C55E', desc: 'Sélection variétale · Culture in vitro' },
+  { title: { fr: 'Horticulture',           en: 'Horticulture'     }, badge: 'S02', file: '/walkthrough/serrehorticulture.html', color: '#06B6D4', desc: 'Production florale · Maraîchage'       },
+  { title: { fr: 'Agronomie',              en: 'Agronomy'         }, badge: 'S03', file: '/walkthrough/serreagronomie.html',    color: '#F59E0B', desc: 'Essais culturaux · Recherche'          },
+  { title: { fr: 'Hydroponie',             en: 'Hydroponics'      }, badge: 'S04', file: '/walkthrough/serrehydroponie.html',   color: '#8B5CF6', desc: 'Culture hors-sol · NFT & DWC'          },
+  { title: { fr: 'Protection des plantes', en: 'Plant Protection' }, badge: 'S05', file: '/walkthrough/serreprotection.html',   color: '#EF4444', desc: 'Phytopathologie · Entomologie'         },
 ]
 
 const BLOC_TECHNIQUE = [
-  { title:{fr:'Salle de contrôle',   en:'Control Room'   }, badge:'TC', file:'/walkthrough/salledecontrole.html',    color:'#3B82F6', gradient:'linear-gradient(160deg,#1e3a5f 0%,#1d4ed8 60%,#1e40af 100%)', desc:'Supervision & automatisation' },
-  { title:{fr:'Salle de fertigation',en:'Fertigation'    }, badge:'TF', file:'/walkthrough/salledefertigation.html', color:'#14B8A6', gradient:'linear-gradient(160deg,#134e4a 0%,#0d9488 60%,#0f766e 100%)', desc:'Solutions nutritives'          },
-  { title:{fr:'Salle de lavage',     en:'Washing Room'   }, badge:'TL', file:'/walkthrough/salledelavage.html',      color:'#F97316', gradient:'linear-gradient(160deg,#431407 0%,#c2410c 60%,#9a3412 100%)', desc:'Nettoyage du matériel'         },
-  { title:{fr:'Salle de préparation',en:'Preparation'    }, badge:'TP', file:'/walkthrough/salledepreparation.html', color:'#A855F7', gradient:'linear-gradient(160deg,#3b0764 0%,#7c3aed 60%,#6d28d9 100%)', desc:'Préparation des cultures'      },
-  { title:{fr:'Local technique',     en:'Equipment Room' }, badge:'LT', file:'/walkthrough/localtechnique.html',     color:'#64748B', gradient:'linear-gradient(160deg,#1e293b 0%,#475569 60%,#334155 100%)', desc:'Stockage équipements'          },
-  { title:{fr:'Extérieur',           en:'Exterior'       }, badge:'EX', file:'/walkthrough/exterieur.html',          color:'#22C55E', gradient:'linear-gradient(160deg,#052e16 0%,#15803d 60%,#166534 100%)', desc:'Vue extérieure du campus'      },
+  { title: { fr: 'Salle de contrôle',    en: 'Control Room'   }, badge: 'TC', file: '/walkthrough/salledecontrole.html',    color: '#3B82F6', desc: 'Supervision & automatisation' },
+  { title: { fr: 'Salle de fertigation', en: 'Fertigation'    }, badge: 'TF', file: '/walkthrough/salledefertigation.html', color: '#14B8A6', desc: 'Solutions nutritives'          },
+  { title: { fr: 'Salle de lavage',      en: 'Washing Room'   }, badge: 'TL', file: '/walkthrough/salledelavage.html',      color: '#F97316', desc: 'Nettoyage du matériel'         },
+  { title: { fr: 'Salle de préparation', en: 'Preparation'    }, badge: 'TP', file: '/walkthrough/salledepreparation.html', color: '#A855F7', desc: 'Préparation des cultures'      },
+  { title: { fr: 'Local technique',      en: 'Equipment Room' }, badge: 'LT', file: '/walkthrough/localtechnique.html',     color: '#64748B', desc: 'Stockage équipements'          },
+  { title: { fr: 'Extérieur',            en: 'Exterior'       }, badge: 'EX', file: '/walkthrough/exterieur.html',          color: '#22C55E', desc: 'Vue extérieure du campus'      },
 ]
 
-export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
-  const [view,        setView]       = useState('globe')   // 'globe'|'choices'|'salles'
-  const [activeTour,  setActiveTour] = useState(null)
-  const [activeSerre, setActiveSerre] = useState(null)
-  const [activeBloc,  setActiveBloc]  = useState(null)
-  const [globeKey,    setGlobeKey]   = useState(0)
-  const [hovered,     setHovered]    = useState(null)
-  const tourRef  = useRef(null)
-  const serreRef = useRef(null)
-  const blocRef  = useRef(null)
+const TIMELINE_NODES = [
+  { id: 'globe',  color: '#8B5CF6', iconPath: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 0v20M2 12h20M4.93 4.93C7 9 7 15 12 17c5-2 5-8 7.07-12.07M4.93 19.07C7 15 7 9 12 7c5 2 5 8 7.07 12.07' },
+  { id: 'tours',  color: '#22C55E', iconPath: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10' },
+  { id: 'salles', color: '#F59E0B', iconPath: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z' },
+]
 
-  const isDark = darkMode
-  const ink        = isDark ? '#F1F5F9' : '#0F172A'
-  const inkSub     = isDark ? '#94A3B8' : '#64748B'
-  const glass      = isDark ? 'rgba(15,28,50,0.65)'    : 'rgba(255,255,255,0.7)'
-  const glassBorder= isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+/* ─────────────────────── MAIN ─────────────────────── */
+export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
+  const [activeNode,   setActiveNode]  = useState('globe')
+  const [hovNode,      setHovNode]     = useState(null)
+  const [activeTour,   setActiveTour]  = useState(null)
+  const [activeSerre,  setActiveSerre] = useState(null)
+  const [activeBloc,   setActiveBloc]  = useState(null)
+  const [hovered,      setHovered]     = useState(null)
+  const [globeKey,     setGlobeKey]    = useState(0)
+  const [showGlobeEnd, setShowGlobeEnd] = useState(false) // overlay after globe finishes
+  const [lineProgress, setLineProgress] = useState(0)
+  const [particleTick, setParticleTick] = useState(0)    // drives particle animation
+  const [vrSupported,  setVrSupported]  = useState(null) // null=checking, true, false
+
+  const globeRef       = useRef(null)
+  const toursRef       = useRef(null)
+  const sallesRef      = useRef(null)
+  const tourViewerRef  = useRef(null)
+  const serreViewerRef = useRef(null)
+  const blocViewerRef  = useRef(null)
+
+  const isDark      = darkMode
+  const ink         = isDark ? '#F1F5F9' : '#0F172A'
+  const inkSub      = isDark ? '#94A3B8' : '#64748B'
+  const glass       = isDark ? 'rgba(11,23,40,0.72)'    : 'rgba(255,255,255,0.78)'
+  const glassBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'
+  const trackBg     = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
 
   const T = {
-    badge:       lang==='fr' ? 'Visite 360° · Insta360 X4'  : 'Virtual Tour · Insta360 X4',
-    navGlobe:    lang==='fr' ? 'Vue Globe'                   : 'Globe View',
-    navTours:    lang==='fr' ? 'Visites guidées'             : 'Guided Tours',
-    navSalles:   lang==='fr' ? 'Par espace'                  : 'By Space',
-    serresLabel: lang==='fr' ? 'Serres de recherche'         : 'Research Greenhouses',
-    serresSub:   lang==='fr' ? '5 unités · Visite 360° individuelle' : '5 units · Individual 360° tour',
-    blocLabel:   lang==='fr' ? 'Bloc technique'              : 'Technical Block',
-    blocSub:     lang==='fr' ? 'Espaces techniques et de service' : 'Technical and service spaces',
-    full:        lang==='fr' ? 'Plein écran'                 : 'Fullscreen',
-    live:        lang==='fr' ? 'Visite 360°'                : '360° Tour',
-    launch:      lang==='fr' ? 'Lancer'                      : 'Launch',
-    selectTour:  lang==='fr' ? 'Sélectionnez une visite pour la démarrer' : 'Select a tour to start',
-    selectSalle: lang==='fr' ? 'Sélectionnez un espace pour commencer'    : 'Select a space to begin',
+    badge:        lang === 'fr' ? 'Visite 360° · Insta360 X4' : '360° Tour · Insta360 X4',
+    h1:           lang === 'fr' ? 'Explorez'    : 'Explore',
+    h2:           lang === 'fr' ? 'le Campus'  : 'the Campus',
+    sub:          lang === 'fr'
+      ? 'Naviguez librement dans les 5 serres de recherche et les espaces techniques du campus AgroBioTech IAV Hassan II.'
+      : 'Navigate freely through the 5 research greenhouses and technical spaces of the AgroBioTech IAV Hassan II campus.',
+    nodeGlobe:    lang === 'fr' ? 'Survol satellite' : 'Satellite',
+    nodeTours:    lang === 'fr' ? 'Campus complet'  : 'Full campus',
+    nodeSalles:   lang === 'fr' ? 'Par espace'      : 'By space',
+    globeTitle:   lang === 'fr' ? 'Survol du campus' : 'Campus overview',
+    globeSub:     lang === 'fr' ? 'Vue satellite interactive — campus IAV Hassan II, Rabat' : 'Interactive satellite view — IAV Hassan II campus, Rabat',
+    tourTitle:    lang === 'fr' ? 'Campus complet' : 'Full campus tour',
+    tourSub:      lang === 'fr' ? 'Deux modes pour explorer le campus' : 'Two modes to explore the campus',
+    sallesTitle:  lang === 'fr' ? 'Explorer par espace' : 'Explore by space',
+    sallesSub:    lang === 'fr' ? 'Sélectionnez une serre ou un local technique' : 'Select a greenhouse or technical space',
+    serresLabel:  lang === 'fr' ? 'Serres de recherche' : 'Research Greenhouses',
+    blocLabel:    lang === 'fr' ? 'Bloc technique'      : 'Technical Block',
+    launch:       lang === 'fr' ? 'Lancer'              : 'Launch',
+    full:         lang === 'fr' ? 'Plein écran'         : 'Fullscreen',
+    live:         lang === 'fr' ? 'Visite 360°'         : '360° Tour',
+    selectTour:   lang === 'fr' ? 'Sélectionnez un mode ci-dessus'       : 'Select a mode above',
+    selectSalle:  lang === 'fr' ? 'Sélectionnez un espace pour commencer' : 'Select a space to begin',
+    // globe end-screen
+    endTitle:     lang === 'fr' ? 'Que souhaitez-vous explorer ?' : 'What would you like to explore?',
+    endSub:       lang === 'fr' ? 'Le survol est terminé. Choisissez votre prochaine destination.' : 'Overview complete. Choose your next destination.',
+    endReplay:    lang === 'fr' ? 'Rejouer le survol' : 'Replay overview',
+    endTours:     lang === 'fr' ? 'Visiter le campus complet' : 'Tour full campus',
+    endSalles:    lang === 'fr' ? 'Explorer par espace' : 'Explore by space',
+    vrReady:      lang === 'fr' ? 'Compatible Meta Quest' : 'Meta Quest ready',
+    vrReadySub:   lang === 'fr' ? 'Ouvrez ce site depuis votre casque — tous les viewers sont en VR immersif' : 'Open this site from your headset — all viewers support immersive VR',
+    vrDesktop:    lang === 'fr' ? 'Expérience VR disponible' : 'VR experience available',
+    vrDesktopSub: lang === 'fr' ? 'Visitez ce site depuis un Meta Quest pour une immersion 360° complète' : 'Visit this site from a Meta Quest headset for full 360° immersion',
   }
 
+  /* ── WebXR VR detection ── */
+  useEffect(() => {
+    if (!navigator.xr) { setVrSupported(false); return }
+    navigator.xr.isSessionSupported('immersive-vr')
+      .then(supported => setVrSupported(supported))
+      .catch(() => setVrSupported(false))
+  }, [])
+
+  /* ── scroll → active node ── */
+  useEffect(() => {
+    function onScroll() {
+      const pairs = [
+        { ref: globeRef,  id: 'globe',  prog: 0   },
+        { ref: toursRef,  id: 'tours',  prog: 50  },
+        { ref: sallesRef, id: 'salles', prog: 100 },
+      ]
+      const midY = window.innerHeight * 0.45
+      let best = pairs[0]
+      pairs.forEach(p => {
+        if (!p.ref.current) return
+        if (p.ref.current.getBoundingClientRect().top <= midY) best = p
+      })
+      setActiveNode(best.id)
+      setLineProgress(best.prog)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  /* ── particle ticker (drives moving particle on timeline) ── */
+  useEffect(() => {
+    const id = setInterval(() => setParticleTick(t => t + 1), 50)
+    return () => clearInterval(id)
+  }, [])
+
+  /* ── globe message bridge ── */
   useEffect(() => {
     function handle(e) {
       if (e.data?.type !== 'agro-globe-done') return
-      if (e.data.choice === 'tour')   { setView('choices') }
-      if (e.data.choice === 'salles') { setView('salles')  }
+      setShowGlobeEnd(true)  // show end-screen overlay
+      if (e.data.choice === 'salles') scrollSmooth(sallesRef)
+      if (e.data.choice === 'tour')   scrollSmooth(toursRef)
     }
     window.addEventListener('message', handle)
     return () => window.removeEventListener('message', handle)
   }, [])
 
-  function goGlobe()  { setGlobeKey(k=>k+1); setView('globe'); setActiveTour(null) }
-  function goTours()  { setView('choices') }
-  function goSalles() { setView('salles')  }
-
-  function pickTour(mode) {
-    setActiveTour(mode.file)
-    setTimeout(() => tourRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 80)
+  function scrollSmooth(ref, delay = 0) {
+    setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), delay)
   }
+
+  function replayGlobe() {
+    setShowGlobeEnd(false)
+    setGlobeKey(k => k + 1)
+  }
+  function goToTours()  { scrollSmooth(toursRef,  80) }
+  function goToSalles() { scrollSmooth(sallesRef, 80) }
+
+  function pickTour(mode)  { setActiveTour(mode.file);  scrollSmooth(tourViewerRef,  80) }
+  function pickSerre(file) { setActiveSerre(file);       scrollSmooth(serreViewerRef, 80) }
+  function pickBloc(file)  { setActiveBloc(file);        scrollSmooth(blocViewerRef,  80) }
+
+  const nodeRefs     = { globe: globeRef, tours: toursRef, salles: sallesRef }
+  function jumpTo(id){ scrollSmooth(nodeRefs[id]) }
 
   const activeTourObj  = VISITE_MODES.find(m => m.file === activeTour)
+  const activeSerreObj = SERRES.find(s => s.file === activeSerre)
+  const activeBlocObj  = BLOC_TECHNIQUE.find(s => s.file === activeBloc)
 
-  function pillStyle(active) {
-    return {
-      padding:'8px 22px', borderRadius:'100px',
-      border: active ? '1.5px solid rgba(34,197,94,0.45)' : `1.5px solid ${glassBorder}`,
-      background: active ? 'rgba(34,197,94,0.13)' : glass,
-      backdropFilter:'blur(12px)',
-      color: active ? '#22C55E' : inkSub,
-      fontSize:'13px', fontWeight: active ? 700 : 500,
-      cursor:'pointer', transition:'all 0.2s',
-      fontFamily:"'Outfit',sans-serif",
-      boxShadow: active ? '0 0 20px rgba(34,197,94,0.15)' : 'none',
-    }
-  }
+  /* particle position along progress line (oscillates a bit ahead of progress) */
+  const particleX = Math.min(lineProgress + 2, 100)
 
   return (
-    <section id="visite" style={{ padding:'6rem 2.5rem', scrollMarginTop:'64px' }}>
-      <div style={{ maxWidth:'1260px', margin:'0 auto' }}>
+    <section id="visite" style={{ padding: '7rem 2rem 6rem', scrollMarginTop: '64px' }}>
+      <div style={{ maxWidth: '1160px', margin: '0 auto' }}>
 
-        {/* HEADER */}
-        <div style={{ textAlign:'center', marginBottom:'3.5rem' }}>
-          <div style={{ display:'inline-flex', alignItems:'center', gap:'7px', background: isDark?'rgba(139,92,246,0.1)':'rgba(139,92,246,0.07)', border:'1px solid rgba(139,92,246,0.25)', borderRadius:'100px', padding:'5px 18px', marginBottom:'1.2rem' }}>
-            <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:'#8B5CF6', display:'inline-block' }} />
-            <span style={{ fontSize:'10px', fontWeight:700, color:'#8B5CF6', letterSpacing:'0.13em', textTransform:'uppercase', fontFamily:"'Outfit',sans-serif" }}>{T.badge}</span>
+        {/* ══ HEADER ══ */}
+        <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '7px',
+            background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)',
+            borderRadius: '100px', padding: '5px 18px', marginBottom: '1.2rem',
+          }}>
+            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
+            <span style={{ fontSize: '10px', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.13em', textTransform: 'uppercase', fontFamily: "'Outfit',sans-serif" }}>
+              {T.badge}
+            </span>
           </div>
-          <h2 style={{ fontSize:'clamp(2.2rem,4.5vw,3.2rem)', fontWeight:900, lineHeight:1.05, fontFamily:"'Outfit',sans-serif", letterSpacing:'-0.04em', color:ink, margin:'0 0 0.9rem' }}>
-            {lang==='fr' ? <><span style={{color:'#22C55E'}}>Explorez</span> le Campus</> : <><span style={{color:'#22C55E'}}>Explore</span> the Campus</>}
+          <h2 style={{ fontSize: 'clamp(2.6rem,5vw,3.8rem)', fontWeight: 900, lineHeight: 1.0, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.05em', color: ink, margin: '0 0 1.1rem' }}>
+            <span style={{ color: '#22C55E' }}>{T.h1}</span> {T.h2}
           </h2>
-          <p style={{ fontSize:'14px', color:inkSub, maxWidth:'480px', margin:'0 auto', lineHeight:1.8 }}>
-            {lang==='fr' ? 'Naviguez librement dans les 5 serres de recherche et les espaces techniques du campus AgroBioTech IAV Hassan II.' : 'Navigate freely through the 5 research greenhouses and technical spaces of the AgroBioTech IAV Hassan II campus.'}
+          <p style={{ fontSize: '15px', color: inkSub, maxWidth: '500px', margin: '0 auto', lineHeight: 1.9 }}>
+            {T.sub}
           </p>
         </div>
 
-        {/* NAV */}
-        <div style={{ display:'flex', justifyContent:'center', gap:'8px', marginBottom:'2.5rem' }}>
-          <button onClick={goGlobe}  style={pillStyle(view==='globe')}>   {T.navGlobe}  </button>
-          <button onClick={goTours}  style={pillStyle(view==='choices')}> {T.navTours}  </button>
-          <button onClick={goSalles} style={pillStyle(view==='salles')}>  {T.navSalles} </button>
-        </div>
-
-        {/* ── GLOBE ── */}
-        {view==='globe' && (
-          <div style={{ borderRadius:'28px', overflow:'hidden', position:'relative', paddingBottom:'52%', background: isDark?'#07111F':'#ECF3EE', border:`1px solid ${glassBorder}`, boxShadow: isDark?'0 32px 80px rgba(0,0,0,0.6)':'0 16px 48px rgba(0,0,0,0.1)' }}>
-            <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'45%', height:'2px', background:'linear-gradient(90deg,transparent,#8B5CF6,transparent)', zIndex:3 }} />
-            <iframe key={globeKey} src="/walkthrough/globe.html" allowFullScreen style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:'none' }} />
+        {/* ══ VR BANNER ══ */}
+        {vrSupported !== null && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '14px',
+            marginBottom: '2.5rem',
+            padding: '14px 20px',
+            borderRadius: '16px',
+            border: vrSupported
+              ? '1px solid rgba(139,92,246,0.3)'
+              : `1px solid ${glassBorder}`,
+            background: vrSupported
+              ? 'rgba(139,92,246,0.08)'
+              : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+          }}>
+            {/* VR headset icon */}
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
+              background: vrSupported ? 'rgba(139,92,246,0.15)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+              border: `1px solid ${vrSupported ? 'rgba(139,92,246,0.3)' : glassBorder}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke={vrSupported ? '#8B5CF6' : inkSub}
+                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+                <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+                <path d="M10 12h4"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: '12px', fontWeight: 700,
+                color: vrSupported ? '#8B5CF6' : ink,
+                fontFamily: "'Outfit',sans-serif",
+                marginBottom: '2px',
+              }}>
+                {vrSupported ? T.vrReady : T.vrDesktop}
+              </div>
+              <div style={{ fontSize: '11px', color: inkSub, lineHeight: 1.6 }}>
+                {vrSupported ? T.vrReadySub : T.vrDesktopSub}
+              </div>
+            </div>
+            {/* live dot if VR active */}
+            {vrSupported && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.8)', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#8B5CF6', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase' }}>VR</span>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── VISITES GUIDÉES ── */}
-        {view==='choices' && (
-          <div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
-              {VISITE_MODES.map(mode => {
-                const active = activeTour===mode.file
-                const isHov  = hovered===mode.id
+        {/* ══ STICKY TIMELINE ══ */}
+        <div style={{ position: 'sticky', top: '68px', zIndex: 40, marginBottom: '5rem' }}>
+          <div style={{
+            background: isDark ? 'rgba(5,12,26,0.88)' : 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(24px)',
+            border: `1px solid ${glassBorder}`,
+            borderRadius: '24px',
+            padding: '0 40px',
+            boxShadow: isDark
+              ? `0 8px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)`
+              : '0 4px 28px rgba(0,0,0,0.09)',
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+
+            {/* ambient glow behind active node */}
+            <div style={{
+              position: 'absolute', top: 0, bottom: 0, pointerEvents: 'none',
+              left: activeNode === 'globe' ? '0%' : activeNode === 'tours' ? '33%' : '66%',
+              width: '34%',
+              background: activeNode === 'globe'
+                ? 'radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.12) 0%, transparent 70%)'
+                : activeNode === 'tours'
+                ? 'radial-gradient(ellipse at 50% 50%, rgba(34,197,94,0.1) 0%, transparent 70%)'
+                : 'radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.1) 0%, transparent 70%)',
+              transition: 'left 0.5s cubic-bezier(0.4,0,0.2,1)',
+            }} />
+
+            <div style={{ display: 'flex', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+              {TIMELINE_NODES.map((node, i) => {
+                const isActive = activeNode === node.id
+                const isPast   = TIMELINE_NODES.findIndex(n => n.id === activeNode) > i
+                const isHov    = hovNode === node.id
+                const lit      = isActive || isPast
+
                 return (
-                  <button key={mode.id} onClick={()=>pickTour(mode)} onMouseEnter={()=>setHovered(mode.id)} onMouseLeave={()=>setHovered(null)} style={{
-                    position:'relative', overflow:'hidden', borderRadius:'20px',
-                    border:`1.5px solid ${active?`${mode.color}55`:isHov?`${mode.color}28`:glassBorder}`,
-                    background: active?`${mode.color}0e`:glass,
-                    backdropFilter:'blur(16px)', padding:'1.5rem 1.6rem',
-                    textAlign:'left', cursor:'pointer', transition:'all 0.2s',
-                    boxShadow: active?`0 0 0 1px ${mode.color}20,0 12px 32px ${mode.color}20`:isHov?'0 6px 20px rgba(0,0,0,0.1)':'none',
-                    transform: isHov&&!active?'translateY(-2px)':'none',
-                  }}>
-                    <div style={{ position:'absolute', left:0, top:0, bottom:0, width:'3px', background:`linear-gradient(180deg,${mode.color},${mode.color}44)` }} />
-                    {active && <div style={{ position:'absolute', top:0, left:0, right:0, height:'1.5px', background:`linear-gradient(90deg,transparent,${mode.color},transparent)` }} />}
-                    <div style={{ position:'absolute', right:'-30px', top:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:`${mode.color}08`, pointerEvents:'none' }} />
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
-                      <span style={{ fontSize:'10px', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:mode.color, background:`${mode.color}18`, border:`1px solid ${mode.color}25`, borderRadius:'100px', padding:'2px 10px', fontFamily:"'Outfit',sans-serif" }}>{mode.tag[lang]}</span>
-                      {active ? <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:mode.color, boxShadow:`0 0 10px ${mode.color}`, display:'inline-block' }} /> : <span style={{ fontSize:'12px', color:inkSub }}>{T.launch} →</span>}
+                  <button
+                    key={node.id}
+                    onClick={() => jumpTo(node.id)}
+                    onMouseEnter={() => setHovNode(node.id)}
+                    onMouseLeave={() => setHovNode(null)}
+                    style={{
+                      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      justifyContent: 'center', gap: '0',
+                      padding: '22px 16px',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      position: 'relative',
+                      borderRight: i < 2 ? `1px solid ${glassBorder}` : 'none',
+                      transition: 'background 0.2s',
+                    }}
+                  >
+                    {/* hover bg */}
+                    {isHov && !isActive && (
+                      <div style={{ position: 'absolute', inset: 0, background: `${node.color}08`, pointerEvents: 'none' }} />
+                    )}
+
+                    {/* icon circle */}
+                    <div style={{
+                      width: isActive ? '46px' : '36px',
+                      height: isActive ? '46px' : '36px',
+                      borderRadius: '50%',
+                      background: isActive
+                        ? `radial-gradient(circle at 35% 35%, ${node.color}dd, ${node.color}88)`
+                        : `${node.color}22`,
+                      border: `2px solid ${node.color}`,
+                      boxShadow: isActive
+                        ? `0 0 0 6px ${node.color}20, 0 0 24px ${node.color}55, 0 4px 12px ${node.color}44`
+                        : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+                      marginBottom: '10px', flexShrink: 0,
+                      animation: `nodeBreath_${node.id} 3s ease-in-out infinite`,
+                    }}>
+                      <svg
+                        width={isActive ? '20' : '16'}
+                        height={isActive ? '20' : '16'}
+                        viewBox="0 0 24 24" fill="none"
+                        stroke={isActive ? '#fff' : node.color}
+                        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ transition: 'all 0.3s', flexShrink: 0 }}
+                      >
+                        <path d={node.iconPath} />
+                      </svg>
                     </div>
-                    <div style={{ fontSize:'16px', fontWeight:700, color:ink, fontFamily:"'Outfit',sans-serif", marginBottom:'5px' }}>{mode.title[lang]}</div>
-                    <div style={{ fontSize:'12px', color:inkSub, lineHeight:1.6 }}>{mode.desc[lang]}</div>
+
+                    {/* label */}
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      color: node.color,
+                      fontFamily: "'Outfit',sans-serif",
+                      letterSpacing: isActive ? '0.02em' : '0',
+                      transition: 'all 0.25s',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {node.id === 'globe'  && T.nodeGlobe}
+                      {node.id === 'tours'  && T.nodeTours}
+                      {node.id === 'salles' && T.nodeSalles}
+                    </span>
+
+                    {/* active underline bar */}
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: '20%', right: '20%',
+                      height: '2.5px',
+                      background: isActive ? `linear-gradient(90deg, transparent, ${node.color}, transparent)` : 'transparent',
+                      borderRadius: '2px',
+                      transition: 'all 0.35s',
+                      boxShadow: isActive ? `0 0 8px ${node.color}` : 'none',
+                    }} />
+
+                    {/* checkmark on past nodes */}
+                    {isPast && (
+                      <div style={{
+                        position: 'absolute', top: '14px', right: '14px',
+                        width: '16px', height: '16px', borderRadius: '50%',
+                        background: node.color,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        animation: 'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                      }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                    )}
                   </button>
                 )
               })}
             </div>
-            <div ref={tourRef}>
-              {activeTourObj
-                ? <ViewerBox viewer={{file:activeTourObj.file,title:activeTourObj.title[lang],color:activeTourObj.color}} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} />
-                : <EmptyViewer text={T.selectTour} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />}
+
+            {/* PROGRESS TRACK — full width at the very bottom */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: trackBg }}>
+              {/* filled portion */}
+              <div style={{
+                position: 'absolute', left: 0, top: 0, bottom: 0,
+                width: `${lineProgress}%`,
+                background: 'linear-gradient(90deg, #8B5CF6, #22C55E, #F59E0B)',
+                transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)',
+                borderRadius: '0 2px 2px 0',
+              }} />
+              {/* travelling particle */}
+              {lineProgress > 0 && lineProgress < 100 && (
+                <div style={{
+                  position: 'absolute', top: '50%', transform: 'translate(-50%,-50%)',
+                  left: `${particleX}%`,
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: '#fff',
+                  boxShadow: '0 0 6px 2px rgba(255,255,255,0.8), 0 0 12px 4px rgba(139,92,246,0.5)',
+                  animation: 'particleGlow 1s ease-in-out infinite',
+                  transition: 'left 0.6s cubic-bezier(0.4,0,0.2,1)',
+                }} />
+              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* ── PAR ESPACE ── */}
-        {view==='salles' && (
-          <div>
-            {/* SERRES — 5-col card grid + viewer directly below */}
-            <SectionLabel label={T.serresLabel} sub={T.serresSub} gradient="linear-gradient(90deg,#22C55E,#06B6D4)" ink={ink} inkSub={inkSub} />
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'10px', marginBottom:'12px' }}>
-              {SERRES.map(s => {
-                const active = activeSerre===s.file
-                const isHov  = hovered===s.file
-                return (
-                  <SpaceCard key={s.file} item={s} active={active} isHov={isHov} lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder}
-                    onHover={()=>setHovered(s.file)} onLeave={()=>setHovered(null)}
-                    onClick={()=>{ setActiveSerre(s.file); setTimeout(()=>serreRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),80) }}
-                    liveLabel={T.live} />
-                )
-              })}
-            </div>
-            {/* Serre viewer */}
-            <div ref={serreRef} style={{ marginBottom:'2.5rem' }}>
-              {activeSerre
-                ? <ViewerBox viewer={{file:SERRES.find(s=>s.file===activeSerre)?.file, title:SERRES.find(s=>s.file===activeSerre)?.title[lang], color:SERRES.find(s=>s.file===activeSerre)?.color}} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} />
-                : <EmptyViewer text={T.selectSalle} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />}
+        {/* ══ SECTION 1 — GLOBE ══ */}
+        <div ref={globeRef} style={{ scrollMarginTop: '160px', marginBottom: '8rem' }}>
+          <SectionHeader title={T.globeTitle} sub={T.globeSub} color="#8B5CF6" ink={ink} inkSub={inkSub} />
+
+          <div style={{ position: 'relative' }}>
+            {/* globe iframe */}
+            <div style={{
+              borderRadius: '24px', overflow: 'hidden',
+              border: `1px solid ${glassBorder}`,
+              boxShadow: isDark ? '0 32px 80px rgba(0,0,0,0.5)' : '0 16px 48px rgba(0,0,0,0.09)',
+              position: 'relative', paddingBottom: '50%',
+              background: isDark ? '#07111F' : '#ECF3EE',
+            }}>
+              <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '38%', height: '2px', background: 'linear-gradient(90deg,transparent,#8B5CF6,transparent)', zIndex: 3 }} />
+              <iframe
+                key={globeKey}
+                src="/walkthrough/globe.html"
+                allowFullScreen
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+              />
             </div>
 
-            {/* BLOC TECHNIQUE — 5-col grid + viewer directly below */}
-            <SectionLabel label={T.blocLabel} sub={T.blocSub} gradient="linear-gradient(90deg,#F59E0B,#EF4444)" ink={ink} inkSub={inkSub} />
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'10px', marginBottom:'12px' }}>
-              {BLOC_TECHNIQUE.map(s => {
-                const active = activeBloc===s.file
-                const isHov  = hovered===s.file
-                return (
-                  <SpaceCard key={s.file} item={s} active={active} isHov={isHov} lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder}
-                    onHover={()=>setHovered(s.file)} onLeave={()=>setHovered(null)}
-                    onClick={()=>{ setActiveBloc(s.file); setTimeout(()=>blocRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),80) }}
-                    liveLabel={T.live} />
-                )
-              })}
-            </div>
-            {/* Bloc viewer */}
-            <div ref={blocRef}>
-              {activeBloc
-                ? <ViewerBox viewer={{file:BLOC_TECHNIQUE.find(s=>s.file===activeBloc)?.file, title:BLOC_TECHNIQUE.find(s=>s.file===activeBloc)?.title[lang], color:BLOC_TECHNIQUE.find(s=>s.file===activeBloc)?.color}} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} />
-                : <EmptyViewer text={T.selectSalle} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />}
-            </div>
+            {/* END-SCREEN OVERLAY */}
+            {showGlobeEnd && (
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '24px',
+                background: isDark ? 'rgba(5,12,26,0.92)' : 'rgba(240,250,244,0.94)',
+                backdropFilter: 'blur(16px)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '28px', zIndex: 10,
+                animation: 'fadeIn 0.4s ease',
+              }}>
+                {/* pulsing campus icon */}
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)', animation: 'ripple 2s ease-out infinite' }} />
+                  <div style={{ position: 'absolute', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(139,92,246,0.2)', animation: 'ripple 2s ease-out infinite 0.5s' }} />
+                  <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg,#8B5CF6,#06B6D4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 32px rgba(139,92,246,0.5)' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 0v20M2 12h20"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 'clamp(1.2rem,2.5vw,1.7rem)', fontWeight: 800, color: ink, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.03em', marginBottom: '8px' }}>
+                    {T.endTitle}
+                  </div>
+                  <div style={{ fontSize: '13px', color: inkSub, lineHeight: 1.7 }}>
+                    {T.endSub}
+                  </div>
+                </div>
+
+                {/* action buttons */}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {/* replay */}
+                  <button onClick={replayGlobe} style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '11px 22px', borderRadius: '14px',
+                    border: `1.5px solid ${glassBorder}`,
+                    background: glass, backdropFilter: 'blur(12px)',
+                    color: inkSub, fontSize: '13px', fontWeight: 600,
+                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
+                    transition: 'all 0.2s',
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                    </svg>
+                    {T.endReplay}
+                  </button>
+
+                  {/* tours */}
+                  <button onClick={goToTours} style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '11px 22px', borderRadius: '14px',
+                    border: '1.5px solid rgba(34,197,94,0.4)',
+                    background: 'rgba(34,197,94,0.12)', backdropFilter: 'blur(12px)',
+                    color: '#22C55E', fontSize: '13px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
+                    boxShadow: '0 0 20px rgba(34,197,94,0.15)',
+                    transition: 'all 0.2s',
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    {T.endTours}
+                  </button>
+
+                  {/* salles */}
+                  <button onClick={goToSalles} style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '11px 22px', borderRadius: '14px',
+                    border: '1.5px solid rgba(245,158,11,0.4)',
+                    background: 'rgba(245,158,11,0.12)', backdropFilter: 'blur(12px)',
+                    color: '#F59E0B', fontSize: '13px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
+                    boxShadow: '0 0 20px rgba(245,158,11,0.15)',
+                    transition: 'all 0.2s',
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    {T.endSalles}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* ══ SECTION 2 — CAMPUS COMPLET ══ */}
+        <div ref={toursRef} style={{ scrollMarginTop: '160px', marginBottom: '8rem' }}>
+          <SectionHeader title={T.tourTitle} sub={T.tourSub} color="#22C55E" ink={ink} inkSub={inkSub} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+            {VISITE_MODES.map(mode => (
+              <TourCard
+                key={mode.id} mode={mode}
+                active={activeTour === mode.file} isHov={hovered === mode.id}
+                lang={lang} ink={ink} inkSub={inkSub} isDark={isDark}
+                glassBorder={glassBorder} glass={glass} launchLabel={T.launch}
+                onHover={() => setHovered(mode.id)}
+                onLeave={() => setHovered(null)}
+                onClick={() => pickTour(mode)}
+              />
+            ))}
+          </div>
+          <div ref={tourViewerRef}>
+            {activeTourObj
+              ? <ViewerBox viewer={{ file: activeTourObj.file, title: activeTourObj.title[lang], color: activeTourObj.color }} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} vrSupported={vrSupported} />
+              : <EmptyViewer text={T.selectTour} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />
+            }
+          </div>
+        </div>
+
+        {/* ══ SECTION 3 — PAR ESPACE ══ */}
+        <div ref={sallesRef} style={{ scrollMarginTop: '160px' }}>
+          <SectionHeader title={T.sallesTitle} sub={T.sallesSub} color="#F59E0B" ink={ink} inkSub={inkSub} />
+
+          <GroupLabel label={T.serresLabel} count={SERRES.length} gradient="linear-gradient(90deg,#22C55E,#06B6D4)" ink={ink} inkSub={inkSub} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px', marginBottom: '14px' }}>
+            {SERRES.map(s => (
+              <SpaceCard key={s.file} item={s} active={activeSerre === s.file} isHov={hovered === s.file}
+                lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder} liveLabel={T.live}
+                onHover={() => setHovered(s.file)} onLeave={() => setHovered(null)} onClick={() => pickSerre(s.file)} />
+            ))}
+          </div>
+          <div ref={serreViewerRef} style={{ marginBottom: '3.5rem' }}>
+            {activeSerreObj
+              ? <ViewerBox viewer={{ file: activeSerreObj.file, title: activeSerreObj.title[lang], color: activeSerreObj.color }} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} vrSupported={vrSupported} />
+              : <EmptyViewer text={T.selectSalle} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />
+            }
+          </div>
+
+          <GroupLabel label={T.blocLabel} count={BLOC_TECHNIQUE.length} gradient="linear-gradient(90deg,#F59E0B,#EF4444)" ink={ink} inkSub={inkSub} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '10px', marginBottom: '14px' }}>
+            {BLOC_TECHNIQUE.map(s => (
+              <SpaceCard key={s.file} item={s} active={activeBloc === s.file} isHov={hovered === s.file}
+                lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder} liveLabel={T.live}
+                onHover={() => setHovered(s.file)} onLeave={() => setHovered(null)} onClick={() => pickBloc(s.file)} />
+            ))}
+          </div>
+          <div ref={blocViewerRef}>
+            {activeBlocObj
+              ? <ViewerBox viewer={{ file: activeBlocObj.file, title: activeBlocObj.title[lang], color: activeBlocObj.color }} isDark={isDark} ink={ink} inkSub={inkSub} glassBorder={glassBorder} T={T} vrSupported={vrSupported} />
+              : <EmptyViewer text={T.selectSalle} isDark={isDark} inkSub={inkSub} glassBorder={glassBorder} />
+            }
+          </div>
+        </div>
 
       </div>
-      <style>{`@keyframes vPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}`}</style>
+
+      <style>{`
+        @keyframes vPulse          { 0%,100%{opacity:1;transform:scale(1)}   50%{opacity:.35;transform:scale(.75)} }
+        @keyframes nodeBreath_globe { 0%,100%{box-shadow:0 0 0 4px rgba(139,92,246,0.18),0 0 16px rgba(139,92,246,0.35)} 50%{box-shadow:0 0 0 9px rgba(139,92,246,0.07),0 0 28px rgba(139,92,246,0.18)} }
+        @keyframes nodeBreath_tours { 0%,100%{box-shadow:0 0 0 4px rgba(34,197,94,0.18),0 0 16px rgba(34,197,94,0.35)}   50%{box-shadow:0 0 0 9px rgba(34,197,94,0.07),0 0 28px rgba(34,197,94,0.18)} }
+        @keyframes nodeBreath_salles{ 0%,100%{box-shadow:0 0 0 4px rgba(245,158,11,0.18),0 0 16px rgba(245,158,11,0.35)} 50%{box-shadow:0 0 0 9px rgba(245,158,11,0.07),0 0 28px rgba(245,158,11,0.18)} }
+        @keyframes particleGlow    { 0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.6;transform:translate(-50%,-50%) scale(0.7)} }
+        @keyframes popIn           { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+        @keyframes fadeIn          { from{opacity:0} to{opacity:1} }
+        @keyframes ripple          { 0%{transform:scale(0.8);opacity:0.6} 100%{transform:scale(2);opacity:0} }
+      `}</style>
     </section>
   )
 }
 
-// ── Space Card (vertical, color background) ───────────────────────────────────
-function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, onHover, onLeave, onClick, liveLabel }) {
+/* ─────────────────────── SUB-COMPONENTS ─────────────────────── */
+
+function SectionHeader({ title, sub, color, ink, inkSub }) {
+  return (
+    <div style={{ marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
+        <div style={{ width: '4px', height: '28px', background: color, borderRadius: '2px', flexShrink: 0, boxShadow: `0 0 12px ${color}66` }} />
+        <h3 style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 800, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.035em', color: ink, margin: 0, lineHeight: 1.1 }}>
+          {title}
+        </h3>
+      </div>
+      <p style={{ fontSize: '13px', color: inkSub, margin: '0 0 0 18px', lineHeight: 1.7 }}>{sub}</p>
+    </div>
+  )
+}
+
+function GroupLabel({ label, count, gradient, ink, inkSub }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+      <div style={{ width: '3px', height: '34px', background: gradient, borderRadius: '2px', flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: '11px', fontWeight: 800, color: ink, fontFamily: "'Outfit',sans-serif", textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+        <div style={{ fontSize: '11px', color: inkSub, marginTop: '2px' }}>{count} espaces · Visite 360° individuelle</div>
+      </div>
+    </div>
+  )
+}
+
+function TourCard({ mode, active, isHov, lang, ink, inkSub, isDark, glassBorder, glass, launchLabel, onHover, onLeave, onClick }) {
   return (
     <button onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave} style={{
-      position:'relative', overflow:'hidden',
-      borderRadius:'18px', cursor:'pointer', textAlign:'left',
-      border:`1.5px solid ${active?`${item.color}60`:isHov?`${item.color}35`:glassBorder}`,
-      background: active?item.gradient:isHov?`${item.color}10`:(isDark?'rgba(15,28,50,0.6)':'rgba(255,255,255,0.65)'),
-      backdropFilter:'blur(16px)',
-      transition:'all 0.22s',
-      boxShadow: active?`0 12px 32px ${item.color}30,0 0 0 1px ${item.color}25`:isHov?`0 8px 24px ${item.color}18`:'none',
-      transform: isHov&&!active?'translateY(-4px)':active?'translateY(-2px)':'none',
-      height:'96px',
+      position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '1.6rem 1.8rem',
+      border: `1.5px solid ${active ? `${mode.color}55` : isHov ? `${mode.color}28` : glassBorder}`,
+      background: active ? `${mode.color}10` : glass, backdropFilter: 'blur(16px)',
+      textAlign: 'left', cursor: 'pointer', transition: 'all 0.22s',
+      boxShadow: active ? `0 0 0 1px ${mode.color}20,0 16px 40px ${mode.color}22` : isHov ? '0 8px 24px rgba(0,0,0,0.1)' : 'none',
+      transform: isHov && !active ? 'translateY(-3px)' : active ? 'translateY(-1px)' : 'none',
     }}>
-      <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', justifyContent:'space-between', padding:'14px' }}>
-        {/* Top: badge */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <span style={{
-            fontSize:'11px', fontWeight:800, letterSpacing:'0.1em',
-            fontFamily:"'Outfit',sans-serif",
-            color: active?'rgba(255,255,255,0.95)':item.color,
-            background: active?'rgba(255,255,255,0.15)':'transparent',
-            border: `1px solid ${active?'rgba(255,255,255,0.25)':`${item.color}35`}`,
-            borderRadius:'100px', padding:'2px 8px',
-          }}>{item.badge}</span>
-          {active && (
-            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#fff', boxShadow:'0 0 8px rgba(255,255,255,0.8)', display:'inline-block' }} />
-          )}
-        </div>
-
-        {/* Bottom: title + desc */}
-        <div>
-          <div style={{
-            fontSize:'13px', fontWeight:700, lineHeight:1.25, marginBottom:'4px',
-            fontFamily:"'Outfit',sans-serif",
-            color: active?'white':ink,
-          }}>
-            {item.title[lang]}
+      <div style={{ position: 'absolute', left: 0, top: '16px', bottom: '16px', width: '3px', background: `linear-gradient(180deg,${mode.color},${mode.color}44)`, borderRadius: '0 2px 2px 0' }} />
+      {active && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg,transparent,${mode.color},transparent)` }} />}
+      <div style={{ position: 'absolute', right: '-20px', top: '-20px', width: '110px', height: '110px', borderRadius: '50%', background: `${mode.color}08`, pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '11px', background: active ? `${mode.color}22` : `${mode.color}12`, border: `1px solid ${mode.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: mode.color, flexShrink: 0, transition: 'all 0.2s' }}>
+            {mode.icon}
           </div>
-          <div style={{ fontSize:'10px', lineHeight:1.5, color: active?'rgba(255,255,255,0.6)':'rgba(148,163,184,0.9)' }}>
-            {item.desc}
-          </div>
-          {active && (
-            <div style={{ marginTop:'8px', display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'9px', fontWeight:700, letterSpacing:'0.1em', color:'rgba(255,255,255,0.85)', background:'rgba(255,255,255,0.12)', borderRadius:'100px', padding:'2px 8px', fontFamily:"'Outfit',sans-serif" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-              {liveLabel}
-            </div>
-          )}
+          <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: mode.color, background: `${mode.color}15`, border: `1px solid ${mode.color}25`, borderRadius: '100px', padding: '2px 10px', fontFamily: "'Outfit',sans-serif" }}>
+            {mode.tag[lang]}
+          </span>
         </div>
+        {active
+          ? <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: mode.color, boxShadow: `0 0 10px ${mode.color}`, display: 'inline-block', animation: 'vPulse 2s infinite' }} />
+          : <span style={{ fontSize: '12px', color: inkSub }}>{launchLabel} →</span>
+        }
       </div>
-
-      {/* Subtle inner glow on hover */}
-      {isHov && !active && (
-        <div style={{ position:'absolute', inset:0, background:`radial-gradient(ellipse at 50% 0%,${item.color}12,transparent 70%)`, pointerEvents:'none' }} />
-      )}
+      <div style={{ fontSize: '17px', fontWeight: 700, color: ink, fontFamily: "'Outfit',sans-serif", marginBottom: '6px', letterSpacing: '-0.02em' }}>{mode.title[lang]}</div>
+      <div style={{ fontSize: '12px', color: inkSub, lineHeight: 1.65 }}>{mode.desc[lang]}</div>
+      <div style={{ marginTop: '12px', fontSize: '10px', color: `${mode.color}bb`, fontFamily: "'Outfit',sans-serif", letterSpacing: '0.05em' }}>{mode.sub[lang]}</div>
     </button>
   )
 }
 
-function SectionLabel({ label, sub, gradient, ink, inkSub }) {
+function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, liveLabel, onHover, onLeave, onClick }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
-      <div style={{ width:'3px', height:'38px', background:gradient, borderRadius:'2px', flexShrink:0 }} />
+    <button onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave} style={{
+      position: 'relative', overflow: 'hidden', borderRadius: '16px', cursor: 'pointer', textAlign: 'left',
+      border: `1.5px solid ${active ? `${item.color}60` : isHov ? `${item.color}35` : glassBorder}`,
+      background: active ? `linear-gradient(160deg,${item.color}22,${item.color}0a)` : isHov ? `${item.color}0c` : isDark ? 'rgba(15,28,50,0.6)' : 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(16px)', transition: 'all 0.22s',
+      boxShadow: active ? `0 10px 30px ${item.color}28,0 0 0 1px ${item.color}20` : isHov ? `0 6px 20px ${item.color}14` : 'none',
+      transform: isHov && !active ? 'translateY(-4px)' : active ? 'translateY(-2px)' : 'none',
+      minHeight: '88px', padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif", color: active ? '#fff' : item.color, background: active ? `${item.color}40` : `${item.color}15`, border: `1px solid ${active ? 'rgba(255,255,255,0.2)' : `${item.color}30`}`, borderRadius: '100px', padding: '2px 8px' }}>
+          {item.badge}
+        </span>
+        {active && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: item.color, boxShadow: `0 0 8px ${item.color}`, display: 'inline-block', animation: 'vPulse 2s infinite' }} />}
+      </div>
       <div>
-        <div style={{ fontSize:'12px', fontWeight:800, color:ink, fontFamily:"'Outfit',sans-serif", textTransform:'uppercase', letterSpacing:'0.1em' }}>{label}</div>
-        <div style={{ fontSize:'11px', color:inkSub, marginTop:'2px' }}>{sub}</div>
+        <div style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1.25, fontFamily: "'Outfit',sans-serif", color: active ? '#fff' : ink, marginBottom: '4px' }}>{item.title[lang]}</div>
+        <div style={{ fontSize: '9px', lineHeight: 1.5, color: active ? 'rgba(255,255,255,0.55)' : 'rgba(148,163,184,0.8)' }}>{item.desc}</div>
+      </div>
+      {isHov && !active && <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%,${item.color}10,transparent 70%)`, pointerEvents: 'none' }} />}
+    </button>
+  )
+}
+
+function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported }) {
+  return (
+    <div style={{ borderRadius: '24px', overflow: 'hidden', border: `1px solid ${glassBorder}`, boxShadow: isDark ? `0 32px 80px rgba(0,0,0,0.55),0 0 0 1px ${viewer.color}12` : '0 16px 48px rgba(0,0,0,0.09)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: isDark ? 'rgba(7,17,31,0.95)' : 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${glassBorder}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            {['#EF4444','#F59E0B','#22C55E'].map(c => <div key={c} style={{ width: '8px', height: '8px', borderRadius: '50%', background: c, opacity: 0.55 }} />)}
+          </div>
+          <div style={{ width: '1px', height: '14px', background: glassBorder }} />
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 7px rgba(34,197,94,0.9)', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: ink, fontFamily: "'Outfit',sans-serif" }}>{viewer.title}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.22)', borderRadius: '100px', padding: '2px 10px', letterSpacing: '0.08em', fontFamily: "'Outfit',sans-serif" }}>{T.live}</span>
+          <a href={viewer.file} target="_blank" rel="noopener noreferrer" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontSize: '11px', fontWeight: 600, textDecoration: 'none',
+              color: vrSupported ? '#8B5CF6' : inkSub,
+              background: vrSupported ? 'rgba(139,92,246,0.1)' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+              border: `1px solid ${vrSupported ? 'rgba(139,92,246,0.3)' : glassBorder}`,
+              borderRadius: '8px', padding: '5px 12px',
+            }}>
+              {vrSupported ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+                    <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+                    <path d="M10 12h4"/>
+                  </svg>
+                  Enter VR
+                </>
+              ) : (
+                <>{T.full} ↗</>
+              )}
+            </a>
+        </div>
+      </div>
+      <div style={{ height: '2px', background: `linear-gradient(90deg,transparent,${viewer.color},transparent)` }} />
+      <div style={{ position: 'relative', paddingBottom: '48%', background: isDark ? '#07111F' : '#F0FAF4' }}>
+        <iframe key={viewer.file} src={viewer.file} allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
       </div>
     </div>
   )
@@ -287,36 +740,11 @@ function SectionLabel({ label, sub, gradient, ink, inkSub }) {
 
 function EmptyViewer({ text, isDark, inkSub, glassBorder }) {
   return (
-    <div style={{ borderRadius:'20px', border:`1px solid ${glassBorder}`, background: isDark?'rgba(11,23,40,0.4)':'rgba(255,255,255,0.5)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'140px', color:inkSub, fontSize:'13px', fontFamily:"'Outfit',sans-serif" }}>
+    <div style={{ borderRadius: '20px', border: `1px dashed ${glassBorder}`, background: isDark ? 'rgba(11,23,40,0.35)' : 'rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px', color: inkSub, fontSize: '13px', fontFamily: "'Outfit',sans-serif", gap: '8px' }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={inkSub} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
       {text}
-    </div>
-  )
-}
-
-function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T }) {
-  return (
-    <div style={{ borderRadius:'24px', overflow:'hidden', border:`1px solid ${glassBorder}`, boxShadow: isDark?`0 32px 80px rgba(0,0,0,0.55),0 0 0 1px ${viewer.color}12`:'0 16px 48px rgba(0,0,0,0.09)' }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background: isDark?'rgba(7,17,31,0.93)':'rgba(255,255,255,0.97)', backdropFilter:'blur(16px)', borderBottom:`1px solid ${glassBorder}` }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <div style={{ display:'flex', gap:'5px' }}>
-            {['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:'8px', height:'8px', borderRadius:'50%', background:c, opacity:0.55 }} />)}
-          </div>
-          <div style={{ width:'1px', height:'14px', background:glassBorder }} />
-          <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#22C55E', boxShadow:'0 0 7px rgba(34,197,94,0.9)', display:'inline-block' }} />
-          <span style={{ fontSize:'13px', fontWeight:600, color:ink, fontFamily:"'Outfit',sans-serif" }}>{viewer.title}</span>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-          <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'10px', fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.1)', border:'1px solid rgba(34,197,94,0.22)', borderRadius:'100px', padding:'2px 9px', letterSpacing:'0.08em', fontFamily:"'Outfit',sans-serif" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-              {T.live}
-            </span>
-          <a href={viewer.file} target="_blank" rel="noopener noreferrer" style={{ fontSize:'11px', fontWeight:600, color:inkSub, textDecoration:'none', background: isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)', border:`1px solid ${glassBorder}`, borderRadius:'8px', padding:'5px 11px' }}>{T.full}</a>
-        </div>
-      </div>
-      <div style={{ height:'2px', background:`linear-gradient(90deg,transparent,${viewer.color},transparent)` }} />
-      <div style={{ position:'relative', paddingBottom:'46%', background: isDark?'#07111F':'#F0FAF4' }}>
-        <iframe key={viewer.file} src={viewer.file} allowFullScreen style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:'none' }} />
-      </div>
     </div>
   )
 }

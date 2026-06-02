@@ -1,0 +1,1668 @@
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ar-content.css  —  Companion stylesheet for ar-content.js
+   AgroBioTech Géoportail · IAV Hassan II Rabat
+═══════════════════════════════════════════════════════════════════════ */
+
+/* ── LANGUAGE SWITCHER ── */
+#lang-switcher {
+  position: fixed;
+  bottom: 28px;
+  left: 130px;               /* sits right of the AR toggle */
+  z-index: 500;
+  display: flex;
+  gap: 3px;
+  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  padding: 5px 6px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.lang-pill {
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.lang-pill:hover {
+  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.1);
+}
+.lang-pill.active {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+/* ── RTL support for Arabic ── */
+#ar-card[dir="rtl"] {
+  text-align: right;
+}
+#ar-card[dir="rtl"] .ar-info-row {
+  flex-direction: row-reverse;
+}
+#ar-card[dir="rtl"] .ar-sensor-row {
+  flex-direction: row-reverse;
+}
+#ar-card[dir="rtl"] .ar-bullet {
+  flex-direction: row-reverse;
+}
+#ar-card[dir="rtl"] .ar-tab-bar {
+  flex-direction: row-reverse;
+}
+#ar-card[dir="rtl"] .ns-bar-row {
+  direction: rtl;
+}
+#ar-card[dir="rtl"] .ns-station-row {
+  flex-direction: row-reverse;
+}
+
+/* ── TAB BAR ── */
+.ar-tab-bar {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(8px);
+}
+.ar-tab {
+  flex: 1;
+  padding: 11px 6px 10px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: rgba(0,0,0,.32);
+  border-bottom: 2px solid transparent;
+  transition: color .18s ease, border-color .18s ease;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+.ar-tab.active {
+  color: var(--accent, #059669);
+  border-bottom-color: var(--accent, #059669);
+}
+.ar-tab:hover:not(.active) { color: rgba(0,0,0,.58); }
+
+/* ── NS CALCULATOR ── */
+.ns-select {
+  width: 100%;
+  padding: 9px 30px 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.09);
+  background: rgba(0,0,0,.03);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(0,0,0,.78);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,.35)' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 11px;
+  transition: border-color .15s, background .15s;
+  margin-bottom: 10px;
+}
+.ns-select:focus {
+  border-color: var(--accent, #059669);
+  background-color: rgba(0,0,0,.02);
+}
+.ns-meta-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.ns-meta-pill {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px 9px;
+  border-radius: 12px;
+}
+.ns-meta-ec { background: rgba(34,197,94,.07);  border: 1px solid rgba(34,197,94,.18); }
+.ns-meta-ph { background: rgba(14,165,233,.07); border: 1px solid rgba(14,165,233,.18); }
+.ns-meta-pill-label {
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: .5;
+  display: block;
+  margin-bottom: 4px;
+}
+.ns-meta-pill-val {
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  display: block;
+  margin-bottom: 3px;
+}
+.ns-meta-ec .ns-meta-pill-val { color: #16a34a; }
+.ns-meta-ph .ns-meta-pill-val { color: #0284c7; }
+.ns-meta-pill-unit {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 9px;
+  color: rgba(0,0,0,.38);
+  display: block;
+}
+.ns-bars { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+.ns-bar-row { display: grid; grid-template-columns: 40px 1fr 52px; align-items: center; gap: 8px; }
+.ns-bar-label {
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(0,0,0,.45);
+}
+.ns-bar-wrap {
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(0,0,0,.06);
+  overflow: hidden;
+}
+.ns-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .38s cubic-bezier(.4,0,.2,1);
+}
+.ns-bar-val {
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: right;
+  color: rgba(0,0,0,.55);
+}
+.ns-station-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+}
+.ns-station-row:last-child { border-bottom: none; }
+.ns-station-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ns-station-label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11.5px;
+  color: rgba(0,0,0,.42);
+  flex: 1;
+}
+.ns-station-val {
+  font-family: 'DM Mono','JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(0,0,0,.6);
+}
+.ns-iot-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  margin-bottom: 5px;
+}
+.ns-iot-ok  { background: rgba(34,197,94,.07);  border: 1px solid rgba(34,197,94,.15); }
+.ns-iot-warn{ background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.18); }
+.ns-note {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  color: rgba(0,0,0,.3);
+  text-align: center;
+  padding: 10px 4px 2px;
+  line-height: 1.65;
+  border-top: 1px solid rgba(0,0,0,.05);
+  margin-top: 8px;
+}
+.ns-note a { color: var(--accent,#059669); text-decoration: none; font-weight: 600; }
+.ns-note a:hover { text-decoration: underline; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ORIGINAL AR CARD CSS (extracted from viewers)
+═══════════════════════════════════════════════════════════════════════ */
+
+/* ── AR Popup — dark glassmorphism premium ── */
+
+
+
+.ar-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;
+
+
+
+  display:flex;align-items:center;justify-content:flex-end;padding:20px}
+
+
+
+
+
+
+
+.ar-card{
+
+
+
+  width:320px;max-height:calc(100vh - 48px);
+
+
+
+  background:rgba(255,255,255,.82);
+
+
+
+  backdrop-filter:blur(24px) saturate(160%);
+
+
+
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+
+
+
+  border:1px solid rgba(255,255,255,.9);
+
+
+
+  border-radius:24px;
+
+
+
+  box-shadow:0 8px 40px rgba(0,20,60,.13),0 2px 8px rgba(0,20,60,.07),0 1px 0 rgba(255,255,255,.95) inset;
+
+
+
+  display:flex;flex-direction:column;overflow:hidden;pointer-events:all;
+
+
+
+  transform:translateX(360px) scale(.96);opacity:0;
+
+
+
+  transition:transform .38s cubic-bezier(.34,1.08,.64,1),opacity .28s ease}
+
+
+
+.ar-card.open{transform:translateX(0) scale(1);opacity:1}
+
+
+
+
+
+
+
+/* ── HERO ── */
+
+
+
+.ar-hero{
+
+
+
+  position:relative;height:130px;flex-shrink:0;overflow:hidden;
+
+
+
+  display:flex;align-items:flex-end;padding-bottom:18px}
+
+
+
+.ar-hero-bg{position:absolute;inset:0;opacity:.7}
+
+
+
+.ar-hero::after{
+
+
+
+  content:'';position:absolute;bottom:0;left:0;right:0;height:50px;
+
+
+
+  background:linear-gradient(to bottom,transparent,rgba(0,0,0,.12));
+
+
+
+  pointer-events:none}
+
+
+
+.ar-hero-anim{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+
+
+
+.ar-hero-content{
+
+
+
+  position:relative;z-index:1;
+
+
+
+  display:flex;align-items:flex-end;gap:12px;padding:0 16px;width:100%}
+
+
+
+.ar-hero-icon{
+
+
+
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+
+
+
+  display:flex;align-items:center;justify-content:center;
+
+
+
+  background:rgba(255,255,255,.25);
+
+
+
+  border:1px solid rgba(255,255,255,.45);
+
+
+
+  box-shadow:0 2px 8px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,.8) inset;
+
+
+
+  margin-bottom:2px}
+
+
+
+.ar-hero-text{flex:1;min-width:0}
+
+
+
+.ar-hero-label{
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:8.5px;font-weight:500;text-transform:uppercase;letter-spacing:1.1px;
+
+
+
+  color:rgba(255,255,255,.55);margin-bottom:3px}
+
+
+
+.ar-hero-text h3{
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:16px;font-weight:700;color:#fff;
+
+
+
+  line-height:1.15;margin:0 0 8px;
+
+
+
+  text-shadow:0 1px 8px rgba(0,0,0,.22)}
+
+
+
+/* ── BIG STATE BADGE in hero ── */
+
+
+
+.ar-state-pill{
+
+
+
+  display:inline-flex;align-items:center;gap:6px;
+
+
+
+  padding:5px 12px;border-radius:99px;
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:11.5px;font-weight:700;letter-spacing:.3px;
+
+
+
+  border:1.5px solid rgba(255,255,255,.4);
+
+
+
+  backdrop-filter:blur(8px);
+
+
+
+  box-shadow:0 2px 8px rgba(0,0,0,.15)}
+
+
+
+.ar-state-pill.on{background:rgba(34,197,94,.28);color:#fff}
+
+
+
+.ar-state-pill.off{background:rgba(0,0,0,.22);color:rgba(255,255,255,.8)}
+
+
+
+.ar-state-pill.unknown{background:rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+
+
+
+.ar-state-pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+
+
+.ar-state-pill.on .ar-state-pill-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+
+
+.ar-state-pill.off .ar-state-pill-dot{background:#f87171;box-shadow:0 0 6px #f87171}
+
+
+
+.ar-state-pill.unknown .ar-state-pill-dot{background:rgba(255,255,255,.4)}
+
+
+
+
+
+
+
+/* ── CLOSE ── */
+
+
+
+.ar-close{
+
+
+
+  position:absolute;top:10px;right:10px;z-index:10;
+
+
+
+  width:26px;height:26px;border-radius:50%;
+
+
+
+  border:1px solid rgba(255,255,255,.3);
+
+
+
+  background:rgba(0,0,0,.15);
+
+
+
+  cursor:pointer;color:rgba(255,255,255,.85);font-size:11px;
+
+
+
+  display:flex;align-items:center;justify-content:center;
+
+
+
+  transition:background .15s}
+
+
+
+.ar-close:hover{background:rgba(0,0,0,.3)}
+
+
+
+
+
+
+
+/* ── REASON STRIP ── */
+
+
+
+.ar-reason-strip{
+
+
+
+  flex-shrink:0;
+
+
+
+  padding:10px 16px;
+
+
+
+  background:rgba(0,0,0,.025);
+
+
+
+  border-bottom:1px solid rgba(0,0,0,.055)}
+
+
+
+.ar-reason-text{
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:11px;color:rgba(0,0,0,.45);line-height:1.45;font-style:italic}
+
+
+
+
+
+
+
+/* ── CONTENT ── */
+
+
+
+.ar-content{
+
+
+
+  flex:1;overflow-y:auto;padding:16px 16px 20px;
+
+
+
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.07) transparent}
+
+
+
+.ar-content::-webkit-scrollbar{width:3px}
+
+
+
+.ar-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+
+
+
+
+
+
+
+/* ── SECTION HEADERS ── */
+
+
+
+.ar-section-title{
+
+
+
+  font-family:'DM Mono','JetBrains Mono',monospace;
+
+
+
+  font-size:8px;font-weight:600;text-transform:uppercase;
+
+
+
+  letter-spacing:1.1px;color:var(--accent,#059669);
+
+
+
+  margin:18px 0 8px;opacity:.75}
+
+
+
+.ar-section-title:first-child{margin-top:0}
+
+
+
+
+
+
+
+/* ── SENSOR ROW (value vs threshold) ── */
+
+
+
+.ar-sensor-row{
+
+
+
+  display:flex;align-items:center;gap:10px;
+
+
+
+  padding:9px 0;border-bottom:1px solid rgba(0,0,0,.045)}
+
+
+
+.ar-sensor-row:last-child{border-bottom:none}
+
+
+
+.ar-sensor-label{
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:11.5px;color:rgba(0,0,0,.42);flex:1}
+
+
+
+.ar-sensor-val{
+
+
+
+  font-family:'DM Mono','JetBrains Mono',monospace;
+
+
+
+  font-size:14px;font-weight:600;color:rgba(0,0,0,.78);min-width:52px;text-align:right}
+
+
+
+.ar-sensor-unit{
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:10px;color:rgba(0,0,0,.3);min-width:30px}
+
+
+
+.ar-sensor-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+
+
+.ar-sensor-dot.ok{background:#22c55e}.ar-sensor-dot.warn{background:#f59e0b}.ar-sensor-dot.err{background:#ef4444}.ar-sensor-dot.na{background:rgba(0,0,0,.15)}
+
+
+
+
+
+
+
+/* ── INFO ROWS ── */
+
+
+
+.ar-info-row{
+
+
+
+  display:flex;justify-content:space-between;align-items:center;
+
+
+
+  padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+
+
+
+.ar-info-row:last-child{border-bottom:none}
+
+
+
+.ar-info-label{font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:rgba(0,0,0,.4)}
+
+
+
+.ar-info-value{font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:rgba(0,0,0,.75);font-weight:500;text-align:right}
+
+
+
+.ar-badge{
+
+
+
+  display:inline-block;padding:2px 9px;border-radius:7px;
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;
+
+
+
+  font-size:10.5px;font-weight:600;border:1px solid transparent}
+
+
+
+
+
+
+
+/* ── BULLETS ── */
+
+
+
+.ar-bullets{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+
+
+
+.ar-bullet{display:flex;align-items:flex-start;gap:8px;
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:rgba(0,0,0,.52);line-height:1.6}
+
+
+
+.ar-bullet-dot{width:4px;height:4px;border-radius:50%;margin-top:7px;flex-shrink:0;
+
+
+
+  background:var(--accent,#059669);opacity:.65}
+
+
+
+
+
+
+
+/* ── IOT GRID ── */
+
+
+
+.iot-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+
+
+.iot-card{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.055);border-radius:12px;padding:10px 11px}
+
+
+
+.iot-label{font-family:'DM Mono','JetBrains Mono',monospace;font-size:7.5px;font-weight:500;
+
+
+
+  text-transform:uppercase;letter-spacing:.6px;color:rgba(0,0,0,.3);margin-bottom:3px}
+
+
+
+.iot-value{font-family:'DM Mono','JetBrains Mono',monospace;font-size:20px;font-weight:600;color:rgba(0,0,0,.8);line-height:1}
+
+
+
+.iot-unit{font-size:9.5px;color:rgba(0,0,0,.32);margin-top:2px;font-family:'DM Sans',system-ui,sans-serif}
+
+
+
+.iot-status{display:flex;align-items:center;gap:3px;margin-top:5px;
+
+
+
+  font-size:9px;color:rgba(0,0,0,.32);font-family:'DM Sans',system-ui,sans-serif}
+
+
+
+.iot-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+
+
+
+.iot-dot.ok{background:#22c55e}.iot-dot.warn{background:#f59e0b}.iot-dot.err{background:#ef4444}
+
+
+
+.iot-refresh{font-family:'DM Mono','JetBrains Mono',monospace;font-size:9px;
+
+
+
+  color:rgba(0,0,0,.22);text-align:right;margin-top:8px;cursor:pointer;transition:color .15s}
+
+
+
+.iot-refresh:hover{color:rgba(0,0,0,.5)}
+
+
+
+.iot-loading{text-align:center;padding:22px;color:rgba(0,0,0,.28);font-size:11.5px;font-family:'DM Sans',system-ui,sans-serif}
+
+
+
+
+
+
+
+/* ── VIDEO ── */
+
+
+
+.video-wrap{border-radius:10px;overflow:hidden;aspect-ratio:16/9;
+
+
+
+  background:rgba(0,0,0,.04);margin-bottom:8px;border:1px solid rgba(0,0,0,.06)}
+
+
+
+.video-wrap iframe{width:100%;height:100%;border:none}
+
+
+
+.video-desc{font-size:11px;color:rgba(0,0,0,.38);line-height:1.55;font-family:'DM Sans',system-ui,sans-serif}
+
+
+
+
+
+
+
+/* ── ANIMATIONS ── */
+
+
+
+@keyframes ar-fade-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+
+
+.ar-stagger-1{animation:ar-fade-up .28s ease .04s both}
+
+
+
+.ar-stagger-2{animation:ar-fade-up .28s ease .10s both}
+
+
+
+.ar-stagger-3{animation:ar-fade-up .28s ease .16s both}
+
+
+
+@keyframes hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+
+
+@keyframes hero-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+
+
+@keyframes hero-drop{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) scaleY(1.1)}}
+
+
+
+@keyframes hero-pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.08)}}
+
+
+
+@keyframes hero-wave{0%,100%{d:path('M0 20 Q80 8 160 20 Q240 32 320 20')}50%{d:path('M0 20 Q60 32 120 20 Q180 8 240 20 Q300 32 360 20')}}
+
+
+
+@keyframes hero-bubble{0%{transform:translateY(30px);opacity:0}50%{opacity:.7}100%{transform:translateY(-10px);opacity:0}}
+
+
+
+
+
+
+
+.ar-thresh-block{margin-bottom:4px}
+
+
+
+.ar-thresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+
+
+
+.ar-thresh-label{font-family:'DM Sans',system-ui,sans-serif;font-size:11.5px;color:rgba(0,0,0,.42)}
+
+
+
+.ar-thresh-val{font-family:'DM Mono','JetBrains Mono',monospace;font-size:13px;font-weight:600;color:rgba(0,0,0,.75)}
+
+
+
+.ar-thresh-unit{font-family:'DM Sans',system-ui,sans-serif;font-size:10px;color:rgba(0,0,0,.32)}
+
+
+
+.ar-thresh-bar-wrap{height:5px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden;margin-bottom:10px}
+
+
+
+.ar-thresh-bar{height:100%;border-radius:99px;transition:width .5s ease;min-width:3px}
+
+
+
+.ar-thresh-reason{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
+
+
+
+  font-family:'DM Sans',system-ui,sans-serif;font-size:11px;font-style:italic;margin-top:2px}
+
+
+
+.ar-thresh-reason.on{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);color:#15803d}
+
+
+
+.ar-thresh-reason.off{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.07);color:rgba(0,0,0,.42)}
+
+
+
+.ar-thresh-reason.unknown{background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.05);color:rgba(0,0,0,.3)}
+
+
+
+.ar-thresh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+
+
+
+
+
+
+/* ── AR TOGGLE BUTTON ── */
+
+
+
+#ar-toggle{
+
+
+
+  position:fixed;bottom:28px;left:28px;z-index:500;
+
+
+
+  background:rgba(255,255,255,.12);
+
+
+
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+
+
+
+  border:1px solid rgba(255,255,255,.22);
+
+
+
+  border-radius:12px;padding:10px 16px;
+
+
+
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+
+
+
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+
+
+
+  font-family:inherit;font-size:11px;font-weight:500;
+
+
+
+  color:rgba(255,255,255,.7);letter-spacing:.04em;
+
+
+
+  transition:background .2s,border-color .2s,color .2s}
+
+
+
+#ar-toggle:hover{background:rgba(255,255,255,.18);color:white}
+
+
+
+#ar-toggle.ar-on{border-color:rgba(140,255,190,.35);color:rgba(140,255,190,.9)}
+
+
+
+#ar-toggle.ar-on:hover{background:rgba(140,255,190,.1)}
+
+
+
+#ar-toggle-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+
+
+
+  background:rgba(255,255,255,.3);transition:background .2s,box-shadow .2s}
+
+
+
+#ar-toggle.ar-on #ar-toggle-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+
+
+
+
+
+
+body.ar-hidden .hs-ar-base{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
+
+
+
+body.ar-hidden .ar-overlay{pointer-events:none!important}
+
+
+
+body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity:0!important;pointer-events:none!important;transition:none!important}
+
+
+
+
+
+
+
+/* ── VR button override ── */
+
+
+
+.pnlm-vr-button {
+
+
+
+  display: flex !important;
+
+
+
+  position: fixed !important;
+
+
+
+  bottom: 16px !important;
+
+
+
+  right: 16px !important;
+
+
+
+  z-index: 9999 !important;
+
+
+
+  width: 44px !important;
+
+
+
+  height: 44px !important;
+
+
+
+  border-radius: 12px !important;
+
+
+
+  background: rgba(139,92,246,0.85) !important;
+
+
+
+  border: 1.5px solid rgba(139,92,246,0.5) !important;
+
+
+
+  box-shadow: 0 0 20px rgba(139,92,246,0.5), 0 4px 12px rgba(0,0,0,0.3) !important;
+
+
+
+  cursor: pointer !important;
+
+
+
+  align-items: center !important;
+
+
+
+  justify-content: center !important;
+
+
+
+  transition: all 0.2s !important;
+
+
+
+  backdrop-filter: blur(8px) !important;
+
+
+
+}
+
+
+
+.pnlm-vr-button:hover {
+
+
+
+  background: rgba(139,92,246,1) !important;
+
+
+
+  transform: scale(1.08) !important;
+
+
+
+  box-shadow: 0 0 32px rgba(139,92,246,0.8), 0 4px 16px rgba(0,0,0,0.4) !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* ════════════════════════════════════════
+
+
+
+   VR ENTRY BUTTON — Quest-compatible
+
+
+
+   ════════════════════════════════════════ */
+
+
+
+
+
+
+
+#vr-enter-btn {
+
+
+
+  position: fixed;
+
+
+
+  bottom: 24px;
+
+
+
+  right: 24px;
+
+
+
+  z-index: 99999;
+
+
+
+
+
+
+
+  /* Quest-friendly large tap target */
+
+
+
+  min-width: 160px;
+
+
+
+  height: 52px;
+
+
+
+  padding: 0 22px;
+
+
+
+  border-radius: 100px;
+
+
+
+
+
+
+
+  /* Glassmorphism pill */
+
+
+
+  background: rgba(255, 255, 255, 0.14);
+
+
+
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+
+
+
+  backdrop-filter: blur(20px) saturate(160%);
+
+
+
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+
+
+
+  box-shadow:
+
+
+
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+
+
+
+    0 8px 32px rgba(0, 0, 0, 0.35),
+
+
+
+    0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+
+
+
+
+
+  /* Text */
+
+
+
+  display: flex;
+
+
+
+  align-items: center;
+
+
+
+  justify-content: center;
+
+
+
+  gap: 9px;
+
+
+
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+
+
+
+  font-size: 13px;
+
+
+
+  font-weight: 700;
+
+
+
+  letter-spacing: 0.05em;
+
+
+
+  color: rgba(255, 255, 255, 0.92);
+
+
+
+  white-space: nowrap;
+
+
+
+  cursor: pointer;
+
+
+
+
+
+
+
+  /* Pulse animation to attract attention */
+
+
+
+  animation: vrBtnPulse 3s ease-in-out infinite;
+
+
+
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+
+
+}
+
+
+
+
+
+
+
+#vr-enter-btn:hover,
+
+
+
+#vr-enter-btn:focus {
+
+
+
+  background: rgba(139, 92, 246, 0.55);
+
+
+
+  border-color: rgba(139, 92, 246, 0.75);
+
+
+
+  box-shadow:
+
+
+
+    0 0 0 1px rgba(139,92,246,0.3) inset,
+
+
+
+    0 0 24px rgba(139, 92, 246, 0.55),
+
+
+
+    0 8px 32px rgba(0, 0, 0, 0.4);
+
+
+
+  transform: translateY(-2px) scale(1.03);
+
+
+
+  color: #fff;
+
+
+
+}
+
+
+
+
+
+
+
+#vr-enter-btn:active {
+
+
+
+  transform: scale(0.97);
+
+
+
+}
+
+
+
+
+
+
+
+/* Quest device — larger button */
+
+
+
+@media (hover: none) and (pointer: coarse) {
+
+
+
+  #vr-enter-btn {
+
+
+
+    min-width: 190px;
+
+
+
+    height: 60px;
+
+
+
+    font-size: 15px;
+
+
+
+    bottom: 32px;
+
+
+
+    right: 32px;
+
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+@keyframes vrBtnPulse {
+
+
+
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.35), 0 0 0 0 rgba(139,92,246,0); }
+
+
+
+  50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.35), 0 0 0 8px rgba(139,92,246,0.12); }
+
+
+
+}
+
+
+
+
+
+
+
+/* ── VR MODE — body.vr-mode ── */
+
+
+
+body.vr-mode #vr-enter-btn { display: none; }
+
+
+
+
+
+
+
+/* Hide heavy UI in VR mode */
+
+
+
+body.vr-mode #iot-hud,
+
+
+
+body.vr-mode #minimap,
+
+
+
+body.vr-mode #scene-title,
+
+
+
+body.vr-mode #ar-popup,
+
+
+
+body.vr-mode #info-panel,
+
+
+
+body.vr-mode .side-panel,
+
+
+
+body.vr-mode .top-bar,
+
+
+
+body.vr-mode #tour-controls,
+
+
+
+body.vr-mode #progress-bar {
+
+
+
+  display: none !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* Keep hotspots but make them larger for Quest controllers */
+
+
+
+body.vr-mode .hs-nav,
+
+
+
+body.vr-mode .hs-cross,
+
+
+
+body.vr-mode .hs-ar {
+
+
+
+  transform: scale(1.3) !important;
+
+
+
+  animation: none !important;  /* kill breathe animation — saves GPU */
+
+
+
+}
+
+
+
+
+
+
+
+/* Kill non-essential transitions in VR mode */
+
+
+
+body.vr-mode * {
+
+
+
+  transition: none !important;
+
+
+
+  animation-duration: 0s !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* Re-allow the hotspot scale we just set */
+
+
+
+body.vr-mode .hs-nav,
+
+
+
+body.vr-mode .hs-cross {
+
+
+
+  transition: transform 0.15s !important;
+
+
+
+}
+
+
+
+
+
+
+
+
+/* ── VR BUTTON ── */
+#vr-enter-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  min-width: 160px;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.14);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: 'Outfit','Inter',system-ui,sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.92);
+  white-space: nowrap;
+  cursor: pointer;
+  animation: vrPulse 3s ease-in-out infinite;
+  transition: all 0.2s;
+}
+#vr-enter-btn:hover {
+  background: rgba(139,92,246,0.55);
+  border-color: rgba(139,92,246,0.75);
+  box-shadow: 0 0 24px rgba(139,92,246,0.55), 0 8px 32px rgba(0,0,0,0.4);
+  transform: translateY(-2px) scale(1.03);
+  color: #fff;
+}
+@keyframes vrPulse {
+  0%,100% { box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 0 rgba(139,92,246,0); }
+  50%      { box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 8px rgba(139,92,246,0.12); }
+}
+#vr-exit-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 99999;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  font-family: 'Outfit','Inter',system-ui;
+}

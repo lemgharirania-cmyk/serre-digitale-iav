@@ -42,80 +42,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#cdddcd; font-
 .marker-card-title { font-size:11px; font-weight:600; color:rgba(22,163,74,.9); letter-spacing:.04em; margin-bottom:2px; }
 .marker-card-sub   { font-size:9px;  font-weight:400; color:rgba(0,0,0,.45); letter-spacing:.03em; }
 
-@keyframes ctaUp { from{opacity:0;transform:translateX(-50%) translateY(16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-/* ── CTA PANEL — light glassmorphism ── */
-#cta {
-  position:fixed; bottom:40px; left:50%; transform:translateX(-50%);
-  z-index:30; width:min(520px,90vw);
-  opacity:0; pointer-events:none;
-}
-#cta.show { pointer-events:auto; animation:ctaUp .65s cubic-bezier(.4,0,.2,1) forwards; }
-
-#cta-inner {
-  background:rgba(255,255,255,.62);
-  border:1px solid rgba(255,255,255,.9);
-  border-radius:22px;
-  padding:22px 22px 20px;
-  backdrop-filter:blur(40px) saturate(200%) brightness(1.08);
-  -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(1.08);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.95) inset,
-    0 0 0 1px rgba(255,255,255,.5),
-    0 20px 60px rgba(0,0,0,.12),
-    0 4px 16px rgba(0,0,0,.07);
-}
-
-#cta-eyebrow {
-  display:flex; align-items:center; gap:7px;
-  font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
-  color:rgba(22,163,74,.85); margin-bottom:10px;
-}
-#cta-eyebrow::before {
-  content:''; width:5px; height:5px; border-radius:50%;
-  background:rgb(34,197,94);
-  box-shadow:0 0 8px rgba(34,197,94,.8);
-  animation:livePulse 2s ease-in-out infinite;
-}
-
-#cta-title {
-  font-family:'Outfit',sans-serif;
-  font-size:18px; font-weight:700; color:rgba(0,0,0,.82);
-  margin-bottom:16px; letter-spacing:-.01em;
-}
-
-#cta-choices { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-
-.cta-choice {
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.85);
-  background:rgba(255,255,255,.55);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  color:rgba(0,0,0,.8); cursor:pointer;
-  text-align:left;
-  transition:all .22s ease;
-  font-family:'Inter',sans-serif;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.9) inset,
-    0 2px 8px rgba(0,0,0,.06);
-}
-.cta-choice:hover {
-  background:rgba(255,255,255,.82);
-  border-color:rgba(255,255,255,1);
-  transform:translateY(-2px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,1) inset,
-    0 8px 24px rgba(0,0,0,.1);
-}
-.cta-choice-tag {
-  font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-  color:rgba(22,163,74,.9); margin-bottom:6px;
-  font-family:'Outfit',sans-serif;
-}
-.cta-choice-title { font-size:13px; font-weight:600; color:rgba(0,0,0,.82); margin-bottom:3px; }
-.cta-choice-sub   { font-size:11px; color:rgba(0,0,0,.42); line-height:1.5; }
 
 #fade { position:fixed; inset:0; z-index:9999; background:#f0f4f0; opacity:0; pointer-events:none; transition:opacity .8s ease; }
 #fade.show { opacity:1; }
@@ -136,24 +63,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#cdddcd; font-
   </div>
 </div>
 
-<div id="cta">
-  <div id="cta-inner">
-    <div id="cta-eyebrow">Campus AgroBioTech · IAV Hassan II</div>
-    <div id="cta-title">Que souhaitez-vous explorer ?</div>
-    <div id="cta-choices">
-      <button class="cta-choice" onclick="choose('tour')">
-        <div class="cta-choice-tag">Campus complet</div>
-        <div class="cta-choice-title">Visite du campus</div>
-        <div class="cta-choice-sub">Parcours guidé ou navigation libre dans l'ensemble du campus</div>
-      </button>
-      <button class="cta-choice" onclick="choose('salles')">
-        <div class="cta-choice-tag">Par espace</div>
-        <div class="cta-choice-title">Exploration salle par salle</div>
-        <div class="cta-choice-sub">Accédez directement à chaque serre ou espace technique</div>
-      </button>
-    </div>
-  </div>
-</div>
+
 
 <div id="fade"></div>
 
@@ -211,13 +121,9 @@ async function startSequence() {
     });
     await sleep(p.duration*1000+250);
   }
-  document.getElementById('cta').classList.add('show');
-}
-
-function choose(mode) {
   document.getElementById('fade').classList.add('show');
   setTimeout(() => {
-    window.parent.postMessage({ type:'agro-globe-done', choice: mode }, '*');
+    window.parent.postMessage({ type: 'agro-globe-done' }, '*');
   }, 800);
 }
 
