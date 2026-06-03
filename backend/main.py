@@ -13,7 +13,7 @@ load_dotenv()
 
 from database import get_pool, close_pool
 from scheduler import start_scheduler
-from routers import auth_router, iot_router, dashboard_router, serres_router, tts_router
+from routers import auth_router, iot_router, dashboard_router, serres_router
 
 # ─── App ────────────────────────────────────────────────────
 app = FastAPI(
@@ -39,7 +39,6 @@ app.include_router(auth_router.router)
 app.include_router(iot_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(serres_router.router)
-app.include_router(tts_router.router)
 
 # ─── Startup / Shutdown ─────────────────────────────────────
 @app.on_event("startup")
