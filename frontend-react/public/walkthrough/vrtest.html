@@ -259,54 +259,27 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
 
 <!-- A-Frame scene — the actual 360° renderer -->
 <a-scene
-  id="aframe-scene"
-  loading-screen="enabled:false"
-  renderer="antialias:false;colorManagement:true"
-  vr-mode-ui="enabled:true"
->
-  <a-assets id="a-assets" timeout="15000">
-    <img id="pano-img-a" crossorigin="anonymous" src="">
-    <img id="pano-img-b" crossorigin="anonymous" src="">
-  </a-assets>
+    id="scene"
+    loading-screen="enabled:false"
+    vr-mode-ui="enabled:true">
 
-  <!-- Dual-buffer sky -->
-  <a-sky id="sky-a" src="#pano-img-a" material="opacity:1;side:back" rotation="0 -90 0"></a-sky>
-  <a-sky id="sky-b" src="#pano-img-b" material="opacity:0;side:back" rotation="0 -90 0"></a-sky>
+    <a-assets>
+        <img id="pano">
+    </a-assets>
 
-  <!-- Camera -->
-<a-entity id="rig" position="0 1.6 0">
-  
-</a-entity>   
- <a-camera
-    id="cam"
-    position="0 1.6 0"
-    look-controls>
-</a-camera>
-  </a-entity>
+    <a-sky
+        id="sky"
+        src="#pano"
+        rotation="0 -90 0">
+    </a-sky>
 
-  <!-- 3D hotspots container (nav/cross only — AR hotspots are 2D overlay) -->
-  <a-entity id="hotspots-3d"></a-entity>
-  <a-box
-    position="0 1.6 -2"
-    color="red">
-</a-box>
+    <a-camera look-controls>
+        <a-cursor
+            fuse="true"
+            fuse-timeout="1000">
+        </a-cursor>
+    </a-camera>
 
-<a-box
-    position="2 1.6 -2"
-    color="green">
-</a-box>
-
-<a-box
-    position="-2 1.6 -2"
-    color="blue">
-</a-box>
-  <a-box
-  position="0 1.6 -3"
-  color="red"
-  width="1"
-  height="1"
-  depth="1">
-</a-box>
 </a-scene>
 
 <!-- Atmosphere -->
@@ -730,94 +703,44 @@ function stepScene(d){
 /* ══════════════════════════════════════════════════════
    LOAD SCENE — A-Frame dual-buffer sky crossfade
 ══════════════════════════════════════════════════════ */
-async function loadScene(zid,sid,instant){
-  const zone=zones[zid];
-  const scene=zone?.scenes.find(s=>s.id===sid);
-  if(!zone||!scene) return;
+async function loadScene(zoneId, sceneId){
 
-  curZone=zid; curScene=sid;
-  const idx=zone.scenes.indexOf(scene);
+    const zone = zones[zoneId];
 
-  document.getElementById('prev').className='arrow L'+(idx===0?' off':'');
-  document.getElementById('next').className='arrow R'+(idx===zone.scenes.length-1?' off':'');
-  document.getElementById('scene-ctr').textContent=`${idx+1} / ${zone.scenes.length}`;
+    if(!zone) return;
 
-  if(zid!==lastZoneId){
-    lastZoneId=zid;
-    document.getElementById('zfn').textContent=zone.label||'';
-    document.getElementById('zfu').textContent=zone.unit!=='—'?`Unité ${zone.unit}`:'';
-    const zf=document.getElementById('zf');
-    zf.classList.remove('show');
-    requestAnimationFrame(()=>zf.classList.add('show'));
-    clearTimeout(sceneT);
-    sceneT=setTimeout(()=>zf.classList.remove('show'),3000);
-    setIoTZone(zid);
-  }
+    const scene = zone.scenes.find(
+        s => s.id === sceneId
+    );
 
-  // Dual-buffer sky swap
-  const nextSlot=1-activeSlot;
-  const skyA=document.getElementById('sky-a');
-  const skyB=document.getElementById('sky-b');
-  const imgA=document.getElementById('pano-img-a');
-  const imgB=document.getElementById('pano-img-b');
-  const skyActive=activeSlot===0?skyA:skyB;
-  const skyNext=nextSlot===0?skyA:skyB;
-  const imgNext=nextSlot===0?imgA:imgB;
+    if(!scene) return;
 
-  // Flash
-  if(!instant){
-    const fl=document.getElementById('flash');
-    fl.classList.add('on'); setTimeout(()=>fl.classList.remove('on'),80);
-  }
+    curZone = zoneId;
+    curScene = sceneId;
 
-console.log("PANORAMA:", scene.file);
+    const pano = document.getElementById("pano");
 
-imgNext.src = scene.file;
+    await new Promise((resolve,reject)=>{
 
-imgNext.onload = () => {
-    console.log("IMAGE LOADED");
-};
+        pano.onload = resolve;
+        pano.onerror = reject;
 
-imgNext.onerror = () => {
-    console.error("IMAGE FAILED");
-};console.log("PANORAMA:", scene.file);
+        pano.src = scene.file;
 
-imgNext.src = scene.file;
+    });
 
-imgNext.onload = () => {
-    console.log("IMAGE LOADED");
-};
+    document
+        .getElementById("sky")
+        .setAttribute(
+            "src",
+            "#pano"
+        );
 
-imgNext.onerror = () => {
-    console.error("IMAGE FAILED");
-};
-  await new Promise(res=>{ imgNext.onload=res; imgNext.onerror=res; setTimeout(res,8000); });
-
-  // Preload neighbours
-  [-1,1,2].forEach(d=>{
-    const sc=zone.scenes[idx+d];
-    if(sc&&!preloaded.has(sc.file)){ preloaded.add(sc.file); new Image().src=sc.file; }
-  });
-
-  if(instant){
-    skyNext.setAttribute('src',`#${nextSlot===0?'pano-img-a':'pano-img-b'}`);
-    skyNext.setAttribute('material','opacity:1;side:back');
-    skyActive.setAttribute('material','opacity:0;side:back');
-    activeSlot=nextSlot;
-  } else {
-    if(fadeT) clearTimeout(fadeT);
-    activeSlot=nextSlot;
-    skyNext.setAttribute('src',`#${nextSlot===0?'pano-img-a':'pano-img-b'}`);
-    skyNext.setAttribute('animation','property:material.opacity;from:0;to:1;dur:450;easing:easeOutQuad');
-    skyActive.setAttribute('animation','property:material.opacity;from:1;to:0;dur:450;easing:easeInQuad');
-    fadeT=setTimeout(()=>{ skyActive.setAttribute('material','opacity:0;side:back'); },470);
-  }
-
-  // Rebuild hotspots
-  buildHotspots(zid,sid,idx,zone);
-  if(typeof updateHotspotDots==='function') setTimeout(updateHotspotDots,200);
+    console.log(
+        "Loaded:",
+        scene.file
+    );
 }
-
 /* ══════════════════════════════════════════════════════
    BUILD HOTSPOTS
 ══════════════════════════════════════════════════════ */
