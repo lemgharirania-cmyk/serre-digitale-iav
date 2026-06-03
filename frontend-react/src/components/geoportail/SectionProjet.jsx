@@ -170,7 +170,7 @@ const MODALS = {
   },
 }
 
-// ── Modal component ───────────────────────────────────────────
+// ── Side Panel Modal ──────────────────────────────────────────
 function StatModal({ statKey, lang, darkMode, onClose, accentColor }) {
   const d = MODALS[statKey]
   if (!d) return null
@@ -178,66 +178,125 @@ function StatModal({ statKey, lang, darkMode, onClose, accentColor }) {
   const subtitle = lang === 'fr' ? d.subtitleFr : d.subtitleEn
   const badges   = lang === 'fr' ? d.badgesFr   : d.badgesEn
 
-  const modalBg   = darkMode ? 'rgba(16,27,46,0.98)' : 'rgba(255,255,255,0.97)'
-  const cardBg    = darkMode ? 'rgba(255,255,255,0.04)' : '#F9FAFB'
-  const cardBord  = darkMode ? 'rgba(255,255,255,0.08)' : '#E5E7EB'
-  const textMain  = darkMode ? '#F8FAFC' : '#111827'
-  const textSub   = darkMode ? '#94A3B8' : '#6B7280'
-  const textBody  = darkMode ? '#CBD5E1' : '#4B5563'
-  const tagBg     = darkMode ? `${accentColor}15` : '#ECFDF5'
-  const tagColor  = darkMode ? accentColor : '#16A34A'
+  const panelBg  = darkMode
+    ? 'linear-gradient(160deg, #0D1F38 0%, #0A1828 50%, #0C1E32 100%)'
+    : '#FFFFFF'
+  const cardBg   = darkMode ? 'rgba(255,255,255,0.04)' : '#F9FAFB'
+  const cardBord = darkMode ? 'rgba(255,255,255,0.07)' : '#E5E7EB'
+  const textMain = darkMode ? '#F0F6FF' : '#111827'
+  const textSub  = darkMode ? '#7A9AB8' : '#6B7280'
+  const textBody = darkMode ? '#B8CEDE' : '#4B5563'
+  const tagBg    = darkMode ? `${accentColor}14` : '#ECFDF5'
+  const tagColor = darkMode ? accentColor : '#16A34A'
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
-    }} onClick={onClose}>
+    <>
+      {/* Backdrop — semi-transparent, click to close */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 900,
+          background: 'rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(4px)',
+          animation: 'backdropFadeIn 0.25s ease',
+        }}
+      />
+
+      {/* Side panel — slides in from right */}
       <div style={{
-        background: modalBg,
-        backdropFilter: 'blur(8px)',
-        borderRadius: '28px',
-        padding: '28px',
-        width: '680px', maxWidth: '100%',
-        maxHeight: '80vh', overflowY: 'auto',
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1000,
+        width: '420px', maxWidth: '90vw',
+        background: panelBg,
+        backdropFilter: 'blur(20px)',
+        borderLeft: darkMode
+          ? `1px solid rgba(34,197,94,0.12)`
+          : '1px solid rgba(0,0,0,0.1)',
         boxShadow: darkMode
-          ? '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)'
-          : '0 20px 60px rgba(0,0,0,0.12)',
-        animation: 'modalFade 0.25s ease',
-      }} onClick={e => e.stopPropagation()}>
+          ? '-24px 0 80px rgba(0,0,0,0.55), -2px 0 0 rgba(34,197,94,0.08)'
+          : '-24px 0 60px rgba(0,0,0,0.1)',
+        display: 'flex', flexDirection: 'column',
+        animation: 'panelSlideIn 0.3s cubic-bezier(0.32,0.72,0,1)',
+        overflowY: 'auto',
+      }}>
 
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: textMain, lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>
-              {title}
+        {/* Decorative top accent */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
+          background: `linear-gradient(90deg, transparent, ${accentColor}60, ${accentColor}, ${accentColor}60, transparent)`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Ambient glow orb */}
+        {darkMode && (
+          <div style={{
+            position: 'absolute', top: '80px', right: '-40px',
+            width: '200px', height: '200px', borderRadius: '50%',
+            background: `radial-gradient(circle, ${accentColor}08 0%, transparent 70%)`,
+            filter: 'blur(30px)', pointerEvents: 'none',
+          }} />
+        )}
+
+        <div style={{ padding: '28px 24px', position: 'relative', flex: 1 }}>
+
+          {/* Panel header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+            <div style={{ flex: 1, paddingRight: '12px' }}>
+              <div style={{
+                fontSize: '22px', fontWeight: 800, color: textMain,
+                lineHeight: 1.2, fontFamily: "'Outfit',sans-serif",
+                letterSpacing: '-0.03em',
+              }}>
+                {title}
+              </div>
+              <div style={{ fontSize: '13px', color: textSub, marginTop: '5px', fontWeight: 500 }}>{subtitle}</div>
             </div>
-            <div style={{ fontSize: '14px', color: textSub, marginTop: '6px' }}>{subtitle}</div>
+            <button onClick={onClose} style={{
+              width: '38px', height: '38px', borderRadius: '12px', border: 'none', flexShrink: 0,
+              background: darkMode ? 'rgba(255,255,255,0.07)' : '#F3F4F6',
+              color: textSub, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: '0.2s ease',
+            }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.12)' : '#E5E7EB'
+                e.currentTarget.style.color = darkMode ? '#F0F6FF' : '#111827'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.07)' : '#F3F4F6'
+                e.currentTarget.style.color = textSub
+              }}
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button onClick={onClose} style={{
-            width: '42px', height: '42px', borderRadius: '14px', border: 'none', flexShrink: 0,
-            background: darkMode ? 'rgba(255,255,255,0.08)' : '#F3F4F6',
-            color: textSub, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: '0.2s ease',
-          }}>
-            <X size={18} />
-          </button>
-        </div>
 
-        {/* Top badges */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
-          {badges.map((b, i) => (
-            <span key={i} style={{
-              background: tagBg, color: tagColor,
-              border: `1px solid ${accentColor}30`,
-              padding: '6px 14px', borderRadius: '999px',
-              fontSize: '12px', fontWeight: 600,
-            }}>{b}</span>
-          ))}
-        </div>
+          {/* Badges */}
+          <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            {badges.map((b, i) => (
+              <span key={i} style={{
+                background: tagBg, color: tagColor,
+                border: `1px solid ${accentColor}28`,
+                padding: '5px 12px', borderRadius: '999px',
+                fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em',
+              }}>{b}</span>
+            ))}
+          </div>
 
-        {/* Grid of 4 cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          {/* Divider */}
+          <div style={{
+            height: '1px', marginBottom: '18px',
+            background: darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
+          }} />
+
+          {/* Cards — vertical stack (better for narrow panel) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {d.cards.map((card, i) => {
             const Icon = card.iconEl
             const cardTitle = lang === 'fr' ? card.titleFr    : card.titleEn
@@ -294,11 +353,15 @@ function StatModal({ statKey, lang, darkMode, onClose, accentColor }) {
               </div>
             )
           })}
+          </div>
         </div>
-      </div>
+        </div>
 
-      <style>{`@keyframes modalFade{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}`}</style>
-    </div>
+      <style>{`
+        @keyframes panelSlideIn { from { transform: translateX(100%) } to { transform: translateX(0) } }
+        @keyframes backdropFadeIn { from { opacity: 0 } to { opacity: 1 } }
+      `}</style>
+    </>
   )
 }
 
@@ -409,6 +472,7 @@ function SloganCard({ lang, darkMode }) {
 export default function SectionProjet({ lang, stats, darkMode }) {
   const [openModal,  setOpenModal]  = useState(null)
   const [openColor,  setOpenColor]  = useState('#22C55E')
+  const [expanded,   setExpanded]   = useState(false)   // ← text expand state
 
   const T = {
     fr: {
@@ -451,8 +515,63 @@ export default function SectionProjet({ lang, stats, darkMode }) {
             <h1 style={{ fontSize: 'clamp(2rem,3.5vw,2.8rem)', fontWeight: 900, color: textColor, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: '1.75rem' }}>
               {T.title1}<br /><span style={{ color: '#22C55E' }}>{T.title2}</span>
             </h1>
-            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 1.9, marginBottom: '1.25rem' }}>{T.p1}</p>
-            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 1.9 }}>{T.p2}</p>
+            {/* Text with expand/collapse */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                maxHeight: expanded ? '600px' : '120px',
+                overflow: 'hidden',
+                transition: 'max-height 0.55s cubic-bezier(0.4,0,0.2,1)',
+                position: 'relative',
+              }}>
+                <p style={{ fontSize: '15px', color: textSecond, lineHeight: 1.9, marginBottom: '1.25rem' }}>{T.p1}</p>
+                <p style={{ fontSize: '15px', color: textSecond, lineHeight: 1.9 }}>{T.p2}</p>
+              </div>
+
+              {/* Blur fade overlay — only when collapsed */}
+              {!expanded && (
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0, height: '70px',
+                  background: darkMode
+                    ? 'linear-gradient(to bottom, transparent, #101B2E)'
+                    : 'linear-gradient(to bottom, transparent, #FFFFFF)',
+                  pointerEvents: 'none',
+                  borderRadius: '0 0 8px 8px',
+                }} />
+              )}
+            </div>
+
+            {/* Lire la suite / Réduire button */}
+            <button
+              onClick={() => setExpanded(x => !x)}
+              style={{
+                marginTop: expanded ? '16px' : '4px',
+                display: 'inline-flex', alignItems: 'center', gap: '7px',
+                background: 'transparent',
+                border: `1px solid ${darkMode ? 'rgba(34,197,94,0.28)' : 'rgba(34,197,94,0.35)'}`,
+                borderRadius: '999px',
+                padding: '7px 18px',
+                fontSize: '13px', fontWeight: 600,
+                color: '#22C55E',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                letterSpacing: '0.02em',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(34,197,94,0.1)'
+                e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.2)'
+                e.currentTarget.style.borderColor = 'rgba(34,197,94,0.55)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.borderColor = darkMode ? 'rgba(34,197,94,0.28)' : 'rgba(34,197,94,0.35)'
+              }}
+            >
+              {expanded
+                ? (lang === 'fr' ? '↑ Réduire' : '↑ Collapse')
+                : (lang === 'fr' ? 'Lire la suite →' : 'Read more →')
+              }
+            </button>
           </div>
 
           {/* Right — stats */}
