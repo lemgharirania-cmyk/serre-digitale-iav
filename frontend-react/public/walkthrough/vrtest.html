@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="xr-spatial-tracking" content="allow">
 <title>AgroBioTech — Visite Virtuelle VR</title>
-<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -945,28 +945,32 @@ function buildARHotspot2D(hs,overlay){
 /* ══════════════════════════════════════════════════════
    VR ENTRY — A-Frame native WebXR
 ══════════════════════════════════════════════════════ */
-function enterVR(){
-  const sceneEl=document.getElementById('aframe-scene');
-  if(!sceneEl) return;
+async function enterVR() {
 
-  // Already in VR — exit
-  if(sceneEl.is&&sceneEl.is('vr-mode')){
-    sceneEl.exitVR(); return;
-  }
+    const scene = document.querySelector('a-scene');
 
-  // Strategy 1: click A-Frame's hidden native button (most reliable on Quest)
-  const nativeBtn=document.querySelector('.a-enter-vr-button,.a-enter-vr');
-  if(nativeBtn){
-    nativeBtn.style.pointerEvents='all';
-    nativeBtn.click();
-    nativeBtn.style.pointerEvents='none';
-    return;
-  }
+    if (!scene) return;
 
-  // Strategy 2: A-Frame enterVR API
-  const doEnter=()=>sceneEl.enterVR().catch(()=>_vrFallback());
-  if(sceneEl.hasLoaded){ doEnter(); }
-  else{ sceneEl.addEventListener('loaded',doEnter,{once:true}); }
+    try {
+
+        if (!scene.hasLoaded) {
+            await new Promise(resolve =>
+                scene.addEventListener('loaded', resolve, { once:true })
+            );
+        }
+
+        await scene.enterVR();
+
+    } catch (err) {
+
+        console.error('VR launch failed:', err);
+
+        alert(
+            'WebXR VR could not start.\n\n' +
+            'Make sure you are opening this page inside Meta Quest Browser.'
+        );
+
+    }
 }
 
 function _vrFallback(){
@@ -1008,10 +1012,13 @@ function _onExitVR(){
 }
 
 function exitVR(){
-  const sceneEl=document.getElementById('aframe-scene');
-  if(sceneEl&&sceneEl.is&&sceneEl.is('vr-mode')){ try{sceneEl.exitVR();}catch(e){} }
-  if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-  _onExitVR();
+
+    const scene = document.querySelector('a-scene');
+
+    if(scene && scene.is('vr-mode')){
+        scene.exitVR();
+    }
+
 }
 
 document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) _onExitVR(); });
