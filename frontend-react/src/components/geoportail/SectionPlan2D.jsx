@@ -17,7 +17,8 @@ const ZONES = [
     culturesFr: 'Tomate · Piment · Melon', culturesEn: 'Tomato · Pepper · Melon',
     capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
     capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
-    matterportId: null, matterportFr: 'Visite virtuelle 3D — Génétique', matterportEn: '3D Virtual Tour — Genetics',
+    visitFile: '/walkthrough/serregenetique.html',
+    visitBadge: 'S01',
   },
   {
     id: 'S02', type: 'serre', color: '#06B6D4',
@@ -28,7 +29,8 @@ const ZONES = [
     culturesFr: 'Roses · Laitue · Fraise', culturesEn: 'Roses · Lettuce · Strawberry',
     capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
     capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
-    matterportId: null, matterportFr: 'Visite virtuelle 3D — Horticulture', matterportEn: '3D Virtual Tour — Horticulture',
+    visitFile: '/walkthrough/serrehorticulture.html',
+    visitBadge: 'S02',
   },
   {
     id: 'S03', type: 'serre', color: '#F59E0B',
@@ -39,7 +41,8 @@ const ZONES = [
     culturesFr: 'Blé · Orge · Légumineuses', culturesEn: 'Wheat · Barley · Legumes',
     capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
     capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
-    matterportId: null, matterportFr: 'Visite virtuelle 3D — Agronomie', matterportEn: '3D Virtual Tour — Agronomy',
+    visitFile: '/walkthrough/serreagronomie.html',
+    visitBadge: 'S03',
   },
   {
     id: 'S05', type: 'serre', color: '#EF4444',
@@ -50,7 +53,8 @@ const ZONES = [
     culturesFr: 'Plants test · Cultures témoin · Zone quarantaine', culturesEn: 'Test plants · Control cultures · Quarantine zone',
     capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
     capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
-    matterportId: null, matterportFr: 'Visite virtuelle 3D — Protection des Plantes', matterportEn: '3D Virtual Tour — Plant Protection',
+    visitFile: '/walkthrough/serreprotection.html',
+    visitBadge: 'S05',
   },
   {
     id: 'S04', type: 'serre', color: '#8B5CF6',
@@ -61,19 +65,47 @@ const ZONES = [
     culturesFr: 'Basilic · Tomate · Laitue · Fraise', culturesEn: 'Basil · Tomato · Lettuce · Strawberry',
     capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
     capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
-    matterportId: null, matterportFr: 'Visite virtuelle 3D — Hydroponie', matterportEn: '3D Virtual Tour — Hydroponics',
+    visitFile: '/walkthrough/serrehydroponie.html',
+    visitBadge: 'S04',
   },
   // ── SALLES TECHNIQUES ────────────────────────────────────
-  { id: 'salle-reunion',       type: 'technique', color: '#64748B', left: '4%',   top: '18%', width: '10%',  height: '35%',
+  { id: 'salle-reunion',       type: 'technique', color: '#64748B', left: '4%',    top: '18%', width: '10%',   height: '35%',
     nameFr: 'Salle de Réunion', nameEn: 'Meeting Room',
     descFr: 'Espace de réunion et de coordination pour les équipes de recherche et les formations du complexe AgroBioTech.',
     descEn: 'Meeting and coordination space for research teams and training sessions at the AgroBioTech complex.',
-    matterportId: null, matterportFr: 'Visite 3D — Salle de Réunion', matterportEn: '3D Scan — Meeting Room' },
-  { id: 'local-technique',     type: 'technique', color: '#64748B', left: '14.5%',top: '18%', width: '10%',  height: '35%',
+    visitFile: '/walkthrough/localtechnique.html', visitBadge: 'LT' },
+  { id: 'local-technique',     type: 'technique', color: '#64748B', left: '14.5%', top: '18%', width: '10%',   height: '35%',
     nameFr: 'Local Technique et Équipements', nameEn: 'Technical Room & Equipment',
     descFr: 'Local abritant les équipements électriques, les systèmes de contrôle IoT et l\'infrastructure réseau du complexe.',
     descEn: 'Room housing electrical equipment, IoT control systems and network infrastructure of the complex.',
-    matterportId: null, matterportFr: 'Visite 3D — Local Technique', matterportEn: '3D Scan — Technical Room' },
+    visitFile: '/walkthrough/localtechnique.html', visitBadge: 'LT' },
+  { id: 'salle-commande',      type: 'technique', color: '#64748B', left: '25%',   top: '18%', width: '10.5%', height: '35%',
+    nameFr: 'Salle Technique de Commande', nameEn: 'Command & Control Room',
+    descFr: 'Salle de commande et d\'automatisation centralisant le pilotage des équipements IoT et des systèmes de contrôle climatique.',
+    descEn: 'Command and automation room centralizing IoT equipment control and climate control systems.',
+    visitFile: '/walkthrough/salledecontrole.html', visitBadge: 'TC' },
+  { id: 'salle-lavage',        type: 'technique', color: '#64748B', left: '4%',    top: '62%', width: '10%',   height: '32%',
+    nameFr: 'Salle de Lavage', nameEn: 'Washing Room',
+    descFr: 'Espace équipé pour le nettoyage et la décontamination du matériel végétal, des équipements et des contenants.',
+    descEn: 'Space equipped for cleaning and decontaminating plant material, equipment and containers.',
+    visitFile: '/walkthrough/salledelavage.html', visitBadge: 'TL' },
+  { id: 'salle-fertilisation', type: 'technique', color: '#64748B', left: '14.5%', top: '62%', width: '10%',   height: '32%',
+    nameFr: 'Salle de Fertilisation et Traitement d\'Eau', nameEn: 'Fertilisation & Water Treatment Room',
+    descFr: 'Salle équipée de cuves de stockage, de systèmes de dosage et de traitement de l\'eau pour la fertigation.',
+    descEn: 'Room equipped with storage tanks, dosing systems and water treatment for fertigation.',
+    visitFile: '/walkthrough/salledefertigation.html', visitBadge: 'TF' },
+  { id: 'salle-preparation',   type: 'technique', color: '#64748B', left: '25%',   top: '62%', width: '10.5%', height: '32%',
+    nameFr: 'Salle de Préparation', nameEn: 'Preparation Room',
+    descFr: 'Espace de préparation des substrats, des semences, des boutures et du matériel de culture avant mise en place.',
+    descEn: 'Space for preparing substrates, seeds, cuttings and cultivation materials before deployment.',
+    visitFile: '/walkthrough/salledepreparation.html', visitBadge: 'TP' },
+  { id: 'zone-prep-protection', type: 'technique', color: '#64748B', left: '36.5%', top: '62%', width: '14.5%', height: '32%',
+    nameFr: 'Zone Technique — Protection (SAS + Broyage + Stockage)', nameEn: 'Technical Zone — Protection',
+    descFr: 'Zone comprenant le SAS d\'entrée, la salle de broyage et désinfection, le stockage produits et la salle de préparation.',
+    descEn: 'Zone including the entry airlock, grinding and disinfection room, product storage and preparation room.',
+    visitFile: '/walkthrough/salledepreparation.html', visitBadge: 'TP' },
+]
+
   { id: 'salle-commande',      type: 'technique', color: '#64748B', left: '25%',  top: '18%', width: '10.5%',height: '35%',
     nameFr: 'Salle Technique de Commande', nameEn: 'Command & Control Room',
     descFr: 'Salle de commande et d\'automatisation centralisant le pilotage des équipements IoT et des systèmes de contrôle climatique.',
@@ -425,31 +457,57 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                 {/* ── TAB: VISITE 3D ── */}
                 {tab === 'visite' && (
                   <div style={{ padding: '14px 16px' }}>
-                    {zone.matterportId ? (
-                      <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#000' }}>
-                        <iframe
-                          src={`https://my.matterport.com/show/?m=${zone.matterportId}&play=1&hl=0`}
-                          width="100%"
-                          height="280"
-                          frameBorder="0"
-                          allowFullScreen
-                          title={lang==='fr' ? zone.matterportFr : zone.matterportEn}
-                          style={{ display: 'block' }}
-                        />
+                    {zone.visitFile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {/* Preview iframe */}
+                        <div style={{ borderRadius: '12px', overflow: 'hidden', border: `1px solid ${zone.color}30`, aspectRatio: '16/9', position: 'relative' }}>
+                          <iframe
+                            src={zone.visitFile}
+                            width="100%"
+                            height="100%"
+                            style={{ position: 'absolute', inset: 0, border: 'none', width: '100%', height: '100%' }}
+                            allowFullScreen
+                            title={lang === 'fr' ? zone.nameFr : zone.nameEn}
+                          />
+                        </div>
+                        {/* Open full screen button */}
                         <a
-                          href={`https://my.matterport.com/show/?m=${zone.matterportId}`}
+                          href={zone.visitFile}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                            padding: '10px', background: zone.color,
-                            color: 'white', fontSize: '12px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                            padding: '11px', borderRadius: '12px',
+                            background: `linear-gradient(135deg, ${zone.color}, ${zone.color}cc)`,
+                            color: 'white', fontSize: '13px', fontWeight: 600,
                             fontFamily: 'inherit', textDecoration: 'none',
-                            transition: 'opacity 0.2s',
+                            boxShadow: `0 4px 16px ${zone.color}40`,
+                            transition: 'transform 0.2s, box-shadow 0.2s',
                           }}
+                          onMouseEnter={e => { e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow=`0 8px 24px ${zone.color}50` }}
+                          onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow=`0 4px 16px ${zone.color}40` }}
                         >
-                          <ExternalLink size={13} />
-                          {T.ouvrirVisite}
+                          <ExternalLink size={14} />
+                          {lang === 'fr' ? 'Ouvrir en plein écran' : 'Open fullscreen'}
+                        </a>
+                        {/* Also scroll to visite section */}
+                        <a
+                          href="#visite"
+                          onClick={e => { e.preventDefault(); document.getElementById('visite')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                            padding: '9px', borderRadius: '12px',
+                            background: 'transparent',
+                            border: `1px solid ${zone.color}40`,
+                            color: zone.color, fontSize: '12px', fontWeight: 600,
+                            fontFamily: 'inherit', textDecoration: 'none', cursor: 'pointer',
+                            transition: 'background 0.2s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background=`${zone.color}10`}
+                          onMouseLeave={e => e.currentTarget.style.background='transparent'}
+                        >
+                          <Video size={13} />
+                          {lang === 'fr' ? 'Voir dans la section Visite Virtuelle' : 'View in Virtual Visit section'}
                         </a>
                       </div>
                     ) : (
@@ -457,13 +515,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${cardBorder}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Video size={20} color={mutedColor} />
                         </div>
-                        <div style={{ fontSize: '13px', color: mutedColor, marginBottom: '8px' }}>{T.noVisite}</div>
-                        <div style={{ fontSize: '11px', color: mutedColor, background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', border: `1px solid ${cardBorder}`, borderRadius: '8px', padding: '8px 12px' }}>
-                          {lang === 'fr'
-                            ? `Ajoutez l'ID Matterport dans ZONES.id="${zone.id}".matterportId`
-                            : `Add the Matterport ID in ZONES.id="${zone.id}".matterportId`
-                          }
-                        </div>
+                        <div style={{ fontSize: '13px', color: mutedColor }}>{T.noVisite}</div>
                       </div>
                     )}
                   </div>
