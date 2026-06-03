@@ -204,61 +204,27 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                 }}
               />
 
-              {/* Clickable overlay zones */}
-              {ZONES.map(z => {
-                const isHov = hovered  === z.id
-                const isSel = selected === z.id
-                return (
-                  <div
-                    key={z.id}
-                    title={lang === 'fr' ? z.nameFr : z.nameEn}
-                    onClick={() => handleZoneClick(z.id)}
-                    onMouseEnter={() => setHovered(z.id)}
-                    onMouseLeave={() => setHovered(null)}
-                    style={{
-                      position: 'absolute',
-                      left:   z.left,
-                      top:    z.top,
-                      width:  z.width,
-                      height: z.height,
-                      cursor: 'pointer',
-                      background: isSel
-                        ? `${z.color}40`
-                        : isHov ? `${z.color}22` : 'transparent',
-                      border: isSel
-                        ? `2.5px solid ${z.color}`
-                        : isHov ? `2px solid ${z.color}aa` : `1px solid transparent`,
-                      borderRadius: '4px',
-                      transition: 'all 0.18s ease',
-                      backdropFilter: (isHov || isSel) ? 'blur(1px)' : 'none',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'flex-end',
-                      padding: '4px',
-                    }}
-                  >
-                    {/* Badge visible on hover/select */}
-                    {(isHov || isSel) && (
-                      <div style={{
-                        background: z.color,
-                        color: 'white',
-                        fontSize: '9px',
-                        fontWeight: 700,
-                        padding: '2px 7px',
-                        borderRadius: '8px',
-                        fontFamily: "'Outfit', sans-serif",
-                        boxShadow: `0 2px 8px ${z.color}60`,
-                        whiteSpace: 'nowrap',
-                        maxWidth: '90%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}>
-                        {z.id.startsWith('S') ? z.id : (lang==='fr'?z.nameFr:z.nameEn).split(' ').slice(0,3).join(' ')}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              {/* Clickable overlay zones — invisible but functional */}
+              {ZONES.map(z => (
+                <div
+                  key={z.id}
+                  title={lang === 'fr' ? z.nameFr : z.nameEn}
+                  onClick={() => handleZoneClick(z.id)}
+                  onMouseEnter={() => setHovered(z.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  style={{
+                    position: 'absolute',
+                    left:   z.left,
+                    top:    z.top,
+                    width:  z.width,
+                    height: z.height,
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                  }}
+                />
+              ))}
             </div>
 
             {/* Hint bar */}
