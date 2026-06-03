@@ -32,7 +32,7 @@ const COPY = {
     ctaLabel:    'Entrer dans l\'expérience',
     markerT:     'Institut Agronomique et Vétérinaire Hassan II',
     markerS:     'Serre Digitale · Rabat, Maroc',
-    loadingTxt:  'Initialisation de la scène spatiale…',
+    loadingTxt:  'Préparation du voyage spatial…',
   },
   EN: {
     eyebrow:     'DIGITAL TWIN · IAV HASSAN II',
@@ -47,7 +47,7 @@ const COPY = {
     ctaLabel:    'Enter the experience',
     markerT:     'Institut Agronomique et Vétérinaire Hassan II',
     markerS:     'Digital Greenhouse · Rabat, Morocco',
-    loadingTxt:  'Initializing spatial scene…',
+    loadingTxt:  'Preparing the spatial journey…',
   },
   AR: {
     eyebrow:     'التوأم الرقمي · IAV حسن الثاني',
@@ -62,7 +62,7 @@ const COPY = {
     ctaLabel:    'الدخول إلى التجربة',
     markerT:     'المعهد الزراعي والبيطري حسن الثاني',
     markerS:     'الدفيئة الرقمية · الرباط، المغرب',
-    loadingTxt:  'تهيئة المشهد الفضائي…',
+    loadingTxt:  'التحضير للرحلة الفضائية…',
   },
 };
 
