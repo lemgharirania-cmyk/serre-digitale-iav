@@ -105,35 +105,6 @@ const ZONES = [
     descEn: 'Zone including the entry airlock, grinding and disinfection room, product storage and preparation room.',
     visitFile: '/walkthrough/salledepreparation.html', visitBadge: 'TP' },
 ]
-
-  { id: 'salle-commande',      type: 'technique', color: '#64748B', left: '25%',  top: '18%', width: '10.5%',height: '35%',
-    nameFr: 'Salle Technique de Commande', nameEn: 'Command & Control Room',
-    descFr: 'Salle de commande et d\'automatisation centralisant le pilotage des équipements IoT et des systèmes de contrôle climatique.',
-    descEn: 'Command and automation room centralizing IoT equipment control and climate control systems.',
-    matterportId: null, matterportFr: 'Visite 3D — Salle de Commande', matterportEn: '3D Scan — Command Room' },
-  { id: 'salle-lavage',        type: 'technique', color: '#64748B', left: '4%',   top: '62%', width: '10%',  height: '32%',
-    nameFr: 'Salle de Lavage', nameEn: 'Washing Room',
-    descFr: 'Espace équipé pour le nettoyage et la décontamination du matériel végétal, des équipements et des contenants.',
-    descEn: 'Space equipped for cleaning and decontaminating plant material, equipment and containers.',
-    matterportId: null, matterportFr: 'Visite 3D — Salle de Lavage', matterportEn: '3D Scan — Washing Room' },
-  { id: 'salle-fertilisation', type: 'technique', color: '#64748B', left: '14.5%',top: '62%', width: '10%',  height: '32%',
-    nameFr: 'Salle de Fertilisation et Traitement d\'Eau', nameEn: 'Fertilisation & Water Treatment Room',
-    descFr: 'Salle équipée de cuves de stockage, de systèmes de dosage et de traitement de l\'eau pour la fertigation.',
-    descEn: 'Room equipped with storage tanks, dosing systems and water treatment for fertigation.',
-    matterportId: null, matterportFr: 'Visite 3D — Fertilisation', matterportEn: '3D Scan — Fertilisation Room' },
-  { id: 'salle-preparation',   type: 'technique', color: '#64748B', left: '25%',  top: '62%', width: '10.5%',height: '32%',
-    nameFr: 'Salle de Préparation', nameEn: 'Preparation Room',
-    descFr: 'Espace de préparation des substrats, des semences, des boutures et du matériel de culture avant mise en place.',
-    descEn: 'Space for preparing substrates, seeds, cuttings and cultivation materials before deployment.',
-    matterportId: null, matterportFr: 'Visite 3D — Salle Préparation', matterportEn: '3D Scan — Preparation Room' },
-  { id: 'zone-prep-protection', type: 'technique', color: '#64748B', left: '36.5%',top: '62%', width: '14.5%',height: '32%',
-    nameFr: 'Zone Technique — Protection (SAS + Broyage + Stockage + Préparation)',
-    nameEn: 'Technical Zone — Protection (SAS + Grinding + Storage + Preparation)',
-    descFr: 'Zone comprenant le SAS d\'entrée, la salle de broyage et désinfection, le stockage produits et la salle de préparation de l\'unité protection.',
-    descEn: 'Zone including the entry airlock, grinding and disinfection room, product storage and preparation room for the protection unit.',
-    matterportId: null, matterportFr: 'Visite 3D — Zone Protection', matterportEn: '3D Scan — Protection Zone' },
-]
-
 // ── Live data icons ───────────────────────────────────────────
 const PARAM_ICONS = {
   temperature: Thermometer,
