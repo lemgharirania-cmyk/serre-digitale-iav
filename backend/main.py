@@ -13,10 +13,7 @@ load_dotenv()
 
 from database import get_pool, close_pool
 from scheduler import start_scheduler
-from routers import auth_router, iot_router, dashboard_router, serres_router
-# Add this import with the other router imports (line 16)
 from routers import auth_router, iot_router, dashboard_router, serres_router, tts_router
-
 
 # ─── App ────────────────────────────────────────────────────
 app = FastAPI(
@@ -37,7 +34,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ─── Routers ────────────────────────────────────────────────
 app.include_router(auth_router.router)
 app.include_router(iot_router.router)
@@ -50,7 +46,6 @@ app.include_router(tts_router.router)
 async def startup():
     await get_pool()
     print("✅ Connexion DB établie")
-    # Lance le scheduler IoT en tâche de fond
     asyncio.create_task(start_scheduler())
     print("✅ Scheduler IoT démarré (collecte toutes les 2 min)")
 
@@ -71,4 +66,3 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
