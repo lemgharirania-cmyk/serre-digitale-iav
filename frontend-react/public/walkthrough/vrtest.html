@@ -274,30 +274,32 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
   <a-sky id="sky-b" src="#pano-img-b" material="opacity:0;side:back" rotation="0 -90 0"></a-sky>
 
   <!-- Camera -->
-  <a-entity id="rig" position="0 0 0">
-    <a-camera
-      id="cam"
-      look-controls="magicWindowTrackingEnabled:true;touchEnabled:true;reverseMouseDrag:false"
-      wasd-controls="enabled:false"
-      fov="80"
-    >
-      <!-- Gaze cursor for Quest controller / gaze navigation -->
-      <a-cursor
-        id="gaze-cursor"
-        animation__fusing="property:scale;startEvents:fusing;easing:easeInCubic;dur:1400;from:1 1 1;to:0.1 0.1 0.1"
-        animation__click="property:scale;startEvents:click;easing:easeInCubic;dur:150;from:0.1 0.1 0.1;to:1 1 1"
-        raycaster="objects:.hs-3d-nav,.hs-3d-cross"
-        fuse="true"
-        fuse-timeout="1400"
-        color="#22C55E"
-        opacity="0.85"
-        radius="0.008"
-      ></a-cursor>
-    </a-camera>
+<a-entity id="rig" position="0 1.6 0">
+  
+</a-entity>   
+ <a-camera
+    id="cam"
+    position="0 1.6 0"
+    look-controls>
+</a-camera>
   </a-entity>
 
   <!-- 3D hotspots container (nav/cross only — AR hotspots are 2D overlay) -->
   <a-entity id="hotspots-3d"></a-entity>
+  <a-box
+    position="0 1.6 -2"
+    color="red">
+</a-box>
+
+<a-box
+    position="2 1.6 -2"
+    color="green">
+</a-box>
+
+<a-box
+    position="-2 1.6 -2"
+    color="blue">
+</a-box>
   <a-box
   position="0 1.6 -3"
   color="red"
@@ -768,7 +770,27 @@ async function loadScene(zid,sid,instant){
     fl.classList.add('on'); setTimeout(()=>fl.classList.remove('on'),80);
   }
 
-  imgNext.src=scene.file;
+console.log("PANORAMA:", scene.file);
+
+imgNext.src = scene.file;
+
+imgNext.onload = () => {
+    console.log("IMAGE LOADED");
+};
+
+imgNext.onerror = () => {
+    console.error("IMAGE FAILED");
+};console.log("PANORAMA:", scene.file);
+
+imgNext.src = scene.file;
+
+imgNext.onload = () => {
+    console.log("IMAGE LOADED");
+};
+
+imgNext.onerror = () => {
+    console.error("IMAGE FAILED");
+};
   await new Promise(res=>{ imgNext.onload=res; imgNext.onerror=res; setTimeout(res,8000); });
 
   // Preload neighbours
