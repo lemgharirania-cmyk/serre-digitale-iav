@@ -35,17 +35,6 @@ async def get_serre_thresholds(serre_id: int, db=Depends(get_db), user=Depends(g
     )
     return [dict(r) for r in rows]
 
-# ── PUBLIC endpoint for the AR viewer (no auth required) ────
-@router.get("/thresholds/{serre_id}/public")
-async def get_serre_thresholds_public(serre_id: int, db=Depends(get_db)):
-    """Read-only, unauthenticated. Returns only min/max/actif — no emails."""
-    rows = await db.fetch(
-        "SELECT capteur, valeur_min, valeur_max, actif FROM thresholds WHERE serre_id=$1 ORDER BY capteur",
-        serre_id
-    )
-    return [dict(r) for r in rows]
-# ────────────────────────────────────────────────────────────
-
 @router.put("/thresholds/{serre_id}/{capteur}")
 async def update_threshold(
     serre_id: int, capteur: str,
@@ -162,17 +151,8 @@ async def export_data(
     nom_fichier = f"SDI_{serre['code']}_{heures}h"
     col_labels  = [label for _, label in COLUMNS]
 
-<<<<<<< Updated upstream
     def row_to_list(r):
         return [
-=======
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow([label for _, label in COLUMNS])
-    for row in rows:
-        r = dict(row)
-        writer.writerow([
->>>>>>> Stashed changes
             r["capture_at"].strftime("%Y-%m-%d %H:%M:%S") if r["capture_at"] else "",
             r["type_api"] or "",
             r["temperature"], r["humidite"], r["vpd"], r["co2"], r["luminosite"],
@@ -193,54 +173,76 @@ async def export_data(
             headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.csv"'}
         )
 
-    # ── EXCEL ────────────────────────────────────────────────
+    # ── EXCEL (XML Spreadsheet — aucune librairie requise) ────
     if format == "excel":
-        try:
-            import openpyxl
-            from openpyxl.styles import Font, PatternFill, Alignment
-            from openpyxl.utils import get_column_letter
-        except ImportError:
-            raise HTTPException(
-                status_code=500,
-                detail="openpyxl non installé sur le serveur. Utilisez le format CSV."
-            )
+        def esc(v):
+            if v is None or v == "":
+                return ""
+            s = str(v)
+            return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
 
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = f"{serre['code']} — {heures}h"
+        def cell_xml(val, bold=False, bg=None):
+            style = ""
+            if bold:
+                style += ' ss:StyleID="header"'
+            elif bg:
+                style += ' ss:StyleID="alt"'
+            if val is None or val == "":
+                return f'<Cell{style}><Data ss:Type="String"></Data></Cell>'
+            try:
+                float(val)
+                return f'<Cell{style}><Data ss:Type="Number">{esc(val)}</Data></Cell>'
+            except (TypeError, ValueError):
+                return f'<Cell{style}><Data ss:Type="String">{esc(val)}</Data></Cell>'
 
-        # Header style
-        hdr_fill = PatternFill("solid", fgColor="1B4332")
-        hdr_font = Font(color="FFFFFF", bold=True, name="Calibri", size=11)
-
-        for ci, label in enumerate(col_labels, 1):
-            cell = ws.cell(row=1, column=ci, value=label)
-            cell.fill = hdr_fill
-            cell.font = hdr_font
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            ws.column_dimensions[get_column_letter(ci)].width = max(len(label) + 4, 16)
-        ws.row_dimensions[1].height = 24
+        xml_rows = []
+        # Header row
+        hdr_cells = "".join(cell_xml(label, bold=True) for label in col_labels)
+        xml_rows.append(f"<Row ss:Height='22'>{hdr_cells}</Row>")
 
         # Data rows
-        alt_fill = PatternFill("solid", fgColor="F0FDF4")
-        for ri, row in enumerate(rows, 2):
+        for ri, row in enumerate(rows):
+            use_alt = (ri % 2 == 1)
             data = row_to_list(dict(row))
-            for ci, val in enumerate(data, 1):
-                cell = ws.cell(row=ri, column=ci, value=val if val != "" else None)
-                cell.alignment = Alignment(horizontal="center")
-                if ri % 2 == 0:
-                    cell.fill = alt_fill
+            cells = "".join(cell_xml(v, bg=use_alt) for v in data)
+            xml_rows.append(f"<Row>{cells}</Row>")
 
-        ws.freeze_panes = "A2"
-
-        buf = io.BytesIO()
-        wb.save(buf)
-        buf.seek(0)
+        xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <Styles>
+    <Style ss:ID="header">
+      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"/>
+      <Interior ss:Color="#1B4332" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+    </Style>
+    <Style ss:ID="alt">
+      <Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center"/>
+    </Style>
+    <Style ss:ID="Default">
+      <Alignment ss:Horizontal="Center"/>
+    </Style>
+  </Styles>
+  <Worksheet ss:Name="{esc(serre['code'])} {heures}h">
+    <Table>
+      {"".join(xml_rows)}
+    </Table>
+    <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+      <FreezePanes/>
+      <FrozenNoSplit/>
+      <SplitHorizontal>1</SplitHorizontal>
+      <TopRowBottomPane>1</TopRowBottomPane>
+    </WorksheetOptions>
+  </Worksheet>
+</Workbook>"""
 
         return StreamingResponse(
-            buf,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.xlsx"'}
+            io.BytesIO(xml.encode("utf-8")),
+            media_type="application/vnd.ms-excel",
+            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.xls"'}
         )
 
     raise HTTPException(status_code=400, detail="Format non supporté. Utilisez 'csv' ou 'excel'.")
@@ -265,7 +267,6 @@ async def list_users(db=Depends(get_db), user=Depends(get_current_user)):
 async def create_user(data: NouvelUtilisateur, db=Depends(get_db), user=Depends(get_current_user)):
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin requis")
-    from auth import get_current_user
     from auth import hash_password
     hashed = hash_password(data.mot_de_passe)
     await db.execute("""
