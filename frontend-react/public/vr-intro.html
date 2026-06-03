@@ -1,0 +1,266 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AgroBioTech VR</title>
+
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  font-family:Inter,system-ui,sans-serif;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+}
+
+.fade{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:999;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1.5s ease;
+}
+
+.fade.active{
+  opacity:1;
+}
+
+.center-ui{
+  position:absolute;
+  bottom:12%;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  opacity:0;
+  animation:appear 2s ease forwards;
+  animation-delay:4s;
+}
+
+@keyframes appear{
+  to{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+}
+
+.title{
+  color:white;
+  font-size:42px;
+  font-weight:700;
+  text-align:center;
+  text-shadow:0 0 40px rgba(255,255,255,.35);
+}
+
+.subtitle{
+  color:rgba(255,255,255,.7);
+  font-size:16px;
+  text-align:center;
+  max-width:600px;
+}
+
+.enter-btn{
+  pointer-events:auto;
+  cursor:pointer;
+  border:none;
+  border-radius:999px;
+  padding:18px 38px;
+  background:rgba(139,92,246,.25);
+  border:1px solid rgba(139,92,246,.6);
+  color:white;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.08em;
+  backdrop-filter:blur(20px);
+  transition:.3s;
+  box-shadow:
+    0 0 30px rgba(139,92,246,.25),
+    inset 0 0 20px rgba(255,255,255,.05);
+}
+
+.enter-btn:hover{
+  transform:scale(1.05);
+  background:rgba(139,92,246,.4);
+  box-shadow:
+    0 0 50px rgba(139,92,246,.45);
+}
+
+.langs{
+  display:flex;
+  gap:10px;
+}
+
+.lang-btn{
+  pointer-events:auto;
+  border:none;
+  cursor:pointer;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  color:white;
+  font-weight:600;
+  transition:.3s;
+}
+
+.lang-btn.active{
+  background:rgba(139,92,246,.45);
+  border-color:rgba(139,92,246,.8);
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+  <div class="center-ui">
+
+    <div class="title" id="title">
+      Welcome to the Intelligent Digital Greenhouse
+    </div>
+
+    <div class="subtitle" id="subtitle">
+      Immersive VR greenhouse exploration experience
+    </div>
+
+    <div class="langs">
+      <button class="lang-btn active" onclick="setLang('en',this)">EN</button>
+      <button class="lang-btn" onclick="setLang('fr',this)">FR</button>
+      <button class="lang-btn" onclick="setLang('ar',this)">AR</button>
+    </div>
+
+    <button class="enter-btn" onclick="enterExperience()">
+      ENTER EXPERIENCE
+    </button>
+
+  </div>
+
+</div>
+
+<div class="fade" id="fade"></div>
+
+<a-scene
+  vr-mode-ui="enabled:false"
+  loading-screen="enabled:false"
+  renderer="colorManagement:true; physicallyCorrectLights:true"
+>
+
+  <a-sky color="#02030B"></a-sky>
+
+  <!-- stars -->
+  <a-entity
+    particle-system="
+      preset: dust;
+      particleCount: 2500;
+      color: #ffffff,#88ccff;
+      size: 1;
+      velocityValue: 0 0 0;
+    ">
+  </a-entity>
+
+  <!-- earth -->
+  <a-sphere
+    id="earth"
+    position="0 1.6 -5"
+    radius="1.4"
+    src="https://cdn.aframe.io/examples/ui-tour/earth_atmos_4096.jpg"
+    animation="property: rotation; to: 0 360 0; loop:true; dur:90000; easing:linear"
+  >
+  </a-sphere>
+
+  <!-- glow ring -->
+  <a-ring
+    position="0 1.6 -5"
+    rotation="-90 0 0"
+    radius-inner="1.65"
+    radius-outer="1.72"
+    color="#8B5CF6"
+    opacity="0.65"
+    animation="property: rotation; to: 0 0 360; loop:true; dur:12000; easing:linear"
+  >
+  </a-ring>
+
+  <a-camera position="0 1.6 0"></a-camera>
+
+</a-scene>
+
+<script>
+let currentLang = "en";
+
+const translations = {
+  en:{
+    title:"Welcome to the Intelligent Digital Greenhouse",
+    subtitle:"Immersive VR greenhouse exploration experience"
+  },
+  fr:{
+    title:"Bienvenue dans la serre digitale intelligente",
+    subtitle:"Expérience immersive de visite VR"
+  },
+  ar:{
+    title:"مرحبًا بكم في الدفيئة الرقمية الذكية",
+    subtitle:"تجربة واقع افتراضي غامرة"
+  }
+};
+
+function setLang(lang,btn){
+
+  currentLang = lang;
+
+  document.querySelectorAll('.lang-btn')
+    .forEach(b=>b.classList.remove('active'));
+
+  btn.classList.add('active');
+
+  document.getElementById('title').textContent =
+    translations[lang].title;
+
+  document.getElementById('subtitle').textContent =
+    translations[lang].subtitle;
+}
+
+function enterExperience(){
+
+  document.getElementById('fade')
+    .classList.add('active');
+
+  const earth = document.getElementById('earth');
+
+  earth.setAttribute('animation__zoom',{
+    property:'scale',
+    to:'14 14 14',
+    dur:2200,
+    easing:'easeInOutCubic'
+  });
+
+  setTimeout(()=>{
+    window.location.href =
+      `/visitevrtest.html?lang=${currentLang}`;
+  },2000);
+}
+</script>
+
+</body>
+</html>

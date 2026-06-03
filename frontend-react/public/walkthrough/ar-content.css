@@ -1666,3 +1666,87 @@ body.vr-mode .hs-cross {
   backdrop-filter: blur(12px);
   font-family: 'Outfit','Inter',system-ui;
 }
+/* ══════════════════════════════════════════
+   FERTIGATION CUSTOM CARD
+══════════════════════════════════════════ */
+.fert-live-strip{
+  display:flex;margin:0 -16px 14px;padding:10px 16px;
+  background:rgba(14,165,233,.06);
+  border-bottom:1px solid rgba(14,165,233,.12);
+}
+.fert-live-metric{flex:1;text-align:center}
+.fert-live-metric+.fert-live-metric{border-left:1px solid rgba(14,165,233,.15)}
+.fert-lm-val{
+  font-family:'DM Mono','JetBrains Mono',monospace;
+  font-size:18px;font-weight:600;color:#0369a1;line-height:1;
+}
+.fert-lm-label{font-family:'DM Sans',system-ui,sans-serif;font-size:10px;color:#38bdf8;margin-top:3px}
+.fert-lm-status{font-size:9px;margin-top:2px;font-family:'DM Sans',system-ui,sans-serif}
+.fert-lm-ok{color:#15803d}.fert-lm-warn{color:#d97706}
+
+.fert-what-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.fert-what-card{
+  background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);
+  border-radius:10px;padding:9px 11px;
+}
+.fert-what-icon{font-size:15px;margin-bottom:4px;color:#38bdf8}
+.fert-what-text{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11px;color:rgba(0,0,0,.5);line-height:1.4;
+}
+
+.fert-range-wrap{margin-bottom:11px}
+.fert-range-label{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11px;color:rgba(0,0,0,.45);
+  margin-bottom:5px;display:flex;justify-content:space-between;
+}
+.fert-range-track{
+  height:5px;background:rgba(14,165,233,.12);
+  border-radius:99px;position:relative;overflow:visible;
+}
+.fert-range-fill{height:100%;border-radius:99px;background:#38bdf8}
+.fert-range-pointer{
+  position:absolute;top:-4px;width:13px;height:13px;
+  border-radius:50%;background:#0ea5e9;
+  border:2px solid white;box-shadow:0 0 0 1.5px #0ea5e9;
+  transform:translateX(-50%);transition:left .4s ease;
+}
+.fert-range-pointer.warn{background:#f59e0b;box-shadow:0 0 0 1.5px #f59e0b}
+.fert-range-ticks{
+  display:flex;justify-content:space-between;
+  font-size:9px;color:rgba(0,0,0,.25);margin-top:3px;
+  font-family:'DM Mono',monospace;
+}
+
+.fert-param-rows{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fert-param-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;background:rgba(0,0,0,.03);border-radius:8px;
+}
+.fert-param-label{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11.5px;color:rgba(0,0,0,.45);
+}
+.fert-param-val{
+  font-family:'DM Mono','JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:600;color:rgba(0,0,0,.7);
+}
+
+.fert-footer{
+  margin:10px -16px -20px;
+  border-top:1px solid rgba(0,0,0,.06);
+  padding:9px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.fert-sync{
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:10px;color:rgba(0,0,0,.28);
+}
+.fert-detail-btn{
+  background:none;border:1px solid rgba(0,0,0,.1);
+  border-radius:8px;padding:5px 12px;
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:11px;color:rgba(0,0,0,.55);cursor:pointer;
+}
+.fert-detail-btn:hover{background:rgba(0,0,0,.04)}

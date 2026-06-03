@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AgroBioTech — A-Frame VR</title>
+
+<!-- A-Frame 1.5 — WebXR native, Quest + browser -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Inter',system-ui,sans-serif}
+
+/* ── LOADING SCREEN ── */
+#loading-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:#07111F;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .6s;
+}
+#loading-screen.fade{opacity:0;pointer-events:none}
+#loading-logo{
+  width:64px;height:64px;border-radius:16px;
+  background:linear-gradient(135deg,#22C55E,#06B6D4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:900;color:#fff;letter-spacing:-.02em;
+}
+#loading-text{color:rgba(255,255,255,.7);font-size:14px;font-weight:500;letter-spacing:.04em}
+#loading-bar-wrap{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:100px;overflow:hidden}
+#loading-bar{height:100%;width:0%;background:linear-gradient(90deg,#22C55E,#06B6D4);border-radius:100px;transition:width .3s}
+
+/* ── ENTER VR BUTTON (desktop/browser) ── */
+#enter-vr-btn{
+  position:fixed;bottom:24px;right:24px;z-index:9998;
+  display:flex;align-items:center;gap:10px;
+  padding:0 22px;height:52px;border-radius:100px;
+  background:rgba(139,92,246,.18);
+  border:1.5px solid rgba(139,92,246,.5);
+  backdrop-filter:blur(20px);
+  color:rgba(255,255,255,.92);
+  font-size:13px;font-weight:700;letter-spacing:.05em;
+  cursor:pointer;white-space:nowrap;
+  font-family:'Inter',system-ui;
+  animation:vrPulse 3s ease-in-out infinite;
+  transition:all .2s;
+}
+#enter-vr-btn:hover{
+  background:rgba(139,92,246,.55);
+  border-color:rgba(139,92,246,.8);
+  box-shadow:0 0 24px rgba(139,92,246,.55);
+}
+@keyframes vrPulse{
+  0%,100%{box-shadow:0 8px 32px rgba(0,0,0,.35),0 0 0 0 rgba(139,92,246,0)}
+  50%{box-shadow:0 8px 32px rgba(0,0,0,.35),0 0 0 8px rgba(139,92,246,.12)}
+}
+
+/* ── BACK BUTTON ── */
+#back-btn{
+  position:fixed;bottom:24px;left:24px;z-index:9998;
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px;height:44px;border-radius:100px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.25);
+  backdrop-filter:blur(12px);
+  color:rgba(255,255,255,.7);
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  font-family:'Inter',system-ui;
+  transition:all .2s;
+  text-decoration:none;
+}
+#back-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+
+/* ── ZONE LABEL ── */
+#zone-label{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  z-index:9998;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);border-radius:100px;
+  padding:6px 18px;
+  color:rgba(255,255,255,.8);font-size:12px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  font-family:'Inter',system-ui;
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+#zone-label.show{opacity:1}
+
+/* ── SCENE COUNTER ── */
+#scene-ctr{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:9998;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:5px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);
+  opacity:0;transition:opacity .5s;pointer-events:none;
+}
+#scene-ctr.show{opacity:1}
+
+/* ── VR NOT SUPPORTED MESSAGE ── */
+#vr-unsupported{
+  display:none;
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:9998;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.15);border-radius:16px;
+  padding:24px 32px;text-align:center;
+  color:rgba(255,255,255,.8);font-size:13px;line-height:1.7;
+  max-width:320px;
+}
+#vr-unsupported strong{color:#22C55E;font-size:14px}
+
+/* A-Frame canvas full screen */
+a-scene{position:fixed;inset:0;}
+
+/* Cacher le bouton VR natif de A-Frame (on gère nous-mêmes) */
+.a-enter-vr{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ── LOADING SCREEN ── -->
+<div id="loading-screen">
+  <div id="loading-logo">AB</div>
+  <div id="loading-text">Chargement de la scène VR…</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+</div>
+
+<!-- ── A-FRAME SCENE ── -->
+<a-scene
+  id="aframe-scene"
+  loading-screen="enabled:false"
+  renderer="antialias:true;colorManagement:true"
+  vr-mode-ui="enabled:false"
+  embedded
+>
+  <!-- Actifs — le panorama sera injecté dynamiquement -->
+  <a-assets id="a-assets" timeout="10000">
+    <img id="pano-img" crossorigin="anonymous" src="">
+  </a-assets>
+
+  <!-- Sphère 360° — intérieur de la sphère -->
+  <a-sky id="pano-sky" src="#pano-img" rotation="0 0 0"></a-sky>
+
+  <!-- Caméra avec curseur gaze dwell -->
+  <a-entity id="rig" position="0 0 0">
+    <a-camera id="cam" look-controls="magicWindowTrackingEnabled:true;touchEnabled:true" wasd-controls="enabled:false" fov="80">
+      <!-- Curseur de regard (gaze dwell) pour navigation sans manette -->
+      <a-cursor
+        id="gaze-cursor"
+        animation__click="property:scale;startEvents:click;easing:easeInCubic;dur:150;from:0.1 0.1 0.1;to:1 1 1"
+        animation__fusing="property:scale;startEvents:fusing;easing:easeInCubic;dur:1500;from:1 1 1;to:0.1 0.1 0.1"
+        raycaster="objects:.hotspot-nav,.hotspot-cross"
+        fuse="true"
+        fuse-timeout="1500"
+        color="#22C55E"
+        opacity="0.85"
+      ></a-cursor>
+    </a-camera>
+  </a-entity>
+
+  <!-- Conteneur des hotspots — vidé et rempli à chaque scène -->
+  <a-entity id="hotspots-container"></a-entity>
+
+</a-scene>
+
+<!-- ── UI OVERLAY ── -->
+<button id="enter-vr-btn" onclick="enterVR()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+    <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+    <path d="M10 12h4"/>
+  </svg>
+  Entrer en VR
+</button>
+
+<a href="visitemanuelle.html" id="back-btn">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+  Retour normal
+</a>
+
+<div id="zone-label">—</div>
+<div id="scene-ctr">— / —</div>
+
+<div id="vr-unsupported">
+  <strong>WebXR non disponible</strong><br><br>
+  Pour une immersion VR complète, ouvrez ce lien depuis un <strong>Meta Quest</strong> ou un casque compatible WebXR.<br><br>
+  La navigation au regard (gaze) fonctionne sur mobile.
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════ */
+let manifest, zones={}, hotspots={};
+let curZone, curScene;
+let lastZoneId=null, sceneT;
+const navHistory=[];
+let loadingProgress=0;
+
+/* ══════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════ */
+window.addEventListener('load', async ()=>{
+  // Vérifier support WebXR
+  if(navigator.xr){
+    navigator.xr.isSessionSupported('immersive-vr').then(supported=>{
+      if(!supported){
+        document.getElementById('vr-unsupported').style.display='block';
+        document.getElementById('enter-vr-btn').style.opacity='.4';
+        document.getElementById('enter-vr-btn').style.pointerEvents='none';
+      }
+    }).catch(()=>{
+      document.getElementById('vr-unsupported').style.display='block';
+    });
+  } else {
+    document.getElementById('vr-unsupported').style.display='block';
+    document.getElementById('enter-vr-btn').style.opacity='.4';
+    document.getElementById('enter-vr-btn').style.pointerEvents='none';
+  }
+
+  // Charger manifest
+  animateLoadingBar(0,30);
+  const r=await fetch('images/manifest.json');
+  manifest=await r.json();
+  manifest.zones.forEach(z=>zones[z.id]=z);
+  hotspots=manifest.hotspots||{};
+  animateLoadingBar(30,60);
+
+  const p=new URLSearchParams(location.search);
+  const firstZone=manifest.zones[0]?.id;
+  const z=p.get('zone')||firstZone;
+  const s=p.get('scene')||zones[z]?.scenes[0]?.id;
+
+  await loadScene(z,s);
+  animateLoadingBar(60,100);
+
+  setTimeout(()=>{
+    document.getElementById('loading-screen').classList.add('fade');
+    setTimeout(()=>document.getElementById('loading-screen').remove(),700);
+    setTimeout(()=>document.getElementById('scene-ctr').classList.add('show'),800);
+  },400);
+
+  // Keyboard nav
+  document.addEventListener('keydown',e=>{
+    if(e.code==='ArrowRight') stepScene(1);
+    if(e.code==='ArrowLeft')  stepScene(-1);
+  });
+});
+
+function animateLoadingBar(from,to){
+  const bar=document.getElementById('loading-bar');
+  let v=from;
+  const id=setInterval(()=>{
+    v=Math.min(v+1,to);
+    bar.style.width=v+'%';
+    if(v>=to) clearInterval(id);
+  },20);
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+   ══════════════════════════════════════════════ */
+function goTo(zid,sid){
+  if(curZone&&curScene) navHistory.push({zoneId:curZone,sceneId:curScene});
+  if(navHistory.length>50) navHistory.shift();
+  loadScene(zid,sid);
+}
+
+function stepScene(d){
+  const zone=zones[curZone];
+  const idx=zone?.scenes.findIndex(s=>s.id===curScene);
+  const next=zone?.scenes[idx+d];
+  if(next) goTo(curZone,next.id);
+}
+
+/* ══════════════════════════════════════════════
+   LOAD SCENE — swap texture sur a-sky
+   ══════════════════════════════════════════════ */
+async function loadScene(zid,sid){
+  const zone=zones[zid];
+  const scene=zone?.scenes.find(s=>s.id===sid);
+  if(!zone||!scene) return;
+
+  curZone=zid; curScene=sid;
+  const idx=zone.scenes.indexOf(scene);
+
+  // UI
+  document.getElementById('scene-ctr').textContent=`${idx+1} / ${zone.scenes.length}`;
+
+  if(zid!==lastZoneId){
+    lastZoneId=zid;
+    const lbl=document.getElementById('zone-label');
+    lbl.textContent=zone.label+(zone.unit!=='—'?` — ${zone.unit}`:'');
+    lbl.classList.remove('show');
+    requestAnimationFrame(()=>lbl.classList.add('show'));
+    clearTimeout(sceneT);
+    sceneT=setTimeout(()=>lbl.classList.remove('show'),3500);
+  }
+
+  // Swap panorama texture
+  const sky=document.getElementById('pano-sky');
+  const img=document.getElementById('pano-img');
+
+  // Fade out
+  sky.setAttribute('animation',{
+    property:'material.opacity', to:0, dur:250, easing:'easeInQuad'
+  });
+  await delay(260);
+
+  // Changer la source
+  img.src=scene.file;
+  await new Promise(resolve=>{
+    img.onload=resolve;
+    img.onerror=resolve;
+    // Timeout fallback
+    setTimeout(resolve,5000);
+  });
+
+  sky.setAttribute('src','#pano-img');
+
+  // Fade in
+  sky.setAttribute('animation',{
+    property:'material.opacity', to:1, dur:400, easing:'easeOutQuad'
+  });
+
+  // Rebuild hotspots 3D
+  buildHotspots3D(zid,sid,idx,zone);
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* ══════════════════════════════════════════════
+   BUILD HOTSPOTS 3D — sphères A-Frame dans l'espace
+   ══════════════════════════════════════════════ */
+function buildHotspots3D(zid,sid,idx,zone){
+  const container=document.getElementById('hotspots-container');
+  // Vider
+  while(container.firstChild) container.removeChild(container.firstChild);
+
+  const rawHs=(hotspots[zid]?.[sid]||[]).filter(h=>h.type!=='ar').slice();
+
+  // Auto back
+  const fwdNav=rawHs.find(h=>h.type==='nav'&&h.targetSceneId!==sid&&h.targetZoneId===zid);
+  const hasAnyBack=rawHs.some(h=>zones[h.targetZoneId]?.scenes.findIndex(s=>s.id===h.targetSceneId)===idx-1);
+  if(fwdNav&&idx>0&&!hasAnyBack){
+    const by=((fwdNav.yaw+180)+360)%360;
+    rawHs.push({type:'nav',pitch:fwdNav.pitch,yaw:by>180?by-360:by,
+      targetZoneId:zid,targetSceneId:zone.scenes[idx-1].id,auto:true});
+  }
+  // Cross-zone back
+  const prev=navHistory.length>0?navHistory[navHistory.length-1]:null;
+  const hasAnyCross=rawHs.some(h=>h.type==='cross');
+  const hasForward=rawHs.some(h=>!h.auto&&h.targetSceneId!==sid);
+  if(prev&&!hasAnyCross&&!hasForward){
+    const pz=zones[prev.zoneId];
+    if(pz){
+      const refYaw=fwdNav?.yaw??(rawHs[0]?.yaw??0);
+      const by=((refYaw+180)+360)%360;
+      rawHs.push({type:'cross',pitch:fwdNav?.pitch??-20,yaw:by>180?by-360:by,
+        targetZoneId:prev.zoneId,targetSceneId:prev.sceneId,auto:true});
+    }
+  }
+
+  rawHs.forEach(hs=>{
+    const isX=hs.type==='cross';
+    // Convertir pitch/yaw panoramique → position 3D sur sphère rayon 5
+    const R=5;
+    const pitchRad=(hs.pitch||0)*Math.PI/180;
+    const yawRad=-(hs.yaw||0)*Math.PI/180; // A-Frame: Y inversé
+    const x=R*Math.cos(pitchRad)*Math.sin(yawRad);
+    const y=R*Math.sin(pitchRad);
+    const z=-R*Math.cos(pitchRad)*Math.cos(yawRad);
+
+    // Groupe hotspot
+    const g=document.createElement('a-entity');
+    g.setAttribute('position',`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`);
+    g.classList.add(isX?'hotspot-cross':'hotspot-nav');
+
+    // Anneau extérieur (ring blanc/bleu)
+    const ring=document.createElement('a-ring');
+    ring.setAttribute('color', isX?'#93C5FD':'#ffffff');
+    ring.setAttribute('radius-inner','0.08');
+    ring.setAttribute('radius-outer','0.14');
+    ring.setAttribute('opacity','0.85');
+    ring.setAttribute('look-at','[camera]');
+    ring.setAttribute('animation',{
+      property:'scale',
+      from:'1 1 1', to:'1.15 1.15 1.15',
+      dur:1400, dir:'alternate', loop:true, easing:'easeInOutSine'
+    });
+
+    // Flèche SVG au centre
+    const plane=document.createElement('a-plane');
+    plane.setAttribute('color','transparent');
+    plane.setAttribute('width','0.18');
+    plane.setAttribute('height','0.18');
+    plane.setAttribute('look-at','[camera]');
+    plane.setAttribute('opacity','0');
+
+    // Texte indicateur (nom de zone si cross)
+    if(isX&&zones[hs.targetZoneId]){
+      const txt=document.createElement('a-text');
+      txt.setAttribute('value',zones[hs.targetZoneId].label||'');
+      txt.setAttribute('color','#93C5FD');
+      txt.setAttribute('align','center');
+      txt.setAttribute('width','1.2');
+      txt.setAttribute('position','0 -0.22 0');
+      txt.setAttribute('look-at','[camera]');
+      txt.setAttribute('font','https://cdn.aframe.io/fonts/DejaVu-sdf.fnt');
+      g.appendChild(txt);
+    }
+
+    // Sphère invisible pour la hitbox raycaster
+    const hitbox=document.createElement('a-sphere');
+    hitbox.setAttribute('radius','0.16');
+    hitbox.setAttribute('opacity','0');
+    hitbox.setAttribute('class', isX?'hotspot-cross':'hotspot-nav');
+    hitbox.setAttribute('data-target-zone',hs.targetZoneId||'');
+    hitbox.setAttribute('data-target-scene',hs.targetSceneId||'');
+
+    // Click handler
+    hitbox.addEventListener('click',()=>{
+      goTo(hs.targetZoneId,hs.targetSceneId);
+    });
+    // Gaze fuse
+    hitbox.addEventListener('fusing',()=>{
+      ring.setAttribute('color','#22C55E');
+    });
+    hitbox.addEventListener('mouseleave',()=>{
+      ring.setAttribute('color', isX?'#93C5FD':'#ffffff');
+    });
+
+    g.appendChild(ring);
+    g.appendChild(plane);
+    g.appendChild(hitbox);
+    container.appendChild(g);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ENTER VR — WebXR immersive-vr
+   ══════════════════════════════════════════════ */
+function enterVR(){
+  const sceneEl=document.getElementById('aframe-scene');
+  // Demande la session WebXR via A-Frame
+  if(sceneEl.is('vr-mode')){
+    sceneEl.exitVR();
+  } else {
+    sceneEl.enterVR();
+  }
+
+  // Fullscreen fallback si pas de WebXR
+  if(!navigator.xr){
+    const el=document.documentElement;
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+    if(req) req.call(el).catch(()=>{});
+    if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
+  }
+}
+
+// Écouter les events A-Frame VR
+document.addEventListener('DOMContentLoaded',()=>{
+  const sceneEl=document.getElementById('aframe-scene');
+  if(!sceneEl) return;
+
+  sceneEl.addEventListener('enter-vr',()=>{
+    document.getElementById('enter-vr-btn').textContent='Quitter VR';
+    document.getElementById('back-btn').style.display='none';
+  });
+  sceneEl.addEventListener('exit-vr',()=>{
+    document.getElementById('enter-vr-btn').innerHTML=`
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+        <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+        <path d="M10 12h4"/>
+      </svg> Entrer en VR`;
+    document.getElementById('back-btn').style.display='flex';
+  });
+});
+</script>
+</body>
+</html>

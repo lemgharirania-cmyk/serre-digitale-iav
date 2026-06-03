@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AgroBioTech — VR Experience</title>
+
+<!-- Cesium for globe -->
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+<!-- A-Frame for stars/particles VR layer -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="vr-intro.css">
+
+<style>
+/* ── Cesium + A-Frame layering ── */
+#cesium-globe {
+  position: fixed; inset: 0; z-index: 1;
+}
+/* Hide all Cesium chrome */
+.cesium-viewer-toolbar,.cesium-viewer-animationContainer,.cesium-viewer-timelineContainer,
+.cesium-viewer-bottom,.cesium-widget-credits,.cesium-viewer-fullscreenContainer,
+.cesium-performanceDisplay-defaultContainer { display: none !important; }
+
+/* A-Frame starfield layer — behind Cesium initially, shown after globe done */
+#aframe-stars {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; opacity: 1;
+}
+a-scene { position: fixed; inset: 0; }
+.a-enter-vr { display: none !important; }
+
+/* Cinematic scan line (premium detail) */
+#scanline {
+  position: fixed; inset: 0; z-index: 8; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,.015) 0px, rgba(0,0,0,.015) 1px,
+    transparent 1px, transparent 3px
+  );
+  animation: scanShift 12s linear infinite;
+}
+@keyframes scanShift { from { background-position: 0 0; } to { background-position: 0 100px; } }
+
+/* Horizontal grid lines — spatial feel */
+#grid-lines {
+  position: fixed; inset: 0; z-index: 6; pointer-events: none; opacity: .04;
+  background-image:
+    linear-gradient(rgba(34,197,94,.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,197,94,.6) 1px, transparent 1px);
+  background-size: 80px 80px;
+  animation: gridDrift 25s ease-in-out infinite alternate;
+}
+@keyframes gridDrift { 0%{opacity:.025;transform:translateY(0)} 100%{opacity:.055;transform:translateY(-20px)} }
+
+/* Corner brackets — military/sci-fi HUD */
+.corner {
+  position: fixed; z-index: 9; pointer-events: none;
+  width: 32px; height: 32px;
+  opacity: .22;
+}
+.corner.tl { top: 16px;    left: 16px;  border-top: 1.5px solid #22C55E; border-left: 1.5px solid #22C55E; }
+.corner.tr { top: 16px;    right: 16px; border-top: 1.5px solid #22C55E; border-right: 1.5px solid #22C55E; }
+.corner.bl { bottom: 16px; left: 16px;  border-bottom: 1.5px solid #22C55E; border-left: 1.5px solid #22C55E; }
+.corner.br { bottom: 16px; right: 16px; border-bottom: 1.5px solid #22C55E; border-right: 1.5px solid #22C55E; }
+
+/* Status bar — top center HUD */
+#status-bar {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 100;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 100px; padding: 5px 16px;
+  font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  font-family: 'Outfit', system-ui;
+  pointer-events: none;
+  opacity: 0; transition: opacity .6s ease;
+}
+#status-bar.show { opacity: 1; }
+.sb-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #22C55E; box-shadow: 0 0 6px rgba(34,197,94,.8);
+  animation: sbDot 2.2s ease-in-out infinite;
+}
+@keyframes sbDot { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* Location readout */
+#location-hud {
+  position: fixed; bottom: 80px; right: 24px; z-index: 100;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; padding: 10px 14px;
+  font-family: 'Outfit', monospace; font-size: 9px;
+  color: rgba(255,255,255,.3); line-height: 1.7; letter-spacing: .06em;
+  opacity: 0; transition: opacity .6s ease;
+  pointer-events: none;
+}
+#location-hud.show { opacity: 1; }
+#location-hud .loc-val { color: rgba(34,197,94,.7); font-weight: 600; }
+
+/* Ambient particles layer (pure CSS, no JS) */
+#particles-bg {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
+}
+.particle {
+  position: absolute; border-radius: 50%;
+  background: rgba(34,197,94,.45);
+  animation: particleDrift linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes particleDrift {
+  0%   { transform: translateY(100vh) translateX(0) scale(0);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: .6; }
+  100% { transform: translateY(-20vh) translateX(var(--drift,30px)) scale(1.4); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOADING SCREEN ── -->
+<div id="loading-screen">
+  <div id="loading-logo">AB</div>
+  <div id="loading-tagline">AgroBioTech · IAV Hassan II · Rabat</div>
+  <div id="loading-text">Initialisation de la scène spatiale…</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+</div>
+
+<!-- ── CINEMATIC LAYERS ── -->
+<div id="scanline"></div>
+<div id="grid-lines"></div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+<div id="vignette"></div>
+
+<!-- ── A-FRAME STARS LAYER (behind Cesium globe) ── -->
+<div id="aframe-stars">
+  <a-scene
+    id="aframe-scene"
+    loading-screen="enabled:false"
+    renderer="antialias:true;logarithmicDepthBuffer:true"
+    vr-mode-ui="enabled:false"
+    background="color:#000000"
+    embedded
+  >
+    <!-- 3 star layers at different depths for parallax feel -->
+    <a-entity
+      geometry="primitive:sphere;radius:500;segmentsWidth:32;segmentsHeight:32"
+      material="color:#ffffff;side:back;src:none;shader:flat;transparent:true;opacity:0"
+      id="star-sphere"
+    ></a-entity>
+
+    <!-- Star field via point light instances — generated by JS -->
+    <a-entity id="stars-container"></a-entity>
+
+    <!-- Ambient nebula glow orbs -->
+    <a-entity id="nebula-container"></a-entity>
+
+    <!-- Camera — fixed, no controls (Cesium handles view) -->
+    <a-camera
+      id="intro-cam"
+      look-controls="enabled:false"
+      wasd-controls="enabled:false"
+      position="0 0 0"
+      fov="75"
+    ></a-camera>
+  </a-scene>
+</div>
+
+<!-- ── CESIUM GLOBE ── -->
+<div id="cesium-globe"></div>
+
+<!-- ── AMBIENT CSS PARTICLES ── -->
+<div id="particles-bg" id="particles-bg"></div>
+
+<!-- ── HUD ELEMENTS ── -->
+<div id="status-bar">
+  <span class="sb-dot"></span>
+  <span id="status-text">AgroBioTech · Système VR Actif</span>
+</div>
+
+<div id="location-hud">
+  <div>LAT <span class="loc-val">33.9787° N</span></div>
+  <div>LON <span class="loc-val">6.8641° W</span></div>
+  <div>ALT <span class="loc-val">ORBIT</span></div>
+</div>
+
+<!-- ── MOROCCO MARKER ── -->
+<div id="morocco-marker">
+  <div class="mrc-ring"></div>
+  <div class="mrc-ring2"></div>
+  <div class="mrc-core"></div>
+  <div class="mrc-card">
+    <div class="mrc-card-t">Institut Agronomique et Vétérinaire Hassan II</div>
+    <div class="mrc-card-s">Serre Digitale · Rabat, Maroc</div>
+  </div>
+</div>
+
+<!-- ── PHASE OVERLAY — cinematic text ── -->
+<div id="phase-overlay">
+  <div class="phase-text" id="eyebrow-wrap">
+    <div id="phase-eyebrow">DIGITAL TWIN · IAV HASSAN II</div>
+  </div>
+  <div class="phase-text" id="title-wrap">
+    <div id="phase-title">Serre Digitale Intelligente</div>
+  </div>
+  <div class="phase-text" id="sub-wrap">
+    <div id="phase-sub">Explorez le campus AgroBioTech en réalité virtuelle immersive.</div>
+  </div>
+  <div id="phase-instructions">
+    <div class="instr-line">
+      <div class="instr-dot"></div>
+      <span>Regardez librement autour de vous</span>
+    </div>
+    <div class="instr-line">
+      <div class="instr-dot"></div>
+      <span>Détectez le Maroc sur le globe</span>
+    </div>
+    <div class="instr-line">
+      <div class="instr-dot"></div>
+      <span>Appuyez sur ENTRER pour commencer</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── WELCOME PANEL ── -->
+<div id="welcome-panel">
+  <div id="welcome-card">
+    <div class="wc-badge">
+      <div class="wc-badge-dot"></div>
+      <span class="wc-badge-text">AgroBioTech · IAV Hassan II · Rabat</span>
+    </div>
+
+    <div class="wc-logo-ring">
+      <div class="wc-logo-inner">AB</div>
+    </div>
+
+    <div class="wc-title">
+      Bienvenue dans la<br>Serre Digitale Intelligente
+    </div>
+    <div class="wc-sub">
+      Vous allez explorer les 5 serres de recherche du campus en réalité virtuelle immersive avec données IoT en direct.
+    </div>
+
+    <!-- Lang switcher -->
+    <div class="wc-langs">
+      <button class="wc-lang-pill active" data-lang="FR" onclick="setLang('FR')">FR</button>
+      <button class="wc-lang-pill" data-lang="EN" onclick="setLang('EN')">EN</button>
+      <button class="wc-lang-pill" data-lang="AR" onclick="setLang('AR')">AR</button>
+    </div>
+
+    <!-- CTA -->
+    <button id="enter-btn" onclick="enterExperience()">
+      <div class="btn-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+          <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+          <path d="M10 12h4"/>
+        </svg>
+      </div>
+      <span class="btn-label">Entrer dans l'expérience</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ── NAV BUTTONS ── -->
+<a href="visitemanuelle.html" id="back-link">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+  Retour
+</a>
+
+<button id="vr-enter-btn" onclick="enterExperience()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+    <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
+    <path d="M10 12h4"/>
+  </svg>
+  Entrer en VR
+</button>
+
+<!-- ── SCROLL HINT ── -->
+<div id="scroll-hint">
+  <div class="sh-mouse"><div class="sh-dot"></div></div>
+  <div class="sh-text">Explorer</div>
+</div>
+
+<!-- ── FADE OUT ── -->
+<div id="fade-out"></div>
+
+<!-- ── STAR GENERATION SCRIPT ── -->
+<script>
+(function generateStars() {
+  const container = document.getElementById('particles-bg');
+  if (!container) return;
+
+  // CSS ambient particles (green/teal rising dots)
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 1 + Math.random() * 3;
+    const x    = Math.random() * 100;
+    const dur  = 12 + Math.random() * 20;
+    const del  = Math.random() * 15;
+    const drift = (Math.random() - .5) * 80;
+    const col  = Math.random() > .5
+      ? `rgba(34,197,94,${.2 + Math.random()*.4})`
+      : `rgba(6,182,212,${.2 + Math.random()*.35})`;
+
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${x}%;
+      background:${col};
+      animation-duration:${dur}s;
+      animation-delay:-${del}s;
+      --drift:${drift}px;
+      box-shadow: 0 0 ${size*3}px ${col};
+    `;
+    container.appendChild(p);
+  }
+})();
+
+// Show HUD elements after a delay
+setTimeout(() => {
+  document.getElementById('status-bar')?.classList.add('show');
+}, 2500);
+setTimeout(() => {
+  document.getElementById('location-hud')?.classList.add('show');
+}, 4000);
+</script>
+
+<!-- ── MAIN VR INTRO LOGIC ── -->
+<script src="vr-intro.js"></script>
+</body>
+</html>

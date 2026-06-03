@@ -89,8 +89,6 @@ const T = {
       'IoT':             'IoT',
       'Calculateur':     'Calculateur',
     },
-    fonctions:  'FONCTIONS',
-    parametres: 'PARAMÈTRES',
     sensorLabels: {
       temperature: 'Température',
       humidite:    'Humidité',
@@ -141,9 +139,7 @@ const T = {
       'IoT':             'IoT',
       'Calculateur':     'Calculator',
     },
-    fonctions:  'FUNCTIONS',
-    parametres: 'PARAMETERS',
-        sensorLabels: {
+    sensorLabels: {
       temperature: 'Temperature',
       humidite:    'Humidity',
       vpd:         'VPD',
@@ -193,9 +189,7 @@ const T = {
       'IoT':             'IoT',
       'Calculateur':     'الحاسبة',
     },
-    fonctions:  'الوظائف',
-    parametres: 'المعاملات',
-        sensorLabels: {
+    sensorLabels: {
       temperature: 'الحرارة',
       humidite:    'الرطوبة',
       vpd:         'VPD',
@@ -227,26 +221,10 @@ function setLang(lang) {
     const arEnabled = document.getElementById('ar-toggle')?.classList.contains('ar-on');
     lbl.textContent = arEnabled ? t('arOn') : t('arOff');
   }
-  // Re-render open card (content + header)
+  // Re-render open card
   if(window.activeAR) {
     const def = getARDef(window.activeAR);
-    if(def) {
-      // Update header title
-      const _t = lang==='EN' ? (def.title_en||def.title) : lang==='AR' ? (def.title_ar||def.title) : def.title;
-      const titleEl = document.getElementById('ar-title');
-      if(titleEl) titleEl.textContent = _t;
-      // Update category label
-      const catEl = document.getElementById('ar-category-label');
-      if(catEl) catEl.textContent = tCat(window.activeAR);
-      // Update status pill
-      const pillEl = document.getElementById('ar-state-pill-text');
-      if(pillEl && def.stateKey == null) {
-        const _s = lang==='EN' ? (def.statusText_en||def.statusText) : lang==='AR' ? (def.statusText_ar||def.statusText) : def.statusText;
-        pillEl.textContent = _s || '—';
-      }
-      // Re-render tab content
-      renderARTab(window.activeTab || 0, def);
-    }
+    if(def) renderARTab(window.activeTab || 0, def);
   }
   // Play audio for current hotspot in new lang (future hook)
   if(window.activeAR) playARAudio(window.activeAR, lang);
@@ -264,17 +242,8 @@ function playARAudio(key, lang) {
 
 /* ── Inject lang pill HTML next to AR toggle ── */
 function injectLangSwitcher() {
-  // If already in HTML, just sync the active state
-  const existing = document.getElementById('lang-switcher');
-  if(existing) {
-    existing.querySelectorAll('.lang-pill').forEach(el => {
-      el.classList.toggle('active', el.dataset.lang === window.currentLang);
-    });
-    return;
-  }
-  // Otherwise inject dynamically (for viewers without baked-in switcher)
   const toggle = document.getElementById('ar-toggle');
-  if(!toggle) return;
+  if(!toggle || document.getElementById('lang-switcher')) return;
   const sw = document.createElement('div');
   sw.id = 'lang-switcher';
   sw.innerHTML = ['FR','EN','AR'].map(l =>
@@ -339,10 +308,6 @@ const AR_CONTENT = {
 
 
     title:'Fraises — Fragaria × ananassa',
-    title_en:'Strawberries — Fragaria × ananassa',
-    title_ar:'الفراولة — Fragaria × ananassa',
-    statusText_en:'Active crop',
-    statusText_ar:'محصول نشط',
 
 
 
@@ -373,7 +338,8 @@ const AR_CONTENT = {
         {k:'Stade',v:'À COMPLÉTER'},
 
 
-], items_en:[{k:'Variety',v:'Fragaria × ananassa'},{k:'Family',v:'Rosaceae'},{k:'System',v:'Soilless hydroponic',tag:'blue'},{k:'Stage',v:'TO COMPLETE'}], items_ar:[{k:'الصنف',v:'Fragaria × ananassa'},{k:'الفصيلة',v:'Rosaceae'},{k:'النظام',v:'زراعة مائية',tag:'blue'},{k:'المرحلة',v:'يُستكمل'}]},
+
+      ]},
 
 
 
@@ -400,7 +366,8 @@ const AR_CONTENT = {
         {k:'Photopériode',v:'12 – 16 h'},
 
 
-], items_en:[{k:'Temperature',v:'18 – 22 °C'},{k:'Humidity',v:'60 – 75 %'},{k:'Solution pH',v:'5.8 – 6.2'},{k:'Solution EC',v:'1.0 – 1.4 mS/cm'},{k:'Photoperiod',v:'12 – 16 h'}], items_ar:[{k:'الحرارة',v:'18 – 22 °C'},{k:'الرطوبة',v:'60 – 75 %'},{k:'حموضة المحلول',v:'5.8 – 6.2'},{k:'توصيل المحلول',v:'1.0 – 1.4 mS/cm'},{k:'الفترة الضوئية',v:'12 – 16 ساعة'}]},
+
+      ]},
 
 
 
@@ -419,7 +386,8 @@ const AR_CONTENT = {
         'Irrigation programmée par cycles courts, pH et EC ajustés en continu.',
 
 
-], bullets_en:['Grown in elevated gutters to optimise nutrient solution recovery.','Inert substrate (coco fibre or perlite) ensures drainage and root aeration.','Irrigation scheduled in short cycles; pH and EC adjusted continuously.'], bullets_ar:['تُزرع في أحواض مرتفعة لتحسين استرداد المحلول الغذائي.','الركيزة الخاملة تضمن الصرف وتهوية الجذور.','ري بدورات قصيرة مع ضبط مستمر للـ pH والـ EC.']},
+
+      ]},
 
 
 
@@ -563,7 +531,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#10b981', statusText:'Injection active', type:'system',
+    color:'#10b981', statusText:'Injection active',
+    statusText_en:'Injection active',
+    statusText_ar:'الحقن نشط', type:'system',
 
 
 
@@ -578,12 +548,10 @@ const AR_CONTENT = {
     title:'Injection CO₂',
     title_en:'CO₂ Injection',
     title_ar:'حقن CO₂',
-    statusText_en:'Injection active',
-    statusText_ar:'الحقن نشط',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -630,7 +598,8 @@ const AR_CONTENT = {
         'L\'injection est automatiquement suspendue la nuit ou lorsque la ventilation est ouverte.',
 
 
-], bullets_en:['CO₂ enrichment stimulates photosynthesis and accelerates plant growth.','The goal is to maintain a concentration between 800 and 1200 ppm during the day.','Injection is automatically suspended at night or when ventilation is open.'], bullets_ar:['إثراء CO₂ يحفز التمثيل الضوئي ويسرع نمو النبات.','الهدف هو الحفاظ على تركيز بين 800 و1200 جزء/مليون خلال النهار.','يتوقف الحقن تلقائياً ليلاً أو عند فتح التهوية.']},
+
+      ]},
 
 
 
@@ -653,7 +622,8 @@ const AR_CONTENT = {
         {k:'Sécurité',v:'Coupure ventilation active'},
 
 
-], items_en:[{k:'Source',v:'Compressed CO₂ cylinder'},{k:'Target concentration',v:'800 – 1200 ppm'},{k:'Trigger',v:'VPD sensor / timer'},{k:'Safety',v:'Active ventilation cutoff'}], items_ar:[{k:'المصدر',v:'أسطوانة CO₂ مضغوطة'},{k:'التركيز المستهدف',v:'800 – 1200 جزء/مليون'},{k:'التشغيل',v:'مستشعر VPD / مؤقت'},{k:'الأمان',v:'قطع التهوية الفعالة'}]},
+
+      ]},
 
 
 
@@ -681,7 +651,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#14b8a6', statusText:'Brumisation active', type:'system',
+    color:'#14b8a6', statusText:'Brumisation active',
+    statusText_en:'Misting active',
+    statusText_ar:'الرذاذ نشط', type:'system',
 
 
 
@@ -696,12 +668,10 @@ const AR_CONTENT = {
     title:'Brumisateur Haute Pression',
     title_en:'High-Pressure Misting System',
     title_ar:'نظام الرذاذ عالي الضغط',
-    statusText_en:'Misting active',
-    statusText_ar:'الرذاذ نشط',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -748,7 +718,8 @@ const AR_CONTENT = {
         'Activé lorsque la température dépasse le seuil maximal ou l\'humidité descend sous le seuil.',
 
 
-], bullets_en:['Produces a mist of droplets < 10 µm that evaporate before reaching the ground.','Provides adiabatic cooling of ambient air and maintains humidity.','Activated when temperature exceeds the maximum threshold or humidity drops below minimum.'], bullets_ar:['يُنتج ضباباً من قطيرات أقل من 10 ميكرون تتبخر قبل وصولها للأرض.','يوفر تبريداً للهواء المحيط ويحافظ على الرطوبة.','يُفعَّل عند تجاوز درجة الحرارة الحد الأقصى أو انخفاض الرطوبة.']},
+
+      ]},
 
 
 
@@ -771,7 +742,8 @@ const AR_CONTENT = {
         {k:'Contrôle',v:'Automatique / seuil'},
 
 
-], items_en:[{k:'Pressure',v:'TO COMPLETE bar'},{k:'Flow rate',v:'TO COMPLETE L/h'},{k:'Nozzle',v:'High-pressure ceramic'},{k:'Control',v:'Automatic / threshold'}], items_ar:[{k:'الضغط',v:'يُستكمل bar'},{k:'معدل التدفق',v:'يُستكمل L/h'},{k:'الفوهة',v:'خزفية عالية الضغط'},{k:'التحكم',v:'تلقائي / حسب العتبة'}]},
+
+      ]},
 
 
 
@@ -799,7 +771,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#3b82f6', statusText:'Refroidissement actif', type:'system',
+    color:'#3b82f6', statusText:'Refroidissement actif',
+    statusText_en:'Cooling active',
+    statusText_ar:'التبريد نشط', type:'system',
 
 
 
@@ -814,12 +788,10 @@ const AR_CONTENT = {
     title:'Système de Refroidissement',
     title_en:'Cooling System',
     title_ar:'نظام التبريد',
-    statusText_en:'Cooling active',
-    statusText_ar:'التبريد نشط',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -919,7 +891,7 @@ const AR_CONTENT = {
 
 
 
-    color:'#0ea5e9', statusText:'Fertigation active', type:'system',
+    color:'#0ea5e9', statusText:'Fertigation active', statusText_en:'Fertigation active', statusText_ar:'التسميد نشط', type:'fertigation',
 
 
 
@@ -934,12 +906,10 @@ const AR_CONTENT = {
     title:'Station de Fertigation',
     title_en:'Fertigation Station',
     title_ar:'محطة التسميد',
-    statusText_en:'Fertigation active',
-    statusText_ar:'التسميد نشط',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -962,7 +932,8 @@ const AR_CONTENT = {
         'Permet la fertilisation précise en éléments macro et micro selon le stade végétatif.',
 
 
-], bullets_en:['Prepares and distributes the nutrient solution to crops at programmed intervals.','Dynamically adjusts pH and EC based on real-time measurements.','Enables precise fertilisation with macro and micro elements according to growth stage.'], bullets_ar:['تحضير وتوزيع المحلول الغذائي على المحاصيل وفق جداول مبرمجة.','ضبط pH والـ EC ديناميكياً بناءً على القياسات الفورية.','تسميد دقيق بالعناصر الكبرى والصغرى حسب مرحلة النمو.']},
+
+      ]},
 
 
 
@@ -989,7 +960,8 @@ const AR_CONTENT = {
         {k:'Régulation',v:'Automatique',tag:'blue'},
 
 
-], items_en:[{k:'Tank volume',v:'TO COMPLETE L'},{k:'Target pH',v:'5.5 – 6.5'},{k:'Target EC',v:'1.0 – 2.2 mS/cm'},{k:'Cycle frequency',v:'Programmable'},{k:'Regulation',v:'Automatic',tag:'blue'}], items_ar:[{k:'حجم الخزان',v:'يُستكمل L'},{k:'الهدف pH',v:'5.5 – 6.5'},{k:'الهدف EC',v:'1.0 – 2.2 mS/cm'},{k:'تكرار الدورات',v:'قابل للبرمجة'},{k:'التنظيم',v:'تلقائي',tag:'blue'}]},
+
+      ]},
 
 
 
@@ -1017,7 +989,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#3b82f6', statusText:'Ventilation active', type:'system',
+    color:'#3b82f6', statusText:'Ventilation active',
+    statusText_en:'Ventilation active',
+    statusText_ar:'التهوية نشطة', type:'system',
 
 
 
@@ -1032,12 +1006,10 @@ const AR_CONTENT = {
     title:'Ventilation Mécanique',
     title_en:'Mechanical Ventilation',
     title_ar:'التهوية الميكانيكية',
-    statusText_en:'Ventilation active',
-    statusText_ar:'التهوية نشطة',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -1084,7 +1056,8 @@ const AR_CONTENT = {
         'Activée automatiquement selon les seuils de température et d\'humidité.',
 
 
-], bullets_en:['Renews air and removes excess heat and humidity.','Maintains CO₂ concentration at an optimal level for photosynthesis.','Activated automatically based on temperature and humidity thresholds.'], bullets_ar:['تجديد الهواء وإزالة الحرارة الزائدة والرطوبة.','الحفاظ على تركيز CO₂ عند المستوى الأمثل للتمثيل الضوئي.','تشغيل تلقائي وفق عتبات الحرارة والرطوبة.']},
+
+      ]},
 
 
 
@@ -1107,7 +1080,8 @@ const AR_CONTENT = {
         {k:'Vitesse',v:'À COMPLÉTER tr/min'},
 
 
-], items_en:[{k:'Type',v:'Axial extractor'},{k:'Flow rate',v:'TO COMPLETE m³/h'},{k:'Control',v:'Thermostat + hygrostat'},{k:'Speed',v:'TO COMPLETE rpm'}], items_ar:[{k:'النوع',v:'مستخرج محوري'},{k:'معدل التدفق',v:'يُستكمل m³/h'},{k:'التحكم',v:'منظم حرارة + منظم رطوبة'},{k:'السرعة',v:'يُستكمل rpm'}]},
+
+      ]},
 
 
 
@@ -1135,7 +1109,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#06b6d4', statusText:'Ventilation extérieure', type:'system',
+    color:'#06b6d4', statusText:'Ventilation extérieure',
+    statusText_en:'Ventilation active',
+    statusText_ar:'التهوية نشطة', type:'system',
 
 
 
@@ -1148,10 +1124,12 @@ const AR_CONTENT = {
 
 
     title:'Ventilation Extérieure',
+    title_en:'External Ventilation',
+    title_ar:'التهوية الخارجية',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -1251,7 +1229,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#8b5cf6', statusText:'Actif', type:'sensor',
+    color:'#8b5cf6', statusText:'Actif',
+    statusText_en:'Active',
+    statusText_ar:'نشط', type:'sensor',
 
 
 
@@ -1266,8 +1246,6 @@ const AR_CONTENT = {
     title:'Capteurs IoT Environnementaux',
     title_en:'Environmental IoT Sensors',
     title_ar:'مستشعرات IoT البيئية',
-    statusText_en:'Active',
-    statusText_ar:'نشط',
 
 
 
@@ -1302,7 +1280,8 @@ const AR_CONTENT = {
         {k:'Niveau eau',v:'Capteur ultrasonique'},
 
 
-], items_en:[{k:'Temperature / RH',v:'Combined T+RH probe',tag:'blue'},{k:'VPD',v:'Calculated (T+RH)'},{k:'Solution pH',v:'Inline pH probe'},{k:'EC',v:'Inline conductivity meter'},{k:'Water level',v:'Ultrasonic sensor'}], items_ar:[{k:'الحرارة / الرطوبة',v:'مسبار T+RH مدمج',tag:'blue'},{k:'VPD',v:'محسوب (T+RH)'},{k:'حموضة المحلول',v:'مسبار pH مضمّن'},{k:'EC',v:'مقياس توصيل مضمّن'},{k:'مستوى الماء',v:'مستشعر فوق صوتي'}]},
+
+      ]},
 
 
 
@@ -1321,7 +1300,8 @@ const AR_CONTENT = {
         {k:'API',v:'guardian.pro-leaf.com'},
 
 
-], items_en:[{k:'Reading frequency',v:'Every 5 min'},{k:'Transmission',v:'WiFi → Guardian Pro'},{k:'API',v:'guardian.pro-leaf.com'}], items_ar:[{k:'تكرار القراءة',v:'كل 5 دقائق'},{k:'الإرسال',v:'WiFi → Guardian Pro'},{k:'واجهة البرمجة',v:'guardian.pro-leaf.com'}]},
+
+      ]},
 
 
 
@@ -1349,7 +1329,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#fbbf24', statusText:'Rideaux déployés', type:'system',
+    color:'#fbbf24', statusText:'Rideaux déployés',
+    statusText_en:'Curtains deployed',
+    statusText_ar:'الستائر منتشرة', type:'system',
 
 
 
@@ -1364,12 +1346,10 @@ const AR_CONTENT = {
     title:'Rideaux Automatiques',
     title_en:'Automatic Curtains',
     title_ar:'الستائر الأوتوماتيكية',
-    statusText_en:'Curtains deployed',
-    statusText_ar:'الستائر منتشرة',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -1469,7 +1449,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#22d3ee', statusText:'Ouverture active', type:'system',
+    color:'#22d3ee', statusText:'Ouverture active',
+    statusText_en:'Opening active',
+    statusText_ar:'الفتح نشط', type:'system',
 
 
 
@@ -1484,12 +1466,10 @@ const AR_CONTENT = {
     title:'Fenêtres Automatiques',
     title_en:'Automatic Windows',
     title_ar:'النوافذ الأوتوماتيكية',
-    statusText_en:'Opening active',
-    statusText_ar:'الفتح نشط',
 
 
 
-    tabs:['Info'],
+    tabs:['Info','IoT'],
 
 
 
@@ -1589,7 +1569,9 @@ const AR_CONTENT = {
 
 
 
-    color:'#3b82f6', statusText:'Actif', type:'system',
+    color:'#3b82f6', statusText:'Actif',
+    statusText_en:'Active',
+    statusText_ar:'نشط', type:'system',
 
 
 
@@ -1602,6 +1584,8 @@ const AR_CONTENT = {
 
 
     title:'Système de Ventilation Général',
+    title_en:'General Ventilation System',
+    title_ar:'نظام التهوية العام',
 
 
 
@@ -4583,7 +4567,7 @@ function openSimpleAR(desc){
 
 
 
-  window.activeAR = desc; window.activeTab = 0;
+  activeAR = desc; activeTab = 0;
 
 
 
@@ -4703,13 +4687,11 @@ function openSimpleAR(desc){
 
 
 
-  document.getElementById('ar-category-label').textContent = tCat(desc);
+  document.getElementById('ar-category-label').textContent = catMap[desc] || 'DIGITAL TWIN';
 
 
 
-  const _lang = window.currentLang || 'FR';
-  const _title = _lang==='EN' ? (def.title_en||def.title) : _lang==='AR' ? (def.title_ar||def.title) : def.title;
-  document.getElementById('ar-title').textContent = _title;
+  document.getElementById('ar-title').textContent = def.title;
 
 
 
@@ -4753,8 +4735,7 @@ function openSimpleAR(desc){
 
 
 
-    const _stTxt = _lang==='EN' ? (def.statusText_en||def.statusText) : _lang==='AR' ? (def.statusText_ar||def.statusText) : def.statusText;
-    _pillTxt.textContent = _stTxt || '—';
+    _pillTxt.textContent = def.statusText || '—';
 
 
 
@@ -4774,7 +4755,7 @@ function openSimpleAR(desc){
 
 
 
-    _pillTxt.textContent = _on ? t('active') : t('inactive');
+    _pillTxt.textContent = _on ? 'ACTIF' : 'INACTIF';
 
 
 
@@ -4818,19 +4799,9 @@ function openSimpleAR(desc){
 
 
 
-  // ── Build tab bar ──
-  const tabBar = document.getElementById('ar-tab-bar');
-  if(tabBar) {
-    if(def.tabs && def.tabs.length > 1){
-      tabBar.style.display = 'flex';
-      tabBar.innerHTML = def.tabs.map((name,i) =>
-        `<button class="ar-tab${i===0?' active':''}" onclick="switchTab(${i},true)">${tTab(name)}</button>`
-      ).join('');
-    } else {
-      tabBar.style.display = 'none';
-      tabBar.innerHTML = '';
-    }
-  }
+  // ── Render first tab directly (no tab bar) ──
+
+
 
   renderARTab(0, def);
 
@@ -4886,7 +4857,7 @@ function switchTab(i, isAR){
 
 
 
-  window.activeTab=i;
+  activeTab=i;
 
 
 
@@ -4894,11 +4865,11 @@ function switchTab(i, isAR){
 
 
 
-  if(window.activeAR) {
+  if(activeAR) {
 
 
 
-    const def = getARDef(window.activeAR);
+    const def = getARDef(activeAR);
 
 
 
@@ -4984,8 +4955,11 @@ function renderARTab(i, def){
 
 
 
-      html += `<div class="ar-section-title">${t('liveData')}</div>
-        <div class="iot-loading">${t('loading')}</div>`;
+      html += `<div class="ar-section-title">DONNÉES EN DIRECT</div>
+
+
+
+        <div class="iot-loading">Interrogation capteurs…</div>`;
 
 
 
@@ -5008,15 +4982,15 @@ function renderARTab(i, def){
       const eT = getThresh('ec');
 
       const rows=[
-        {label:tSensor('temperature'), val:env.temperature, unit:'°C',    min:tT.valeur_min, max:tT.valeur_max, ok:env.temperature!=null && env.temperature>=tT.valeur_min && env.temperature<=tT.valeur_max},
-        {label:tSensor('humidite'),    val:env.humidite,    unit:'%',     min:hT.valeur_min, max:hT.valeur_max, ok:env.humidite!=null    && env.humidite   >=hT.valeur_min && env.humidite   <=hT.valeur_max},
-        {label:tSensor('ph'),          val:irr.ph,          unit:'pH',    min:pT.valeur_min, max:pT.valeur_max, ok:irr.ph!=null          && irr.ph          >=pT.valeur_min && irr.ph          <=pT.valeur_max},
-        {label:tSensor('ec'),          val:irr.ec,          unit:'mS/cm', min:eT.valeur_min, max:eT.valeur_max, ok:irr.ec!=null          && irr.ec          >=eT.valeur_min && irr.ec          <=eT.valeur_max},
+        {label:'Température',    val:env.temperature, unit:'°C',    min:tT.valeur_min, max:tT.valeur_max, ok:env.temperature!=null && env.temperature>=tT.valeur_min && env.temperature<=tT.valeur_max},
+        {label:'Humidité',       val:env.humidite,    unit:'%',     min:hT.valeur_min, max:hT.valeur_max, ok:env.humidite!=null    && env.humidite   >=hT.valeur_min && env.humidite   <=hT.valeur_max},
+        {label:'pH solution',    val:irr.ph,          unit:'pH',    min:pT.valeur_min, max:pT.valeur_max, ok:irr.ph!=null          && irr.ph          >=pT.valeur_min && irr.ph          <=pT.valeur_max},
+        {label:'Conductivité EC',val:irr.ec,          unit:'mS/cm', min:eT.valeur_min, max:eT.valeur_max, ok:irr.ec!=null          && irr.ec          >=eT.valeur_min && irr.ec          <=eT.valeur_max},
       ];
 
 
 
-      html += `<div class="ar-section-title">${t('liveData')}</div>`;
+      html += `<div class="ar-section-title">DONNÉES EN DIRECT</div>`;
 
 
 
@@ -5035,7 +5009,7 @@ function renderARTab(i, def){
 
 
 
-      html += `<div class="iot-refresh" onclick="fetchIoT().then(()=>renderARTab(0,getARDef(window.activeAR)))">${t('refresh')}</div>`;
+      html += `<div class="iot-refresh" onclick="fetchIoT().then(()=>renderARTab(0,getARDef(activeAR)))">⟳ &nbsp;Actualiser</div>`;
 
 
 
@@ -5063,7 +5037,7 @@ function renderARTab(i, def){
 
 
 
-    html += `<div class="ar-section-title">${t('systemState')}</div>
+    html += `<div class="ar-section-title">ÉTAT DU SYSTÈME</div>
 
 
 
@@ -5139,7 +5113,7 @@ function renderARTab(i, def){
 
 
 
-    const _reason = _st === null ? t('awaiting')
+    const _reason = _st === null ? 'En attente des données…'
 
 
 
@@ -5175,35 +5149,151 @@ function renderARTab(i, def){
 
 
 
+  // ── Fertigation custom card ──
+  if(def.type === 'fertigation'){
+    const lang = (window.currentLang||'FR').toLowerCase();
+    const irr = (window.iotData?.irr)||{};
+    const ph  = irr.ph  != null ? Number(irr.ph)  : null;
+    const ec  = irr.ec  != null ? Number(irr.ec)  : null;
+    const tw  = irr.temp_eau != null ? Number(irr.temp_eau) : null;
+    const f2  = v => v!=null ? Number(v).toFixed(2) : '—';
+    const f1  = v => v!=null ? Number(v).toFixed(1) : '—';
+    const phT = (typeof getThresh==='function') ? getThresh('ph') : {valeur_min:5.5,valeur_max:6.5};
+    const ecT = (typeof getThresh==='function') ? getThresh('ec') : {valeur_min:1.0,valeur_max:2.2};
+    const phOk = ph!=null && ph>=phT.valeur_min && ph<=phT.valeur_max;
+    const ecOk = ec!=null && ec>=ecT.valeur_min && ec<=ecT.valeur_max;
+
+    // Labels
+    const L = {
+      phLabel:   {fr:'pH actuel',   en:'Current pH',    ar:'pH الحالي'},
+      ecLabel:   {fr:'EC (mS/cm)',  en:'EC (mS/cm)',    ar:'EC (mS/cm)'},
+      twLabel:   {fr:'Temp. eau',   en:'Water temp.',   ar:'حرارة الماء'},
+      ok:        {fr:'✓ Normal',    en:'✓ Normal',      ar:'✓ عادي'},
+      warn:      {fr:'⚠ Hors cible',en:'⚠ Off target',  ar:'⚠ خارج الهدف'},
+      secWhat:   {fr:'Ce que fait cette station',en:'What this station does',ar:'ما تفعله المحطة'},
+      secRanges: {fr:'Plages cibles',en:'Target ranges',ar:'النطاقات المستهدفة'},
+      secSet:    {fr:'Réglages',    en:'Settings',       ar:'الإعدادات'},
+      vol:       {fr:'Volume réservoir',en:'Tank volume',ar:'حجم الخزان'},
+      cyc:       {fr:'Cycles',      en:'Cycles',         ar:'الدورات'},
+      reg:       {fr:'Régulation',  en:'Regulation',     ar:'التنظيم'},
+      auto:      {fr:'Automatique', en:'Automatic',      ar:'تلقائي'},
+      prog:      {fr:'Programmable',en:'Programmable',   ar:'قابل للبرمجة'},
+      refresh:   {fr:'Actualiser',  en:'Refresh',        ar:'تحديث'},
+      live:      {fr:'Données en direct',en:'Live data', ar:'بيانات مباشرة'},
+    };
+    const tl = k => L[k]?.[lang] || L[k]?.fr || k;
+
+    // What-items
+    const whatFR=['Prépare et distribue la solution nutritive automatiquement','Ajuste pH et EC en temps réel selon les capteurs','Adapte les nutriments au stade de croissance','Irrigation programmée par cycles, 24h/24'];
+    const whatEN=['Prepares and distributes nutrient solution automatically','Adjusts pH and EC in real time from sensor data','Adapts nutrients to the plant growth stage','Scheduled irrigation cycles, 24/7'];
+    const whatAR=['تحضير وتوزيع المحلول الغذائي تلقائياً','ضبط pH والـ EC فوريًا حسب المستشعرات','تكييف العناصر مع مرحلة نمو النبات','دورات ري مبرمجة على مدار الساعة'];
+    const icons=['⚗️','⚙️','🌱','⏱️'];
+    const whatArr = lang==='en'?whatEN:lang==='ar'?whatAR:whatFR;
+
+    // Range calcs
+    const phMin=phT.valeur_min||5.5, phMax=phT.valeur_max||6.5;
+    const ecMin=ecT.valeur_min||1.0, ecMax=ecT.valeur_max||2.2;
+    const phSlo=4,phShi=8,ecSlo=0,ecShi=3;
+    const pct=(v,lo,hi)=>Math.min(100,Math.max(0,((v-lo)/(hi-lo))*100));
+    const phPtr = ph!=null ? pct(ph,phSlo,phShi) : null;
+    const ecPtr = ec!=null ? pct(ec,ecSlo,ecShi) : null;
+    const phFl  = pct(phMin,phSlo,phShi);
+    const phFw  = pct(phMax,phSlo,phShi)-phFl;
+    const ecFl  = pct(ecMin,ecSlo,ecShi);
+    const ecFw  = pct(ecMax,ecSlo,ecShi)-ecFl;
+
+    html += '<div class="fert-live-strip">'
+      +'<div class="fert-live-metric"><div class="fert-lm-val">'+f2(ph)+'</div><div class="fert-lm-label">'+tl('phLabel')+'</div>'+(ph!=null?'<div class="fert-lm-status '+(phOk?'fert-lm-ok':'fert-lm-warn')+'">'+tl(phOk?'ok':'warn')+'</div>':'')+'</div>'
+      +'<div class="fert-live-metric"><div class="fert-lm-val">'+f2(ec)+'</div><div class="fert-lm-label">'+tl('ecLabel')+'</div>'+(ec!=null?'<div class="fert-lm-status '+(ecOk?'fert-lm-ok':'fert-lm-warn')+'">'+tl(ecOk?'ok':'warn')+'</div>':'')+'</div>'
+      +'<div class="fert-live-metric"><div class="fert-lm-val">'+(tw!=null?f1(tw)+'°':'—')+'</div><div class="fert-lm-label">'+tl('twLabel')+'</div>'+(tw!=null?'<div class="fert-lm-status fert-lm-ok">'+tl('ok')+'</div>':'')+'</div>'
+      +'</div>';
+
+    html += '<div class="ar-section-title">'+tl('secWhat')+'</div>'
+      +'<div class="fert-what-grid">'
+      +whatArr.map((w,i)=>'<div class="fert-what-card"><div class="fert-what-icon">'+icons[i]+'</div><div class="fert-what-text">'+w+'</div></div>').join('')
+      +'</div>';
+
+    html += '<div class="ar-section-title">'+tl('secRanges')+'</div>';
+    html += '<div class="fert-range-wrap">'
+      +'<div class="fert-range-label"><span>pH '+phMin+' – '+phMax+'</span><span class="'+(phOk?'fert-lm-ok':'fert-lm-warn')+'">'+(ph!=null?f2(ph):'')+'</span></div>'
+      +'<div class="fert-range-track">'
+      +'<div class="fert-range-fill" style="width:'+phFw.toFixed(1)+'%;margin-left:'+phFl.toFixed(1)+'%;opacity:.4"></div>'
+      +(phPtr!=null?'<div class="fert-range-pointer'+(phOk?'':' warn')+'" style="left:'+phPtr.toFixed(1)+'%"></div>':'')
+      +'</div><div class="fert-range-ticks"><span>'+phSlo+'</span><span>'+phShi+'</span></div></div>';
+
+    html += '<div class="fert-range-wrap">'
+      +'<div class="fert-range-label"><span>EC '+ecMin+' – '+ecMax+' mS/cm</span><span class="'+(ecOk?'fert-lm-ok':'fert-lm-warn')+'">'+(ec!=null?f2(ec)+' mS/cm':'')+'</span></div>'
+      +'<div class="fert-range-track">'
+      +'<div class="fert-range-fill" style="width:'+ecFw.toFixed(1)+'%;margin-left:'+ecFl.toFixed(1)+'%;opacity:.4"></div>'
+      +(ecPtr!=null?'<div class="fert-range-pointer'+(ecOk?'':' warn')+'" style="left:'+ecPtr.toFixed(1)+'%"></div>':'')
+      +'</div><div class="fert-range-ticks"><span>'+ecSlo+'</span><span>'+ecShi+'</span></div></div>';
+
+    html += '<div class="ar-section-title">'+tl('secSet')+'</div>'
+      +'<div class="fert-param-rows">'
+      +'<div class="fert-param-row"><span class="fert-param-label">'+tl('vol')+'</span><span class="fert-param-val">500 L</span></div>'
+      +'<div class="fert-param-row"><span class="fert-param-label">'+tl('cyc')+'</span><span class="fert-param-val">'+tl('prog')+'</span></div>'
+      +'<div class="fert-param-row"><span class="fert-param-label">'+tl('reg')+'</span><span class="fert-param-val">'+tl('auto')+'</span></div>'
+      +'</div>';
+
+    html += '<div class="fert-footer">'
+      +'<span class="fert-sync">⟳ '+tl('live')+'</span>'
+      +'<button class="fert-detail-btn" onclick="typeof fetchIoT!==\'undefined\'&&fetchIoT().then(()=>renderARTab(window.activeTab||0,getARDef(window.activeAR)))">↺ '+tl('refresh')+'</button>'
+      +'</div>';
+
+    el.innerHTML = html;
+    return;
+  }
+
   // ── Static info sections ──
 
-
-
   html += def.sections.map(sec => {
-    const lang = (window.currentLang || 'FR').toLowerCase();
-    const labelMap = {
-      'FONCTIONS':          {en:'FUNCTIONS',         ar:'الوظائف'},
-      'PARAMÈTRES':         {en:'PARAMETERS',        ar:'المعاملات'},
-      'IDENTIFICATION':     {en:'IDENTIFICATION',    ar:'التعريف'},
-      'CONDITIONS OPTIMALES':{en:'OPTIMAL CONDITIONS',ar:'الظروف المثلى'},
-      'CULTURE':            {en:'CULTIVATION',       ar:'الزراعة'},
-      'CAPTEURS INSTALLÉS': {en:'INSTALLED SENSORS', ar:'أجهزة الاستشعار'},
-      'PROTOCOLE':          {en:'PROTOCOL',          ar:'البروتوكول'},
-    };
-    const secLabel = lang==='fr' ? sec.label : (labelMap[sec.label]?.[lang] || sec.label);
-    let s = `<div class="ar-section-title">${secLabel}</div>`;
-    const items   = sec['items_'+lang]   || sec.items;
-    const bullets = sec['bullets_'+lang] || sec.bullets;
-    if(items)   s += items.map(item=>`
+
+
+
+    let s = `<div class="ar-section-title">${sec.label}</div>`;
+
+
+
+    if(sec.items) s += sec.items.map(item=>`
+
+
+
       <div class="ar-info-row">
+
+
+
         <span class="ar-info-label">${item.k}</span>
+
+
+
         ${item.tag
+
+
+
           ? `<span class="ar-badge" style="${tagColors[item.tag]||''}">${item.v}</span>`
+
+
+
           : `<span class="ar-info-value">${item.v}</span>`}
+
+
+
       </div>`).join('');
-    if(bullets) s += `<div class="ar-bullets">${bullets.map(b=>
+
+
+
+    if(sec.bullets) s += `<div class="ar-bullets">${sec.bullets.map(b=>
+
+
+
       `<div class="ar-bullet"><div class="ar-bullet-dot"></div><span>${b}</span></div>`).join('')}</div>`;
+
+
+
     return s;
+
+
+
   }).join('');
 
 
@@ -5220,7 +5310,7 @@ function renderARTab(i, def){
 
 
 
-    html += `<div class="ar-section-title">${t('resource')}</div>
+    html += `<div class="ar-section-title">RESSOURCE</div>
 
 
 
@@ -5262,7 +5352,7 @@ function closeAR(){
 
 
 
-  window.activeAR=null;
+  activeAR=null;
 
 
 
