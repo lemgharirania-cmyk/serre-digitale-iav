@@ -80,7 +80,7 @@ export default function FooterGeoportail({ lang, darkMode }) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="2.5"/>
                 <polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" strokeWidth="2.5"/>
               </svg>
-              PFE · Ingénieur Géomètre Topographe · 2024–2025
+              PFE · Ingénieur Géomètre Topographe · 2025–2026
             </div>
           </div>
 
@@ -107,7 +107,7 @@ export default function FooterGeoportail({ lang, darkMode }) {
           fontSize: '11px', color: ink3,
           textAlign: 'center', paddingTop: '1.25rem',
         }}>
-          © 2025 IAV Hassan II · Campus AgroBioTech · Tous droits réservés
+          © 2026 IAV Hassan II · Campus AgroBioTech · Tous droits réservés
         </div>
       </div>
     </footer>
