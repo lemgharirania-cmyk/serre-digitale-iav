@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Sun, Moon } from 'lucide-react'
 
-export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWidth = 240 }) {
+export default function Header({ lang, setLang, darkMode, setDarkMode }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -12,12 +12,12 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
   }, [])
 
   const bg = darkMode
-    ? scrolled ? 'rgba(7,17,31,0.92)' : 'rgba(7,17,31,0.72)'
-    : scrolled ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.75)'
+    ? scrolled ? 'rgba(7,17,31,0.95)' : 'rgba(7,17,31,0.80)'
+    : scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.82)'
 
-  const borderColor = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)'
+  const borderColor = darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)'
   const shadow = scrolled
-    ? darkMode ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(15,23,42,0.08)'
+    ? darkMode ? '0 8px 32px rgba(0,0,0,0.45)' : '0 8px 32px rgba(15,23,42,0.09)'
     : 'none'
 
   const btnBorder = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.1)'
@@ -45,52 +45,56 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
 
   return (
     <header style={{
-      position: 'fixed', top: 0, left: `${sidebarWidth}px`, right: 0, zIndex: 300,
-      height: '80px',
+      position: 'fixed',
+      top: 0,
+      left: 0,       // ← full width, starts at left edge
+      right: 0,
+      zIndex: 500,   // ← above sidebar
+      height: '72px',
       background: bg,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
       borderBottom: `1px solid ${borderColor}`,
-      borderRadius: scrolled ? '0 0 18px 18px' : '0',
       boxShadow: shadow,
       display: 'flex', alignItems: 'center',
-      padding: '0 48px', gap: '32px',
-      transition: 'background 0.35s ease, box-shadow 0.35s ease, border-radius 0.35s ease, left 0.3s ease',
+      padding: '0 32px',
+      gap: '28px',
+      transition: 'background 0.35s ease, box-shadow 0.35s ease',
     }}>
 
       {/* Logo + Title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
-      <div
-  style={{
-    width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
-    overflow: 'hidden',
-    boxShadow: darkMode
-      ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
-      : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    cursor: 'pointer',
-  }}
-  onMouseEnter={e => {
-    e.currentTarget.style.transform = 'scale(1.07) rotate(-3deg)'
-    e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45), 0 8px 20px rgba(0,0,0,0.2)'
-  }}
-  onMouseLeave={e => {
-    e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
-    e.currentTarget.style.boxShadow = darkMode
-      ? '0 0 20px rgba(34,197,94,0.25), 0 4px 12px rgba(0,0,0,0.3)'
-      : '0 0 16px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.1)'
-  }}
->
-  <img
-    src="/iav_logo.png"
-    alt="IAV Logo"
-    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-  />
-</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
+        <div
+          style={{
+            width: '46px', height: '46px', borderRadius: '14px', flexShrink: 0,
+            overflow: 'hidden',
+            boxShadow: darkMode
+              ? '0 0 18px rgba(34,197,94,0.22), 0 3px 10px rgba(0,0,0,0.3)'
+              : '0 0 14px rgba(34,197,94,0.18), 0 3px 10px rgba(0,0,0,0.09)',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'scale(1.07) rotate(-3deg)'
+            e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.42), 0 6px 18px rgba(0,0,0,0.18)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
+            e.currentTarget.style.boxShadow = darkMode
+              ? '0 0 18px rgba(34,197,94,0.22), 0 3px 10px rgba(0,0,0,0.3)'
+              : '0 0 14px rgba(34,197,94,0.18), 0 3px 10px rgba(0,0,0,0.09)'
+          }}
+        >
+          <img
+            src="/iav_logo.png"
+            alt="IAV Logo"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{
-            fontSize: '19px', fontWeight: 800,
+            fontSize: '18px', fontWeight: 800,
             fontFamily: "'Space Grotesk','Outfit',sans-serif",
             letterSpacing: '-0.5px', lineHeight: 1,
             display: 'flex', alignItems: 'baseline', gap: '5px',
@@ -99,12 +103,12 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
             <span style={{ color: '#22C55E' }}>{titleLast}</span>
           </div>
           <div style={{
-            fontSize: '11px', fontWeight: 500,
+            fontSize: '10.5px', fontWeight: 500,
             color: darkMode ? '#64748B' : '#94A3B8',
             fontFamily: "'Inter','Outfit',sans-serif", lineHeight: 1,
           }}>{T.sub}</div>
           <div style={{
-            fontSize: '9px', fontWeight: 600,
+            fontSize: '8.5px', fontWeight: 600,
             color: darkMode ? '#475569' : '#CBD5E1',
             letterSpacing: '0.12em', textTransform: 'uppercase', lineHeight: 1,
           }}>{T.tech}</div>
@@ -116,13 +120,13 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
       {/* Live badge */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '7px',
-        background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
-        borderRadius: '999px', padding: '7px 14px',
-        fontSize: '12px', fontWeight: 600, color: '#22C55E', flexShrink: 0,
+        background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.22)',
+        borderRadius: '999px', padding: '6px 13px',
+        fontSize: '11.5px', fontWeight: 600, color: '#22C55E', flexShrink: 0,
       }}>
         <span style={{
-          width: '7px', height: '7px', borderRadius: '50%',
-          background: '#22C55E', boxShadow: '0 0 8px rgba(34,197,94,0.8)',
+          width: '6px', height: '6px', borderRadius: '50%',
+          background: '#22C55E', boxShadow: '0 0 7px rgba(34,197,94,0.8)',
           display: 'inline-block', animation: 'hdrPulse 2s ease-in-out infinite',
         }} />
         {T.live}
@@ -131,11 +135,11 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
       {/* Lang toggle */}
       <div style={{
         display: 'flex', border: `1px solid ${btnBorder}`,
-        borderRadius: '14px', overflow: 'hidden', height: '44px', flexShrink: 0,
+        borderRadius: '12px', overflow: 'hidden', height: '40px', flexShrink: 0,
       }}>
         {['fr', 'en'].map(l => (
           <button key={l} onClick={() => setLang(l)} style={{
-            padding: '0 18px', height: '44px', fontSize: '13px', fontWeight: 700,
+            padding: '0 16px', height: '40px', fontSize: '12.5px', fontWeight: 700,
             background: lang === l
               ? (darkMode ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.12)') : btnBg,
             color: lang === l ? '#22C55E' : btnColor,
@@ -147,15 +151,15 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
 
       {/* Dark/Light toggle */}
       <button onClick={() => setDarkMode(d => !d)} style={{
-        display: 'flex', alignItems: 'center', gap: '9px',
-        height: '44px', padding: '0 20px', borderRadius: '14px',
+        display: 'flex', alignItems: 'center', gap: '8px',
+        height: '40px', padding: '0 18px', borderRadius: '12px',
         cursor: 'pointer', background: btnBg, border: `1px solid ${btnBorder}`,
-        color: btnColor, fontSize: '13px', fontWeight: 600,
+        color: btnColor, fontSize: '12.5px', fontWeight: 600,
         fontFamily: "'Outfit',sans-serif", transition: 'all 0.3s ease', flexShrink: 0,
       }}
         onMouseEnter={e => {
           e.currentTarget.style.background  = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
-          e.currentTarget.style.boxShadow   = '0 0 16px rgba(34,197,94,0.18)'
+          e.currentTarget.style.boxShadow   = '0 0 14px rgba(34,197,94,0.18)'
           e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
         }}
         onMouseLeave={e => {
@@ -165,8 +169,8 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, sidebarWi
         }}
       >
         {darkMode
-          ? <><Sun size={15} strokeWidth={2} /><span>{T.day}</span></>
-          : <><Moon size={15} strokeWidth={2} /><span>{T.night}</span></>
+          ? <><Sun size={14} strokeWidth={2} /><span>{T.day}</span></>
+          : <><Moon size={14} strokeWidth={2} /><span>{T.night}</span></>
         }
       </button>
 
