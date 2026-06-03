@@ -1,273 +1,328 @@
 // src/components/geoportail/SectionPlan2D.jsx
 import { useState } from 'react'
+import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
 
-const SERRES = [
+// ── Image dimensions (px) at display: 1320×880 ───────────────
+// All zones are expressed as percentages of the image dimensions
+// Image: 1320px wide × 880px tall (approximate)
+
+const ZONES = [
+  // ── Serres (5 cliquables) ────────────────────────────────
   {
-    code: 'S01', color: '#22C55E',
-    nameFr: 'Génétique & Amélioration', nameEn: 'Genetics & Improvement',
-    roleFr: 'Sélection variétale, culture in vitro et amélioration génétique des espèces végétales.',
-    roleEn: 'Varietal selection, in vitro culture and genetic improvement of plant species.',
-    culturesFr: 'Tomate, Piment, Melon',
-    culturesEn: 'Tomato, Pepper, Melon',
-    capteursFr: '2 capteurs ENV · 2 capteurs IRR',
-    capteursEn: '2 ENV sensors · 2 IRR sensors',
-    // Coordonnées exactes dans le SVG original (viewBox 620 155 440 355)
-    rx: 642, ry: 173, rw: 130, rh: 130,
+    id: 'S01', type: 'serre', color: '#22C55E',
+    // Position in % of image width/height
+    left: '37.5%', top: '28%', width: '15.5%', height: '34%',
+    nameFr: 'Unité — Génétique et Amélioration des Plantes',
+    nameEn: 'Unit — Plant Genetics & Improvement',
+    roleFr: 'Sélection variétale, culture in vitro et amélioration génétique des espèces végétales cultivées en conditions contrôlées.',
+    roleEn: 'Varietal selection, in vitro culture and genetic improvement of plant species grown under controlled conditions.',
+    culturesFr: 'Tomate · Piment · Melon',
+    culturesEn: 'Tomato · Pepper · Melon',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    matterportId: null, // Remplacer par l'ID Matterport réel ex: 'SFm3nb9WMe4'
+    matterportFr: 'Visite virtuelle 3D — Génétique',
+    matterportEn: '3D Virtual Tour — Genetics',
   },
   {
-    code: 'S02', color: '#06B6D4',
-    nameFr: 'Horticulture', nameEn: 'Horticulture',
-    roleFr: 'Production florale, maraîchage sous abri et expérimentations horticoles.',
-    roleEn: 'Flower production, greenhouse vegetables and horticultural experiments.',
-    culturesFr: 'Roses, Laitue, Fraise',
-    culturesEn: 'Roses, Lettuce, Strawberry',
-    capteursFr: '2 capteurs ENV · 2 capteurs IRR',
-    capteursEn: '2 ENV sensors · 2 IRR sensors',
-    rx: 772, ry: 173, rw: 130, rh: 130,
+    id: 'S02', type: 'serre', color: '#06B6D4',
+    left: '53.5%', top: '28%', width: '14.5%', height: '34%',
+    nameFr: 'Unité — Horticulture',
+    nameEn: 'Unit — Horticulture',
+    roleFr: 'Production florale, maraîchage sous abri et expérimentations horticoles sur espèces à haute valeur commerciale.',
+    roleEn: 'Flower production, greenhouse vegetables and horticultural experiments on high commercial value species.',
+    culturesFr: 'Roses · Laitue · Fraise',
+    culturesEn: 'Roses · Lettuce · Strawberry',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    matterportId: null,
+    matterportFr: 'Visite virtuelle 3D — Horticulture',
+    matterportEn: '3D Virtual Tour — Horticulture',
   },
   {
-    code: 'S03', color: '#F59E0B',
-    nameFr: 'Agronomie', nameEn: 'Agronomy',
-    roleFr: 'Essais culturaux, comparaisons variétales et recherche appliquée en agronomie.',
-    roleEn: 'Crop trials, varietal comparisons and applied agronomy research.',
-    culturesFr: 'Blé, Orge, Légumineuses',
-    culturesEn: 'Wheat, Barley, Legumes',
-    capteursFr: '2 capteurs ENV · 2 capteurs IRR',
-    capteursEn: '2 ENV sensors · 2 IRR sensors',
-    rx: 901, ry: 173, rw: 129, rh: 130,
+    id: 'S03', type: 'serre', color: '#F59E0B',
+    left: '68.5%', top: '28%', width: '15.5%', height: '34%',
+    nameFr: 'Unité — Agronomie',
+    nameEn: 'Unit — Agronomy',
+    roleFr: 'Essais culturaux, comparaisons variétales et recherche appliquée en agronomie des grandes cultures.',
+    roleEn: 'Crop trials, varietal comparisons and applied agronomy research on field crops.',
+    culturesFr: 'Blé · Orge · Légumineuses',
+    culturesEn: 'Wheat · Barley · Legumes',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    matterportId: null,
+    matterportFr: 'Visite virtuelle 3D — Agronomie',
+    matterportEn: '3D Virtual Tour — Agronomy',
   },
   {
-    code: 'S04', color: '#8B5CF6',
-    nameFr: 'Hydroponie', nameEn: 'Hydroponics',
-    roleFr: 'Culture hors-sol en systèmes NFT, DWC et aéroponie pour production intensive.',
-    roleEn: 'Soilless cultivation in NFT, DWC and aeroponic systems for intensive production.',
-    culturesFr: 'Basilic, Tomate, Laitue, Fraise',
-    culturesEn: 'Basil, Tomato, Lettuce, Strawberry',
-    capteursFr: '2 capteurs ENV · 2 capteurs IRR',
-    capteursEn: '2 ENV sensors · 2 IRR sensors',
-    rx: 901, ry: 363, rw: 129, rh: 129,
+    id: 'S05', type: 'serre', color: '#EF4444',
+    left: '53%', top: '65%', width: '15%', height: '30%',
+    nameFr: 'Unité — Protection des Plantes',
+    nameEn: 'Unit — Plant Protection',
+    roleFr: 'Phytopathologie, entomologie et méthodes de lutte intégrée contre les ravageurs et maladies des cultures.',
+    roleEn: 'Phytopathology, entomology and integrated pest management methods against crop pests and diseases.',
+    culturesFr: 'Plants test · Cultures témoin · Zone quarantaine',
+    culturesEn: 'Test plants · Control cultures · Quarantine zone',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    matterportId: null,
+    matterportFr: 'Visite virtuelle 3D — Protection des Plantes',
+    matterportEn: '3D Virtual Tour — Plant Protection',
   },
   {
-    code: 'S05', color: '#EF4444',
-    nameFr: 'Protection des Plantes', nameEn: 'Plant Protection',
-    roleFr: 'Phytopathologie, entomologie et méthodes de lutte intégrée contre les ravageurs.',
-    roleEn: 'Phytopathology, entomology and integrated pest management methods.',
-    culturesFr: 'Plants test, Cultures témoin',
-    culturesEn: 'Test plants, Control cultures',
-    capteursFr: '2 capteurs ENV · 2 capteurs IRR',
-    capteursEn: '2 ENV sensors · 2 IRR sensors',
-    rx: 642, ry: 363, rw: 259, rh: 129,
+    id: 'S04', type: 'serre', color: '#8B5CF6',
+    left: '68.5%', top: '65%', width: '15.5%', height: '30%',
+    nameFr: 'Unité — Hydroponie et Systèmes Innovants',
+    nameEn: 'Unit — Hydroponics & Innovative Systems',
+    roleFr: 'Culture hors-sol en systèmes NFT, DWC et aéroponie pour production intensive et recherche sur les solutions nutritives.',
+    roleEn: 'Soilless cultivation in NFT, DWC and aeroponic systems for intensive production and nutrient solution research.',
+    culturesFr: 'Basilic · Tomate · Laitue · Fraise',
+    culturesEn: 'Basil · Tomato · Lettuce · Strawberry',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    matterportId: null,
+    matterportFr: 'Visite virtuelle 3D — Hydroponie',
+    matterportEn: '3D Virtual Tour — Hydroponics',
+  },
+  // ── Salles techniques ────────────────────────────────────
+  {
+    id: 'salle-reunion', type: 'technique', color: '#64748B',
+    left: '5%', top: '28%', width: '10.5%', height: '33%',
+    nameFr: 'Salle de Réunion',
+    nameEn: 'Meeting Room',
+    descFr: 'Espace de réunion et de coordination pour les équipes de recherche et les formations du complexe AgroBioTech.',
+    descEn: 'Meeting and coordination space for research teams and training sessions at the AgroBioTech complex.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Salle de Réunion',
+    matterportEn: '3D Scan — Meeting Room',
+  },
+  {
+    id: 'local-technique', type: 'technique', color: '#64748B',
+    left: '16%', top: '28%', width: '10.5%', height: '33%',
+    nameFr: 'Local Technique et Équipements',
+    nameEn: 'Technical Room & Equipment',
+    descFr: 'Local abritant les équipements électriques, les systèmes de contrôle IoT et l\'infrastructure réseau du complexe.',
+    descEn: 'Room housing electrical equipment, IoT control systems and network infrastructure of the complex.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Local Technique',
+    matterportEn: '3D Scan — Technical Room',
+  },
+  {
+    id: 'salle-training', type: 'technique', color: '#64748B',
+    left: '27%', top: '28%', width: '10%', height: '33%',
+    nameFr: 'Salle Training et Conseil et Automatisation',
+    nameEn: 'Training, Advisory & Automation Room',
+    descFr: 'Salle dédiée aux formations techniques, aux démonstrations d\'automatisation et aux conseils agronomiques.',
+    descEn: 'Room dedicated to technical training, automation demonstrations and agronomic advisory sessions.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Salle Training',
+    matterportEn: '3D Scan — Training Room',
+  },
+  {
+    id: 'salle-lavage', type: 'technique', color: '#64748B',
+    left: '5%', top: '63%', width: '10.5%', height: '32%',
+    nameFr: 'Salle de Lavage',
+    nameEn: 'Washing Room',
+    descFr: 'Espace équipé pour le nettoyage et la décontamination du matériel végétal, des équipements et des contenants.',
+    descEn: 'Space equipped for cleaning and decontaminating plant material, equipment and containers.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Salle de Lavage',
+    matterportEn: '3D Scan — Washing Room',
+  },
+  {
+    id: 'salle-fertilisation', type: 'technique', color: '#64748B',
+    left: '16%', top: '63%', width: '10.5%', height: '32%',
+    nameFr: 'Salle de Fertilisation et Traitement d\'Eau',
+    nameEn: 'Fertilisation & Water Treatment Room',
+    descFr: 'Salle équipée de cuves de stockage, de systèmes de dosage et de traitement de l\'eau pour la fertigation.',
+    descEn: 'Room equipped with storage tanks, dosing systems and water treatment for fertigation.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Fertilisation',
+    matterportEn: '3D Scan — Fertilisation Room',
+  },
+  {
+    id: 'salle-preparation', type: 'technique', color: '#64748B',
+    left: '27%', top: '63%', width: '10%', height: '32%',
+    nameFr: 'Salle de Préparation',
+    nameEn: 'Preparation Room',
+    descFr: 'Espace de préparation des substrats, des semences, des boutures et du matériel de culture avant mise en place.',
+    descEn: 'Space for preparing substrates, seeds, cuttings and cultivation materials before deployment.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Salle Préparation',
+    matterportEn: '3D Scan — Preparation Room',
+  },
+  {
+    id: 'zone-prep-protection', type: 'technique', color: '#64748B',
+    left: '37.5%', top: '65%', width: '14.5%', height: '30%',
+    nameFr: 'Zone Technique — Protection (SAS + Broyage + Stockage + Préparation)',
+    nameEn: 'Technical Zone — Protection (SAS + Grinding + Storage + Preparation)',
+    descFr: 'Zone comprenant le SAS d\'entrée, la salle de broyage et désinfection, le stockage produits et la salle de préparation de l\'unité protection.',
+    descEn: 'Zone including the entry airlock, grinding and disinfection room, product storage and preparation room for the protection unit.',
+    matterportId: null,
+    matterportFr: 'Visite 3D — Zone Protection',
+    matterportEn: '3D Scan — Protection Zone',
   },
 ]
 
-// ViewBox cadré exactement sur les 5 serres avec petite marge
-const VB = { x: 628, y: 158, w: 415, h: 350 }
+// ── Live data icons ───────────────────────────────────────────
+const PARAM_ICONS = {
+  temperature: Thermometer,
+  humidite:    Droplets,
+  vpd:         Wind,
+  co2:         Leaf,
+  ph:          FlaskConical,
+  ec:          Zap,
+  temp_eau:    Waves,
+  niveau_eau:  BarChart2,
+}
+
+const PARAM_LABELS = {
+  fr: { temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'T° Eau', niveau_eau:'Niveau Eau' },
+  en: { temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'Water T°', niveau_eau:'Water Level' },
+}
+
+const PARAM_UNITS = { temperature:'°C', humidite:'%', vpd:' kPa', co2:' ppm', ph:'', ec:' mS/cm', temp_eau:'°C', niveau_eau:' m' }
+const PARAM_COLORS = { temperature:'#F59E0B', humidite:'#06B6D4', vpd:'#8B5CF6', co2:'#22C55E', ph:'#0891b2', ec:'#059669', temp_eau:'#F59E0B', niveau_eau:'#3773bd' }
 
 export default function SectionPlan2D({ lang, liveData, darkMode }) {
-  const [selected, setSelected] = useState(null)
-  const [hovered,  setHovered]  = useState(null)
-  const [tab,      setTab]      = useState('info')
+  const [selected,    setSelected]    = useState(null)
+  const [hovered,     setHovered]     = useState(null)
+  const [tab,         setTab]         = useState('info') // 'info' | 'data' | 'visite'
 
-  const cardBg     = darkMode ? 'rgba(16,27,46,0.9)' : '#FFFFFF'
+  const cardBg     = darkMode ? 'rgba(16,27,46,0.95)' : '#FFFFFF'
   const cardBorder = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const textColor  = darkMode ? '#F8FAFC' : '#0F172A'
   const textSecond = darkMode ? '#CBD5E1' : '#475569'
   const mutedColor = darkMode ? '#64748B' : '#94A3B8'
 
-  const info = selected ? SERRES.find(s => s.code === selected) : null
-  const live = liveData?.find(d => d.code === selected)
+  const zone    = selected ? ZONES.find(z => z.id === selected) : null
+  const isSerre = zone?.type === 'serre'
+
+  // Find live data for selected serre
+  const serreCode = zone?.id?.startsWith('S') ? zone.id : null
+  const live      = liveData?.find(d => d.code === serreCode)
 
   const T = {
-    badge:   lang === 'fr' ? 'Coupe 2D · AgroBioTech IAV' : '2D Cross-Section · AgroBioTech IAV',
-    title:   lang === 'fr' ? 'Coupe 2D Interactive' : 'Interactive 2D Cross-Section',
-    accent:  lang === 'fr' ? 'des Serres' : 'of Greenhouses',
-    hint:    lang === 'fr' ? 'Cliquez sur une serre pour afficher ses informations' : 'Click on a greenhouse to display its information',
-    tabInfo: lang === 'fr' ? 'Informations' : 'Information',
-    tabData: lang === 'fr' ? 'Données live' : 'Live data',
-    crops:   lang === 'fr' ? 'Cultures principales' : 'Main crops',
-    sensors: lang === 'fr' ? 'Capteurs' : 'Sensors',
-    noData:  lang === 'fr' ? 'Données non disponibles' : 'Data unavailable',
-    select:  lang === 'fr' ? 'Sélectionnez une serre' : 'Select a greenhouse',
-    env:     lang === 'fr' ? 'Environnement' : 'Environment',
-    irr:     lang === 'fr' ? 'Irrigation' : 'Irrigation',
-    temp:    lang === 'fr' ? 'Température' : 'Temperature',
-    hum:     lang === 'fr' ? 'Humidité' : 'Humidity',
-    tEau:    lang === 'fr' ? 'T° Eau' : 'Water Temp',
-    nEau:    lang === 'fr' ? 'Niveau Eau' : 'Water Level',
+    badge:    lang === 'fr' ? 'Coupe 2D · AgroBioTech IAV' : '2D Plan · AgroBioTech IAV',
+    title:    lang === 'fr' ? 'Plan interactif' : 'Interactive plan',
+    accent:   lang === 'fr' ? 'du complexe' : 'of the complex',
+    hint:     lang === 'fr' ? 'Cliquez sur une zone pour afficher ses informations' : 'Click on a zone to display its information',
+    tabInfo:  lang === 'fr' ? 'Informations' : 'Information',
+    tabData:  lang === 'fr' ? 'Données live' : 'Live data',
+    tabVisite:lang === 'fr' ? 'Visite 3D' : '3D Tour',
+    select:   lang === 'fr' ? 'Sélectionnez une zone' : 'Select a zone',
+    noData:   lang === 'fr' ? 'Données non disponibles' : 'Data unavailable',
+    noVisite: lang === 'fr' ? 'Lien Matterport non configuré' : 'Matterport link not configured',
+    cultures: lang === 'fr' ? 'Cultures principales' : 'Main crops',
+    capteurs: lang === 'fr' ? 'Capteurs IoT' : 'IoT sensors',
+    ouvrirVisite: lang === 'fr' ? 'Ouvrir la visite 3D' : 'Open 3D tour',
+    env:      lang === 'fr' ? 'Environnement' : 'Environment',
+    irr:      lang === 'fr' ? 'Irrigation' : 'Irrigation',
+    tech:     lang === 'fr' ? 'Salle technique' : 'Technical room',
+  }
+
+  function handleZoneClick(id) {
+    if (selected === id) { setSelected(null); return }
+    setSelected(id)
+    setTab('info')
   }
 
   return (
     <section id="plan2d" style={{ padding: '5rem 3rem', scrollMarginTop: '64px' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* ── Title ── */}
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: darkMode ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)',
-            border: '1px solid rgba(6,182,212,0.2)',
-            borderRadius: '100px', padding: '6px 18px', marginBottom: '1rem',
-          }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: darkMode ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: '100px', padding: '6px 18px', marginBottom: '1rem' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#06B6D4' }} />
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#06B6D4', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              {T.badge}
-            </span>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#06B6D4', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{T.badge}</span>
           </div>
-          <h2 style={{
-            fontSize: 'clamp(1.8rem,3.5vw,2.8rem)', fontWeight: 900,
-            color: textColor, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.03em',
-          }}>
+          <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.8rem)', fontWeight: 900, color: textColor, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.03em' }}>
             {T.title} <span style={{ color: '#06B6D4' }}>{T.accent}</span>
           </h2>
           <p style={{ fontSize: '13px', color: mutedColor, marginTop: '10px' }}>{T.hint}</p>
         </div>
 
-        {/* ── Legend ── */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '1.5rem' }}>
-          {SERRES.map(s => (
-            <button key={s.code} onClick={() => { setSelected(selected === s.code ? null : s.code); setTab('info') }} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '6px 14px', borderRadius: '20px', cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: '12px', fontWeight: 600,
-              border: `1.5px solid ${s.color}50`,
-              background: selected === s.code ? `${s.color}20` : (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
-              color: selected === s.code ? s.color : mutedColor,
-              transition: 'all 0.2s',
-            }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-              {s.code} — {lang === 'fr' ? s.nameFr.split('&')[0].trim() : s.nameEn.split('&')[0].trim()}
-            </button>
-          ))}
-        </div>
+        {/* ── Main layout ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2rem', alignItems: 'start' }}>
 
-        {/* ── Main grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'start' }}>
+          {/* ── Image + clickable zones ── */}
+          <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', overflow: 'hidden', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
 
-          {/* ── SVG inline avec viewBox cadré ── */}
-          <div style={{
-            background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px',
-            overflow: 'hidden',
-            boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)',
-          }}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
-              style={{
-                width: '100%', height: 'auto', display: 'block',
-                filter: darkMode ? 'invert(1) hue-rotate(180deg) saturate(1.1) brightness(0.85)' : 'none',
-                transition: 'filter 0.4s ease',
-              }}
-            >
-              {/* ── Fond blanc ── */}
-              <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill="white" />
+              {/* Plan image */}
+              <img
+                src="/plan_agrobiotech.png"
+                alt="Plan du complexe AgroBioTech IAV Hassan II"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  filter: darkMode ? 'brightness(0.85) contrast(1.1)' : 'none',
+                  transition: 'filter 0.4s ease',
+                }}
+              />
 
-              {/* ── Contenu SVG original — tous les paths/clips du plan ── */}
-              {/* Bâtiment droit (les 5 serres) */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 621.233519, 163.155101)" fill="none" strokeLinejoin="miter" d="M 0.00114137 0.00153254 L 574.360545 0.00153254 L 574.360545 456.277597 L 0.00114137 456.277597 Z" stroke="#48392e" strokeWidth="8" strokeOpacity="1" strokeMiterlimit="4"/>
-
-              {/* S01 — vert */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 642.895582, 173.623355)" fill="none" strokeLinejoin="miter" d="M -0.00140084 0.00219298 L -0.00140084 172.189713 L 172.186119 172.189713 L 172.186119 0.00219298 L -0.00140084 0.00219298" stroke="#22c55e" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path fill="#22c55e" d="M 642.894531 185.457031 L 646.753906 185.457031 L 646.753906 290.929688 L 642.894531 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#22c55e" d="M 768.175781 185.457031 L 772.035156 185.457031 L 772.035156 290.929688 L 768.175781 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#22c55e" d="M 654.730469 173.625 L 760.203125 173.625 L 760.203125 177.480469 L 654.730469 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#22c55e" d="M 654.730469 298.90625 L 760.203125 298.90625 L 760.203125 302.765625 L 654.730469 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
-
-              {/* S02 — cyan */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 772.045575, 173.623355)" fill="none" strokeLinejoin="miter" d="M 0.00173282 0.00219298 L 0.00173282 172.189713 L 172.189253 172.189713 L 172.189253 0.00219298 L 0.00173282 0.00219298" stroke="#06b6d4" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path fill="#06b6d4" d="M 772.046875 185.457031 L 775.90625 185.457031 L 775.90625 290.929688 L 772.046875 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#06b6d4" d="M 897.328125 185.457031 L 901.1875 185.457031 L 901.1875 290.929688 L 897.328125 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#06b6d4" d="M 783.878906 173.625 L 889.351562 173.625 L 889.351562 177.480469 L 783.878906 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#06b6d4" d="M 783.878906 298.90625 L 889.351562 298.90625 L 889.351562 302.765625 L 783.878906 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
-
-              {/* S03 — amber */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 901.195569, 173.623355)" fill="none" strokeLinejoin="miter" d="M -0.000341846 0.00219298 L -0.000341846 172.189713 L 172.187178 172.189713 L 172.187178 0.00219298 L -0.000341846 0.00219298" stroke="#f59e0b" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path fill="#f59e0b" d="M 901.195312 185.457031 L 905.054688 185.457031 L 905.054688 290.929688 L 901.195312 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#f59e0b" d="M 1026.476562 185.457031 L 1030.335938 185.457031 L 1030.335938 290.929688 L 1026.476562 290.929688 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#f59e0b" d="M 913.027344 173.625 L 1018.503906 173.625 L 1018.503906 177.480469 L 913.027344 177.480469 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#f59e0b" d="M 913.027344 298.90625 L 1018.503906 298.90625 L 1018.503906 302.765625 L 913.027344 302.765625 Z" fillOpacity="1" fillRule="nonzero"/>
-
-              {/* S05 — rouge */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 642.895582, 363.148331)" fill="none" strokeLinejoin="miter" d="M -0.00140084 0.000141559 L -0.00140084 172.187661 L 172.186119 172.187661 L 172.186119 0.000141559 L -0.00140084 0.000141559" stroke="#ef4444" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 772.045575, 363.148331)" fill="none" strokeLinejoin="miter" d="M 0.00173282 0.000141559 L 0.00173282 172.187661 L 172.189253 172.187661 L 172.189253 0.000141559 L 0.00173282 0.000141559" stroke="#ef4444" strokeWidth="10" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path fill="#ef4444" d="M 642.894531 374.980469 L 646.753906 374.980469 L 646.753906 480.457031 L 642.894531 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#ef4444" d="M 897.328125 374.980469 L 901.1875 374.980469 L 901.1875 480.457031 L 897.328125 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#ef4444" d="M 654.730469 363.148438 L 889.351562 363.148438 L 889.351562 367.007812 L 654.730469 367.007812 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#ef4444" d="M 654.730469 488.429688 L 889.351562 488.429688 L 889.351562 492.289062 L 654.730469 492.289062 Z" fillOpacity="1" fillRule="nonzero"/>
-
-              {/* S04 — violet */}
-              <path strokeLinecap="butt" transform="matrix(0.75, 0, 0, 0.75, 901.195569, 363.148331)" fill="none" strokeLinejoin="miter" d="M -0.000341846 0.000141559 L -0.000341846 172.187661 L 172.187178 172.187661 L 172.187178 0.000141559 L -0.000341846 0.000141559" stroke="#8b5cf6" strokeWidth="4" strokeOpacity="1" strokeMiterlimit="4"/>
-              <path fill="#8b5cf6" d="M 901.195312 374.980469 L 905.054688 374.980469 L 905.054688 480.457031 L 901.195312 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#8b5cf6" d="M 1026.476562 374.980469 L 1030.335938 374.980469 L 1030.335938 480.457031 L 1026.476562 480.457031 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#8b5cf6" d="M 913.027344 363.148438 L 1018.503906 363.148438 L 1018.503906 367.007812 L 913.027344 367.007812 Z" fillOpacity="1" fillRule="nonzero"/>
-              <path fill="#8b5cf6" d="M 913.027344 488.429688 L 1018.503906 488.429688 L 1018.503906 492.289062 L 913.027344 492.289062 Z" fillOpacity="1" fillRule="nonzero"/>
-
-              {/* ── Textes des serres (en SVG natif — parfaitement positionnés) ── */}
-              {/* S01 */}
-              <text x="707" y="228" textAnchor="middle" fontSize="10" fill="#22c55e" fontFamily="Arial, sans-serif" fontWeight="700">Unité - Génétique</text>
-              <text x="707" y="243" textAnchor="middle" fontSize="9"  fill="#22c55e" fontFamily="Arial, sans-serif">&amp; Amélioration</text>
-              {/* S02 */}
-              <text x="836" y="228" textAnchor="middle" fontSize="10" fill="#06b6d4" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
-              <text x="836" y="243" textAnchor="middle" fontSize="9"  fill="#06b6d4" fontFamily="Arial, sans-serif">Horticulture</text>
-              {/* S03 */}
-              <text x="965" y="228" textAnchor="middle" fontSize="10" fill="#f59e0b" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
-              <text x="965" y="243" textAnchor="middle" fontSize="9"  fill="#f59e0b" fontFamily="Arial, sans-serif">Agronomie</text>
-              {/* S04 */}
-              <text x="965" y="418" textAnchor="middle" fontSize="10" fill="#8b5cf6" fontFamily="Arial, sans-serif" fontWeight="700">Unité</text>
-              <text x="965" y="433" textAnchor="middle" fontSize="9"  fill="#8b5cf6" fontFamily="Arial, sans-serif">Hydroponie</text>
-              {/* S05 */}
-              <text x="772" y="418" textAnchor="middle" fontSize="10" fill="#ef4444" fontFamily="Arial, sans-serif" fontWeight="700">Unité - Protection</text>
-              <text x="772" y="433" textAnchor="middle" fontSize="9"  fill="#ef4444" fontFamily="Arial, sans-serif">des Plantes</text>
-
-              {/* ── Zones interactives — MÊMES coordonnées que les serres ── */}
-              {SERRES.map(s => {
-                const isHov = hovered  === s.code
-                const isSel = selected === s.code
+              {/* Clickable overlay zones */}
+              {ZONES.map(z => {
+                const isHov = hovered  === z.id
+                const isSel = selected === z.id
                 return (
-                  <g key={s.code}>
-                    <rect
-                      x={s.rx} y={s.ry} width={s.rw} height={s.rh}
-                      fill={isSel ? `${s.color}35` : isHov ? `${s.color}20` : 'transparent'}
-                      stroke={isSel || isHov ? s.color : 'transparent'}
-                      strokeWidth={isSel ? 3 : 2}
-                      rx="3"
-                      style={{ cursor: 'pointer', transition: 'fill 0.2s, stroke 0.2s' }}
-                      onMouseEnter={() => setHovered(s.code)}
-                      onMouseLeave={() => setHovered(null)}
-                      onClick={() => { setSelected(selected === s.code ? null : s.code); setTab('info') }}
-                    />
-                    {/* Badge code sur hover/sélection */}
+                  <div
+                    key={z.id}
+                    title={lang === 'fr' ? z.nameFr : z.nameEn}
+                    onClick={() => handleZoneClick(z.id)}
+                    onMouseEnter={() => setHovered(z.id)}
+                    onMouseLeave={() => setHovered(null)}
+                    style={{
+                      position: 'absolute',
+                      left:   z.left,
+                      top:    z.top,
+                      width:  z.width,
+                      height: z.height,
+                      cursor: 'pointer',
+                      background: isSel
+                        ? `${z.color}40`
+                        : isHov ? `${z.color}22` : 'transparent',
+                      border: isSel
+                        ? `2.5px solid ${z.color}`
+                        : isHov ? `2px solid ${z.color}aa` : `1px solid transparent`,
+                      borderRadius: '4px',
+                      transition: 'all 0.18s ease',
+                      backdropFilter: (isHov || isSel) ? 'blur(1px)' : 'none',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-end',
+                      padding: '4px',
+                    }}
+                  >
+                    {/* Badge visible on hover/select */}
                     {(isHov || isSel) && (
-                      <g>
-                        <rect
-                          x={s.rx + s.rw / 2 - 18} y={s.ry + 6}
-                          width="36" height="16" rx="8"
-                          fill={s.color}
-                          style={{ pointerEvents: 'none' }}
-                        />
-                        <text
-                          x={s.rx + s.rw / 2} y={s.ry + 18}
-                          textAnchor="middle" fontSize="9"
-                          fill="white" fontFamily="Arial, sans-serif" fontWeight="700"
-                          style={{ pointerEvents: 'none' }}
-                        >
-                          {s.code}
-                        </text>
-                      </g>
+                      <div style={{
+                        background: z.color,
+                        color: 'white',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        padding: '2px 7px',
+                        borderRadius: '8px',
+                        fontFamily: "'Outfit', sans-serif",
+                        boxShadow: `0 2px 8px ${z.color}60`,
+                        whiteSpace: 'nowrap',
+                        maxWidth: '90%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {z.id.startsWith('S') ? z.id : (lang==='fr'?z.nameFr:z.nameEn).split(' ').slice(0,3).join(' ')}
+                      </div>
                     )}
-                  </g>
+                  </div>
                 )
               })}
-            </svg>
+            </div>
 
             {/* Hint bar */}
-            <div style={{
-              padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px',
-              borderTop: `1px solid ${cardBorder}`,
-              background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-            }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={mutedColor} strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-              </svg>
+            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', borderTop: `1px solid ${cardBorder}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+              <Info size={12} color={mutedColor} />
               <span style={{ fontSize: '11px', color: mutedColor }}>{T.hint}</span>
             </div>
           </div>
@@ -275,133 +330,203 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
           {/* ── Info panel ── */}
           <div style={{
             background: cardBg,
-            border: `1px solid ${info ? info.color + '30' : cardBorder}`,
-            borderRadius: '24px', overflow: 'hidden',
+            border: `1px solid ${zone ? zone.color+'40' : cardBorder}`,
+            borderRadius: '20px',
+            overflow: 'hidden',
             boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)',
             transition: 'border-color 0.3s',
-            minHeight: '320px',
+            minHeight: '340px',
+            position: 'sticky',
+            top: '100px',
           }}>
-            {!selected ? (
+
+            {/* No selection */}
+            {!selected && (
               <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: mutedColor }}>
-                <div style={{
-                  width: '52px', height: '52px', borderRadius: '14px',
-                  background: darkMode ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)',
-                  border: '1px solid rgba(6,182,212,0.2)',
-                  margin: '0 auto 1rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="1.5">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                  </svg>
+                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: darkMode ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.2)', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Info size={22} color="#06B6D4" />
                 </div>
                 <p style={{ fontSize: '14px', marginBottom: '1.5rem', lineHeight: 1.6 }}>{T.select}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {SERRES.map(s => (
-                    <button key={s.code} onClick={() => { setSelected(s.code); setTab('info') }} style={{
-                      display: 'flex', alignItems: 'center', gap: '8px',
-                      padding: '8px 12px', borderRadius: '10px', cursor: 'pointer',
-                      fontFamily: 'inherit', fontSize: '12px', fontWeight: 500,
-                      border: `1px solid ${s.color}25`,
-                      background: `${s.color}08`, color: s.color,
-                      transition: 'all 0.2s', textAlign: 'left',
-                    }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                      <span style={{ flex: 1 }}>{s.code} — {lang === 'fr' ? s.nameFr : s.nameEn}</span>
+                {/* Quick zone list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+                  {ZONES.filter(z=>z.type==='serre').map(z => (
+                    <button key={z.id} onClick={() => handleZoneClick(z.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 12px', borderRadius: '10px', border: `1px solid ${z.color}25`, background: `${z.color}08`, color: z.color, cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, transition: 'all 0.15s' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: z.color, flexShrink: 0 }} />
+                      {z.id} — {lang==='fr' ? z.nameFr.replace('Unité — ','') : z.nameEn.replace('Unit — ','')}
                     </button>
                   ))}
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Zone selected */}
+            {zone && (
               <>
-                <div style={{ height: '4px', background: `linear-gradient(90deg, ${info.color}, transparent)` }} />
-                <div style={{ display: 'flex', borderBottom: `1px solid ${cardBorder}` }}>
-                  {['info','data'].map(t => (
-                    <button key={t} onClick={() => setTab(t)} style={{
-                      flex: 1, padding: '13px 10px', fontSize: '13px', fontWeight: 600,
-                      background: tab === t ? `${info.color}10` : 'transparent',
-                      color: tab === t ? info.color : mutedColor,
-                      border: 'none', borderBottom: `2px solid ${tab === t ? info.color : 'transparent'}`,
-                      cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                {/* Color bar */}
+                <div style={{ height: '4px', background: `linear-gradient(90deg, ${zone.color}, transparent)` }} />
+
+                {/* Close + zone name */}
+                <div style={{ padding: '14px 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: zone.color, boxShadow: `0 0 8px ${zone.color}` }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: zone.color, letterSpacing: '0.04em' }}>{isSerre ? zone.id : T.tech}</span>
+                  </div>
+                  <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: mutedColor, display: 'flex', padding: '2px' }}>
+                    <X size={15} />
+                  </button>
+                </div>
+                <div style={{ padding: '4px 16px 0' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: textColor, lineHeight: 1.4 }}>
+                    {lang === 'fr' ? zone.nameFr : zone.nameEn}
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <div style={{ display: 'flex', margin: '12px 16px 0', borderBottom: `1px solid ${cardBorder}`, gap: '4px' }}>
+                  {[
+                    { key:'info', label:T.tabInfo, Icon:Info },
+                    ...(isSerre ? [{ key:'data', label:T.tabData, Icon:Activity }] : []),
+                    { key:'visite', label:T.tabVisite, Icon:Video },
+                  ].map(t => (
+                    <button key={t.key} onClick={() => setTab(t.key)} style={{
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      padding: '8px 10px', fontSize: '11px', fontWeight: 600,
+                      background: 'transparent', border: 'none',
+                      borderBottom: `2px solid ${tab===t.key ? zone.color : 'transparent'}`,
+                      color: tab===t.key ? zone.color : mutedColor,
+                      cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                     }}>
-                      {t === 'info' ? T.tabInfo : T.tabData}
+                      <t.Icon size={11} />
+                      {t.label}
                     </button>
                   ))}
                 </div>
 
+                {/* ── TAB: INFO ── */}
                 {tab === 'info' && (
-                  <div style={{ padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
-                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: info.color, boxShadow: `0 0 8px ${info.color}` }} />
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: info.color, letterSpacing: '0.06em' }}>{info.code}</span>
-                    </div>
-                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: textColor, marginBottom: '0.75rem', fontFamily: "'Outfit',sans-serif" }}>
-                      {lang === 'fr' ? info.nameFr : info.nameEn}
-                    </h3>
-                    <p style={{ fontSize: '13px', color: textSecond, lineHeight: 1.8, marginBottom: '1.25rem' }}>
-                      {lang === 'fr' ? info.roleFr : info.roleEn}
+                  <div style={{ padding: '14px 16px' }}>
+                    <p style={{ fontSize: '12.5px', color: textSecond, lineHeight: 1.75, marginBottom: '14px' }}>
+                      {lang === 'fr' ? (isSerre ? zone.roleFr : zone.descFr) : (isSerre ? zone.roleEn : zone.descEn)}
                     </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {[
-                        { label: T.crops,   value: lang === 'fr' ? info.culturesFr : info.culturesEn },
-                        { label: T.sensors, value: lang === 'fr' ? info.capteursFr : info.capteursEn },
-                      ].map(row => (
-                        <div key={row.label} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                          background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                          border: `1px solid ${cardBorder}`, borderRadius: '10px', padding: '10px 14px', gap: '12px',
-                        }}>
-                          <span style={{ fontSize: '12px', color: mutedColor, flexShrink: 0 }}>{row.label}</span>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: info.color, textAlign: 'right' }}>{row.value}</span>
-                        </div>
-                      ))}
-                    </div>
+                    {isSerre && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { label: T.cultures, value: lang==='fr' ? zone.culturesFr : zone.culturesEn, color: zone.color },
+                          { label: T.capteurs, value: lang==='fr' ? zone.capteursFr : zone.capteursEn, color: zone.color },
+                        ].map(row => (
+                          <div key={row.label} style={{ background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${cardBorder}`, borderRadius: '10px', padding: '9px 12px' }}>
+                            <div style={{ fontSize: '10px', color: mutedColor, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{row.label}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: row.color }}>{row.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {tab === 'data' && (
-                  <div style={{ padding: '1.5rem' }}>
+                {/* ── TAB: LIVE DATA (serres only) ── */}
+                {tab === 'data' && isSerre && (
+                  <div style={{ padding: '14px 16px' }}>
                     {live ? (
                       <>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.env}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '14px' }}>
-                          {[
-                            { label: T.temp, unit: '°C',   color: '#F59E0B', val: live.env?.temperature },
-                            { label: T.hum,  unit: '%',    color: '#06B6D4', val: live.env?.humidite },
-                            { label: 'VPD',  unit: ' kPa', color: '#8B5CF6', val: live.env?.vpd },
-                            { label: 'CO₂',  unit: ' ppm', color: '#22C55E', val: live.env?.co2 },
-                          ].map(p => (
-                            <div key={p.label} style={{ background: `${p.color}10`, border: `1px solid ${p.color}25`, borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-                              <div style={{ fontSize: '10px', color: mutedColor, marginBottom: '4px' }}>{p.label}</div>
-                              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: p.val != null ? p.color : mutedColor, fontFamily: "'Outfit',sans-serif" }}>
-                                {p.val != null ? `${p.val}${p.unit}` : '—'}
+                        {/* ENV */}
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.env}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                          {(['temperature','humidite','vpd','co2']).map(key => {
+                            const val = live.env?.[key]
+                            const IconCmp = PARAM_ICONS[key]
+                            const c = PARAM_COLORS[key]
+                            return (
+                              <div key={key} style={{ background: `${c}10`, border: `1px solid ${c}25`, borderRadius: '10px', padding: '9px', textAlign: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
+                                  <IconCmp size={13} color={c} strokeWidth={1.8} />
+                                </div>
+                                <div style={{ fontSize: '9px', color: mutedColor, marginBottom: '3px' }}>
+                                  {PARAM_LABELS[lang==='fr'?'fr':'en'][key]}
+                                </div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800, color: val!=null?c:mutedColor, fontFamily: "'Outfit',sans-serif" }}>
+                                  {val!=null ? `${val}${PARAM_UNITS[key]}` : '—'}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
+                        {/* IRR */}
                         {live.irr && (
                           <>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.irr}</div>
+                            <div style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.irr}</div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                              {[
-                                { label: 'pH',   unit: '',        color: '#06B6D4', val: live.irr?.ph },
-                                { label: 'EC',   unit: ' mS/cm', color: '#22C55E', val: live.irr?.ec },
-                                { label: T.tEau, unit: '°C',     color: '#F59E0B', val: live.irr?.temp_eau },
-                                { label: T.nEau, unit: ' m',     color: '#8B5CF6', val: live.irr?.niveau_eau },
-                              ].map(p => (
-                                <div key={p.label} style={{ background: `${p.color}10`, border: `1px solid ${p.color}25`, borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-                                  <div style={{ fontSize: '10px', color: mutedColor, marginBottom: '4px' }}>{p.label}</div>
-                                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: p.val != null ? p.color : mutedColor, fontFamily: "'Outfit',sans-serif" }}>
-                                    {p.val != null ? `${p.val}${p.unit}` : '—'}
+                              {(['ph','ec','temp_eau','niveau_eau']).map(key => {
+                                const val = live.irr?.[key]
+                                const IconCmp = PARAM_ICONS[key]
+                                const c = PARAM_COLORS[key]
+                                return (
+                                  <div key={key} style={{ background: `${c}10`, border: `1px solid ${c}25`, borderRadius: '10px', padding: '9px', textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
+                                      <IconCmp size={13} color={c} strokeWidth={1.8} />
+                                    </div>
+                                    <div style={{ fontSize: '9px', color: mutedColor, marginBottom: '3px' }}>
+                                      {PARAM_LABELS[lang==='fr'?'fr':'en'][key]}
+                                    </div>
+                                    <div style={{ fontSize: '1rem', fontWeight: 800, color: val!=null?c:mutedColor, fontFamily: "'Outfit',sans-serif" }}>
+                                      {val!=null ? `${val}${PARAM_UNITS[key]}` : '—'}
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                )
+                              })}
                             </div>
                           </>
                         )}
                       </>
                     ) : (
                       <div style={{ textAlign: 'center', color: mutedColor, fontSize: '13px', padding: '2rem' }}>{T.noData}</div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── TAB: VISITE 3D ── */}
+                {tab === 'visite' && (
+                  <div style={{ padding: '14px 16px' }}>
+                    {zone.matterportId ? (
+                      <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#000' }}>
+                        <iframe
+                          src={`https://my.matterport.com/show/?m=${zone.matterportId}&play=1&hl=0`}
+                          width="100%"
+                          height="280"
+                          frameBorder="0"
+                          allowFullScreen
+                          title={lang==='fr' ? zone.matterportFr : zone.matterportEn}
+                          style={{ display: 'block' }}
+                        />
+                        <a
+                          href={`https://my.matterport.com/show/?m=${zone.matterportId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            padding: '10px', background: zone.color,
+                            color: 'white', fontSize: '12px', fontWeight: 600,
+                            fontFamily: 'inherit', textDecoration: 'none',
+                            transition: 'opacity 0.2s',
+                          }}
+                        >
+                          <ExternalLink size={13} />
+                          {T.ouvrirVisite}
+                        </a>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${cardBorder}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Video size={20} color={mutedColor} />
+                        </div>
+                        <div style={{ fontSize: '13px', color: mutedColor, marginBottom: '8px' }}>{T.noVisite}</div>
+                        <div style={{ fontSize: '11px', color: mutedColor, background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', border: `1px solid ${cardBorder}`, borderRadius: '8px', padding: '8px 12px' }}>
+                          {lang === 'fr'
+                            ? `Ajoutez l'ID Matterport dans ZONES.id="${zone.id}".matterportId`
+                            : `Add the Matterport ID in ZONES.id="${zone.id}".matterportId`
+                          }
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
