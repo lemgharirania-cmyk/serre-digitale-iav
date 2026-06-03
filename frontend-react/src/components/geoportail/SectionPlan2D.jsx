@@ -190,7 +190,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
 
               {/* Plan image */}
               <img
-                src="/plan_agrobiotech.png"
+                src="/plan2d.png"
                 alt="Plan du complexe AgroBioTech IAV Hassan II"
                 style={{
                   width: '100%',
