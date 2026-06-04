@@ -1,5 +1,6 @@
 // src/pages/dashboard/Overview.jsx
 import { useNavigate } from 'react-router-dom'
+import { Wind, Sun, CloudRain, Sunrise, Sunset } from 'lucide-react'
 
 const SERRES = [
   { id:1, code:'S01', nom:'Génétique' },
@@ -22,6 +23,9 @@ const T = {
     alertesSub1:'alerte', alertesSub2:'active', voirDetails:'voir les détails →',
     aucuneAlerteActive:'Aucune alerte active.',
     temp:'Temp', hum:'Hum', eau:'T°eau', niv:'Niv.',
+    extTitle:'Conditions extérieures', extSub:'Station météo · Rabat (Open-Meteo)',
+    ventL:'Vent', rayL:'Rayonnement', pluieL:'Pluie', oui:'Oui', non:'Non',
+    leverL:'Lever soleil', coucherL:'Coucher soleil',
   },
   EN: {
     title:'Overview', subtitle:'greenhouses monitored',
@@ -35,10 +39,13 @@ const T = {
     alertesSub1:'alert', alertesSub2:'active', voirDetails:'see details →',
     aucuneAlerteActive:'No active alerts.',
     temp:'Temp', hum:'Hum', eau:'H₂O T°', niv:'Lvl.',
+    extTitle:'Outdoor conditions', extSub:'Weather station · Rabat (Open-Meteo)',
+    ventL:'Wind', rayL:'Radiation', pluieL:'Rain', oui:'Yes', non:'No',
+    leverL:'Sunrise', coucherL:'Sunset',
   }
 }
 
-export default function Overview({ liveData, stats, countdown, refreshAll, theme, lang }) {
+export default function Overview({ liveData, stats, countdown, refreshAll, meteo = {}, theme, lang }) {
   const navigate = useNavigate()
   const isDark   = theme === 'dark'
   const t        = T[lang] || T.FR
@@ -55,6 +62,16 @@ export default function Overview({ liveData, stats, countdown, refreshAll, theme
   const dateLabel = lang === 'EN'
     ? now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
     : now.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+
+  const fmtT = (iso) => { if (!iso) return '—'; const p = String(iso).split('T')[1]; return p ? p.slice(0,5) : '—' }
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' })
+  const extStats = [
+    { icon:<Wind size={16} />,    label:t.ventL,    val: meteo.vent    != null ? `${meteo.vent}`    : '—', unit:'km/h',  color:'#06B6D4' },
+    { icon:<Sun size={16} />,     label:t.rayL,     val: meteo.solaire != null ? `${meteo.solaire}` : '—', unit:'W/m²',  color:'#F59E0B' },
+    { icon:<CloudRain size={16} />,label:t.pluieL,  val: meteo.pluie ? t.oui : t.non,                       unit:'',      color: meteo.pluie ? '#3773bd' : ink4 },
+    { icon:<Sunrise size={16} />, label:t.leverL,   val: fmtT(meteo.sunrise),                               unit:'',      color:'#F59E0B' },
+    { icon:<Sunset size={16} />,  label:t.coucherL, val: fmtT(meteo.sunset),                                unit:'',      color:'#8B5CF6' },
+  ]
 
   return (
     <>
@@ -117,6 +134,32 @@ export default function Overview({ liveData, stats, countdown, refreshAll, theme
         ))}
       </div>
 
+      {/* ── Conditions extérieures (Rabat · Open-Meteo) ── */}
+      <div className="panel" style={{ background:cardBg, borderColor:cardBorder, marginBottom:16 }}>
+        <div className="panel-head">
+          <div>
+            <h2>{t.extTitle}</h2>
+            <div style={{ fontSize:12, color:ink3, marginTop:2 }}>{t.extSub}</div>
+          </div>
+          <span className="mono" style={{ fontSize:10, color:'var(--green-500)' }}>OPEN-METEO</span>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:14 }}>
+          {extStats.map((s, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderRadius:12,
+              border:`1px solid ${borderLine}`, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(16,48,36,0.015)' }}>
+              <span style={{ width:34, height:34, borderRadius:10, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
+                background:`${s.color}18`, color:s.color }}>{s.icon}</span>
+              <div>
+                <div style={{ fontSize:11, color:ink3 }}>{s.label}</div>
+                <div className="tnum" style={{ fontSize:18, fontWeight:700, fontFamily:'var(--font-mono)' }}>
+                  {s.val}<span style={{ fontSize:11, color:ink4, marginLeft:3 }}>{s.unit}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ── Serre cards ── */}
       <div className="panel" style={{ background:cardBg, borderColor:cardBorder, marginBottom:16 }}>
         <div className="panel-head">
@@ -140,7 +183,7 @@ export default function Overview({ liveData, stats, countdown, refreshAll, theme
                 key={d.serre_id}
                 className="over-card"
                 style={{ background:cardBg, borderColor:cardBorder }}
-                onClick={() => navigate('/dashboard/graphiques')}
+                onClick={() => scrollTo('graphiques')}
               >
                 <div className="oc-head">
                   <span className={`dot ${st}`} />
@@ -216,7 +259,7 @@ export default function Overview({ liveData, stats, countdown, refreshAll, theme
           <h2>{t.alertesRecentes}</h2>
           <span
             style={{ fontSize:12, color:'var(--green-600)', fontWeight:500, cursor:'pointer' }}
-            onClick={() => navigate('/dashboard/alertes')}
+            onClick={() => scrollTo('alertes')}
           >
             {t.toutVoir}
           </span>
@@ -224,7 +267,7 @@ export default function Overview({ liveData, stats, countdown, refreshAll, theme
         {stats.alertes_actives > 0 ? (
           <div style={{ fontSize:13, color:ink3, padding:'1rem 0' }}>
             {stats.alertes_actives} {t.alertesSub1}{stats.alertes_actives > 1 ? 's' : ''} {t.alertesSub2}{stats.alertes_actives > 1 ? 's' : ''} —{' '}
-            <span style={{ color:'var(--green-600)', cursor:'pointer' }} onClick={() => navigate('/dashboard/alertes')}>
+            <span style={{ color:'var(--green-600)', cursor:'pointer' }} onClick={() => scrollTo('alertes')}>
               {t.voirDetails}
             </span>
           </div>
