@@ -341,8 +341,13 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
         look-controls="reverseMouseDrag:false; touchEnabled:true; magicWindowTrackingEnabled:true">
         <a-entity id="mcursor" cursor="rayOrigin:mouse" raycaster="objects:.clickable; far:30"></a-entity>
       </a-camera>
-      <a-entity id="lh" laser-controls="hand:left"  raycaster="objects:.clickable; far:30; lineColor:#06B6D4; lineOpacity:0.85" cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup"></a-entity>
-      <a-entity id="rh" laser-controls="hand:right" raycaster="objects:.clickable; far:30; lineColor:#22C55E; lineOpacity:0.85" cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup"></a-entity>
+      <!-- Quest controllers: clickEvents maps triggerdown→click so entity.addEventListener('click') fires -->
+      <a-entity id="lh" laser-controls="hand:left"
+        raycaster="objects:.clickable; far:30; lineColor:#06B6D4; lineOpacity:0.85"
+        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup; clickEvents:triggerdown"></a-entity>
+      <a-entity id="rh" laser-controls="hand:right"
+        raycaster="objects:.clickable; far:30; lineColor:#22C55E; lineOpacity:0.85"
+        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup; clickEvents:triggerdown"></a-entity>
     </a-entity>
   </a-scene>
 
@@ -673,8 +678,31 @@ function makeHotspot(hs){
   badge.setAttribute('position','0 0 0.01');
   badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
   badge.setAttribute('animation__pulse','property:scale; dir:alternate; loop:true; dur:1800; from:1 1 1; to:1.1 1.1 1');
+  badge.classList.add('clickable');
   hit.appendChild(badge);
   applyCanvasTexture(badge,isAR?drawARBadge():drawNavBadge(hs.type));
+  /* Direct click on the hit circle — works with mouse, gaze AND Quest controllers */
+  hit.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if(isAR){
+      const desc = hit.dataset.arDesc;
+      safeOpenAR(desc);
+    } else {
+      goTo(hit.dataset.tz, hit.dataset.ts);
+    }
+  });
+
+  /* Badge click fallback — raycaster may land on the badge plane instead of hit circle */
+  badge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if(isAR){
+      const desc = hit.dataset.arDesc;
+      safeOpenAR(desc);
+    } else {
+      goTo(hit.dataset.tz, hit.dataset.ts);
+    }
+  });
+
   hit.addEventListener('mouseenter',()=>hit.object3D.scale.set(1.2,1.2,1.2));
   hit.addEventListener('mouseleave',()=>hit.object3D.scale.set(1,1,1));
   return wrap;
@@ -751,19 +779,39 @@ function showErr(msg){const e=$('err');e.textContent=msg;e.style.display='block'
 function nudgeOffset(d){YAW_OFFSET+=d;$('cal-val').textContent=YAW_OFFSET;if(curZone&&curScene)load(curZone,curScene,true);}
 function logOffset(){console.log('YAW_OFFSET =',YAW_OFFSET);alert('YAW_OFFSET = '+YAW_OFFSET);}
 
-/* ── Scene click handler: delegates to openSimpleAR (from ar-content.js) ── */
+/* ── safeOpenAR: works even if ar-content.js is still loading ── */
+function safeOpenAR(desc){
+  if(typeof openSimpleAR==='function'){
+    openSimpleAR(desc);
+  } else {
+    let tries=0;
+    const poll=setInterval(()=>{
+      if(typeof openSimpleAR==='function'){clearInterval(poll);openSimpleAR(desc);}
+      if(++tries>30) clearInterval(poll);
+    },100);
+  }
+}
+
+/* Scene-level fallback — handles any click that bubbled up without being caught by entity listeners.
+   On Quest controllers the click goes to the raycaster-intersected entity first (handled above),
+   so this mostly covers edge cases on desktop. */
 document.querySelector('a-scene').addEventListener('click',e=>{
+  /* Walk up from the clicked A-Frame element looking for our data attributes */
   let el=e.target;
-  while(el&&el.tagName){
+  let attempts=0;
+  while(el && el.tagName && attempts<8){
     const d=el.dataset;
-    if(d){
-      if(d.hs==='ar'){
-        if(typeof openSimpleAR==='function') openSimpleAR(d.arDesc);
-        return;
-      }
-      if(d.hs==='nav'){goTo(d.tz,d.ts);return;}
+    if(d && d.hs==='ar'){
+      safeOpenAR(d.arDesc);
+      return;
     }
-    el=el.parentElement;
+    if(d && d.hs==='nav'){
+      goTo(d.tz, d.ts);
+      return;
+    }
+    /* A-Frame elements: try parentEl (A-Frame tree) then parentElement (DOM) */
+    el = (el.components && el.parentEl) || el.parentElement;
+    attempts++;
   }
 });
 
