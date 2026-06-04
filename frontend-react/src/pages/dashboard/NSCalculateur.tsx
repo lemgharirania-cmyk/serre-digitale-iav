@@ -6,11 +6,11 @@
 //
 //  Usage :  <NSCalculateur theme="light|dark" lang="FR|EN" greenhouse="S04" />
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   FlaskConical, Leaf, Droplets, Beaker, Calculator, Download, FileText,
   Search, Plus, Trash2, Save, CheckCircle, AlertTriangle, Zap, Layers,
-  ShieldCheck, Users, Gauge,
+  ShieldCheck, Users, Gauge, ChevronUp, ChevronDown,
 } from "lucide-react";
 import {
   computeNutrientSolution, estimateEC, DEFAULT_FERTILIZERS, DEFAULT_RECIPES,
@@ -284,8 +284,8 @@ export default function NSCalculateur({
             <h2 className="ns-card-title"><span className="ic"><Calculator size={18} /></span> {t.params}</h2>
             <div className="ns-params">
               <Field label={t.pH} unit="" step={0.1} value={pH} onChange={setPH} />
-              <Field label={t.dilution} unit="×" step={10} value={dilution} onChange={(v) => setDilution(v || 1)} />
-              <Field label={t.tankVol} unit="L" step={10} value={tankVolume} onChange={(v) => setTankVolume(v || 1)} />
+              <Field label={t.dilution} unit="×" step={10} value={dilution} onChange={setDilution} />
+              <Field label={t.tankVol} unit="L" step={10} value={tankVolume} onChange={setTankVolume} />
               <label className="ns-field">
                 <span className="ns-field-label">{t.acid}</span>
                 <span className="ns-field-row">
@@ -399,15 +399,46 @@ export default function NSCalculateur({
 function Field({ label, value, unit, step, onChange }: {
   label: string; value: number; unit: string; step: number; onChange: (v: number) => void;
 }) {
+  const dec = step < 1 ? 1 : 0;
+  const [raw, setRaw] = useState<string>(() => String(value));
+  const last = useRef(value);
+
+  // Resynchronise l'affichage uniquement quand la valeur change DE L'EXTÉRIEUR
+  // (chargement d'une recette, reset…), pas pendant que l'utilisateur tape.
+  useEffect(() => {
+    if (value !== last.current) { setRaw(String(value)); last.current = value; }
+  }, [value]);
+
+  const emit = (n: number) => { last.current = n; onChange(n); };
+
+  const onType = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let s = e.target.value.replace(/[^0-9.]/g, "");        // chiffres + point
+    const dot = s.indexOf(".");
+    if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, ""); // un seul point
+    if (/^0\d/.test(s)) s = s.replace(/^0+/, "");           // pas de zéro inutile en tête
+    setRaw(s);                                              // peut être vide pendant la saisie
+    const n = parseFloat(s);
+    emit(isNaN(n) ? 0 : n);
+  };
+
+  const bump = (d: number) => {
+    const base = parseFloat(raw) || 0;
+    const n = Math.max(0, +(base + d).toFixed(dec));
+    setRaw(String(n)); emit(n);
+  };
+
   return (
-    <label className="ns-field">
+    <div className="ns-field">
       <span className="ns-field-label">{label}</span>
-      <span className="ns-field-row">
-        <input className="ns-field-input" type="number" step={step} min={0} value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)} />
+      <div className="ns-field-row">
+        <input className="ns-field-input" type="text" inputMode="decimal" value={raw} onChange={onType} placeholder="0" />
         {unit && <span className="ns-field-unit">{unit}</span>}
-      </span>
-    </label>
+        <span className="ns-stepper">
+          <button type="button" tabIndex={-1} onClick={() => bump(step)} aria-label="augmenter"><ChevronUp size={12} /></button>
+          <button type="button" tabIndex={-1} onClick={() => bump(-step)} aria-label="diminuer"><ChevronDown size={12} /></button>
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -542,6 +573,10 @@ const CSS = `
 .ns-field-input select,.ns-field select{font-size:14px}
 select.ns-field-input{font-size:14px;font-weight:600;cursor:pointer}
 .ns-field-unit{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.ns-stepper{display:flex;flex-direction:column;margin-left:2px;flex-shrink:0}
+.ns-stepper button{width:19px;height:13px;display:grid;place-items:center;border:none;background:transparent;color:var(--muted);cursor:pointer;padding:0;border-radius:4px;transition:all .12s}
+.ns-stepper button:hover{color:var(--g);background:var(--gsoft)}
+.ns-stepper button:active{transform:scale(.9)}
 .ns-subhead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 9px}
 .ns-pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--gd);background:var(--gsoft);padding:6px 12px;border-radius:9px;margin-bottom:16px}
 .ns-root.dark .ns-pill{color:var(--g)}
