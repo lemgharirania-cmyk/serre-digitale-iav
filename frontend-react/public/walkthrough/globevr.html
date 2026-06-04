@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroBioTech — Globe</title>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#cdddcd; font-family:'Inter',sans-serif; }
+#cesiumContainer { width:100vw; height:100vh; }
+.cesium-viewer-toolbar,.cesium-viewer-animationContainer,.cesium-viewer-timelineContainer,
+.cesium-viewer-bottom,.cesium-widget-credits,.cesium-viewer-fullscreenContainer { display:none !important; }
+
+#vignette {
+  position:fixed; inset:0; z-index:10; pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.12) 68%,rgba(0,0,0,.52) 100%);
+}
+
+@keyframes livePulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes markerPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.95} 50%{transform:translate(-50%,-50%) scale(1.18);opacity:1} }
+@keyframes ringExpand  { 0%{transform:translate(-50%,-50%) scale(.4);opacity:.9}  100%{transform:translate(-50%,-50%) scale(3.2);opacity:0} }
+@keyframes ringExpand2 { 0%{transform:translate(-50%,-50%) scale(.4);opacity:.55} 100%{transform:translate(-50%,-50%) scale(4.2);opacity:0} }
+@keyframes slideUp     { from{opacity:0;transform:translate(-50%,18px)} to{opacity:1;transform:translate(-50%,0)} }
+
+#domMarker { position:fixed; z-index:25; width:0; height:0; pointer-events:none; opacity:0; transition:opacity 1.4s ease; }
+#domMarker.show { opacity:1; }
+.marker-ring   { position:absolute; width:32px; height:32px; border-radius:50%; border:1.5px solid rgba(74,222,128,.8); transform:translate(-50%,-50%); animation:ringExpand 2.8s ease-out infinite; }
+.marker-ring-2 { position:absolute; width:32px; height:32px; border-radius:50%; border:1px solid rgba(74,222,128,.45); transform:translate(-50%,-50%); animation:ringExpand2 2.8s ease-out 1.4s infinite; }
+.marker-core   { position:absolute; width:10px; height:10px; border-radius:50%; background:rgb(74,222,128); box-shadow:0 0 0 2px rgba(74,222,128,.25),0 0 12px rgba(74,222,128,1),0 0 28px rgba(74,222,128,.7),0 0 56px rgba(74,222,128,.3); transform:translate(-50%,-50%); animation:markerPulse 2.4s ease-in-out infinite; }
+.marker-bracket { position:absolute; width:24px; height:24px; transform:translate(-50%,-50%); }
+.marker-bracket::before,.marker-bracket::after,.marker-bracket span::before,.marker-bracket span::after { content:''; position:absolute; width:7px; height:7px; border-color:rgba(74,222,128,.65); border-style:solid; }
+.marker-bracket::before  { top:0;    left:0;  border-width:1.5px 0 0 1.5px; }
+.marker-bracket::after   { top:0;    right:0; border-width:1.5px 1.5px 0 0; }
+.marker-bracket span::before { bottom:0; left:0;  border-width:0 0 1.5px 1.5px; }
+.marker-bracket span::after  { bottom:0; right:0; border-width:0 1.5px 1.5px 0; }
+.marker-card { position:absolute; left:18px; top:-34px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.9); border-radius:8px; padding:7px 12px; backdrop-filter:blur(24px) saturate(180%); -webkit-backdrop-filter:blur(24px) saturate(180%); white-space:nowrap; box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 4px 20px rgba(0,0,0,.1); }
+.marker-card::before { content:''; position:absolute; left:-1px; top:50%; transform:translateY(-50%); width:3px; height:60%; background:rgb(74,222,128); border-radius:2px; }
+.marker-card-title { font-size:11px; font-weight:600; color:rgba(22,163,74,.9); letter-spacing:.04em; margin-bottom:2px; }
+.marker-card-sub   { font-size:9px;  font-weight:400; color:rgba(0,0,0,.45); letter-spacing:.03em; }
+
+
+
+#fade { position:fixed; inset:0; z-index:9999; background:#f0f4f0; opacity:0; pointer-events:none; transition:opacity .8s ease; }
+#fade.show { opacity:1; }
+#enterExperience{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:10000;
+
+  background:rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.95);
+  border-radius:18px;
+
+  padding:18px 32px;
+
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.18),
+    0 0 30px rgba(74,222,128,.25);
+
+  color:#15803D;
+  font-family:'Outfit',sans-serif;
+  font-size:22px;
+  font-weight:700;
+
+  cursor:pointer;
+
+  opacity:0;
+  pointer-events:none;
+
+  transition:all .6s ease;
+}
+
+#enterExperience.show{
+  opacity:1;
+  pointer-events:auto;
+}
+</style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="vignette"></div>
+
+<div id="domMarker">
+  <div class="marker-ring"></div>
+  <div class="marker-ring-2"></div>
+  <div class="marker-core"></div>
+  <div class="marker-bracket"><span></span></div>
+  <div class="marker-card">
+    <div class="marker-card-title">Institut Agronomique et Vétérinaire Hassan II</div>
+    <div class="marker-card-sub">Serre Digitale Intelligente · Rabat</div>
+  </div>
+</div>
+
+
+
+<div id="fade"></div>
+
+<button id="enterExperience">
+  Entrer dans l'expérience immersive
+</button>
+
+<script>
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjYzNlMDg2Ni1lMjZhLTQ2ZmQtODFjZS00NmZkN2FjNTkwOGEiLCJpZCI6NDMzMTQ3LCJpc3MiOiJodHRwczovL2lvbi5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3NzkxMjA3MTV9.gN5CgfHMJ1yDjyrFQIVZylS-rRYBZWFXWVf2Ylf5Ovw';
+
+const viewer = new Cesium.Viewer('cesiumContainer', {
+  animation:false, timeline:false, geocoder:false, homeButton:false,
+  sceneModePicker:false, navigationHelpButton:false, baseLayerPicker:false,
+  fullscreenButton:false, infoBox:false, selectionIndicator:false,
+  terrain:Cesium.Terrain.fromWorldTerrain()
+});
+viewer.scene.backgroundColor = Cesium.Color.BLACK;
+viewer.scene.skyAtmosphere.show = true;
+viewer.scene.globe.enableLighting = false;
+viewer.scene.globe.showGroundAtmosphere = true;
+viewer.scene.globe.depthTestAgainstTerrain = false;
+viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
+viewer.scene.fxaa = true;
+viewer.scene.globe.maximumScreenSpaceError = 1;
+viewer.scene.globe.tileCacheSize = 300;
+
+const TARGET_LON = -6.864085007950462, TARGET_LAT = 33.97871931523271;
+const TARGET_CART = Cesium.Cartesian3.fromDegrees(TARGET_LON, TARGET_LAT, 2);
+
+viewer.camera.setView({
+  destination: Cesium.Cartesian3.fromDegrees(-0.859343, 20.152657, 43362161),
+  orientation: { heading:0, pitch:Cesium.Math.toRadians(-83.4), roll:0 }
+});
+
+const PHASES = [
+  { lon:-4.027117,  lat:23.57211,   alt:8085773, pitch:-83.3, duration:4.0, ease:Cesium.EasingFunction.QUINTIC_IN_OUT },
+  { lon:-7.899224,  lat:31.856993,  alt:1971323, pitch:-83.3, duration:3.5, ease:Cesium.EasingFunction.CUBIC_IN_OUT },
+  { lon:-6.868106,  lat:33.913325,  alt:52000,   pitch:-83.3, duration:3.8, ease:Cesium.EasingFunction.CUBIC_IN_OUT },
+  { lon:TARGET_LON, lat:TARGET_LAT, alt:1500,    pitch:-87,   duration:4.5, ease:Cesium.EasingFunction.QUADRATIC_IN_OUT }
+];
+
+let markerVisible = false;
+viewer.scene.postRender.addEventListener(() => {
+  if (!markerVisible) return;
+  const sc = Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, TARGET_CART);
+  if (sc) { const el = document.getElementById('domMarker'); el.style.left=sc.x+'px'; el.style.top=sc.y+'px'; }
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r,ms)); }
+document
+  .getElementById('enterExperience')
+  .addEventListener('click', () => {
+
+    window.location.href =
+      'visitemanuelle-vr.html';
+
+  });
+
+async function startSequence() {
+  for (let i = 0; i < PHASES.length; i++) {
+    const p = PHASES[i];
+    if (i === 2) { markerVisible=true; document.getElementById('domMarker').classList.add('show'); }
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.alt),
+      orientation: { heading:0, pitch:Cesium.Math.toRadians(p.pitch), roll:0 },
+      duration: p.duration, maximumHeight: p.alt*1.04, easingFunction: p.ease
+    });
+    await sleep(p.duration*1000+250);
+  }
+  document
+  .getElementById('enterExperience')
+  .classList.add('show');
+}
+
+startSequence();
+</script>
+</body>
+</html>
