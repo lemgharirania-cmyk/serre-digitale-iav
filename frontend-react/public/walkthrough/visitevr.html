@@ -98,8 +98,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 #vrPhase a-scene{width:100%;height:100%}
 
 /* 2D overlay (flat screens) */
+/* overlay: sits on top visually but NEVER intercepts pointer events.
+   All children that need clicks must set pointer-events:auto explicitly. */
 #overlay{position:absolute;inset:0;pointer-events:none;z-index:10;transition:opacity .3s ease}
 body.in-vr #overlay{opacity:0;pointer-events:none!important}
+/* Ensure nothing inside overlay accidentally catches pointer events
+   unless it is an intentionally interactive widget */
+#overlay *{pointer-events:none}
+#overlay button,
+#overlay .arrow,
+#overlay #ar-toggle,
+#overlay #lang-switcher,
+#overlay .lang-pill,
+#overlay #cal,
+#overlay #cal button,
+#overlay .ar-card,
+#overlay .ar-card *{pointer-events:auto}
 .zf{position:absolute;top:18px;left:18px;pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:16px;padding:12px 18px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#0F172A;opacity:0;transform:translateY(-8px);transition:all .4s ease}
 .zf.show{opacity:1;transform:none}
 .zf b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
@@ -341,13 +355,13 @@ body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity
         look-controls="reverseMouseDrag:false; touchEnabled:true; magicWindowTrackingEnabled:true">
         <a-entity id="mcursor" cursor="rayOrigin:mouse" raycaster="objects:.clickable; far:30"></a-entity>
       </a-camera>
-      <!-- Quest controllers: clickEvents maps triggerdown→click so entity.addEventListener('click') fires -->
+      <!-- Quest controllers -->
       <a-entity id="lh" laser-controls="hand:left"
         raycaster="objects:.clickable; far:30; lineColor:#06B6D4; lineOpacity:0.85"
-        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup; clickEvents:triggerdown"></a-entity>
+        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup"></a-entity>
       <a-entity id="rh" laser-controls="hand:right"
         raycaster="objects:.clickable; far:30; lineColor:#22C55E; lineOpacity:0.85"
-        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup; clickEvents:triggerdown"></a-entity>
+        cursor="rayOrigin:entity; fuse:false; downEvents:triggerdown; upEvents:triggerup"></a-entity>
     </a-entity>
   </a-scene>
 
@@ -658,12 +672,18 @@ function makeHotspot(hs){
   const pitch = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);
   const pos   = yawPitchToXYZ(hs.yaw, pitch);
 
-  /* Capture everything in closure — never read from el.dataset (unreliable in A-Frame) */
+  /* All data captured in closure — zero dataset reads */
   const arDesc   = isAR ? (hs.arDesc || hs.label || '') : '';
   const navZone  = !isAR && hs.targetZoneId  != null ? String(hs.targetZoneId)  : '';
   const navScene = !isAR && hs.targetSceneId != null ? String(hs.targetSceneId) : '';
 
+  /* Single action — called by every event path below */
+  var _fired = false;
   function doAction(){
+    /* Debounce: ignore duplicate events within 400ms */
+    if(_fired) return;
+    _fired = true;
+    setTimeout(function(){ _fired = false; }, 400);
     if(isAR){ safeOpenAR(arDesc); }
     else     { goTo(navZone, navScene); }
   }
@@ -672,25 +692,29 @@ function makeHotspot(hs){
   wrap.setAttribute('position', pos.x+' '+pos.y+' '+pos.z);
   wrap.setAttribute('billboard', '');
 
-  /* Invisible hit circle — primary clickable */
+  /* ── Hit circle: invisible, large, primary target ── */
   const hit = document.createElement('a-circle');
-  hit.setAttribute('radius', 0.36);
-  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0; transparent:true; side:double; depthWrite:false');
+  hit.setAttribute('radius', 0.4);
+  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0.001; transparent:true; side:double; depthWrite:false');
   hit.classList.add('clickable');
-  hit.addEventListener('click', doAction);
-  hit.addEventListener('mouseenter', function(){ hit.object3D.scale.set(1.2,1.2,1.2); });
-  hit.addEventListener('mouseleave', function(){ hit.object3D.scale.set(1,1,1); });
+  /* 'click' fires from mouse cursor and from A-Frame cursor component */
+  hit.addEventListener('click',      doAction);
+  /* 'triggerdown' fires directly from Quest Touch controller trigger */
+  hit.addEventListener('triggerdown', doAction);
+  hit.addEventListener('mouseenter', function(){ wrap.object3D.scale.set(1.15,1.15,1.15); });
+  hit.addEventListener('mouseleave', function(){ wrap.object3D.scale.set(1,1,1); });
   wrap.appendChild(hit);
 
-  /* Visible badge — also clickable so Quest laser landing on it still works */
+  /* ── Badge: visible icon, also interceptable by raycaster ── */
   const badge = document.createElement('a-plane');
-  badge.setAttribute('width',  isAR ? 0.58 : 0.52);
-  badge.setAttribute('height', isAR ? 0.58 : 0.52);
-  badge.setAttribute('position', '0 0 0.01');
+  badge.setAttribute('width',  isAR ? 0.55 : 0.48);
+  badge.setAttribute('height', isAR ? 0.55 : 0.48);
+  badge.setAttribute('position', '0 0 0.005');
   badge.setAttribute('material', 'shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
-  badge.setAttribute('animation__pulse', 'property:scale; dir:alternate; loop:true; dur:1800; from:1 1 1; to:1.1 1.1 1');
+  badge.setAttribute('animation__pulse', 'property:scale; dir:alternate; loop:true; dur:1800; from:1 1 1; to:1.08 1.08 1');
   badge.classList.add('clickable');
-  badge.addEventListener('click', doAction);
+  badge.addEventListener('click',       doAction);
+  badge.addEventListener('triggerdown',  doAction);
   hit.appendChild(badge);
   applyCanvasTexture(badge, isAR ? drawARBadge() : drawNavBadge(hs.type));
 
