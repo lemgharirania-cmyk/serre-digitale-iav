@@ -279,7 +279,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     />
 
     <a
-      href="/walkthrough/globevr.html"
+      href="/walkthrough/visitevr.html"
       target="_blank"
       rel="noopener noreferrer"
       style={{
