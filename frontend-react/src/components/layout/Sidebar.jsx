@@ -78,11 +78,11 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20, padding:'4px 8px' }}>
         <div style={{
           width:36, height:36, borderRadius:11,
-          background:'linear-gradient(135deg,var(--green-400,#4fb37f),var(--blue-400,#5690d2))',
-          display:'grid', placeItems:'center', flexShrink:0,
+          overflow:'hidden', flexShrink:0,
+          background:'white',
           boxShadow:'0 0 0 1px rgba(124,201,160,0.35),0 4px 12px rgba(47,154,100,0.2)'
         }}>
-          <Leaf size={18} color="white" />
+          <img src="/iav_logo.png" alt="IAV Hassan II" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
         </div>
         <div>
           <div style={{ fontSize:13, fontWeight:600, letterSpacing:'-0.01em', color:ink }}>
