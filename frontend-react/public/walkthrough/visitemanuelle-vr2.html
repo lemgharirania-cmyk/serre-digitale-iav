@@ -144,7 +144,7 @@ const START_ZONE   = new URLSearchParams(location.search).get('zone') || window.
 const SCENE_RADIUS = 8;          // sphere radius hotspots sit on
 let   YAW_OFFSET   = 0;          // global calibration; tune once on PC, then bake in (see notes)
 const VR_SUPERSAMPLE = 1.3;     // headset render scale: >1 sharpens (1.5 sharper, costs GPU; 1.0 = off)
-let   AR_PITCH_OFFSET = 5;  // rig-parenting corrects geometry; nudge up if icons still drift
+let   AR_PITCH_OFFSET = 8;  // rig-parenting corrects geometry; nudge up if icons still drift
 
 let manifest, zones = {}, hotspots = {};
 let curZone = null, curScene = null, lastZoneId = null;
