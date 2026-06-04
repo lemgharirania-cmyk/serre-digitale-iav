@@ -12,6 +12,9 @@ import {
   Layers, ArrowRight, TrendingUp, Info, Search, X,
   Sprout, Flower2, Apple, Grape
 } from 'lucide-react'
+import RecipeLibrary from "../../components/ns/RecipeLibrary";
+import WaterAnalysis from "../../components/ns/WaterAnalysis";
+import CalculationSummary from "../../components/ns/CalculationSummary";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TRANSLATIONS
