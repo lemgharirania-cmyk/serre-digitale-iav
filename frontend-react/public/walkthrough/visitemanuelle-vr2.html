@@ -143,7 +143,7 @@ const START_ZONE   = new URLSearchParams(location.search).get('zone') || window.
 const SCENE_RADIUS = 8;          // sphere radius hotspots sit on
 let   YAW_OFFSET   = 0;          // global calibration; tune once on PC, then bake in (see notes)
 const VR_SUPERSAMPLE = 1.3;     // headset render scale: >1 sharpens (1.5 sharper, costs GPU; 1.0 = off)
-let   AR_PITCH_OFFSET = 6;       // raises ONLY the AR info hotspots, in degrees. Increase = higher.
+let   AR_PITCH_OFFSET = 9;       // raises ONLY the AR info hotspots, in degrees. Increase = higher.
 
 let manifest, zones = {}, hotspots = {};
 let curZone = null, curScene = null, lastZoneId = null;
@@ -328,7 +328,7 @@ function makeHotspot(hs){
   // --- transparent hit area: this is the .clickable element with real geometry ---
   const hit = document.createElement('a-circle');
   hit.setAttribute('radius', 0.36);
-  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0.001; transparent:true; side:double');
+  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0; transparent:true; side:double; depthWrite:false');
   hit.classList.add('clickable');
   // store the action on the element; a delegated handler reads it (robust vs which
   // child mesh the laser actually hits)
@@ -346,7 +346,10 @@ function makeHotspot(hs){
   const badge = document.createElement('a-plane');
   badge.setAttribute('width', 0.64);
   badge.setAttribute('height', 0.64);
-  badge.setAttribute('material', 'shader:flat; transparent:true; side:double');
+  badge.setAttribute('position', '0 0 0.01');   // slight z-offset so it doesn't z-fight the hit circle
+  // alphaTest discards the near-transparent glow square (kills the "screen box" halo);
+  // depthWrite:false stops the transparent plane from punching the depth buffer.
+  badge.setAttribute('material', 'shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
   badge.setAttribute('animation__pulse',
     'property:scale; dir:alternate; loop:true; dur:1600; from:1 1 1; to:1.08 1.08 1');
   hit.appendChild(badge);
@@ -432,11 +435,36 @@ async function load(zid, sid, instant){
   const finish = () => {
     try {
       curZone = zid; curScene = sid;
-      const list = (hotspots[zid] && hotspots[zid][sid]) || [];
+      const list = ((hotspots[zid] && hotspots[zid][sid]) || []).slice();
+      const idx  = zone.scenes.indexOf(scene);
+
+      // --- auto back-nav within the zone (these were generated at runtime in the
+      //     original tour, not stored in the manifest) ---
+      const fwd = list.find(h => h.type === 'nav' && h.targetSceneId !== sid && h.targetZoneId === zid);
+      const hasBack = list.some(h => {
+        const tz = zones[h.targetZoneId];
+        return tz && tz.scenes.findIndex(s => s.id === h.targetSceneId) === idx - 1;
+      });
+      if (fwd && idx > 0 && !hasBack){
+        let by = ((fwd.yaw + 180) + 360) % 360; if (by > 180) by -= 360;   // opposite the forward arrow
+        list.push({ type:'nav', pitch: fwd.pitch, yaw: by,
+                    targetZoneId: zid, targetSceneId: zone.scenes[idx - 1].id, auto:true });
+      }
+
+      // --- auto cross-zone "back" to where we came from (prevents dead-ends) ---
+      const prev = navHistory.length ? navHistory[navHistory.length - 1] : null;
+      const hasCross   = list.some(h => h.type === 'cross');
+      const hasForward = list.some(h => !h.auto && h.targetSceneId !== sid);
+      if (prev && prev.zoneId !== zid && !hasCross && !hasForward && zones[prev.zoneId]){
+        const refYaw = (fwd && fwd.yaw != null) ? fwd.yaw : (list[0] ? list[0].yaw : 0);
+        let by = ((refYaw + 180) + 360) % 360; if (by > 180) by -= 360;
+        list.push({ type:'cross', pitch: (fwd && fwd.pitch != null) ? fwd.pitch : -20, yaw: by,
+                    targetZoneId: prev.zoneId, targetSceneId: prev.sceneId, auto:true });
+      }
+
       list.forEach(hs => host.appendChild(makeHotspot(hs)));
       refreshRaycasters();   // controllers/mouse must re-scan for the new clickable hotspots
 
-      const idx = zone.scenes.indexOf(scene);
       $('prev').className = 'arrow L' + (idx === 0 ? ' off' : '');
       $('next').className = 'arrow R' + (idx === zone.scenes.length - 1 ? ' off' : '');
       $('scene-ctr').textContent = (idx + 1) + ' / ' + zone.scenes.length;
