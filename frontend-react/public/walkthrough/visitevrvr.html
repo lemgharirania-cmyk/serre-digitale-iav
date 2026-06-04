@@ -654,57 +654,46 @@ function drawARBadge(){
 }
 
 function makeHotspot(hs){
-  const isAR=hs.type==='ar';
-  const pitch=hs.pitch+(isAR?AR_PITCH_OFFSET:0);
-  const pos=yawPitchToXYZ(hs.yaw,pitch);
-  const wrap=document.createElement('a-entity');
-  wrap.setAttribute('position',`${pos.x} ${pos.y} ${pos.z}`);
-  wrap.setAttribute('billboard','');
-  const hit=document.createElement('a-circle');
-  hit.setAttribute('radius',0.36);
-  hit.setAttribute('material','shader:flat; color:#000; opacity:0; transparent:true; side:double; depthWrite:false');
-  hit.classList.add('clickable');
-  hit.dataset.hs=isAR?'ar':'nav';
-  if(isAR){
-    hit.dataset.arDesc=hs.arDesc||hs.label||'';
-  } else {
-    hit.dataset.tz=hs.targetZoneId!=null?String(hs.targetZoneId):'';
-    hit.dataset.ts=hs.targetSceneId!=null?String(hs.targetSceneId):'';
+  const isAR  = hs.type === 'ar';
+  const pitch = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);
+  const pos   = yawPitchToXYZ(hs.yaw, pitch);
+
+  /* Capture everything in closure — never read from el.dataset (unreliable in A-Frame) */
+  const arDesc   = isAR ? (hs.arDesc || hs.label || '') : '';
+  const navZone  = !isAR && hs.targetZoneId  != null ? String(hs.targetZoneId)  : '';
+  const navScene = !isAR && hs.targetSceneId != null ? String(hs.targetSceneId) : '';
+
+  function doAction(){
+    if(isAR){ safeOpenAR(arDesc); }
+    else     { goTo(navZone, navScene); }
   }
+
+  const wrap = document.createElement('a-entity');
+  wrap.setAttribute('position', pos.x+' '+pos.y+' '+pos.z);
+  wrap.setAttribute('billboard', '');
+
+  /* Invisible hit circle — primary clickable */
+  const hit = document.createElement('a-circle');
+  hit.setAttribute('radius', 0.36);
+  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0; transparent:true; side:double; depthWrite:false');
+  hit.classList.add('clickable');
+  hit.addEventListener('click', doAction);
+  hit.addEventListener('mouseenter', function(){ hit.object3D.scale.set(1.2,1.2,1.2); });
+  hit.addEventListener('mouseleave', function(){ hit.object3D.scale.set(1,1,1); });
   wrap.appendChild(hit);
-  const badge=document.createElement('a-plane');
-  badge.setAttribute('width',isAR?0.58:0.52);
-  badge.setAttribute('height',isAR?0.58:0.52);
-  badge.setAttribute('position','0 0 0.01');
-  badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
-  badge.setAttribute('animation__pulse','property:scale; dir:alternate; loop:true; dur:1800; from:1 1 1; to:1.1 1.1 1');
+
+  /* Visible badge — also clickable so Quest laser landing on it still works */
+  const badge = document.createElement('a-plane');
+  badge.setAttribute('width',  isAR ? 0.58 : 0.52);
+  badge.setAttribute('height', isAR ? 0.58 : 0.52);
+  badge.setAttribute('position', '0 0 0.01');
+  badge.setAttribute('material', 'shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
+  badge.setAttribute('animation__pulse', 'property:scale; dir:alternate; loop:true; dur:1800; from:1 1 1; to:1.1 1.1 1');
   badge.classList.add('clickable');
+  badge.addEventListener('click', doAction);
   hit.appendChild(badge);
-  applyCanvasTexture(badge,isAR?drawARBadge():drawNavBadge(hs.type));
-  /* Direct click on the hit circle — works with mouse, gaze AND Quest controllers */
-  hit.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if(isAR){
-      const desc = hit.dataset.arDesc;
-      safeOpenAR(desc);
-    } else {
-      goTo(hit.dataset.tz, hit.dataset.ts);
-    }
-  });
+  applyCanvasTexture(badge, isAR ? drawARBadge() : drawNavBadge(hs.type));
 
-  /* Badge click fallback — raycaster may land on the badge plane instead of hit circle */
-  badge.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if(isAR){
-      const desc = hit.dataset.arDesc;
-      safeOpenAR(desc);
-    } else {
-      goTo(hit.dataset.tz, hit.dataset.ts);
-    }
-  });
-
-  hit.addEventListener('mouseenter',()=>hit.object3D.scale.set(1.2,1.2,1.2));
-  hit.addEventListener('mouseleave',()=>hit.object3D.scale.set(1,1,1));
   return wrap;
 }
 
@@ -792,27 +781,10 @@ function safeOpenAR(desc){
   }
 }
 
-/* Scene-level fallback — handles any click that bubbled up without being caught by entity listeners.
-   On Quest controllers the click goes to the raycaster-intersected entity first (handled above),
-   so this mostly covers edge cases on desktop. */
-document.querySelector('a-scene').addEventListener('click',e=>{
-  /* Walk up from the clicked A-Frame element looking for our data attributes */
-  let el=e.target;
-  let attempts=0;
-  while(el && el.tagName && attempts<8){
-    const d=el.dataset;
-    if(d && d.hs==='ar'){
-      safeOpenAR(d.arDesc);
-      return;
-    }
-    if(d && d.hs==='nav'){
-      goTo(d.tz, d.ts);
-      return;
-    }
-    /* A-Frame elements: try parentEl (A-Frame tree) then parentElement (DOM) */
-    el = (el.components && el.parentEl) || el.parentElement;
-    attempts++;
-  }
+/* Scene-level safety net — should rarely fire since entity listeners handle clicks directly.
+   Kept as last-resort fallback for edge cases. */
+document.querySelector('a-scene').addEventListener('click', function(e){
+  /* Entity listeners already handle everything via closure — nothing to do here */
 });
 
 const sc=document.querySelector('a-scene');
