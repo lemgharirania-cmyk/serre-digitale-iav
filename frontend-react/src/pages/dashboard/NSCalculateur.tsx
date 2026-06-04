@@ -21,7 +21,7 @@ import {
   MACRO_IONS, MICRO_IONS,
   type Ion, type IonMap, type Recipe, type Fertilizer, type CalcResult,
 } from "./nsEngine";
-import { listRecipes, createRecipe, deleteRecipe as apiDeleteRecipe } from "../../services/nsRecipesApi";
+import { listRecipes, createRecipe, deleteRecipe as apiDeleteRecipe } from "../../api/nsRecipesApi";
 
 /* ════════════════════════════ i18n ════════════════════════════ */
 const T = {
