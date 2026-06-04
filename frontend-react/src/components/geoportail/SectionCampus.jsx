@@ -55,7 +55,7 @@ export default function SectionCampus({ lang, darkMode }) {
       badge:  'Campus AgroBioTech · IAV Hassan II',
       title:  'Un campus de recherche',
       accent: 'connecté',
-      text:   "Le Campus AgroBioTech de l'Institut Agronomique et Vétérinaire Hassan II constitue une infrastructure scientifique de référence dédiée à l'innovation agricole, à la recherche appliquée et au développement des technologies de demain. Conçu comme un écosystème intégré de laboratoires, de plateformes expérimentales et d'unités spécialisées, le complexe rassemble des compétences multidisciplinaires dans les domaines de l'agronomie, de l'horticulture, de la génétique et amélioration des plantes, de la protection phytosanitaire ainsi que des systèmes de production innovants tels que l'hydroponie.
+      text:   `Le Campus AgroBioTech de l'Institut Agronomique et Vétérinaire Hassan II constitue une infrastructure scientifique de référence dédiée à l'innovation agricole, à la recherche appliquée et au développement des technologies de demain. Conçu comme un écosystème intégré de laboratoires, de plateformes expérimentales et d'unités spécialisées, le complexe rassemble des compétences multidisciplinaires dans les domaines de l'agronomie, de l'horticulture, de la génétique et amélioration des plantes, de la protection phytosanitaire ainsi que des systèmes de production innovants tels que l'hydroponie.
 
 Dans un contexte marqué par les défis du changement climatique, de la raréfaction des ressources naturelles et de la nécessité d'assurer une sécurité alimentaire durable, AgroBioTech s'inscrit pleinement dans la dynamique de modernisation de l'agriculture marocaine. Le campus contribue à l'émergence d'une agriculture intelligente fondée sur la valorisation des données, l'expérimentation scientifique, l'agriculture de précision et l'intégration des technologies numériques au sein des processus de recherche et de production.
 
@@ -64,7 +64,7 @@ Porté par l'expertise historique de l'IAV Hassan II, acteur majeur de la recher
 Chaque unité du campus poursuit des objectifs scientifiques spécifiques tout en contribuant à une démarche collective visant l'amélioration de la productivité agricole, la préservation des ressources naturelles, le développement de variétés plus résilientes et l'optimisation des systèmes de culture. Grâce à cette approche collaborative, AgroBioTech constitue un véritable laboratoire vivant où sont conçues, testées et transférées les solutions innovantes destinées à accompagner la transition écologique et numérique de l'agriculture marocaine.
 
 À long terme, le campus aspire à devenir une plateforme de référence à l'échelle nationale et régionale pour la recherche agronomique avancée, la démonstration de technologies innovantes et la formation des futures générations d'experts capables de relever les défis d'une agriculture durable, connectée et résiliente.
-",
+`,
       loc:    'AgroBioTech · IAV Hassan II',
       coords: 'Rabat, Maroc · 33.9787°N 6.8641°W',
     },
