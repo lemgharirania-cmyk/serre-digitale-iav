@@ -55,6 +55,11 @@
     background:rgba(254,226,226,.85);backdrop-filter:blur(12px);border:1px solid rgba(239,68,68,.5);color:#B91C1C;
     border-radius:12px;padding:12px 16px;font-size:13px;display:none;}
 
+  #dbg{position:absolute;bottom:18px;left:18px;pointer-events:none;display:none;
+    background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border:1px solid rgba(15,40,30,.15);
+    color:#0F172A;border-radius:10px;padding:7px 12px;font-size:11px;font-family:'DM Mono',monospace;
+    box-shadow:0 6px 20px rgba(15,40,30,.12);}
+
   /* Calibration readout — only visible with ?debug=1, for aligning hotspots on PC */
   #cal{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
     pointer-events:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(16px);border:1px solid rgba(6,182,212,.4);
@@ -114,6 +119,7 @@
   <button class="arrow R off" id="next" onclick="stepScene(1)">&#8250;</button>
   <div id="vrhint">Cliquez « Enter VR » ↘</div>
   <div id="err"></div>
+  <div id="dbg"></div>
   <div id="cal">
     yaw offset: <b id="cal-val">0</b>°
     <button onclick="nudgeOffset(-5)">−5</button>
@@ -324,6 +330,16 @@ function makeHotspot(hs){
   hit.setAttribute('radius', 0.36);
   hit.setAttribute('material', 'shader:flat; color:#000; opacity:0.001; transparent:true; side:double');
   hit.classList.add('clickable');
+  // store the action on the element; a delegated handler reads it (robust vs which
+  // child mesh the laser actually hits)
+  hit.dataset.hs = isAR ? 'ar' : 'nav';
+  if (isAR){
+    hit.dataset.arTitle = hs.label || hs.arDesc || '';
+    hit.dataset.arBody  = hs.arDesc || '';
+  } else {
+    hit.dataset.tz = hs.targetZoneId != null ? String(hs.targetZoneId) : '';
+    hit.dataset.ts = hs.targetSceneId != null ? String(hs.targetSceneId) : '';
+  }
   wrap.appendChild(hit);
 
   // --- visual badge: canvas-textured plane (crisp icon + glow), child of hit ---
@@ -339,15 +355,6 @@ function makeHotspot(hs){
   // hover feedback on the hit element
   hit.addEventListener('mouseenter', () => hit.object3D.scale.set(1.25,1.25,1.25));
   hit.addEventListener('mouseleave', () => hit.object3D.scale.set(1,1,1));
-
-  // click / select action
-  hit.addEventListener('click', () => {
-    if (isAR){
-      openAR(hs.label || hs.arDesc || '', hs.arDesc || '');
-    } else {
-      goTo(hs.targetZoneId, hs.targetSceneId);
-    }
-  });
   return wrap;
 }
 
@@ -381,10 +388,20 @@ function refreshRaycasters(){
   setTimeout(scan, 200);
 }
 
-/* global click handler for panel buttons (close, etc.) */
+/* Delegated click handler. A-Frame clicks bubble up the DOM, and the laser may
+   land on the badge or the hit circle — so we walk UP from whatever was clicked
+   to find the element carrying the action. Robust regardless of which mesh is hit. */
 document.querySelector('a-scene').addEventListener('click', e => {
-  const t = e.target;
-  if (t && t.dataset && t.dataset.action === 'closeAR') closeAR();
+  let el = e.target;
+  while (el && el.tagName){
+    const d = el.dataset;
+    if (d){
+      if (d.action === 'closeAR'){ dbg('close card'); closeAR(); return; }
+      if (d.hs === 'ar'){ dbg('AR: ' + (d.arTitle || '')); openAR(d.arTitle, d.arBody); return; }
+      if (d.hs === 'nav'){ dbg('nav -> ' + d.tz + '/' + d.ts + (busy ? ' [BUSY]' : '')); goTo(d.tz, d.ts); return; }
+    }
+    el = el.parentElement;
+  }
 });
 
 /* ---- core scene loader (mirrors the original load(), minus Pannellum) ---- */
@@ -401,32 +418,35 @@ async function load(zid, sid, instant){
 
   // everything except the panorama swap (hotspots, labels, counters)
   const finish = () => {
-    curZone = zid; curScene = sid;
-    const list = (hotspots[zid] && hotspots[zid][sid]) || [];
-    list.forEach(hs => host.appendChild(makeHotspot(hs)));
-    refreshRaycasters();   // controllers/mouse must re-scan for the new clickable hotspots
+    try {
+      curZone = zid; curScene = sid;
+      const list = (hotspots[zid] && hotspots[zid][sid]) || [];
+      list.forEach(hs => host.appendChild(makeHotspot(hs)));
+      refreshRaycasters();   // controllers/mouse must re-scan for the new clickable hotspots
 
-    const idx = zone.scenes.indexOf(scene);
-    $('prev').className = 'arrow L' + (idx === 0 ? ' off' : '');
-    $('next').className = 'arrow R' + (idx === zone.scenes.length - 1 ? ' off' : '');
-    $('scene-ctr').textContent = (idx + 1) + ' / ' + zone.scenes.length;
+      const idx = zone.scenes.indexOf(scene);
+      $('prev').className = 'arrow L' + (idx === 0 ? ' off' : '');
+      $('next').className = 'arrow R' + (idx === zone.scenes.length - 1 ? ' off' : '');
+      $('scene-ctr').textContent = (idx + 1) + ' / ' + zone.scenes.length;
 
-    if (zid !== lastZoneId){
-      lastZoneId = zid;
-      $('zfn').textContent = zone.label;
-      $('zfu').textContent = (zone.unit && zone.unit !== '\u2014') ? ('Unité ' + zone.unit) : '';
-      const zf = $('zf'); zf.classList.remove('show');
-      requestAnimationFrame(() => zf.classList.add('show'));
-      clearTimeout(window._zfT);
-      window._zfT = setTimeout(() => zf.classList.remove('show'), 3000);
-    }
-    busy = false;
+      if (zid !== lastZoneId){
+        lastZoneId = zid;
+        $('zfn').textContent = zone.label;
+        $('zfu').textContent = (zone.unit && zone.unit !== '\u2014') ? ('Unité ' + zone.unit) : '';
+        const zf = $('zf'); zf.classList.remove('show');
+        requestAnimationFrame(() => zf.classList.add('show'));
+        clearTimeout(window._zfT);
+        window._zfT = setTimeout(() => zf.classList.remove('show'), 3000);
+      }
+      dbg('scène: ' + zid + '/' + sid + '  (' + list.length + ' hotspots)');
+    } catch (e){ showErr('finish: ' + e.message); }
+    finally { busy = false; }   // the lock MUST always release
   };
 
   // FIRST load: put image on the back sphere, keep front hidden
   if (instant){
     try { await setSky($('sky-back'), scene.file); }
-    catch (e){ showErr(e.message); busy = false; return; }
+    catch (e){ showErr(e.message); }
     setOpacity($('sky-front'), 0);
     frontActive = false;
     finish();
@@ -435,13 +455,16 @@ async function load(zid, sid, instant){
 
   // TRANSITION: load the new image onto whichever sphere is currently hidden,
   // wait until its texture is ready, THEN crossfade. The old image never blanks.
-  const hidden = frontActive ? $('sky-back') : $('sky-front');
-  try { await setSky(hidden, scene.file); }
-  catch (e){ showErr(e.message); busy = false; return; }
-
-  const front = $('sky-front');
-  const target = frontActive ? 0 : 1;   // front visible -> fade out to reveal back; else fade in to cover back
-  fadeSky(front, target, 420, () => { frontActive = !frontActive; finish(); });
+  try {
+    const hidden = frontActive ? $('sky-back') : $('sky-front');
+    await setSky(hidden, scene.file);
+    const front = $('sky-front');
+    const target = frontActive ? 0 : 1;   // front visible -> fade out to reveal back; else fade in to cover back
+    fadeSky(front, target, 420, () => { frontActive = !frontActive; finish(); });
+  } catch (e){
+    showErr('load: ' + e.message);
+    finish();   // still rebuild + release the lock so the tour isn't stuck
+  }
 }
 
 /* ---- sky helpers (manual opacity tween = reliable, no animation-component quirks) ---- */
@@ -472,13 +495,15 @@ function setSky(el, url){
     const ok = () => {
       if (done) return; done = true;
       el.removeEventListener('materialtextureloaded', ok);
-      // sharpen the panorama at oblique angles (floor/ceiling) with anisotropic filtering
-      const mesh = el.getObject3D('mesh');
-      const r = el.sceneEl && el.sceneEl.renderer;
-      if (mesh && mesh.material.map && r){
-        mesh.material.map.anisotropy = r.capabilities.getMaxAnisotropy();
-        mesh.material.map.needsUpdate = true;
-      }
+      try {
+        // sharpen the panorama at oblique angles with anisotropic filtering
+        const mesh = el.getObject3D('mesh');
+        const r = el.sceneEl && el.sceneEl.renderer;
+        if (mesh && mesh.material.map && r && r.capabilities){
+          mesh.material.map.anisotropy = r.capabilities.getMaxAnisotropy();
+          mesh.material.map.needsUpdate = true;
+        }
+      } catch (e){ /* never let this block the promise */ }
       res();
     };
     el.addEventListener('materialtextureloaded', ok);
@@ -506,6 +531,12 @@ function stepScene(dir){
 function showErr(msg){
   const e = $('err'); e.textContent = msg; e.style.display = 'block';
   console.error('[VR-TOUR]', msg);
+}
+
+// lightweight status line (visible on desktop/emulator; logs to console always)
+function dbg(msg){
+  console.log('[VR-TOUR]', msg);
+  const el = $('dbg'); if (el){ el.textContent = msg; el.style.display = 'block'; }
 }
 
 /* ---- calibration helpers (?debug=1) ---- */
