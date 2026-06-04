@@ -384,8 +384,9 @@ function refreshRaycasters(){
     const rc = el.components && el.components.raycaster;
     if (rc) rc.refreshObjects();
   });
-  requestAnimationFrame(() => requestAnimationFrame(scan));
-  setTimeout(scan, 200);
+  // setTimeout (not rAF) so it also runs during an immersive WebXR session
+  setTimeout(scan, 50);
+  setTimeout(scan, 250);
 }
 
 /* Delegated click handler. A-Frame clicks bubble up the DOM, and the laser may
@@ -410,6 +411,17 @@ async function load(zid, sid, instant){
   const scene = zone && zone.scenes.find(s => s.id === sid);
   if (!zone || !scene){ showErr('Scène introuvable : ' + zid + '/' + sid); return; }
   if (busy) return; busy = true;
+  dbg('chargement: ' + zid + '/' + sid + '  →  ' + scene.file);
+
+  // Preload the target image FIRST. If it fails, keep the current scene + hotspots
+  // intact instead of blanking the view. (This was the nav "disappear" cause.)
+  try {
+    await preload(scene.file);
+  } catch (e){
+    showErr('Image introuvable : ' + scene.file);
+    busy = false;
+    return;   // hotspots are still on screen — nothing was removed
+  }
 
   // clear current hotspots + panel during the transition
   const host = $('hotspots');
@@ -480,12 +492,14 @@ function fadeSky(el, to, dur, done){
   if (!m){ done && done(); return; }
   m.transparent = true;
   const from = m.opacity, t0 = performance.now();
-  (function step(now){
-    const k = Math.min((now - t0) / dur, 1);
+  // NOTE: window.requestAnimationFrame is SUSPENDED during an immersive WebXR
+  // session, so this tween is driven by setTimeout, which keeps firing in VR.
+  (function step(){
+    const k = Math.min((performance.now() - t0) / dur, 1);
     const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;   // easeInOutQuad
     m.opacity = from + (to - from) * e; m.needsUpdate = true;
-    if (k < 1) requestAnimationFrame(step); else { m.opacity = to; done && done(); }
-  })(performance.now());
+    if (k < 1) setTimeout(step, 16); else { m.opacity = to; done && done(); }
+  })();
 }
 
 // set a sky's panorama and resolve once its texture is actually decoded
