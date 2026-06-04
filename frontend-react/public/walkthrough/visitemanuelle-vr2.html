@@ -83,8 +83,7 @@
   <!-- Two panorama spheres that crossfade: the old image stays visible until the
        new one is fully loaded, so there is never a black frame between scenes.
        Different radii (front=490, back=500) avoid z-fighting; front opacity is animated. -->
-  <a-sky id="sky-back"  radius="500" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
-  <a-sky id="sky-front" radius="490" rotation="0 -90 0" material="shader:flat; npot:true; transparent:true; opacity:0"></a-sky>
+  <a-sky id="sky" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
 
   <!-- All nav / cross / ar hotspots get appended here -->
   <a-entity id="hotspots"></a-entity>
@@ -149,7 +148,6 @@ let manifest, zones = {}, hotspots = {};
 let curZone = null, curScene = null, lastZoneId = null;
 const navHistory = [];
 let busy = false;
-let frontActive = false;   // is #sky-front the sphere currently showing the active image?
 
 const $ = id => document.getElementById(id);
 
@@ -483,51 +481,14 @@ async function load(zid, sid, instant){
     finally { busy = false; }   // the lock MUST always release
   };
 
-  // FIRST load: put image on the back sphere, keep front hidden
-  if (instant){
-    try { await setSky($('sky-back'), scene.file); }
-    catch (e){ showErr(e.message); }
-    setOpacity($('sky-front'), 0);
-    frontActive = false;
-    finish();
-    return;
-  }
-
-  // TRANSITION: load the new image onto whichever sphere is currently hidden,
-  // wait until its texture is ready, THEN crossfade. The old image never blanks.
+  // Single sky, preloaded so the texture swap is near-instant from cache.
+  // No crossfade chain = no VR timing issues; no second sphere = no z-fighting shards.
   try {
-    const hidden = frontActive ? $('sky-back') : $('sky-front');
-    await setSky(hidden, scene.file);
-    const front = $('sky-front');
-    const target = frontActive ? 0 : 1;   // front visible -> fade out to reveal back; else fade in to cover back
-    fadeSky(front, target, 420, () => { frontActive = !frontActive; finish(); });
+    await setSky($('sky'), scene.file);
   } catch (e){
     showErr('load: ' + e.message);
-    finish();   // still rebuild + release the lock so the tour isn't stuck
   }
-}
-
-/* ---- sky helpers (manual opacity tween = reliable, no animation-component quirks) ---- */
-function skyMat(el){ const m = el.getObject3D('mesh'); return m ? m.material : null; }
-
-function setOpacity(el, v){
-  const m = skyMat(el);
-  if (m){ m.transparent = true; m.opacity = v; m.needsUpdate = true; }
-}
-
-function fadeSky(el, to, dur, done){
-  const m = skyMat(el);
-  if (!m){ done && done(); return; }
-  m.transparent = true;
-  const from = m.opacity, t0 = performance.now();
-  // NOTE: window.requestAnimationFrame is SUSPENDED during an immersive WebXR
-  // session, so this tween is driven by setTimeout, which keeps firing in VR.
-  (function step(){
-    const k = Math.min((performance.now() - t0) / dur, 1);
-    const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;   // easeInOutQuad
-    m.opacity = from + (to - from) * e; m.needsUpdate = true;
-    if (k < 1) setTimeout(step, 16); else { m.opacity = to; done && done(); }
-  })();
+  finish();
 }
 
 // set a sky's panorama and resolve once its texture is actually decoded
