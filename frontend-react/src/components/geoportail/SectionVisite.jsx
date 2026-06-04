@@ -258,33 +258,49 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
             </div>
             {/* live dot if VR active */}
             {vrSupported && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.8)', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
-                <a
-                  href="/walkthrough/vr-intro.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '7px',
-                    fontSize: '11px', fontWeight: 700, textDecoration: 'none',
-                    color: '#fff',
-                    background: 'linear-gradient(135deg,rgba(139,92,246,.35),rgba(99,102,241,.28))',
-                    border: '1.5px solid rgba(139,92,246,0.55)',
-                    borderRadius: '10px', padding: '7px 14px',
-                    boxShadow: '0 0 20px rgba(139,92,246,0.35)',
-                    letterSpacing: '0.04em',
-                    animation: 'vPulse 2.5s ease-in-out infinite',
-                    whiteSpace: 'nowrap',
-                  }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
-                    <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
-                    <path d="M10 12h4"/>
-                  </svg>
-                  {lang === 'fr' ? 'Entrer en VR' : 'Enter VR'}
-                </a>
-              </div>
-            )}
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      flexShrink: 0
+    }}
+  >
+    <span
+      style={{
+        width: '7px',
+        height: '7px',
+        borderRadius: '50%',
+        background: '#8B5CF6',
+        boxShadow: '0 0 8px rgba(139,92,246,0.8)',
+        display: 'inline-block',
+        animation: 'vPulse 2s infinite'
+      }}
+    />
+
+    <a
+      href="/walkthrough/visitemanuelle-vr.html"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '11px',
+        fontWeight: 600,
+        textDecoration: 'none',
+        color: 'rgb(139,92,246)',
+        background: 'rgba(139,92,246,0.1)',
+        border: '1px solid rgba(139,92,246,0.3)',
+        borderRadius: '8px',
+        padding: '5px 12px',
+        boxShadow: 'rgba(139,92,246,0.28) 0px 0px 16px',
+      }}
+    >
+      Entrer en VR
+    </a>
+  </div>
+)}
           </div>
         )}
 
@@ -729,34 +745,7 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '10px', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.22)', borderRadius: '100px', padding: '2px 10px', letterSpacing: '0.08em', fontFamily: "'Outfit',sans-serif" }}>{T.live}</span>
-          {/* VR button — routes through vr-intro.html cinematic experience */}
-          <a
-            href={vrSupported ? '/walkthrough/vr-intro.html' : viewer.file}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              fontSize: '11px', fontWeight: 600, textDecoration: 'none',
-              color: vrSupported ? '#8B5CF6' : inkSub,
-              background: vrSupported ? 'rgba(139,92,246,0.1)' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-              border: `1px solid ${vrSupported ? 'rgba(139,92,246,0.3)' : glassBorder}`,
-              borderRadius: '8px', padding: '5px 12px',
-              boxShadow: vrSupported ? '0 0 16px rgba(139,92,246,0.28)' : 'none',
-              animation: vrSupported ? 'vrBtnGlow 3s ease-in-out infinite' : 'none',
-            }}>
-              {vrSupported ? (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
-                    <circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/>
-                    <path d="M10 12h4"/>
-                  </svg>
-                  Entrer en VR
-                </>
-              ) : (
-                <>{T.full} ↗</>
-              )}
-            </a>
+        
         </div>
       </div>
       <div style={{ height: '2px', background: `linear-gradient(90deg,transparent,${viewer.color},transparent)` }} />
