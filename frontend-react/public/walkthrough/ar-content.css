@@ -12,7 +12,7 @@
   z-index: 500;
   display: flex;
   gap: 3px;
-  background: rgba(255,255,255,.12);
+  background: rgba(139,92,246,.1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,.22);
@@ -1750,3 +1750,256 @@ body.vr-mode .hs-cross {
   font-size:11px;color:rgba(0,0,0,.55);cursor:pointer;
 }
 .fert-detail-btn:hover{background:rgba(0,0,0,.04)}
+
+/* ════════════════════════════════════════
+   SENSORS CARD — custom styles
+════════════════════════════════════════ */
+
+/* Overview text */
+/* ── Sensors card — redesign ── */
+
+.sns-overview {
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+  line-height: 1.65;
+  padding: 11px 13px;
+  background: rgba(139,92,246,.05);
+  border: 0.5px solid rgba(139,92,246,.15);
+  border-radius: 13px;
+}
+
+/* Sensor grid — 2 columns */
+.sns-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sns-item {
+  border-radius: 14px;
+  padding: 11px 11px 12px;
+  border: 0.5px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color .18s;
+}
+
+.sns-item:hover {
+  border-color: rgba(0,0,0,.2);
+}
+
+/* Full-width item (niveau d'eau) */
+.sns-item.sns-item-wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sns-item-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sns-item-wide .sns-item-header {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 11px;
+  flex: 1;
+}
+
+.sns-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 0.5px solid rgba(0,0,0,.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.sns-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.sns-item-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: inherit;
+}
+
+.sns-item-type {
+  font-size: 10px;
+  color: rgba(0,0,0,.38);
+  letter-spacing: .02em;
+}
+
+.sns-item-desc {
+  font-size: 11px;
+  color: rgba(0,0,0,.52);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sns-ping-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.sns-ping {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+
+.sns-ping.sns-ping-slow { background: #fbbf24; }
+
+.sns-ping-label {
+  font-size: 10px;
+  color: rgba(0,0,0,.3);
+}
+
+/* Protocol block */
+.sns-proto {
+  background: rgba(0,0,0,.025);
+  border: 0.5px solid rgba(0,0,0,.07);
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.sns-proto-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid rgba(0,0,0,.05);
+}
+
+.sns-proto-row:last-child {
+  border-bottom: none;
+}
+
+.sns-proto-label {
+  font-size: 11.5px;
+  color: rgba(0,0,0,.42);
+}
+
+.sns-proto-val {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0,0,0,.72);
+}
+
+.sns-proto-api {
+  color: #c4b5fd;
+  font-size: 10px;
+}
+
+/* Audio player */
+.sns-audio-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sns-audio-lang {
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: rgba(139,92,246,.65);
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.sns-audio-btn {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 0.5px solid rgba(0,0,0,.1);
+  background: rgba(255,255,255,.07);
+  cursor: pointer;
+  transition: background .16s, transform .12s;
+}
+
+.sns-audio-btn:hover {
+  background: rgba(139,92,246,.1);
+}
+
+.sns-audio-btn:active {
+  transform: scale(.98);
+}
+
+.sns-audio-btn.sns-audio-disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sns-audio-play-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(139,92,246,.5);
+  border: 0.5px solid rgba(139,92,246,.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sns-audio-icon {
+  font-size: 16px;
+  color: white;
+  margin-left: 2px;
+}
+
+.sns-audio-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sns-audio-main {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(0,0,0,.78);
+}
+
+.sns-audio-sub {
+  font-size: 11px;
+  color: rgba(0,0,0,.4);
+}
+
+.sns-audio-dur {
+  font-size: 11.5px;
+  color: rgba(0,0,0,.3);
+  flex-shrink: 0;
+}
+
+.sns-audio-na {
+  font-size: 10px;
+  color: rgba(0,0,0,.25);
+  font-style: italic;
+  text-align: center;
+}
+
+/* RTL overrides */
+#ar-card[dir="rtl"] .sns-item-wide .sns-item-header { flex-direction: row-reverse; }
+#ar-card[dir="rtl"] .sns-proto-row   { flex-direction: row-reverse; }
+#ar-card[dir="rtl"] .sns-audio-btn   { flex-direction: row-reverse; }
+#ar-card[dir="rtl"] .sns-audio-lang  { text-align: left; }

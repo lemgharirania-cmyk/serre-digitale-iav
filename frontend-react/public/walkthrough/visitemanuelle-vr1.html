@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AgroBioTech — Visite Immersive VR</title>
+
+<!-- A-Frame 1.5.0 : WebXR engine, fully Meta Quest 2 compatible.
+     (You can bump the version later; 1.5.0 is a known-good stable build.) -->
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+<style>
+  html,body{margin:0;height:100%;background:#07111F;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif;}
+  a-scene{width:100%;height:100%;}
+
+  /* 2D DOM overlay — shown on flat screens, AUTO-HIDDEN in immersive VR */
+  #overlay{position:fixed;inset:0;pointer-events:none;z-index:10;
+    transition:opacity .3s ease;}
+  body.in-vr #overlay{opacity:0;pointer-events:none!important;}
+
+  .zf{position:absolute;top:18px;left:18px;pointer-events:none;
+    background:rgba(11,23,40,.72);backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 18px;
+    color:#F1F5F9;opacity:0;transform:translateY(-8px);transition:all .4s ease;}
+  .zf.show{opacity:1;transform:none;}
+  .zf b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em;}
+  .zf span{font-size:11px;color:#94A3B8;}
+
+  .scene-ctr{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    pointer-events:none;background:rgba(11,23,40,.72);backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,.08);border-radius:100px;padding:6px 16px;
+    color:#94A3B8;font-size:12px;font-family:'DM Mono',monospace;}
+
+  .arrow{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;
+    width:48px;height:48px;border:none;cursor:pointer;border-radius:50%;
+    background:rgba(11,23,40,.72);backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,.08);color:#F1F5F9;font-size:26px;line-height:1;
+    display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .arrow:hover{background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.4);}
+  .arrow.L{left:18px;} .arrow.R{right:18px;}
+  .arrow.off{opacity:0;pointer-events:none;}
+
+  /* VR entry hint (A-Frame draws its own Enter-VR button bottom-right; this is just guidance) */
+  #vrhint{position:absolute;bottom:74px;right:18px;pointer-events:none;
+    background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);
+    color:#4ADE80;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;
+    box-shadow:0 0 16px rgba(34,197,94,.25);}
+
+  #err{position:absolute;bottom:18px;left:18px;right:18px;pointer-events:none;
+    background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#FCA5A5;
+    border-radius:12px;padding:12px 16px;font-size:13px;display:none;}
+
+  /* Calibration readout — only visible with ?debug=1, for aligning hotspots on PC */
+  #cal{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+    pointer-events:auto;background:rgba(11,23,40,.9);border:1px solid rgba(6,182,212,.4);
+    color:#67E8F9;border-radius:12px;padding:10px 16px;font-size:12px;
+    font-family:'DM Mono',monospace;display:none;gap:10px;align-items:center;}
+  #cal button{pointer-events:auto;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.5);
+    color:#67E8F9;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<a-scene
+  loading-screen="dotsColor:#22C55E; backgroundColor:#07111F"
+  vr-mode-ui="enabled:true"
+  device-orientation-permission-ui="enabled:true"
+  renderer="colorManagement:true; antialias:true; foveationLevel:1; highRefreshRate:true; sortTransparentObjects:true"
+  background="color:#07111F">
+
+  <a-assets timeout="60000"></a-assets>
+
+  <!-- Two panorama spheres that crossfade: the old image stays visible until the
+       new one is fully loaded, so there is never a black frame between scenes.
+       Different radii (front=490, back=500) avoid z-fighting; front opacity is animated. -->
+  <a-sky id="sky-back"  radius="500" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
+  <a-sky id="sky-front" radius="490" rotation="0 -90 0" material="shader:flat; npot:true; transparent:true; opacity:0"></a-sky>
+
+  <!-- All nav / cross / ar hotspots get appended here -->
+  <a-entity id="hotspots"></a-entity>
+
+  <!-- In-world AR info panel (hidden until an 'info' hotspot is clicked) -->
+  <a-entity id="arpanel" visible="false" position="0 0 -2.2">
+    <a-plane width="1.5" height="0.9" color="#0B1728" opacity="0.92"
+      material="shader:flat; transparent:true"
+      geometry="primitive:plane"></a-plane>
+    <a-entity id="arpanel-border" geometry="primitive:plane; width:1.5; height:0.9"
+      material="shader:flat; color:#22C55E; opacity:0.0; transparent:true"></a-entity>
+    <a-text id="arpanel-title" value="" align="center" width="2"
+      color="#4ADE80" position="0 0.3 0.01" font="kelsonsans"></a-text>
+    <a-text id="arpanel-body" value="" align="center" width="1.7" wrap-count="32"
+      color="#E2E8F0" position="0 -0.02 0.01"></a-text>
+    <!-- close button: the plane itself is the clickable target (carries geometry) -->
+    <a-entity position="0 -0.36 0.02">
+      <a-plane class="clickable" data-action="closeAR" width="0.5" height="0.14"
+        color="#1E293B" opacity="0.95" material="shader:flat; transparent:true"></a-plane>
+      <a-text value="Fermer" align="center" width="1.4" color="#94A3B8" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-entity>
+
+  <!-- Camera rig: stays at origin (360 photo = rotate-only). 6DoF head tracking on Quest still works. -->
+  <a-entity id="rig" position="0 1.6 0">
+    <a-camera id="cam" wasd-controls-enabled="false" position="0 0 0"
+      look-controls="reverseMouseDrag:false; touchEnabled:true; magicWindowTrackingEnabled:true">
+      <!-- Mouse cursor: desktop click support (no dwell). Quest uses the controllers below. -->
+      <a-entity id="mcursor" cursor="rayOrigin:mouse" raycaster="objects:.clickable; far:30"></a-entity>
+    </a-camera>
+
+    <!-- Quest 2 Touch controllers: laser pointer + trigger click -->
+    <a-entity id="lh" laser-controls="hand:left"  raycaster="objects:.clickable; far:30; lineColor:#06B6D4; lineOpacity:0.85"></a-entity>
+    <a-entity id="rh" laser-controls="hand:right" raycaster="objects:.clickable; far:30; lineColor:#22C55E; lineOpacity:0.85"></a-entity>
+  </a-entity>
+</a-scene>
+
+<!-- ===================== 2D OVERLAY (flat screens only) ===================== -->
+<div id="overlay">
+  <div class="zf" id="zf"><b id="zfn">—</b><span id="zfu"></span></div>
+  <div class="scene-ctr" id="scene-ctr">— / —</div>
+  <button class="arrow L off" id="prev" onclick="stepScene(-1)">&#8249;</button>
+  <button class="arrow R off" id="next" onclick="stepScene(1)">&#8250;</button>
+  <div id="vrhint">Cliquez « Enter VR » ↘</div>
+  <div id="err"></div>
+  <div id="cal">
+    yaw offset: <b id="cal-val">0</b>°
+    <button onclick="nudgeOffset(-5)">−5</button>
+    <button onclick="nudgeOffset(5)">+5</button>
+    <button onclick="nudgeOffset(-1)">−1</button>
+    <button onclick="nudgeOffset(1)">+1</button>
+    <button onclick="logOffset()">copy</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   AgroBioTech — A-Frame WebXR tour
+   Reads the SAME images/manifest.json + same panoramas as the Pannellum version.
+   Schema (reconstructed from the original loader):
+     manifest.zones[]  = { id, label, unit, scenes:[ {id, file} ] }
+     manifest.hotspots = { [zoneId]: { [sceneId]: [ {type, pitch, yaw, targetZoneId, targetSceneId, arDesc?, label?} ] } }
+   ============================================================================ */
+
+const START_ZONE   = new URLSearchParams(location.search).get('zone') || window.UNIT_ZONE || 'exterieur';
+const SCENE_RADIUS = 8;          // sphere radius hotspots sit on
+let   YAW_OFFSET   = 0;          // global calibration; tune once on PC, then bake in (see notes)
+let   AR_PITCH_OFFSET = 9;       // raises ONLY the AR info hotspots, in degrees. Increase = higher.
+
+let manifest, zones = {}, hotspots = {};
+let curZone = null, curScene = null, lastZoneId = null;
+const navHistory = [];
+let busy = false;
+let frontActive = false;   // is #sky-front the sphere currently showing the active image?
+
+const $ = id => document.getElementById(id);
+
+/* ---- Pannellum (yaw,pitch in degrees) -> A-Frame world position on the sphere ----
+   yaw 0  => forward (-Z) ; yaw + => right (+X) ; pitch + => up. Matches Pannellum. */
+function yawPitchToXYZ(yaw, pitch, r = SCENE_RADIUS) {
+  const y = (yaw + YAW_OFFSET) * Math.PI / 180;
+  const p = pitch * Math.PI / 180;
+  return {
+    x:  r * Math.cos(p) * Math.sin(y),
+    y:  r * Math.sin(p),
+    z: -r * Math.cos(p) * Math.cos(y)
+  };
+}
+
+/* ---- billboard: keep a hotspot facing the camera (handles 6DoF head movement) ---- */
+AFRAME.registerComponent('billboard', {
+  init(){ this._v = new THREE.Vector3(); },
+  tick(){
+    const cam = this.el.sceneEl.camera;
+    if (!cam) return;
+    cam.getWorldPosition(this._v);
+    this.el.object3D.lookAt(this._v);
+  }
+});
+
+/* ---- preload an image so the sky never shows a half-loaded texture ---- */
+function preload(url){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => res(url);
+    img.onerror = () => rej(new Error('Image introuvable : ' + url));
+    img.src = url;
+  });
+}
+
+/* ---- build one hotspot entity ----
+   wrap = positioned container (billboarded).
+   hit  = the actual clickable target — it MUST carry its own geometry so the
+          controller laser / mouse ray has a mesh to intersect (this was the bug). */
+function makeHotspot(hs){
+  const isAR = hs.type === 'ar';
+  const pitch = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);   // nudge AR info icons up
+  const pos = yawPitchToXYZ(hs.yaw, pitch);
+  const wrap = document.createElement('a-entity');
+  wrap.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+  wrap.setAttribute('billboard', '');
+
+  const color = isAR ? '#F59E0B' : (hs.type === 'cross' ? '#06B6D4' : '#22C55E');
+
+  // --- transparent hit area: this is the .clickable element with real geometry ---
+  const hit = document.createElement('a-circle');
+  hit.setAttribute('radius', 0.34);
+  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0.001; transparent:true; side:double');
+  hit.classList.add('clickable');
+  wrap.appendChild(hit);
+
+  // --- visuals (children of the hit, so hover-scaling lifts the whole thing) ---
+  const ring = document.createElement('a-ring');
+  ring.setAttribute('radius-inner', isAR ? 0.18 : 0.22);
+  ring.setAttribute('radius-outer', isAR ? 0.26 : 0.30);
+  ring.setAttribute('material', `shader:flat; color:${color}; opacity:0.9; transparent:true; side:double`);
+  ring.setAttribute('animation__pulse',
+    'property:scale; dir:alternate; loop:true; dur:1400; from:1 1 1; to:1.12 1.12 1');
+  hit.appendChild(ring);
+
+  const disc = document.createElement('a-circle');
+  disc.setAttribute('radius', isAR ? 0.17 : 0.21);
+  disc.setAttribute('material', `shader:flat; color:#07111F; opacity:0.55; transparent:true; side:double`);
+  disc.setAttribute('position', '0 0 -0.001');
+  hit.appendChild(disc);
+
+  const glyph = document.createElement('a-text');
+  glyph.setAttribute('value', isAR ? 'i' : '\u203A');     // 'i' or ›
+  glyph.setAttribute('align', 'center');
+  glyph.setAttribute('color', color);
+  glyph.setAttribute('width', 3);
+  glyph.setAttribute('position', '0 0 0.01');
+  hit.appendChild(glyph);
+
+  // hover feedback on the hit element
+  hit.addEventListener('mouseenter', () => hit.object3D.scale.set(1.25,1.25,1.25));
+  hit.addEventListener('mouseleave', () => hit.object3D.scale.set(1,1,1));
+
+  // click / select action
+  hit.addEventListener('click', () => {
+    if (isAR){
+      openAR(hs.label || hs.arDesc || '', hs.arDesc || '');
+    } else {
+      goTo(hs.targetZoneId, hs.targetSceneId);
+    }
+  });
+  return wrap;
+}
+
+/* ---- AR in-world panel ---- */
+function openAR(title, body){
+  $('arpanel-title').setAttribute('value', title || 'Info');
+  $('arpanel-body').setAttribute('value', body || '');
+  $('arpanel').setAttribute('visible', true);
+}
+function closeAR(){ $('arpanel').setAttribute('visible', false); }
+
+/* global click handler for panel buttons (close, etc.) */
+document.querySelector('a-scene').addEventListener('click', e => {
+  const t = e.target;
+  if (t && t.dataset && t.dataset.action === 'closeAR') closeAR();
+});
+
+/* ---- core scene loader (mirrors the original load(), minus Pannellum) ---- */
+async function load(zid, sid, instant){
+  const zone = zones[zid];
+  const scene = zone && zone.scenes.find(s => s.id === sid);
+  if (!zone || !scene){ showErr('Scène introuvable : ' + zid + '/' + sid); return; }
+  if (busy) return; busy = true;
+
+  // clear current hotspots + panel during the transition
+  const host = $('hotspots');
+  while (host.firstChild) host.removeChild(host.firstChild);
+  closeAR();
+
+  // everything except the panorama swap (hotspots, labels, counters)
+  const finish = () => {
+    curZone = zid; curScene = sid;
+    const list = (hotspots[zid] && hotspots[zid][sid]) || [];
+    list.forEach(hs => host.appendChild(makeHotspot(hs)));
+
+    const idx = zone.scenes.indexOf(scene);
+    $('prev').className = 'arrow L' + (idx === 0 ? ' off' : '');
+    $('next').className = 'arrow R' + (idx === zone.scenes.length - 1 ? ' off' : '');
+    $('scene-ctr').textContent = (idx + 1) + ' / ' + zone.scenes.length;
+
+    if (zid !== lastZoneId){
+      lastZoneId = zid;
+      $('zfn').textContent = zone.label;
+      $('zfu').textContent = (zone.unit && zone.unit !== '\u2014') ? ('Unité ' + zone.unit) : '';
+      const zf = $('zf'); zf.classList.remove('show');
+      requestAnimationFrame(() => zf.classList.add('show'));
+      clearTimeout(window._zfT);
+      window._zfT = setTimeout(() => zf.classList.remove('show'), 3000);
+    }
+    busy = false;
+  };
+
+  // FIRST load: put image on the back sphere, keep front hidden
+  if (instant){
+    try { await setSky($('sky-back'), scene.file); }
+    catch (e){ showErr(e.message); busy = false; return; }
+    setOpacity($('sky-front'), 0);
+    frontActive = false;
+    finish();
+    return;
+  }
+
+  // TRANSITION: load the new image onto whichever sphere is currently hidden,
+  // wait until its texture is ready, THEN crossfade. The old image never blanks.
+  const hidden = frontActive ? $('sky-back') : $('sky-front');
+  try { await setSky(hidden, scene.file); }
+  catch (e){ showErr(e.message); busy = false; return; }
+
+  const front = $('sky-front');
+  const target = frontActive ? 0 : 1;   // front visible -> fade out to reveal back; else fade in to cover back
+  fadeSky(front, target, 420, () => { frontActive = !frontActive; finish(); });
+}
+
+/* ---- sky helpers (manual opacity tween = reliable, no animation-component quirks) ---- */
+function skyMat(el){ const m = el.getObject3D('mesh'); return m ? m.material : null; }
+
+function setOpacity(el, v){
+  const m = skyMat(el);
+  if (m){ m.transparent = true; m.opacity = v; m.needsUpdate = true; }
+}
+
+function fadeSky(el, to, dur, done){
+  const m = skyMat(el);
+  if (!m){ done && done(); return; }
+  m.transparent = true;
+  const from = m.opacity, t0 = performance.now();
+  (function step(now){
+    const k = Math.min((now - t0) / dur, 1);
+    const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;   // easeInOutQuad
+    m.opacity = from + (to - from) * e; m.needsUpdate = true;
+    if (k < 1) requestAnimationFrame(step); else { m.opacity = to; done && done(); }
+  })(performance.now());
+}
+
+// set a sky's panorama and resolve once its texture is actually decoded
+function setSky(el, url){
+  return new Promise((res) => {
+    let done = false;
+    const ok = () => { if (done) return; done = true; el.removeEventListener('materialtextureloaded', ok); res(); };
+    el.addEventListener('materialtextureloaded', ok);
+    el.setAttribute('material', 'src', url);
+    setTimeout(ok, 1800);   // fallback if the event doesn't fire (e.g. cached texture)
+  });
+}
+
+function goTo(zid, sid){
+  if (busy) return;
+  if (curZone && curScene) navHistory.push({ zoneId: curZone, sceneId: curScene });
+  if (navHistory.length > 50) navHistory.shift();
+  load(zid, sid);
+}
+
+/* prev / next within the current zone (2D arrows + could be mapped to controller later) */
+function stepScene(dir){
+  const zone = zones[curZone]; if (!zone) return;
+  const idx = zone.scenes.findIndex(s => s.id === curScene);
+  const ni = idx + dir;
+  if (ni < 0 || ni >= zone.scenes.length) return;
+  goTo(curZone, zone.scenes[ni].id);
+}
+
+function showErr(msg){
+  const e = $('err'); e.textContent = msg; e.style.display = 'block';
+  console.error('[VR-TOUR]', msg);
+}
+
+/* ---- calibration helpers (?debug=1) ---- */
+function nudgeOffset(d){
+  YAW_OFFSET += d; $('cal-val').textContent = YAW_OFFSET;
+  if (curZone && curScene) load(curZone, curScene, true);   // re-place hotspots instantly
+}
+function logOffset(){
+  console.log('%cYAW_OFFSET =', 'color:#22C55E;font-weight:bold', YAW_OFFSET,
+    '\n→ paste this number into the YAW_OFFSET constant at the top of the file.');
+  alert('YAW_OFFSET = ' + YAW_OFFSET + '\nCheck the console, then hard-code it at the top of the file.');
+}
+
+/* ---- boot ---- */
+window.addEventListener('load', async () => {
+  try {
+    const r = await fetch('images/manifest.json');
+    if (!r.ok) throw new Error('manifest.json HTTP ' + r.status);
+    manifest = await r.json();
+  } catch (e){
+    showErr('Impossible de charger images/manifest.json — vérifiez le chemin. (' + e.message + ')');
+    return;
+  }
+  (manifest.zones || []).forEach(z => zones[z.id] = z);
+  hotspots = manifest.hotspots || {};
+
+  const p = new URLSearchParams(location.search);
+  const z = p.get('zone') || START_ZONE;
+  const s = p.get('scene') || (zones[z] && zones[z].scenes[0] && zones[z].scenes[0].id);
+  if (!zones[z] || !s){ showErr('Zone de départ invalide : ' + z); return; }
+
+  load(z, s, true);
+
+  if (p.get('debug') === '1') $('cal').style.display = 'flex';
+});
+
+/* hide 2D overlay while inside immersive VR */
+const sc = document.querySelector('a-scene');
+sc.addEventListener('enter-vr', () => document.body.classList.add('in-vr'));
+sc.addEventListener('exit-vr',  () => document.body.classList.remove('in-vr'));
+</script>
+</body>
+</html>

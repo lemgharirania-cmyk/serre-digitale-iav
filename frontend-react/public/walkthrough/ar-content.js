@@ -1219,95 +1219,37 @@ const AR_CONTENT = {
 
   'sensors': {
 
-
-
-    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="18" height="12" rx="2"/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"/></svg>`,
-
-
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.5" fill="rgba(109,40,217,.9)" stroke="none"/></svg>`,
 
     iconBg:'rgba(109,40,217,.18)', iconBorder:'rgba(196,181,253,.3)',
 
-
-
     color:'#8b5cf6', statusText:'Actif',
     statusText_en:'Active',
-    statusText_ar:'نشط', type:'sensor',
-
-
+    statusText_ar:'نشط',
+    type:'sensor',
 
     heroGradient:'radial-gradient(ellipse at 50% 50%, rgba(139,92,246,.22) 0%, transparent 65%)',
 
-
-
-    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">${[0,1,2,3,4].map(i=>`<line x1="${60+i*55}" y1="${80-i*5}" x2="${60+i*55}" y2="80" stroke="rgba(196,181,253,.${3+i%3})" stroke-width="${2+i%2}" style="animation:hero-float ${1.5+i*.2}s ease-in-out ${i*.15}s infinite"/>`).join('')}</svg>`,
-
-
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">
+      ${[0,1,2].map(i=>`<circle cx="185" cy="60" r="${28+i*22}" stroke="rgba(196,181,253,.${18-i*5})" stroke-width="1" fill="none" style="animation:hero-pulse ${2+i*.6}s ease-in-out ${i*.4}s infinite"/>`).join('')}
+      ${[0,1,2,3,4].map(i=>`<circle cx="${65+i*60}" cy="${52+Math.sin(i)*12}" r="3.5" fill="rgba(167,139,250,.${6-i})" style="animation:hero-float ${1.8+i*.25}s ease-in-out ${i*.2}s infinite"/>`).join('')}
+      <path d="M50 72 Q120 48 185 60 Q250 72 320 50" stroke="rgba(196,181,253,.25)" stroke-width="1.2" fill="none"/>
+    </svg>`,
 
     title:'Capteurs IoT Environnementaux',
     title_en:'Environmental IoT Sensors',
     title_ar:'مستشعرات IoT البيئية',
 
+    tabs:['Info'],
 
+    /* ─ Audio paths — swap placeholders with real MP3s when recorded ─ */
+    audio:{
+      FR:'audio/fr/sensors.mp3',
+      EN:'audio/en/sensors.mp3',
+      AR:'audio/ar/sensors.mp3',
+    },
 
-    tabs:['IoT','Info'],
-
-
-
-    sections:[
-
-
-
-      {label:'CAPTEURS INSTALLÉS',items:[
-
-
-
-        {k:'Température / HR',v:'Sonde T+HR combinée',tag:'blue'},
-
-
-
-        {k:'VPD',v:'Calculé (T+HR)'},
-
-
-
-        {k:'pH solution',v:'Sonde pH inline'},
-
-
-
-        {k:'EC',v:'Conductivimètre inline'},
-
-
-
-        {k:'Niveau eau',v:'Capteur ultrasonique'},
-
-
-
-      ]},
-
-
-
-      {label:'PROTOCOLE',items:[
-
-
-
-        {k:'Fréquence lecture',v:'Toutes les 5 min'},
-
-
-
-        {k:'Transmission',v:'WiFi → Guardian Pro'},
-
-
-
-        {k:'API',v:'guardian.pro-leaf.com'},
-
-
-
-      ]},
-
-
-
-    ],
-
-
+    sections:[], /* content handled by renderSensorsCard — see engine Section 4 */
 
   },
 
@@ -5149,6 +5091,12 @@ function renderARTab(i, def){
 
 
 
+  // ── Sensors custom card ──
+  if(def.type === 'sensor'){
+    renderSensorsCard(el, def);
+    return;
+  }
+
   // ── Fertigation custom card ──
   if(def.type === 'fertigation'){
     const lang = (window.currentLang||'FR').toLowerCase();
@@ -5345,17 +5293,222 @@ function renderARTab(i, def){
 }
 
 function closeAR(){
-
-
-
   document.getElementById('ar-card').classList.remove('open');
-
-
-
+  /* ── Stop any playing audio ── */
+  if(window._arAudioEl){ window._arAudioEl.pause(); window._arAudioEl.currentTime=0; }
   activeAR=null;
+}
 
+/* ═══════════════════════════════════════════════════════════════════════
+   SENSORS CARD — custom renderer
+   Called from renderARTab when def.type === 'sensor'
+   All strings FR/EN/AR inline. Audio auto-matches window.currentLang.
+═══════════════════════════════════════════════════════════════════════ */
+function renderSensorsCard(el, def){
+  const lang = (window.currentLang||'FR');
+  const L = {
+    /* ── Section titles ── */
+    secInfo:    {FR:'PRÉSENTATION',          EN:'OVERVIEW',             AR:'نظرة عامة'},
+    secSensors: {FR:'CAPTEURS INSTALLÉS',    EN:'INSTALLED SENSORS',    AR:'المستشعرات المثبتة'},
+    secProto:   {FR:'PROTOCOLE',             EN:'PROTOCOL',             AR:'البروتوكول'},
+    secAudio:   {FR:'NARRATION AUDIO',       EN:'AUDIO NARRATION',      AR:'التعليق الصوتي'},
+    /* ── Overview ── */
+    ovDesc:     {
+      FR:'Ce réseau de capteurs IoT surveille en continu les paramètres environnementaux et de la solution nutritive dans chaque serre. Les données sont transmises toutes les 5 minutes à la plateforme Guardian Pro et accessibles en temps réel depuis le géoportail.',
+      EN:'This IoT sensor network continuously monitors environmental and nutrient solution parameters across every greenhouse. Data is transmitted every 5 minutes to the Guardian Pro platform and accessible in real time from the geoportal.',
+      AR:'تراقب شبكة المستشعرات هذه باستمرار المعاملات البيئية ومحلول التغذية في كل بيت زجاجي. تُرسل البيانات كل 5 دقائق إلى منصة Guardian Pro ويمكن الوصول إليها في الوقت الفعلي.',
+    },
+    /* ── Protocol labels ── */
+    protoFreq:  {FR:'Fréquence',         EN:'Frequency',        AR:'التردد'},
+    protoFreqV: {FR:'Toutes les 5 min',  EN:'Every 5 min',      AR:'كل 5 دقائق'},
+    protoTx:    {FR:'Transmission',      EN:'Transmission',     AR:'الإرسال'},
+    protoTxV:   {FR:'WiFi → Guardian Pro', EN:'WiFi → Guardian Pro', AR:'WiFi ← Guardian Pro'},
+    protoApi:   {FR:'API',               EN:'API',              AR:'واجهة API'},
+    /* ── Sensor names ── */
+    sTempName:  {FR:'Température & Humidité',  EN:'Temperature & Humidity', AR:'الحرارة والرطوبة'},
+    sTempType:  {FR:'Sonde combinée T°+HR',    EN:'Combined T°+RH probe',   AR:'مسبار T°+RH مدمج'},
+    sTempDesc:  {
+      FR:'Mesure la température de l\'air (°C) et l\'humidité relative (%) à l\'intérieur de la serre. Ces deux valeurs sont indispensables pour réguler le climat et prévenir les maladies fongiques.',
+      EN:'Measures air temperature (°C) and relative humidity (%) inside the greenhouse. Both values are essential for climate regulation and preventing fungal diseases.',
+      AR:'يقيس درجة حرارة الهواء (°C) والرطوبة النسبية (%) داخل البيت الزجاجي. القيمتان ضروريتان لتنظيم المناخ ومنع الأمراض الفطرية.',
+    },
+    sVpdName:   {FR:'VPD — Déficit de Pression Vapeur', EN:'VPD — Vapour Pressure Deficit', AR:'VPD — عجز ضغط البخار'},
+    sVpdType:   {FR:'Calculé (T°+HR)',   EN:'Calculated (T°+RH)',  AR:'محسوب (T°+RH)'},
+    sVpdDesc:   {
+      FR:'Le VPD (kPa) est calculé à partir de la température et de l\'humidité. Il indique la capacité de l\'air à absorber la transpiration des plantes — un VPD bien contrôlé optimise l\'absorption de l\'eau et des nutriments.',
+      EN:'VPD (kPa) is calculated from temperature and humidity. It indicates the air\'s capacity to absorb plant transpiration — a well-controlled VPD optimises water and nutrient uptake.',
+      AR:'يُحسب VPD (كيلو باسكال) من الحرارة والرطوبة. يشير إلى قدرة الهواء على امتصاص نتح النبات — VPD جيد يُحسّن امتصاص الماء والعناصر الغذائية.',
+    },
+    sPhName:    {FR:'pH de la Solution',   EN:'Solution pH',          AR:'درجة حموضة المحلول'},
+    sPhType:    {FR:'Sonde pH inline',     EN:'Inline pH probe',      AR:'مسبار pH مدمج'},
+    sPhDesc:    {
+      FR:'Mesure le pH de la solution nutritive en continu. Un pH hors plage (idéalement 5,5–6,5) bloque l\'assimilation des éléments minéraux par les racines, quelle que soit leur concentration dans la solution.',
+      EN:'Continuously measures the pH of the nutrient solution. A pH out of range (ideally 5.5–6.5) blocks mineral uptake by the roots, regardless of their concentration in the solution.',
+      AR:'يقيس pH محلول التغذية باستمرار. pH خارج النطاق (المثالي 5.5–6.5) يعيق امتصاص العناصر المعدنية بواسطة الجذور بغض النظر عن تركيزها.',
+    },
+    sEcName:    {FR:'Conductivité EC',        EN:'EC Conductivity',       AR:'التوصيل الكهربائي EC'},
+    sEcType:    {FR:'Conductivimètre inline',  EN:'Inline conductivity meter', AR:'مقياس توصيلية مدمج'},
+    sEcDesc:    {
+      FR:'Mesure la concentration totale en sels minéraux de la solution (mS/cm). Un EC trop bas signifie une sous-nutrition ; trop élevé, il provoque un stress osmotique qui brûle les racines.',
+      EN:'Measures the total mineral salt concentration of the solution (mS/cm). Too low means under-nutrition; too high causes osmotic stress that burns the roots.',
+      AR:'يقيس التركيز الكلي للأملاح المعدنية في المحلول (mS/cm). منخفض جداً يعني سوء التغذية؛ مرتفع جداً يسبب إجهاداً أسموزياً يحرق الجذور.',
+    },
+    sWlName:    {FR:'Niveau d\'Eau',          EN:'Water Level',           AR:'مستوى الماء'},
+    sWlType:    {FR:'Capteur ultrasonique',   EN:'Ultrasonic sensor',     AR:'مستشعر فوق صوتي'},
+    sWlDesc:    {
+      FR:'Mesure le niveau de la solution dans le réservoir par ultrasons sans contact direct. Permet de détecter une fuite ou une consommation anormale et de déclencher un réapprovisionnement automatique.',
+      EN:'Measures the solution level in the tank using ultrasound — no direct contact. Enables detection of leaks or abnormal consumption and triggers automatic refilling.',
+      AR:'يقيس مستوى المحلول في الخزان بالموجات فوق الصوتية دون تلامس مباشر. يمكّن من اكتشاف التسرب أو الاستهلاك الشاذ وتشغيل إعادة الملء التلقائي.',
+    },
+    /* ── Audio ── */
+    audioPlay:  {FR:'Écouter la présentation', EN:'Listen to the presentation', AR:'استمع إلى الشرح'},
+    audioPause: {FR:'Pause',                   EN:'Pause',                      AR:'إيقاف مؤقت'},
+    audioLang:  {FR:'Narration en français',   EN:'English narration',          AR:'الشرح بالعربية'},
+    audioNA:    {FR:'Audio non disponible',    EN:'Audio not available',        AR:'الصوت غير متاح'},
+  };
 
+  const tx = k => L[k]?.[lang] ?? L[k]?.FR ?? k;
 
+  /* ── Sensor data ── */
+  const sensors = [
+    {tiIcon:'ti-temperature',    key:'temp',   name:tx('sTempName'), type:tx('sTempType'), desc:tx('sTempDesc'), color:'#0284c7', iconColor:'#0284c7', bg:'rgba(14,165,233,.08)',  border:'rgba(14,165,233,.2)'},
+    {tiIcon:'ti-calculator',     key:'vpd',    name:tx('sVpdName'),  type:tx('sVpdType'),  desc:tx('sVpdDesc'),  color:'#7c3aed', iconColor:'#7c3aed', bg:'rgba(139,92,246,.08)', border:'rgba(139,92,246,.2)'},
+    {tiIcon:'ti-droplet',        key:'ph',     name:tx('sPhName'),   type:tx('sPhType'),   desc:tx('sPhDesc'),   color:'#059669', iconColor:'#059669', bg:'rgba(16,185,129,.08)', border:'rgba(16,185,129,.2)'},
+    {tiIcon:'ti-bolt',           key:'ec',     name:tx('sEcName'),   type:tx('sEcType'),   desc:tx('sEcDesc'),   color:'#b45309', iconColor:'#b45309', bg:'rgba(245,158,11,.08)', border:'rgba(245,158,11,.2)'},
+    {tiIcon:'ti-waves',          key:'niveau', name:tx('sWlName'),   type:tx('sWlType'),   desc:tx('sWlDesc'),   color:'#0e7490', iconColor:'#0e7490', bg:'rgba(6,182,212,.08)',  border:'rgba(6,182,212,.2)'},
+  ];
+
+  /* ── Audio state ── */
+  const audioSrc = def.audio?.[lang];
+  const hasAudio = !!audioSrc;
+  const isPlaying = window._arAudioEl && !window._arAudioEl.paused && window._arAudioEl._arKey === 'sensors' && window._arAudioEl._arLang === lang;
+
+  /* ── Build HTML ── */
+  let html = '';
+
+  /* 1 — Overview */
+  html += `<div class="ar-section-title">${tx('secInfo')}</div>
+  <div class="sns-overview">${tx('ovDesc')}</div>`;
+
+  /* 2 — Sensor cards */
+  html += `<div class="ar-section-title" style="margin-top:16px">${tx('secSensors')}</div>
+  <div class="sns-list">`;
+
+  sensors.forEach((s, i) => {
+    const isWide = i === sensors.length - 1 && sensors.length % 2 !== 0;
+    const pingClass = s.key === 'vpd' ? 'sns-ping sns-ping-slow' : 'sns-ping';
+    const pingLabel = s.key === 'vpd'
+      ? (lang==='AR'?'محسوب':lang==='EN'?'Computed':'Calculé')
+      : (lang==='AR'?'متصل':lang==='EN'?'Online':'En ligne');
+    const iconHtml = `<span class="sns-item-icon" style="background:${s.bg};border-color:${s.border}"><i class="ti ${s.tiIcon}" style="font-size:16px;color:${s.iconColor};" aria-hidden="true"></i></span>`;
+    if (isWide) {
+      html += `
+      <div class="sns-item sns-item-wide" style="background:${s.bg};border-color:${s.border}">
+        ${iconHtml}
+        <div class="sns-item-header">
+          <div class="sns-item-meta">
+            <span class="sns-item-name" style="color:${s.color}">${s.name}</span>
+            <span class="sns-item-type">${s.type}</span>
+          </div>
+          <p class="sns-item-desc">${s.desc}</p>
+          <div class="sns-ping-row"><span class="${pingClass}"></span><span class="sns-ping-label">${pingLabel}</span></div>
+        </div>
+      </div>`;
+    } else {
+      html += `
+      <div class="sns-item" style="background:${s.bg};border-color:${s.border}">
+        ${iconHtml}
+        <div class="sns-item-name" style="color:${s.color}">${s.name}</div>
+        <div class="sns-item-type">${s.type}</div>
+        <p class="sns-item-desc">${s.desc}</p>
+        <div class="sns-ping-row"><span class="${pingClass}"></span><span class="sns-ping-label">${pingLabel}</span></div>
+      </div>`;
+    }
+  });
+  html += `</div>`;
+
+  /* 3 — Protocol */
+  html += `<div class="ar-section-title" style="margin-top:16px">${tx('secProto')}</div>
+  <div class="sns-proto">
+    <div class="sns-proto-row">
+      <span class="sns-proto-label">${tx('protoFreq')}</span>
+      <span class="sns-proto-val">${tx('protoFreqV')}</span>
+    </div>
+    <div class="sns-proto-row">
+      <span class="sns-proto-label">${tx('protoTx')}</span>
+      <span class="sns-proto-val">${tx('protoTxV')}</span>
+    </div>
+    <div class="sns-proto-row">
+      <span class="sns-proto-label">${tx('protoApi')}</span>
+      <span class="sns-proto-val sns-proto-api">guardian.pro-leaf.com</span>
+    </div>
+  </div>`;
+
+  /* 4 — Audio player */
+  html += `<div class="ar-section-title" style="margin-top:16px">${tx('secAudio')}</div>
+  <div class="sns-audio-wrap">
+    <div class="sns-audio-lang">${tx('audioLang')}</div>
+    <button class="sns-audio-btn${hasAudio?'':' sns-audio-disabled'}" id="sns-audio-btn"
+      onclick="snsToggleAudio()"
+      ${hasAudio?'':' disabled title="'+(tx('audioNA'))+'"'}>
+      <div class="sns-audio-play-circle">
+        <span class="sns-audio-icon" id="sns-audio-icon">${isPlaying?'⏸':'▶'}</span>
+      </div>
+      <div class="sns-audio-text">
+        <span class="sns-audio-main" id="sns-audio-label">${isPlaying ? tx('audioPause') : tx('audioPlay')}</span>
+        <span class="sns-audio-sub">Introduction au réseau de capteurs</span>
+      </div>
+      <span class="sns-audio-dur">1:24</span>
+    </button>
+    ${!hasAudio ? `<span class="sns-audio-na">${tx('audioNA')}</span>` : ''}
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+/* ── Audio toggle for sensors card ── */
+function snsToggleAudio(){
+  const def = getARDef('sensors');
+  if(!def) return;
+  const lang = window.currentLang || 'FR';
+  const src  = def.audio?.[lang];
+  const btn  = document.getElementById('sns-audio-btn');
+  const icon = document.getElementById('sns-audio-icon');
+  const lbl  = document.getElementById('sns-audio-label');
+
+  const L_pause = {FR:'Pause', EN:'Pause', AR:'إيقاف مؤقت'};
+  const L_play  = {FR:'Écouter la présentation', EN:'Listen to the presentation', AR:'استمع إلى الشرح'};
+
+  /* If already playing this lang — pause */
+  if(window._arAudioEl && !window._arAudioEl.paused
+     && window._arAudioEl._arKey==='sensors'
+     && window._arAudioEl._arLang===lang){
+    window._arAudioEl.pause();
+    if(icon) icon.textContent='▶';
+    if(lbl)  lbl.textContent=L_play[lang]||L_play.FR;
+    return;
+  }
+
+  /* Stop whatever was playing */
+  if(window._arAudioEl){ window._arAudioEl.pause(); window._arAudioEl.currentTime=0; }
+
+  if(!src) return;
+  const audio = new Audio(src);
+  audio._arKey  = 'sensors';
+  audio._arLang = lang;
+  window._arAudioEl = audio;
+
+  audio.play().then(()=>{
+    if(icon) icon.textContent='⏸';
+    if(lbl)  lbl.textContent=L_pause[lang]||L_pause.FR;
+  }).catch(()=>{
+    if(icon) icon.textContent='▶';
+  });
+
+  audio.addEventListener('ended', ()=>{
+    if(icon) icon.textContent='▶';
+    if(lbl)  lbl.textContent=L_play[lang]||L_play.FR;
+  });
 }
 
 /* ── Auto-inject lang switcher when DOM ready ── */
