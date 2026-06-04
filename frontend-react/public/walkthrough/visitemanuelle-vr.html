@@ -93,10 +93,10 @@
       color="#4ADE80" position="0 0.3 0.01" font="kelsonsans"></a-text>
     <a-text id="arpanel-body" value="" align="center" width="1.7" wrap-count="32"
       color="#E2E8F0" position="0 -0.02 0.01"></a-text>
-    <!-- close button -->
-    <a-entity class="clickable" data-action="closeAR" position="0 -0.36 0.02">
-      <a-plane width="0.5" height="0.14" color="#1E293B" opacity="0.95"
-        material="shader:flat; transparent:true"></a-plane>
+    <!-- close button: the plane itself is the clickable target (carries geometry) -->
+    <a-entity position="0 -0.36 0.02">
+      <a-plane class="clickable" data-action="closeAR" width="0.5" height="0.14"
+        color="#1E293B" opacity="0.95" material="shader:flat; transparent:true"></a-plane>
       <a-text value="Fermer" align="center" width="1.4" color="#94A3B8" position="0 0 0.01"></a-text>
     </a-entity>
   </a-entity>
@@ -105,15 +105,8 @@
   <a-entity id="rig" position="0 1.6 0">
     <a-camera id="cam" wasd-controls-enabled="false" position="0 0 0"
       look-controls="reverseMouseDrag:false; touchEnabled:true; magicWindowTrackingEnabled:true">
-      <!-- Gaze cursor: fallback for desktop / headset without controllers (fuse-click) -->
-      <a-cursor id="gaze"
-        raycaster="objects:.clickable; far:30"
-        fuse="true" fuse-timeout="900"
-        material="color:#22C55E; shader:flat"
-        geometry="primitive:ring; radiusInner:0.012; radiusOuter:0.02"
-        position="0 0 -1"
-        animation__fuse="property:scale; startEvents:fusing; from:1 1 1; to:0.1 0.1 0.1; dur:900">
-      </a-cursor>
+      <!-- Mouse cursor: desktop click support (no dwell). Quest uses the controllers below. -->
+      <a-entity id="mcursor" cursor="rayOrigin:mouse" raycaster="objects:.clickable; far:30"></a-entity>
     </a-camera>
 
     <!-- Quest 2 Touch controllers: laser pointer + trigger click -->
@@ -194,28 +187,40 @@ function preload(url){
   });
 }
 
-/* ---- build one hotspot entity ---- */
+/* ---- build one hotspot entity ----
+   wrap = positioned container (billboarded).
+   hit  = the actual clickable target — it MUST carry its own geometry so the
+          controller laser / mouse ray has a mesh to intersect (this was the bug). */
 function makeHotspot(hs){
   const pos = yawPitchToXYZ(hs.yaw, hs.pitch);
   const wrap = document.createElement('a-entity');
   wrap.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
   wrap.setAttribute('billboard', '');
-  wrap.classList.add('clickable');
 
   const isAR = hs.type === 'ar';
   const color = isAR ? '#F59E0B' : (hs.type === 'cross' ? '#06B6D4' : '#22C55E');
 
-  // visible disc + ring
+  // --- transparent hit area: this is the .clickable element with real geometry ---
+  const hit = document.createElement('a-circle');
+  hit.setAttribute('radius', 0.34);
+  hit.setAttribute('material', 'shader:flat; color:#000; opacity:0.001; transparent:true; side:double');
+  hit.classList.add('clickable');
+  wrap.appendChild(hit);
+
+  // --- visuals (children of the hit, so hover-scaling lifts the whole thing) ---
   const ring = document.createElement('a-ring');
   ring.setAttribute('radius-inner', isAR ? 0.18 : 0.22);
   ring.setAttribute('radius-outer', isAR ? 0.26 : 0.30);
   ring.setAttribute('material', `shader:flat; color:${color}; opacity:0.9; transparent:true; side:double`);
-  wrap.appendChild(ring);
+  ring.setAttribute('animation__pulse',
+    'property:scale; dir:alternate; loop:true; dur:1400; from:1 1 1; to:1.12 1.12 1');
+  hit.appendChild(ring);
 
   const disc = document.createElement('a-circle');
   disc.setAttribute('radius', isAR ? 0.17 : 0.21);
   disc.setAttribute('material', `shader:flat; color:#07111F; opacity:0.55; transparent:true; side:double`);
-  wrap.appendChild(disc);
+  disc.setAttribute('position', '0 0 -0.001');
+  hit.appendChild(disc);
 
   const glyph = document.createElement('a-text');
   glyph.setAttribute('value', isAR ? 'i' : '\u203A');     // 'i' or ›
@@ -223,18 +228,14 @@ function makeHotspot(hs){
   glyph.setAttribute('color', color);
   glyph.setAttribute('width', 3);
   glyph.setAttribute('position', '0 0 0.01');
-  wrap.appendChild(glyph);
+  hit.appendChild(glyph);
 
-  // gentle pulse so hotspots read as interactive
-  ring.setAttribute('animation__pulse',
-    'property:scale; dir:alternate; loop:true; dur:1400; from:1 1 1; to:1.12 1.12 1');
+  // hover feedback on the hit element
+  hit.addEventListener('mouseenter', () => hit.object3D.scale.set(1.25,1.25,1.25));
+  hit.addEventListener('mouseleave', () => hit.object3D.scale.set(1,1,1));
 
-  // hover feedback
-  wrap.addEventListener('mouseenter', () => wrap.object3D.scale.set(1.25,1.25,1.25));
-  wrap.addEventListener('mouseleave', () => wrap.object3D.scale.set(1,1,1));
-
-  // click action
-  wrap.addEventListener('click', () => {
+  // click / select action
+  hit.addEventListener('click', () => {
     if (isAR){
       openAR(hs.label || hs.arDesc || '', hs.arDesc || '');
     } else {
