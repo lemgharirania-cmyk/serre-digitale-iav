@@ -12,9 +12,13 @@ import {
   Layers, ArrowRight, TrendingUp, Info, Search, X,
   Sprout, Flower2, Apple, Grape
 } from 'lucide-react'
-import RecipeLibrary from "../../components/nc/RecipeLibrary";
-import WaterAnalysis from "../../components/nc/WaterAnalysis";
-import CalculationSummary from "../../components/nc/CalculationSummary";
+import RecipeEditor from "../../components/nc/RecipeEditor";
+import RecipeHistory from "../../components/nc/RecipeHistory";
+import CommunityRecipeBadge from "../../components/nc/CommunityRecipeBadge";
+
+import FertilizerTable from "../../components/nc/FertilizerTable";
+import StockTankCard from "../../components/nc/StockTankCard";
+import PDFExportButton from "../../components/nc/PDFExportButton";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TRANSLATIONS
@@ -436,6 +440,8 @@ export default function NSCalculateur({theme='light',lang='FR'}){
   const [tankVol,setTankVol]=useState(100)
   const [results,setResults]=useState(null)
   const [showWater,setShowWater]=useState(false)
+  const [customRecipes, setCustomRecipes] = useState([]);
+  const [history, setHistory] = useState([]);
 
   function loadRecipe(r){
     setActive(r.n)
@@ -444,22 +450,50 @@ export default function NSCalculateur({theme='light',lang='FR'}){
     setResults(null)
   }
   function reset(){setActive(null);setRecipe({...REC_DEF});setWater(Object.fromEntries(WATER_F.map(f=>[f.id,0])));setDilution(200);setTankVol(100);setResults(null)}
+  function saveCustomRecipe(recipeData) {
+  const recipe = {
+    id: crypto.randomUUID(),
+    ...recipeData,
+    validated: false
+  };
 
-  function calculate(){
-    const act=calcActual(water,recipe)
-    const rCat=(act.nh4||0)+(act.k||0)+2*(act.ca||0)+2*(act.mg||0)+(act.na||0)
-    const rAn=(act.no3||0)+(act.p||0)+2*(act.so4||0)
-    const ferts=[
-      {n:'Calcium nitrate',     role:'Ca²⁺ + NO₃⁻', qty:(act.ca||0)*164.09*dilution*tankVol/1e6},
-      {n:'Potassium nitrate',   role:'K⁺ + NO₃⁻',   qty:(act.k||0)*101.1*dilution*tankVol/2e6},
-      {n:'Mono-KH₂PO₄',        role:'K⁺ + H₂PO₄⁻', qty:(act.p||0)*136.1*dilution*tankVol/1e6},
-      {n:'Magnesium sulphate',  role:'Mg²⁺ + SO₄²⁻',qty:(act.mg||0)*246.48*dilution*tankVol/1e6},
-      {n:'Boric acid',          role:'Boron (B)',     qty:(act.b||0)*61.83*dilution*tankVol/1e9},
-      {n:'Iron EDDHA (6%)',     role:'Fe chélaté',    qty:(act.fe||0)*55.85*dilution*tankVol/1e9},
-      {n:'Nitric acid 65%',     role:'Neutr. HCO₃⁻', qty:gv(water,'whco3')*63.01*dilution*tankVol/1e6/0.65},
-    ].filter(d=>d.qty>0.001)
-    setResults({act,rCat,rAn,rdiff:rCat-rAn,ferts})
-  }
+  setCustomRecipes(prev => [...prev, recipe]);
+}
+ function calculate(){
+  const act=calcActual(water,recipe)
+
+  const rCat=
+    (act.nh4||0)+
+    (act.k||0)+
+    2*(act.ca||0)+
+    2*(act.mg||0)+
+    (act.na||0)
+
+  const rAn=
+    (act.no3||0)+
+    (act.p||0)+
+    2*(act.so4||0)
+
+  const ferts=[
+    ...
+  ].filter(d=>d.qty>0.001)
+
+  setHistory(prev => [
+    {
+      recipe: active || "Custom",
+      date: new Date().toLocaleString()
+    },
+    ...prev
+  ].slice(0,20))
+
+  setResults({
+    act,
+    rCat,
+    rAn,
+    rdiff:rCat-rAn,
+    ferts
+  })
+}
 
   function exportCSV(){
     if(!results)return
@@ -468,6 +502,9 @@ export default function NSCalculateur({theme='light',lang='FR'}){
     const a=document.createElement('a')
     a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n'))
     a.download=`NS_IAV_${active||'custom'}.csv`;a.click()
+  }
+  function exportPDF() {
+  alert("PDF generation will be connected to FastAPI later");
   }
 
   const neut=calcNeut(water)
@@ -523,17 +560,49 @@ export default function NSCalculateur({theme='light',lang='FR'}){
       {/* ─── MAIN GRID: picker + params ─── */}
       <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:14,marginBottom:14}}>
 
-        {/* LEFT: VERTICAL PICKER */}
-        <Panel v={v}>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-            <SecIcon Icon={Leaf} color={isDark?'#22C55E':'#2f9a64'} isDark={isDark}/>
-            <div>
-              <div style={{fontSize:14,fontWeight:600,color:v.ink}}>{t.step1}</div>
-              <div style={{fontSize:10,color:v.ink4,marginTop:1}}>{R.length} {t.step1sub}</div>
-            </div>
-          </div>
-          <RecipePicker active={active} onSelect={loadRecipe} lang={lang} v={v} isDark={isDark}/>
-        </Panel>
+   {/* LEFT: VERTICAL PICKER */}
+<div
+  style={{
+    display:'flex',
+    flexDirection:'column',
+    gap:14
+  }}
+>
+
+  <Panel v={v}>
+    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+      <SecIcon
+        Icon={Leaf}
+        color={isDark ? '#22C55E' : '#2f9a64'}
+        isDark={isDark}
+      />
+      <div>
+        <div style={{fontSize:14,fontWeight:600,color:v.ink}}>
+          {t.step1}
+        </div>
+
+        <div style={{fontSize:10,color:v.ink4,marginTop:1}}>
+          {R.length} {t.step1sub}
+        </div>
+      </div>
+    </div>
+
+    <RecipePicker
+      active={active}
+      onSelect={loadRecipe}
+      lang={lang}
+      v={v}
+      isDark={isDark}
+    />
+  </Panel>
+
+  <Panel v={v}>
+    <RecipeEditor
+      onSave={saveCustomRecipe}
+    />
+  </Panel>
+
+</div>
 
         {/* RIGHT: WATER + RECIPE */}
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -751,6 +820,40 @@ export default function NSCalculateur({theme='light',lang='FR'}){
           </Panel>
         </div>
       )}
+      <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 14,
+    marginTop: 14
+  }}
+>
+  <StockTankCard
+    title="Stock A"
+    fertilizers={results.ferts.filter(f =>
+      f.n.toLowerCase().includes("calcium")
+    )}
+  />
+
+  <StockTankCard
+    title="Stock B"
+    fertilizers={results.ferts.filter(f =>
+      !f.n.toLowerCase().includes("calcium")
+    )}
+  />
+</div>
+
+<div style={{ marginTop: 14 }}>
+  <PDFExportButton
+    onExport={exportPDF}
+  />
+</div>
+
+<div style={{ marginTop: 14 }}>
+  <RecipeHistory
+    history={history}
+  />
+</div>
     </div>
   )
 }
