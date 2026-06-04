@@ -178,64 +178,11 @@ export default function NSCalculateur({
     URL.revokeObjectURL(url);
   };
 
-  const exportPDF = async () => {
+  // Export PDF sans librairie externe : ouvre un rapport mis en forme et
+  // déclenche l'impression. Le navigateur propose « Enregistrer au format PDF ».
+  const exportPDF = () => {
     const recipeName = recipes.find((r) => r.id === selectedId)?.name ?? t.custom;
-    try {
-      const { jsPDF } = await import("jspdf");
-      const autoTable = (await import("jspdf-autotable")).default;
-      const doc = new jsPDF();
-      doc.setFontSize(16); doc.text(t.title + " — " + recipeName, 14, 18);
-      doc.setFontSize(9); doc.setTextColor(110);
-      doc.text(t.subtitle, 14, 25);
-      doc.setTextColor(40); doc.setFontSize(10);
-      doc.text(
-        `${t.ecReal}: ${fmt(result.ecAchieved, 2)} dS/m   |   pH ${pH}   |   ${t.dilution} ${dilution}×   |   ` +
-        `${t.tankVol} ${tankVolume} L   |   ${t.totalCost}: ${fmt(result.totalCostPerM3, 2)} €/m³`,
-        14, 33
-      );
-      autoTable(doc, {
-        startY: 40,
-        head: [[t.fert, t.dose, t.perTank, "Cuve", t.cost + " €/m³"]],
-        body: result.doses.map((d) => [
-          `${d.name}${d.formula ? " (" + d.formula + ")" : ""}`,
-          `${fmt(d.dose, 2)} ${d.unit}`, fmt(d.gramsPerTank, 0), d.tank, fmt(d.costPerM3, 3),
-        ]),
-        styles: { fontSize: 8 }, headStyles: { fillColor: [22, 101, 52] },
-      });
-      const y = (doc as any).lastAutoTable.finalY + 8;
-      autoTable(doc, {
-        startY: y,
-        head: [["Ion", t.target2, t.achieved, t.diff]],
-        body: [...MACRO_IONS, ...MICRO_IONS].map((i) => [
-          (t.ion as any)[i],
-          fmt(result.target[i], 2), fmt(result.achieved[i], 2), fmt(result.difference[i], 2),
-        ]),
-        styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
-      });
-      const fy = (doc as any).lastAutoTable.finalY + 8;
-      doc.setFontSize(11); doc.setTextColor(40);
-      doc.text(t.precip, 14, fy);
-      doc.setFontSize(9);
-      const sA = result.precipSummary.A, sB = result.precipSummary.B;
-      const risksA = result.precipitation.filter((p) => p.tank === "A" && p.risk).map((r) => r.salt);
-      const risksB = result.precipitation.filter((p) => p.tank === "B" && p.risk).map((r) => r.salt);
-      doc.text(
-        `${t.tankA} — ${t.maxDil}: ${Math.round(sA.maxSafeDilution)}×` +
-        (risksA.length ? ` (${risksA.join(", ")})` : ` — ${t.noRiskTank}`),
-        14, fy + 6
-      );
-      doc.text(
-        `${t.tankB} — ${t.maxDil}: ${Math.round(sB.maxSafeDilution)}×` +
-        (risksB.length ? ` (${risksB.join(", ")})` : ` — ${t.noRiskTank}`),
-        14, fy + 11
-      );
-      doc.setFontSize(7); doc.setTextColor(120);
-      doc.text(doc.splitTextToSize(t.note, 180), 14, fy + 18);
-      doc.save(`solution_nutritive_${selectedId}.pdf`);
-    } catch {
-      // Repli : fenêtre imprimable (l'utilisateur enregistre en PDF)
-      printableFallback(recipeName, result, t, pH, dilution, tankVolume);
-    }
+    buildPrintableReport(recipeName, result, t, pH, dilution, tankVolume);
   };
 
   /* ════════════════════════ styles ════════════════════════ */
@@ -653,21 +600,56 @@ function PrecipPanel({ result, t, dark, sub, dilution }: {
   );
 }
 
-/* Repli impression si jsPDF absent */
-function printableFallback(name: string, r: CalcResult, t: typeof T["FR"], pH: number, dil: number, vol: number) {
+/* Rapport imprimable (export PDF via la fonction d'impression du navigateur).
+   Aucune librairie externe : l'utilisateur choisit « Enregistrer au format PDF ». */
+function buildPrintableReport(
+  name: string, r: CalcResult, t: typeof T["FR"], pH: number, dil: number, vol: number
+) {
   const w = window.open("", "_blank");
-  if (!w) return;
+  if (!w) { alert("Autorise les fenêtres pop-up pour générer le PDF."); return; }
   const rows = r.doses.map((d) =>
-    `<tr><td>${d.name}</td><td>${fmt(d.dose, 2)} ${d.unit}</td><td>${fmt(d.gramsPerTank, 0)} g</td><td>${d.tank}</td></tr>`).join("");
+    `<tr><td>${d.name}${d.formula ? " <i>(" + d.formula + ")</i>" : ""}</td>` +
+    `<td>${fmt(d.dose, 2)} ${d.unit}</td><td>${fmt(d.gramsPerTank, 0)} g</td>` +
+    `<td>${d.tank}</td><td>${fmt(d.costPerM3, 3)}</td></tr>`).join("");
   const comp = [...MACRO_IONS, ...MICRO_IONS].map((i) =>
-    `<tr><td>${(t.ion as any)[i]}</td><td>${fmt(r.target[i], 2)}</td><td>${fmt(r.achieved[i], 2)}</td><td>${fmt(r.difference[i], 2)}</td></tr>`).join("");
-  w.document.write(`<html><head><title>${t.title} — ${name}</title>
-    <style>body{font-family:system-ui;padding:24px;color:#1e293b}table{width:100%;border-collapse:collapse;margin:12px 0}
-    th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;font-size:13px}th{background:#166534;color:#fff}</style></head>
-    <body><h2>${t.title} — ${name}</h2><p>${t.subtitle}</p>
-    <p>${t.ecReal}: ${fmt(r.ecAchieved, 2)} dS/m | pH ${pH} | ${t.dilution} ${dil}× | ${t.tankVol} ${vol} L | ${t.totalCost}: ${fmt(r.totalCostPerM3, 2)} €/m³</p>
-    <table><thead><tr><th>${t.fert}</th><th>${t.dose}</th><th>${t.perTank}</th><th>A/B</th></tr></thead><tbody>${rows}</tbody></table>
-    <table><thead><tr><th>Ion</th><th>${t.target2}</th><th>${t.achieved}</th><th>${t.diff}</th></tr></thead><tbody>${comp}</tbody></table>
-    <p style="font-size:11px;color:#64748b">${t.note}</p></body></html>`);
-  w.document.close(); w.focus(); w.print();
+    `<tr><td>${(t.ion as any)[i]}</td><td>${fmt(r.target[i], 2)}</td>` +
+    `<td>${fmt(r.achieved[i], 2)}</td><td>${fmt(r.difference[i], 2)}</td></tr>`).join("");
+  const sA = r.precipSummary.A, sB = r.precipSummary.B;
+  const risksA = r.precipitation.filter((p) => p.tank === "A" && p.risk).map((p) => p.salt);
+  const risksB = r.precipitation.filter((p) => p.tank === "B" && p.risk).map((p) => p.salt);
+  const precipLine = (label: string, s: typeof sA, risks: string[]) =>
+    `<li><b>${label}</b> — ${t.maxDil}: ${Math.round(s.maxSafeDilution)}× ` +
+    (risks.length ? `<span style="color:#b91c1c">(${risks.join(", ")})</span>` : `— ${t.noRiskTank}`) + `</li>`;
+
+  w.document.write(`<html lang="fr"><head><meta charset="utf-8"><title>${t.title} — ${name}</title>
+    <style>
+      *{box-sizing:border-box} body{font-family:system-ui,Segoe UI,sans-serif;padding:28px;color:#1e293b;max-width:820px;margin:auto}
+      h1{font-size:20px;margin:0 0 2px} .sub{color:#64748b;font-size:12px;margin:0 0 14px}
+      .meta{background:#f1f5f9;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:16px}
+      h2{font-size:14px;margin:18px 0 6px;color:#166534}
+      table{width:100%;border-collapse:collapse;margin:4px 0}
+      th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;font-size:12px}
+      th{background:#166534;color:#fff} tbody tr:nth-child(even){background:#f8fafc}
+      ul{font-size:13px;margin:4px 0;padding-left:18px} .note{font-size:11px;color:#64748b;margin-top:16px}
+      @media print{body{padding:0}}
+    </style></head><body>
+    <h1>${t.title} — ${name}</h1>
+    <p class="sub">${t.subtitle}</p>
+    <div class="meta">
+      ${t.ecReal}: <b>${fmt(r.ecAchieved, 2)} dS/m</b> &nbsp;|&nbsp; pH ${pH} &nbsp;|&nbsp;
+      ${t.dilution} ${dil}× &nbsp;|&nbsp; ${t.tankVol} ${vol} L &nbsp;|&nbsp;
+      ${t.totalCost}: <b>${fmt(r.totalCostPerM3, 2)} €/m³</b>
+    </div>
+    <h2>${t.dosages}</h2>
+    <table><thead><tr><th>${t.fert}</th><th>${t.dose}</th><th>${t.perTank}</th><th>A/B</th><th>${t.cost} €/m³</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="5">${t.purewater}</td></tr>`}</tbody></table>
+    <h2>${t.results}</h2>
+    <table><thead><tr><th>Ion</th><th>${t.target2}</th><th>${t.achieved}</th><th>${t.diff}</th></tr></thead>
+      <tbody>${comp}</tbody></table>
+    <h2>${t.precip}</h2>
+    <ul>${precipLine(t.tankA, sA, risksA)}${precipLine(t.tankB, sB, risksB)}</ul>
+    <p class="note">${t.note}</p>
+    <script>window.onload=function(){window.print();}<\/script>
+    </body></html>`);
+  w.document.close(); w.focus();
 }
