@@ -5880,9 +5880,6 @@ function eqIcon(key, color){
     </svg>`;
 }
 
-if(k === 'tablettes'){
-  d.icon = eqIcon('ti-stack','#10b981');
-}
 
     d.type = 'equipment';
     d.tabs = ['Info'];
@@ -6788,11 +6785,36 @@ Object.assign(EQ_ICONS, {
     'le truc exterieur':['Zone / Équipement Extérieur','Outdoor Area / Equipment','منطقة / تجهيز خارجي'],
   };
 
+  /* audio file stems for info cards — add audio/{lang}/{stem}.mp3 to activate */
+  const _AUDIO2 = {
+    'unité génétique et amélioration des plantes': 'genetique',
+    'unité horticulture':                          'horticulture',
+    'unité agronomie':                             'agronomie',
+    'unité protection des plantes':                'protection',
+    'unité hydroponie':                            'hydroponie',
+    'salle technique de commandes':                'salle-controle',
+    'salle de lavage':                             'salle-lavage',
+    'salle de préparation':                        'salle-preparation',
+    'salle de réunion':                            'salle-reunion',
+    'bloc gestion technique et administrative':    'administration',
+    'serre':                                       'complexe-serres',
+    'bloc protection des plantes':                 'protection',
+    'monitoring':                                  'monitoring',
+    'station de fertigation':                      'station-fertigation',
+    'chaudière':                                   'chaudiere',
+    'audoucisseur':                                'adoucisseur',
+    'système de ventilation':                      'systeme-ventilation',
+    'ventilation dehors':                          'ventilation-dehors',
+    'ventilation ext':                             'ventilation-toiture',
+    'le truc exterieur':                           'exterieur',
+  };
+  function _audioObj(stem){ return stem ? {FR:'audio/fr/'+stem+'.mp3',EN:'audio/en/'+stem+'.mp3',AR:'audio/ar/'+stem+'.mp3'} : null; }
+
   function applyOne2(key, content){
     const d = AR_CONTENT[key];
     if(!d){ console.warn('[info2] def missing:', key); return; }
     d.type = 'info'; d.tabs = ['Info']; d.stateKey = null;
-    d.card = content.card; d.audio = null;
+    d.card = content.card; d.audio = _audioObj(_AUDIO2[key]);
     d.statusText = content.status[0]; d.statusText_en = content.status[1]; d.statusText_ar = content.status[2];
     const tt = TT[key]; if(tt){ d.title = tt[0]; d.title_en = tt[1]; d.title_ar = tt[2]; }
     const ct = CATS[key]; if(ct) addCat(key, ct[0], ct[1], ct[2]);
