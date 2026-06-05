@@ -55,7 +55,6 @@ const T = {
     inactive:          'INACTIF',
     awaiting:          'En attente des données…',
     refresh:           '⟳  Actualiser',
-    loading:           'Interrogation capteurs…',
     liveData:          'DONNÉES EN DIRECT',
     systemState:       'ÉTAT DU SYSTÈME',
     resource:          'RESSOURCE',
@@ -4384,6 +4383,9 @@ function getARDef(desc){
   const _al = {
 
 
+'système de chauffage': 'chauffage',
+'tablettes': 'tablettes',   // then add the key to AR_CONTENT
+'lumiere': 'lumiere',
 
     'ventilation':'ventilation',
 
@@ -5362,9 +5364,9 @@ function renderSensorsCard(el, def){
     sWlName:    {FR:'Niveau d\'Eau',          EN:'Water Level',           AR:'مستوى الماء'},
     sWlType:    {FR:'Capteur ultrasonique',   EN:'Ultrasonic sensor',     AR:'مستشعر فوق صوتي'},
     sWlDesc:    {
-      FR:'Mesure le niveau de la solution dans le réservoir par ultrasons sans contact direct. Permet de détecter une fuite ou une consommation anormale et de déclencher un réapprovisionnement automatique.',
-      EN:'Measures the solution level in the tank using ultrasound — no direct contact. Enables detection of leaks or abnormal consumption and triggers automatic refilling.',
-      AR:'يقيس مستوى المحلول في الخزان بالموجات فوق الصوتية دون تلامس مباشر. يمكّن من اكتشاف التسرب أو الاستهلاك الشاذ وتشغيل إعادة الملء التلقائي.',
+      FR:'Mesure le niveau de la solution dans le réservoir par ultrasons sans contact direct..',
+      EN:'Measures the solution level in the tank using ultrasound .',
+      AR:'يقيس مستوى المحلول في الخزان بالموجات فوق الصوتية دون تلامس مباشر.',
     },
     /* ── Audio ── */
     audioPlay:  {FR:'Écouter la présentation', EN:'Listen to the presentation', AR:'استمع إلى الشرح'},
@@ -5395,9 +5397,7 @@ function renderSensorsCard(el, def){
   /* 0 — Live data (only card showing live IoT) */
   html += eqSensorsLiveHTML(lang);
 
-  /* 1 — Overview */
-  html += `<div class="ar-section-title">${tx('secInfo')}</div>
-  <div class="sns-overview">${tx('ovDesc')}</div>`;
+  /* 1 — Overview removed */
 
   /* 2 — Sensor cards */
   html += `<div class="ar-section-title" style="margin-top:16px">${tx('secSensors')}</div>
@@ -5429,7 +5429,6 @@ function renderSensorsCard(el, def){
         ${iconHtml}
         <div class="sns-item-name" style="color:${s.color}">${s.name}</div>
         <div class="sns-item-type">${s.type}</div>
-        <p class="sns-item-desc">${s.desc}</p>
         <div class="sns-ping-row"><span class="${pingClass}"></span><span class="sns-ping-label">${pingLabel}</span></div>
       </div>`;
     }
@@ -5599,11 +5598,8 @@ function eqIcon(key, color){
       status: {FR:'Système prévu — non encore actif', EN:'Planned — not yet active', AR:'مُخطط — غير مُفعّل بعد'},
       audio:  {FR:'audio/fr/co2.mp3', EN:'audio/en/co2.mp3', AR:'audio/ar/co2.mp3'},
       eq: {
-        pending: {FR:'Système conçu mais pas encore mis en service. Les éléments ci-dessous décrivent le fonctionnement prévu.',
-                  EN:'System designed but not yet commissioned. The items below describe the planned operation.',
-                  AR:'النظام مُصمَّم لكنه لم يُشغَّل بعد. تصف العناصر أدناه التشغيل المُخطط له.'},
-        what: [
-          {i:'ti-leaf',       FR:'Enrichit l\u2019air en CO\u2082 pour stimuler la photosynthèse.', EN:'Enriches the air with CO\u2082 to boost photosynthesis.', AR:'يُثري الهواء بـ CO\u2082 لتعزيز التمثيل الضوئي.'},
+          what: [
+          {i:'ti-leaf',       FR:'Compense l\u2019appauvrissement en CO\u2082 des cultures denses et stimule la photosynthèse.', EN:'Compensates CO\u2082 depletion in dense crops and boosts photosynthesis.', AR:'يعوّض نضوب CO\u2082 في الزراعة الكثيفة ويعزز التمثيل الضوئي.'},
           {i:'ti-moon',       FR:'Injection suspendue la nuit — pas de photosynthèse.', EN:'Injection paused at night — no photosynthesis.', AR:'يُوقف الحقن ليلاً — لا تمثيل ضوئي.'},
           {i:'ti-lock',       FR:'Se coupe si la ventilation s\u2019ouvre, pour éviter les pertes.', EN:'Cuts off when ventilation opens, to avoid losses.', AR:'يتوقف عند فتح التهوية لتفادي الهدر.'},
           {i:'ti-trending-up',FR:'Peut augmenter les rendements de 20 à 30 %.', EN:'Can raise yields by 20–30%.', AR:'قد يرفع الإنتاجية بنسبة 20–30٪.'},
@@ -5617,6 +5613,7 @@ function eqIcon(key, color){
         set: [
           {i:'ti-cylinder', k:{FR:'Source',EN:'Source',AR:'المصدر'}, v:{FR:'Bouteille CO\u2082 comprimé',EN:'Compressed CO\u2082 cylinder',AR:'أسطوانة CO\u2082 مضغوط'}},
           {i:'ti-target',   k:{FR:'Cible',EN:'Target',AR:'الهدف'}, v:'800 – 1200 ppm'},
+          {i:'ti-gauge',    k:{FR:'Mesure',EN:'Measurement',AR:'القياس'}, v:{FR:'Capteur CO₂ continu',EN:'Continuous CO₂ sensor',AR:'مستشعر CO₂ مستمر'}},
           {i:'ti-cpu',      k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique (prévu)',EN:'Automatic (planned)',AR:'تلقائي (مُخطط)'}},
         ],
       },
@@ -5629,19 +5626,17 @@ function eqIcon(key, color){
       eq: {
         what: [
           {i:'ti-cloud',             FR:'Brouillard de gouttelettes < 10 µm qui s\u2019évaporent en suspension.', EN:'Fog of <10 µm droplets that evaporate in suspension.', AR:'ضباب من قطيرات < 10 ميكرومتر تتبخر معلّقة.'},
-          {i:'ti-temperature-minus', FR:'Refroidit l\u2019air par évaporation sans mouiller les cultures.', EN:'Cools the air by evaporation without wetting crops.', AR:'يبرّد الهواء بالتبخر دون ترطيب المحاصيل.'},
+          {i:'ti-temperature-minus', FR:'Réduit le VPD — un VPD élevé ferme les stomates et freine la photosynthèse.', EN:'Reduces VPD — high VPD closes stomata and slows photosynthesis.', AR:'يقلل VPD — ارتفاعه يُغلق الثغور ويُبطئ التمثيل الضوئي.'},
           {i:'ti-droplet',           FR:'Maintient l\u2019humidité dans la plage cible en temps réel.', EN:'Holds humidity in the target range in real time.', AR:'يحافظ على الرطوبة ضمن النطاق المستهدف فورياً.'},
-          {i:'ti-cpu',               FR:'Se déclenche et se coupe automatiquement.', EN:'Switches on and off automatically.', AR:'يعمل ويتوقف تلقائياً.'},
+          {i:'ti-seedling',          FR:'Critique au repiquage — les jeunes plants ne peuvent compenser les pertes hydriques.', EN:'Critical at transplanting — young plants cannot offset water loss.', AR:'بالغ الأهمية عند الشتل — الشتلات لا تعوّض الفقد المائي.'},
         ],
         trigger: {
-          on:  {FR:'T° au-dessus du seuil ou humidité trop basse', EN:'Temp. above threshold or humidity too low', AR:'الحرارة فوق العتبة أو الرطوبة منخفضة'},
+          on:  {FR:'VPD élevé, T° au-dessus du seuil ou humidité trop basse', EN:'High VPD, temp. above threshold or humidity too low', AR:'VPD مرتفع أو الحرارة فوق العتبة أو الرطوبة منخفضة'},
           off: {FR:'T° et humidité dans les plages cibles', EN:'Temp. and humidity within target ranges', AR:'الحرارة والرطوبة ضمن النطاقات'},
         },
         band: {title:{FR:'Température ambiante',EN:'Ambient temperature',AR:'الحرارة المحيطة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:28},
-        monitor: [M.temp, M.hum],
+        monitor: [M.temp, M.hum, M.vpd],
         set: [
-          {i:'ti-gauge',   k:{FR:'Pression',EN:'Pressure',AR:'الضغط'}, v:TC, pending:true},
-          {i:'ti-droplet', k:{FR:'Débit',EN:'Flow rate',AR:'التدفق'}, v:TC, pending:true},
           {i:'ti-spray',   k:{FR:'Buse',EN:'Nozzle',AR:'الفوهة'}, v:{FR:'Céramique HP',EN:'High-pressure ceramic',AR:'سيراميك عالي الضغط'}},
           {i:'ti-cpu',     k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
         ],
@@ -5654,8 +5649,8 @@ function eqIcon(key, color){
       audio:  {FR:'audio/fr/refroidissement.mp3', EN:'audio/en/refroidissement.mp3', AR:'audio/ar/refroidissement.mp3'},
       eq: {
         what: [
-          {i:'ti-temperature', FR:'Maintient la température dans la plage optimale.', EN:'Keeps temperature in the optimal range.', AR:'يحافظ على الحرارة ضمن النطاق الأمثل.'},
-          {i:'ti-windmill',    FR:'Travaille avec la ventilation et la brumisation.', EN:'Works with ventilation and misting.', AR:'يعمل مع التهوية والترذيذ.'},
+          {i:'ti-droplet',     FR:'Refroidissement adiabatique — l\u2019eau en s\u2019évaporant prélève la chaleur de l\u2019air et l\u2019abaisse en température.', EN:'Adiabatic cooling — water absorbs heat as it evaporates, lowering air temperature.', AR:'تبريد أدياباتي — يمتص الماء الحرارة عند التبخر فيخفّض حرارة الهواء.'},
+          {i:'ti-waves',       FR:'Abaisse la T° tout en relevant l\u2019humidité relative — double effet bénéfique.', EN:'Lowers temperature while raising relative humidity — a dual benefit.', AR:'يخفّض الحرارة مع رفع الرطوبة النسبية — تأثير مزدوج مفيد.'},
           {i:'ti-cpu',         FR:'S\u2019active quand la T° dépasse le seuil maximal.', EN:'Activates when temp. exceeds the max threshold.', AR:'يُفعَّل عند تجاوز الحرارة الحد الأقصى.'},
           {i:'ti-leaf',        FR:'Protège les cultures du stress thermique.', EN:'Protects crops from heat stress.', AR:'يحمي المحاصيل من الإجهاد الحراري.'},
         ],
@@ -5666,65 +5661,58 @@ function eqIcon(key, color){
         band: {title:{FR:'Température serre',EN:'Greenhouse temperature',AR:'حرارة الدفيئة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
         monitor: [M.temp],
         set: [
-          {i:'ti-settings',         k:{FR:'Type',EN:'Type',AR:'النوع'}, v:TC, pending:true},
-          {i:'ti-bolt',             k:{FR:'Puissance',EN:'Power',AR:'القدرة'}, v:TC, pending:true},
+          {i:'ti-settings',         k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Adiabatique (évaporation)',EN:'Adiabatic (evaporative)',AR:'أدياباتي (تبخّري)'}},
           {i:'ti-temperature-plus', k:{FR:'Seuil',EN:'Threshold',AR:'العتبة'}, v:{FR:'T° > max',EN:'Temp > max',AR:'حرارة > الحد الأقصى'}},
           {i:'ti-cpu',              k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
         ],
       },
     },
 
-    /* ── Ventilation mécanique — interior T°/humidity ── */
+    /* ── Ventilation naturelle — toits ouvrants pilotés par station météo ── */
     'ventilation': {
-      status: {FR:'Automatique — selon T° intérieure', EN:'Automatic — by indoor temp.', AR:'تلقائي — حسب الحرارة الداخلية'},
+      title:  {FR:'Système de Ventilation Naturelle', EN:'Natural Ventilation System', AR:'نظام التهوية الطبيعية'},
+      status: {FR:'Automatique — station météo', EN:'Automatic — weather station', AR:'تلقائي — محطة الأرصاد'},
       audio:  {FR:'audio/fr/ventilation.mp3', EN:'audio/en/ventilation.mp3', AR:'audio/ar/ventilation.mp3'},
       eq: {
         what: [
-          {i:'ti-arrow-up-right', FR:'Évacue la chaleur et l\u2019excès d\u2019humidité.', EN:'Removes heat and excess humidity.', AR:'يطرد الحرارة والرطوبة الزائدة.'},
-          {i:'ti-leaf',           FR:'Maintient le CO\u2082 à un niveau optimal.', EN:'Keeps CO\u2082 at an optimal level.', AR:'يحافظ على CO\u2082 عند مستوى أمثل.'},
-          {i:'ti-refresh',        FR:'Renouvelle l\u2019air pour éviter condensation et moisissures.', EN:'Renews the air to avoid condensation and mould.', AR:'يجدد الهواء لتفادي التكاثف والعفن.'},
-          {i:'ti-cpu',            FR:'Piloté par thermostat et hygrostat.', EN:'Driven by thermostat and hygrostat.', AR:'يُدار بمنظّم حرارة ورطوبة.'},
+          {i:'ti-window',     FR:'Toits ouvrants laissant entrer l\u2019air extérieur et évacuer l\u2019air chaud et humide.', EN:'Roof vents allow fresh air in and exhausts hot humid air.', AR:'فتحات سقفية تُدخل هواءً منعشاً وتطرد الهواء الحار الرطب.'},
+          {i:'ti-leaf',       FR:'Réapprovisionne le CO\u2082 et assèche le feuillage — limite Botrytis et mildiou.', EN:'Replenishes CO\u2082 and dries foliage — limits Botrytis and mildew.', AR:'يُجدد CO\u2082 ويُجفف الأوراق — يحدّ من البوتريتيس والبياض.'},
+          {i:'ti-refresh',    FR:'Renouvelle l\u2019air naturellement — sans ventilation mécanique.', EN:'Renews the air naturally — no mechanical ventilation.', AR:'يجدد الهواء طبيعياً — بدون تهوية ميكانيكية.'},
+          {i:'ti-cpu',        FR:'Commandé par station météo (T°, HR, vent et précipitations).', EN:'Driven by weather station (temp., RH, wind and rainfall).', AR:'يُدار بمحطة الأرصاد (الحرارة، الرطوبة، الرياح والأمطار).'},
         ],
         trigger: {
-          on:  {FR:'T° proche du seuil max ou humidité excessive', EN:'Temp. near max threshold or excessive humidity', AR:'الحرارة قرب الحد الأقصى أو رطوبة مفرطة'},
-          off: {FR:'Conditions climatiques dans les plages', EN:'Climate conditions within ranges', AR:'الظروف المناخية ضمن النطاقات'},
+          on:  {FR:'Station météo : conditions favorables — fenêtres ouvertes', EN:'Weather station: favourable conditions — vents open', AR:'محطة الأرصاد: ظروف ملائمة — الفتحات مفتوحة'},
+          off: {FR:'Vent fort, pluie, gel ou T° défavorable — fenêtres fermées', EN:'Strong wind, rain, frost or unfavourable temp. — vents closed', AR:'رياح قوية أو أمطار أو صقيع أو حرارة غير مناسبة — الفتحات مغلقة'},
         },
-        band: {title:{FR:'Température ambiante',EN:'Ambient temperature',AR:'الحرارة المحيطة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
-        monitor: [M.temp, M.hum, M.vpd],
+        band: {title:{FR:'Température serre',EN:'Greenhouse temperature',AR:'حرارة الدفيئة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
+        monitor: [M.temp, M.hum],
         set: [
-          {i:'ti-windmill', k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Extracteur axial',EN:'Axial extractor',AR:'مروحة محورية'}},
-          {i:'ti-wind',     k:{FR:'Débit',EN:'Flow rate',AR:'التدفق'}, v:TC, pending:true},
-          {i:'ti-cpu',      k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Thermostat + hygrostat',EN:'Thermostat + hygrostat',AR:'منظّم حرارة + رطوبة'}},
-          {i:'ti-gauge',    k:{FR:'Vitesse',EN:'Speed',AR:'السرعة'}, v:TC, pending:true},
+          {i:'ti-window', k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Toits ouvrants / châssis zénithaux',EN:'Roof vents / zenith frames',AR:'فتحات سقفية / هياكل زينيثية'}},
+          {i:'ti-cpu',    k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Station météorologique',EN:'Weather station',AR:'محطة الأرصاد'}},
         ],
       },
     },
 
     /* ── Rideaux automatiques — exterior T°, NOT yet integrated ── */
     'rideaux auto': {
-      status: {FR:'En cours d\u2019intégration', EN:'Integration in progress', AR:'قيد الدمج'},
+      status: {FR:'Automatique — T° et éclairement', EN:'Automatic — temp. and irradiance', AR:'تلقائي — الحرارة والإشعاع'},
       audio:  {FR:'audio/fr/rideaux.mp3', EN:'audio/en/rideaux.mp3', AR:'audio/ar/rideaux.mp3'},
       eq: {
-        pending: {FR:'Pilotage automatique pas encore intégré. Logique prévue, basée sur la température extérieure.',
-                  EN:'Automatic control not yet integrated. Planned logic, based on outdoor temperature.',
-                  AR:'التحكم الآلي غير مُدمج بعد. منطق مُخطط بناءً على الحرارة الخارجية.'},
-        what: [
-          {i:'ti-moon',        FR:'Réduit les pertes de chaleur la nuit sous la toiture.', EN:'Cuts night-time heat loss under the roof.', AR:'يقلل فقد الحرارة ليلاً تحت السقف.'},
-          {i:'ti-sun',         FR:'Protège de la surchauffe estivale par ombrage.', EN:'Protects from summer overheating via shading.', AR:'يحمي من الحرارة المفرطة صيفاً عبر التظليل.'},
-          {i:'ti-temperature', FR:'Se déploie uniquement dans la plage de T° extérieure.', EN:'Deploys only within the outdoor temp. range.', AR:'يُنشر فقط ضمن نطاق الحرارة الخارجية.'},
+          what: [
+          {i:'ti-moon',        FR:'Écran intérieur (nuit) — barrière isolante réduisant les pertes de chaleur par rayonnement et convection.', EN:'Interior screen (night) — insulating barrier reducing heat loss by radiation and convection.', AR:'شاشة داخلية (ليلاً) — حاجز عازل يحدّ من فقد الحرارة بالإشعاع والحمل.'},
+          {i:'ti-sun',         FR:'Écran extérieur (jour) — intercepte le rayonnement solaire avant qu\u2019il pénètre dans la serre.', EN:'Exterior screen (day) — intercepts solar radiation before it enters the greenhouse.', AR:'شاشة خارجية (نهاراً) — تعترض الإشعاع الشمسي قبل دخوله الدفيئة.'},
+          {i:'ti-gauge',       FR:'Déploiement automatisé selon l\u2019éclairement et la T° — en cohérence avec les autres équipements.', EN:'Automated deployment by irradiance and temperature — coordinated with other equipment.', AR:'نشر آلي حسب الإشعاع والحرارة — منسّق مع سائر التجهيزات.'},
           {i:'ti-cpu',         FR:'Piloté par la station météo extérieure (prévu).', EN:'Driven by the outdoor weather station (planned).', AR:'يُدار بمحطة الطقس الخارجية (مُخطط).'},
         ],
         trigger: {
-          onLabel:  {FR:'DÉPLOIEMENT',EN:'DEPLOY',AR:'النشر'},
-          offLabel: {FR:'RÉTRACTION',EN:'RETRACT',AR:'الطي'},
-          on:  {FR:'T° extérieure entre 10 °C et 32 °C', EN:'Outdoor temp. between 10°C and 32°C', AR:'الحرارة الخارجية بين 10 و32 °م'},
-          off: {FR:'T° extérieure hors plage ou vent fort', EN:'Outdoor temp. out of range or strong wind', AR:'الحرارة الخارجية خارج النطاق أو رياح قوية'},
+          onLabel:  {FR:'DÉPLOYÉ',EN:'DEPLOYED',AR:'مُنشور'},
+          offLabel: {FR:'NON DÉPLOYÉ',EN:'NOT DEPLOYED',AR:'غير مُنشور'},
+          on:  {FR:'T° et éclairement dans la plage — isolation nocturne ou ombrage diurne', EN:'Temp. and irradiance within range — night insulation or daytime shading', AR:'الحرارة والإشعاع ضمن النطاق — عزل ليلي أو تظليل نهاري'},
+          off: {FR:'Conditions hors plage — rétraction pour protéger la culture', EN:'Conditions out of range — retracted to protect crops', AR:'الظروف خارج النطاق — يُطوى لحماية المحصول'},
         },
         band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, rangeLo:10, rangeHi:32},
         monitor: [M.text],
         set: [
-          {i:'ti-stack', k:{FR:'Matériau',EN:'Material',AR:'المادة'}, v:TC, pending:true},
-          {i:'ti-sun',   k:{FR:'Transmission',EN:'Transmission',AR:'النفاذية'}, v:TC, pending:true},
           {i:'ti-cpu',   k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique (prévu)',EN:'Automatic (planned)',AR:'تلقائي (مُخطط)'}},
         ],
       },
@@ -5737,23 +5725,25 @@ function eqIcon(key, color){
       eq: {
         what: [
           {i:'ti-arrow-up',   FR:'Ventilation naturelle par effet cheminée (châssis zénithaux).', EN:'Natural stack-effect ventilation (roof vents).', AR:'تهوية طبيعية بتأثير المدخنة (فتحات سقفية).'},
-          {i:'ti-temperature',FR:'S\u2019ouvrent et se ferment selon la T° extérieure — pilote actuel de la serre.', EN:'Open/close by outdoor temperature — the greenhouse\u2019s current driver.', AR:'تُفتح وتُغلق حسب الحرارة الخارجية — المتحكم الحالي للدفيئة.'},
-          {i:'ti-volume-off', FR:'Extraction passive et silencieuse.', EN:'Passive, silent extraction.', AR:'استخراج سلبي صامت.'},
-          {i:'ti-shield',     FR:'Se referment si la T° extérieure devient défavorable.', EN:'Close when outdoor temp. becomes unfavourable.', AR:'تُغلق عندما تصبح الحرارة الخارجية غير مناسبة.'},
+          {i:'ti-cpu',        FR:'Commandées par la station météo : T°, HR, vitesse du vent et précipitations.', EN:'Driven by the weather station: temp., RH, wind speed and rainfall.', AR:'تُدار بمحطة الأرصاد: الحرارة والرطوبة والرياح والأمطار.'},
+          {i:'ti-leaf',       FR:'Assèche le feuillage et réapprovisionne le CO\u2082 — limite Botrytis et mildiou.', EN:'Dries foliage and replenishes CO\u2082 — limits Botrytis and mildew.', AR:'يُجفف الأوراق ويُجدد CO\u2082 — يحدّ من البوتريتيس والبياض الزغبي.'},
+          {i:'ti-shield',     FR:'Se referment en cas de vent fort, de pluie ou de T° défavorable.', EN:'Close when there is strong wind, rain or unfavourable temperature.', AR:'تُغلق عند رياح قوية أو أمطار أو حرارة غير مناسبة.'},
+                  {i:'ti-shield', FR:'Moustiquaire intégrée — empêche les insectes ravageurs de pénétrer dans la serre.', EN:'Integrated mosquito net — prevents pest insects from entering the greenhouse.', AR:'شبك مدمج ضد الحشرات — يمنع الآفات من الدخول.'},
         ],
         trigger: {
           onLabel:  {FR:'OUVERTURE',EN:'OPENING',AR:'الفتح'},
           offLabel: {FR:'FERMETURE',EN:'CLOSING',AR:'الإغلاق'},
-          on:  {FR:'T° extérieure dans la plage favorable à l\u2019aération', EN:'Outdoor temp. in the range favourable to venting', AR:'الحرارة الخارجية ضمن النطاق المناسب للتهوية'},
-          off: {FR:'T° extérieure trop basse ou défavorable', EN:'Outdoor temp. too low or unfavourable', AR:'الحرارة الخارجية منخفضة جداً أو غير مناسبة'},
+          on:  {FR:'Station météo favorable — T°, HR, vent et pluie dans les plages', EN:'Favourable weather station readings — temp., RH, wind and rainfall within ranges', AR:'محطة الأرصاد مواتية — الحرارة والرطوبة والرياح والأمطار ضمن النطاقات'},
+          off: {FR:'Vent fort, pluie, gel ou T° extérieure défavorable', EN:'Strong wind, rain, frost or unfavourable outdoor temp.', AR:'رياح قوية أو أمطار أو صقيع أو حرارة خارجية غير مناسبة'},
         },
-        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, pending:true},
+        /* band removed — meteo station multi-param trigger */
         monitor: [M.text],
         set: [
           {i:'ti-window',          k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Châssis zénithaux',EN:'Roof vents',AR:'فتحات سقفية'}},
-          {i:'ti-temperature',     k:{FR:'Déclenchement',EN:'Trigger',AR:'التشغيل'}, v:{FR:'T° extérieure',EN:'Outdoor temp.',AR:'الحرارة الخارجية'}},
+          {i:'ti-cpu',             k:{FR:'Déclenchement',EN:'Trigger',AR:'التشغيل'}, v:{FR:'Station météorologique',EN:'Weather station',AR:'محطة الأرصاد'}},
           {i:'ti-arrows-maximize', k:{FR:'Plage',EN:'Range',AR:'النطاق'}, v:TC, pending:true},
           {i:'ti-cpu',             k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+          {i:'ti-shield',          k:{FR:'Protection insectes',EN:'Insect protection',AR:'حماية الحشرات'}, v:{FR:'Moustiquaire intégrée',EN:'Integrated mosquito net',AR:'شبك حماية مدمج'}},
         ],
       },
     },
@@ -5783,11 +5773,86 @@ function eqIcon(key, color){
         ],
       },
     },
-  };
 
+    /* ── Système de chauffage à l'air chaud ── */
+    'chauffage': {
+      title:  {FR:'Système de Chauffage', EN:'Heating System', AR:'نظام التدفئة'},
+      status: {FR:'Automatique — selon T° intérieure', EN:'Automatic — by indoor temp.', AR:'تلقائي — حسب الحرارة الداخلية'},
+      audio:  {FR:'audio/fr/chauffage.mp3', EN:'audio/en/chauffage.mp3', AR:'audio/ar/chauffage.mp3'},
+      eq: {
+        what: [
+          {i:'ti-temperature-plus', FR:'Diffuse de l\u2019air chaud quand la T° intérieure descend sous le seuil requis.', EN:'Diffuses hot air when indoor temperature drops below the required threshold.', AR:'ينفث هواءً ساخناً حين تنخفض الحرارة الداخلية عن الحد المطلوب.'},
+          {i:'ti-shield',           FR:'Réduit la condensation sur le feuillage — limite les maladies cryptogamiques.', EN:'Reduces condensation on foliage — limits cryptogamic diseases.', AR:'يقلل التكاثف على الأوراق — يحدّ من الأمراض الفطرية.'},
+          {i:'ti-leaf',             FR:'Maintient les cultures dans leur plage thermique optimale.', EN:'Keeps crops within their optimal temperature range.', AR:'يحافظ على المحاصيل ضمن نطاقها الحراري الأمثل.'},
+          {i:'ti-droplet',          FR:'Peut alimenter le circuit de chauffage de la zone racinaire.', EN:'Can feed the root-zone heating circuit.', AR:'يمكنه تغذية دائرة تدفئة المنطقة الجذرية.'},
+        ],
+        trigger: {
+          on:  {FR:'T° intérieure sous le seuil minimum requis', EN:'Indoor temp. below the required minimum', AR:'الحرارة الداخلية تحت الحد الأدنى المطلوب'},
+          off: {FR:'T° intérieure dans la plage optimale', EN:'Indoor temp. within the optimal range', AR:'الحرارة الداخلية ضمن النطاق الأمثل'},
+        },
+        band: {title:{FR:'Température serre',EN:'Greenhouse temperature',AR:'حرارة الدفيئة'}, unit:'°C', scaleMin:5, scaleMax:35, seuil:15},
+        monitor: [M.temp, M.hum],
+        set: [
+          {i:'ti-settings', k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Chauffage à air chaud',EN:'Hot-air heating',AR:'تدفئة بهواء ساخن'}},
+          {i:'ti-cpu',      k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+        ],
+      },
+    },
+
+    /* ── Lampes LED — piloté par luxmètre ── */
+    'lumiere': {
+      title:  {FR:'Lampes LED', EN:'LED Lighting', AR:'إضاءة LED'},
+      status: {FR:'Automatique — piloté par luxmètre', EN:'Automatic — luxmeter-driven', AR:'تلقائي — محكوم بمقياس الإضاءة'},
+      audio:  {FR:'audio/fr/lumiere.mp3', EN:'audio/en/lumiere.mp3', AR:'audio/ar/lumiere.mp3'},
+      eq: {
+        what: [
+          {i:'ti-sun',              FR:'Complète la lumière naturelle lorsqu\u2019elle est insuffisante pour la photosynthèse.', EN:'Supplements natural light when insufficient for photosynthesis.', AR:'تُكمّل الضوء الطبيعي حين يكون غير كافٍ للتمثيل الضوئي.'},
+          {i:'ti-gauge',            FR:'Pilotées par luxmètre — allumage sous le seuil, extinction au-dessus.', EN:'Controlled by luxmeter — on below threshold, off when sufficient.', AR:'محكومة بمقياس الإضاءة — تُضاء دون العتبة وتُطفأ فوقها.'},
+          {i:'ti-moon',             FR:'Prolongent la durée d\u2019éclairement en début et fin de journée.', EN:'Extend the photoperiod at the start and end of the day.', AR:'تُطيل فترة الإضاءة في بداية النهار ونهايته.'},
+          {i:'ti-temperature-minus',FR:'Faible dégagement de chaleur — n\u2019altèrent pas le climat de la serre.', EN:'Low heat output — do not disturb the greenhouse climate.', AR:'انبعاث حراري منخفض — لا يؤثر على مناخ الدفيئة.'},
+        ],
+        trigger: {
+          on:  {FR:'Éclairement naturel sous le seuil (luxmètre)', EN:'Natural light below threshold (luxmeter)', AR:'الإضاءة الطبيعية تحت العتبة (مقياس الإضاءة)'},
+          off: {FR:'Lumière naturelle suffisante', EN:'Natural light sufficient', AR:'الضوء الطبيعي كافٍ'},
+        },
+        band: {title:{FR:'Éclairement (luxmètre)',EN:'Illuminance (luxmeter)',AR:'شدة الإضاءة (مقياس)'}, unit:'klux', scaleMin:0, scaleMax:100, seuil:30},
+        monitor: [M.temp],
+        set: [
+          {i:'ti-sun',  k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'LED spectre de croissance',EN:'Growth-spectrum LED',AR:'LED بطيف النمو'}},
+          {i:'ti-gauge',k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Luxmètre automatique',EN:'Automatic luxmeter',AR:'مقياس إضاءة تلقائي'}},
+        ],
+      },
+    },
+
+  };  /* ← EQ closing */
+
+  /* catMap entries for new equipment */
+  if(T?.FR?.catMap){
+    T.FR.catMap['chauffage'] = 'CHAUFFAGE'; T.EN.catMap['chauffage'] = 'HEATING';  T.AR.catMap['chauffage'] = 'التدفئة';
+    T.FR.catMap['lumiere']   = 'ÉCLAIRAGE'; T.EN.catMap['lumiere']   = 'LIGHTING'; T.AR.catMap['lumiere']   = 'الإضاءة';
+  }
   Object.keys(EQ).forEach(k => {
+    if(!AR_CONTENT[k]) AR_CONTENT[k] = {title:EQ[k].title?.FR||k, color:'#059669', tabs:['Info'], sections:[], thresholds:[]};
     const d = AR_CONTENT[k];
-    if(!d){ console.warn('[equipment] def missing:', k); return; }
+    if(k === 'chauffage'){
+  d.icon = eqIcon('ti-temperature-plus','#ef4444');
+  d.iconBg = 'rgba(239,68,68,.18)';
+  d.iconBorder = 'rgba(252,165,165,.3)';
+  d.color = '#ef4444';
+
+  d.heroGradient =
+    'radial-gradient(ellipse at 50% 50%, rgba(239,68,68,.25) 0%, transparent 65%)';
+
+  d.heroAnim = `
+    <svg style="position:absolute;inset:0;width:100%;height:100%"
+         viewBox="0 0 370 120" fill="none">
+      <circle cx="120" cy="60" r="8" fill="rgba(239,68,68,.25)"/>
+      <circle cx="180" cy="45" r="10" fill="rgba(239,68,68,.18)"/>
+      <circle cx="240" cy="70" r="7" fill="rgba(239,68,68,.22)"/>
+    </svg>`;
+}
+
+
     d.type = 'equipment';
     d.tabs = ['Info'];
     d.stateKey = null;
@@ -5796,6 +5861,7 @@ function eqIcon(key, color){
     d.statusText    = EQ[k].status.FR;
     d.statusText_en = EQ[k].status.EN;
     d.statusText_ar = EQ[k].status.AR;
+    if(EQ[k].title){ d.title = EQ[k].title.FR; d.title_en = EQ[k].title.EN; d.title_ar = EQ[k].title.AR; }
   });
 })();
 
@@ -5847,7 +5913,7 @@ function renderEquipmentCard(el, def){
       + `</div>`;
   }
 
-  const bands = e.bands || (e.band ? [e.band] : []);
+  const bands = (e.bands || (e.band ? [e.band] : [])).filter(b => !b.pending);
   if(bands.length){
     h += `<div class="ar-section-title eq-sec">${px(bands[0].title)}</div>`;
     bands.forEach((b, idx) => { if(idx) h += `<div class="ar-section-title eq-sec">${px(b.title)}</div>`; h += eqBandHTML(b, lang); });
@@ -5861,13 +5927,15 @@ function renderEquipmentCard(el, def){
   }
 
   if(e.set && e.set.length){
-    h += `<div class="ar-section-title eq-sec">${px(UI.secSet)}</div><div class="eq-set">`
-      + e.set.map(s => {
-          const val = (typeof s.v === 'string') ? s.v : px(s.v);
-          const cls = s.pending ? 'eq-set-val pending' : 'eq-set-val';
-          return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(s.i)}</span><span class="eq-set-label">${px(s.k)}</span><span class="${cls}">${val}</span></div>`;
-        }).join('')
-      + `</div>`;
+    const filtSet = e.set.filter(s => !s.pending);
+    if(filtSet.length){
+      h += `<div class="ar-section-title eq-sec">${px(UI.secSet)}</div><div class="eq-set">`
+        + filtSet.map(s => {
+            const val = (typeof s.v === 'string') ? s.v : px(s.v);
+            return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(s.i)}</span><span class="eq-set-label">${px(s.k)}</span><span class="eq-set-val">${val}</span></div>`;
+          }).join('')
+        + `</div>`;
+    }
   }
 
   if(e.calc){
@@ -5918,8 +5986,8 @@ function eqBandHTML(b, lang){
 function eqSensorsLiveHTML(lang){
   const px = o => eqPx(o, lang);
   const iot = window.iotData;
-  const head = `<div class="ar-section-title eq-sec">${px({FR:'DONNÉES EN DIRECT',EN:'LIVE DATA',AR:'بيانات مباشرة'})}</div>`;
-  if(!iot){ return head + `<div class="sns-live-loading">${px({FR:'Interrogation des capteurs…',EN:'Querying sensors…',AR:'استجواب المستشعرات…'})}</div>`; }
+  const head = ''; /* DONNÉES EN DIRECT header removed */
+  if(!iot){ return head + `<div class="sns-live-loading">${px({FR:'',EN:'',AR:''})}</div>`; }
   const env = iot.env || {}, irr = iot.irr || {};
   const thr = k => (typeof getThresh === 'function') ? getThresh(k) : {};
   const fmt = v => v != null ? Number(v).toFixed(1) : '—';
@@ -6038,23 +6106,27 @@ function renderInfoCard(el, def){
   }
 
   (c.sections || []).forEach(sec => {
-    h += `<div class="ar-section-title eq-sec">${px(sec.title)}</div>`;
     if(sec.kind === 'facts'){
-      h += `<div class="eq-set">` + sec.items.map(it => {
+      const filtFacts = sec.items.filter(it => !it.flag);
+      if(!filtFacts.length) return;
+      h += `<div class="ar-section-title eq-sec">${px(sec.title)}</div>`;
+      h += `<div class="eq-set">` + filtFacts.map(it => {
         const val = (typeof it.v === 'string') ? it.v : px(it.v);
-        const cls = it.flag ? 'eq-set-val pending' : 'eq-set-val';
-        return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(it.i || 'ti-point')}</span><span class="eq-set-label">${px(it.k)}</span><span class="${cls}">${val}</span></div>`;
+        return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(it.i || 'ti-point')}</span><span class="eq-set-label">${px(it.k)}</span><span class="eq-set-val">${val}</span></div>`;
       }).join('') + `</div>`;
-    } else if(sec.kind === 'grid'){
-      h += `<div class="eq-what-grid">` + sec.items.map((it, idx) =>
-        `<div class="eq-what-card" style="animation-delay:${idx*60}ms"><div class="eq-what-icon">${eqIcon(it.i || 'ti-point')}</div><div class="eq-what-txt">${px(it)}</div></div>`
-      ).join('') + `</div>`;
-    } else if(sec.kind === 'bullets'){
-      h += `<ul class="info-bullets">` + sec.items.map(it => `<li>${px(it)}</li>`).join('') + `</ul>`;
-    } else if(sec.kind === 'chips'){
-      h += `<div class="eq-monitor"><div class="eq-monitor-chips">` +
-        sec.items.map(it => `<span class="eq-chip"><span class="eq-chip-dot"></span>${px(it)}</span>`).join('') +
-        `</div>` + (sec.note ? `<div class="eq-monitor-note">${px(sec.note)}</div>` : '') + `</div>`;
+    } else {
+      h += `<div class="ar-section-title eq-sec">${px(sec.title)}</div>`;
+      if(sec.kind === 'grid'){
+        h += `<div class="eq-what-grid">` + sec.items.map((it, idx) =>
+          `<div class="eq-what-card" style="animation-delay:${idx*60}ms"><div class="eq-what-icon">${eqIcon(it.i || 'ti-point')}</div><div class="eq-what-txt">${px(it)}</div></div>`
+        ).join('') + `</div>`;
+      } else if(sec.kind === 'bullets'){
+        h += `<ul class="info-bullets">` + sec.items.map(it => `<li>${px(it)}</li>`).join('') + `</ul>`;
+      } else if(sec.kind === 'chips'){
+        h += `<div class="eq-monitor"><div class="eq-monitor-chips">` +
+          sec.items.map(it => `<span class="eq-chip"><span class="eq-chip-dot"></span>${px(it)}</span>`).join('') +
+          `</div>` + (sec.note ? `<div class="eq-monitor-note">${px(sec.note)}</div>` : '') + `</div>`;
+      }
     }
   });
 
@@ -6554,10 +6626,11 @@ Object.assign(EQ_ICONS, {
       {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mph,Mec], note:mNote},
     ]}},
 
-    'chaudière': { status:['Chauffage','Heating','تدفئة'], card:{sections:[
+    'chaudière': { status:['Automatique — T° < seuil','Automatic — temp. below threshold','تلقائي — حرارة تحت العتبة'], card:{sections:[
       {title:S.fonc, kind:'grid', items:[
-        {i:'ti-temperature-plus',FR:'Maintien des températures nocturnes au-dessus des seuils critiques.',EN:'Keeps night temperatures above the critical thresholds.',AR:'الحفاظ على حرارة الليل فوق العتبات الحرجة.'},
-        {i:'ti-droplet',         FR:'Alimentation du circuit de chauffage de la solution nutritive.',EN:'Feeds the heating circuit of the nutrient solution.',AR:'تغذية دائرة تسخين المحلول المغذي.'},
+        {i:'ti-temperature-plus',FR:'Diffuse de l\u2019air chaud quand la T° intérieure descend sous le seuil requis.',EN:'Diffuses hot air when indoor temperature drops below the required threshold.',AR:'ينفث هواءً ساخناً حين تنخفض الحرارة الداخلية عن الحد المطلوب.'},
+        {i:'ti-shield',          FR:'Réchauffe l’air et réduit la condensation sur le feuillage — limite les maladies cryptogamiques.',EN:'Warms the air and reduces condensation on foliage — limits cryptogamic diseases.',AR:'يُدفّئ الهواء ويقلل التكاثف على الأوراق — يحدّ من الأمراض الفطرية.'},
+        {i:'ti-droplet',         FR:'Peut alimenter le circuit de chauffage de la zone racinaire.',EN:'Can feed the root-zone heating circuit.',AR:'يمكنه تغذية دائرة تدفئة المنطقة الجذرية.'},
       ]},
       {title:S.param, kind:'facts', items:[
         {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:TC,flag:true},
@@ -6671,7 +6744,7 @@ Object.assign(EQ_ICONS, {
     'serre':['Complexe de Serres AgroBioTech','AgroBioTech Greenhouse Complex','مجمّع دفيئات AgroBioTech'],
     'monitoring':['Système de Monitoring','Monitoring System','نظام المراقبة'],
     'station de fertigation':['Station de Fertigation','Fertigation Station','محطة التسميد بالري'],
-    'chaudière':['Chaudière','Boiler','المرجل'],
+    'chaudière':['Chauffage à l\u2019Air Chaud','Hot-Air Heating','التدفئة بالهواء الساخن'],
     'audoucisseur':['Adoucisseur d\u2019Eau','Water Softener','مُليّن الماء'],
     'système de ventilation':['Système de Ventilation','Ventilation System','نظام التهوية'],
     'ventilation dehors':['Ventilation Extérieure','Exterior Ventilation','التهوية الخارجية'],
