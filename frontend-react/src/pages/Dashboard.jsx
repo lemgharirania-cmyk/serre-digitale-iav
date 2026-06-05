@@ -4,7 +4,6 @@ import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar'
 import { iotAPI } from '../api/client'
 
-// Pages / sections
 import Overview      from './dashboard/Overview'
 import EtatSerre     from './dashboard/EtatSerre'
 import Graphiques    from './dashboard/Graphiques'
@@ -72,7 +71,6 @@ export default function Dashboard() {
     return () => clearInterval(timer)
   }, [])
 
-  // Météo : rafraîchissement plus lent (toutes les 10 min)
   useEffect(() => {
     const m = setInterval(fetchMeteo, 600000)
     return () => clearInterval(m)
@@ -92,26 +90,29 @@ export default function Dashboard() {
       <Sidebar alertCount={alertCount} theme={theme} setTheme={setTheme} lang={lang} setLang={setLang} />
       <main className="admin-main">
         <Routes>
+          {/* Sections à part (chargées seulement à la visite) */}
+          <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
+          <Route path="/seuils"      element={<Seuils     {...sharedProps} />} />
+          <Route path="/export"      element={<Export     {...sharedProps} />} />
+          <Route path="/parametres"  element={<Parametres theme={theme} lang={lang} />} />
           <Route path="/calculateur" element={<NSCalculateur theme={theme} lang={lang} />} />
-          <Route path="*"            element={<DashboardHome {...sharedProps} />} />
+
+          {/* Page scrollable : Vue d'ensemble · État de la serre · Graphiques */}
+          <Route path="*" element={<ScrollHome {...sharedProps} />} />
         </Routes>
       </main>
     </div>
   )
 }
 
-/* Page unique scrollable : toutes les sections empilées et ancrées. */
-function DashboardHome(props) {
+/* Trois sections empilées et scrollables, reliées par la sidebar. */
+function ScrollHome(props) {
   const sec = { scrollMarginTop: 16, marginBottom: 40 }
   return (
-    <div className="admin-scroll">
+    <>
       <section id="vue"        style={sec}><Overview   {...props} /></section>
       <section id="etat"       style={sec}><EtatSerre  {...props} /></section>
       <section id="graphiques" style={sec}><Graphiques {...props} /></section>
-      <section id="alertes"    style={sec}><Alertes    {...props} /></section>
-      <section id="seuils"     style={sec}><Seuils     {...props} /></section>
-      <section id="export"     style={sec}><Export     {...props} /></section>
-      <section id="parametres" style={sec}><Parametres {...props} /></section>
-    </div>
+    </>
   )
 }
