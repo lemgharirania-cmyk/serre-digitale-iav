@@ -24,7 +24,7 @@ const SERRES = [
 ]
 
 // ── Descriptions détaillées par paramètre ET par serre ───────
-const POPUP_INFO = {
+export const POPUP_INFO = {
   temperature: {
     icon: null,
     labelFr: 'Température de l\'air',
