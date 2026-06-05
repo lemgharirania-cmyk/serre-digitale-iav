@@ -5764,7 +5764,7 @@ function eqIcon(key, color){
           {title:{FR:'EC cible',EN:'Target EC',AR:'EC المستهدف'}, unit:'mS/cm', scaleMin:0, scaleMax:3, rangeLo:1.0, rangeHi:2.2},
         ],
         monitor: [M.ph, M.ec, M.niv],
-        calc: true,
+        calc: 'inline',
         set: [
           {i:'ti-bucket',  k:{FR:'Réservoir',EN:'Tank',AR:'الخزان'}, v:'500 L'},
           {i:'ti-droplet', k:{FR:'pH cible',EN:'Target pH',AR:'pH المستهدف'}, v:'5.5 – 6.5'},
@@ -5824,12 +5824,40 @@ function eqIcon(key, color){
       },
     },
 
+
+    /* ── Tables Mobiles — chauffage racinaire par eau chaude ── */
+    'tablettes': {
+      title:  {FR:'Tables Mobiles', EN:'Mobile Tables', AR:'الطاولات المتنقلة'},
+      status: {FR:'Chauffage racinaire', EN:'Root-zone heating', AR:'تدفئة المنطقة الجذرية'},
+      audio:  {FR:'audio/fr/tablettes.mp3', EN:'audio/en/tablettes.mp3', AR:'audio/ar/tablettes.mp3'},
+      eq: {
+        what: [
+          {i:'ti-stack',           FR:'Tables sur rails — mobilité pour optimiser l\u2019espace et faciliter l\u2019entretien.', EN:'Rail-mounted tables — mobility to optimise space and ease maintenance.', AR:'طاولات على قضبان — حركية لتحسين استغلال المساحة وتسهيل الصيانة.'},
+          {i:'ti-droplet',         FR:'Tuyaux d\u2019eau chaude intégrés sous la surface pour réchauffer la zone racinaire.', EN:'Integrated hot-water pipes beneath the surface to warm the root zone.', AR:'أنابيب ماء ساخن مدمجة تحت السطح لتدفئة المنطقة الجذرية.'},
+          {i:'ti-temperature-plus',FR:'Un substrat chaud stimule l\u2019activité racinaire et l\u2019absorption de l\u2019eau et des minéraux.', EN:'A warm substrate stimulates root activity and uptake of water and minerals.', AR:'الركيزة الدافئة تُحفّز نشاط الجذور وامتصاص الماء والمعادن.'},
+          {i:'ti-leaf',            FR:'Culture hors-sol en pots — contrôle étroit du substrat, du volume et de la nutrition.', EN:'Soilless pot culture — tight control of substrate, volume and nutrition.', AR:'زراعة بدون تربة في أواني — تحكم دقيق في الركيزة والحجم والتغذية.'},
+        ],
+        trigger: {
+          on:  {FR:'Période fraîche — circuit eau chaude racinaire activé', EN:'Cool period — root-zone hot-water circuit active', AR:'فترة باردة — دارة الماء الساخن الجذري نشطة'},
+          off: {FR:'T° substrat dans la plage optimale', EN:'Substrate temp. within the optimal range', AR:'حرارة الركيزة ضمن النطاق الأمثل'},
+        },
+        band: {title:{FR:'T° zone racinaire',EN:'Root-zone temperature',AR:'حرارة المنطقة الجذرية'}, unit:'°C', scaleMin:5, scaleMax:35, seuil:18},
+        monitor: [M.temp, M.hum],
+        set: [
+          {i:'ti-stack',  k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Tables mobiles sur rails',EN:'Rail-mounted mobile tables',AR:'طاولات متنقلة على قضبان'}},
+          {i:'ti-droplet',k:{FR:'Chauffage',EN:'Heating',AR:'التدفئة'}, v:{FR:'Circuit eau chaude racinaire',EN:'Root-zone hot-water circuit',AR:'دارة ماء ساخن جذري'}},
+          {i:'ti-cpu',    k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique — T° substrat',EN:'Automatic — substrate temp.',AR:'تلقائي — حرارة الركيزة'}},
+        ],
+      },
+    },
+
   };  /* ← EQ closing */
 
   /* catMap entries for new equipment */
   if(T?.FR?.catMap){
     T.FR.catMap['chauffage'] = 'CHAUFFAGE'; T.EN.catMap['chauffage'] = 'HEATING';  T.AR.catMap['chauffage'] = 'التدفئة';
     T.FR.catMap['lumiere']   = 'ÉCLAIRAGE'; T.EN.catMap['lumiere']   = 'LIGHTING'; T.AR.catMap['lumiere']   = 'الإضاءة';
+    T.FR.catMap['tablettes'] = 'ÉQUIPEMENT DE CULTURE'; T.EN.catMap['tablettes'] = 'GROWING EQUIPMENT'; T.AR.catMap['tablettes'] = 'معدات الزراعة';
   }
   Object.keys(EQ).forEach(k => {
     if(!AR_CONTENT[k]) AR_CONTENT[k] = {title:EQ[k].title?.FR||k, color:'#059669', tabs:['Info'], sections:[], thresholds:[]};
@@ -5852,6 +5880,9 @@ function eqIcon(key, color){
     </svg>`;
 }
 
+if(k === 'tablettes'){
+  d.icon = eqIcon('ti-stack','#10b981');
+}
 
     d.type = 'equipment';
     d.tabs = ['Info'];
@@ -5939,9 +5970,13 @@ function renderEquipmentCard(el, def){
   }
 
   if(e.calc){
-    h += `<div class="ar-section-title eq-sec">${px(UI.secCalc)}</div>`
-      + `<div class="eq-calc"><div class="eq-calc-icon">${eqIcon('ti-calculator')}</div>`
-      + `<div class="eq-calc-body"><div class="eq-calc-title">${px(UI.calcTitle)}</div><div class="eq-calc-sub">${px(UI.calcSub)}</div></div></div>`;
+    h += `<div class="ar-section-title eq-sec">${px(UI.secCalc)}</div>`;
+    if(e.calc === 'inline' && typeof buildFertigCalcHTML === 'function'){
+      h += buildFertigCalcHTML(lang);
+    } else {
+      h += `<div class="eq-calc"><div class="eq-calc-icon">${eqIcon('ti-calculator')}</div>`
+         + `<div class="eq-calc-body"><div class="eq-calc-title">${px(UI.calcTitle)}</div><div class="eq-calc-sub">${px(UI.calcSub)}</div></div></div>`;
+    }
   }
 
   /* audio player — reuses the sns-audio component */
@@ -5959,6 +5994,7 @@ function renderEquipmentCard(el, def){
     + `</div>`;
 
   el.innerHTML = h;
+  if(e.calc === 'inline') setTimeout(() => { if(window.arcUpdate) window.arcUpdate(); }, 0);
 }
 
 /* ── Spec range band (config seuil OR range — never live) ── */
@@ -6773,6 +6809,112 @@ Object.assign(EQ_ICONS, {
   }
 })();
 /* INFO2_END */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   INLINE FERTIGATION NS CALCULATOR
+   Triggered when e.calc === 'inline' in renderEquipmentCard.
+   Based on Incrocci EUPHOROS sequential method.
+════════════════════════════════════════════════════════════════════════ */
+window._arcCrops = {
+  fraise:    {fr:'Fraise',    en:'Strawberry', ar:'\u0641\u0631\u0627\u0648\u0644\u0629', NO3:11,  NH4:1.2, P:1.5, K:6.5, Ca:3.5, Mg:1.5, SO4:1.5, EC:1.2, pH:5.8},
+  tomate:    {fr:'Tomate',    en:'Tomato',     ar:'\u0637\u0645\u0627\u0637\u0645',      NO3:12,  NH4:1.5, P:1.5, K:7,   Ca:4,   Mg:2,   SO4:3,   EC:2.5, pH:5.8},
+  laitue:    {fr:'Laitue',    en:'Lettuce',    ar:'\u062e\u0633',                       NO3:10,  NH4:1,   P:1.5, K:5.5, Ca:3,   Mg:1.5, SO4:2,   EC:1.8, pH:6.0},
+  concombre: {fr:'Concombre', en:'Cucumber',   ar:'\u062e\u064a\u0627\u0631',           NO3:13,  NH4:1.5, P:1.5, K:7.5, Ca:4.5, Mg:2,   SO4:2.5, EC:2.2, pH:5.8},
+  poivron:   {fr:'Poivron',   en:'Pepper',     ar:'\u0641\u0644\u0641\u0644',           NO3:12,  NH4:1,   P:1.5, K:7,   Ca:4,   Mg:2,   SO4:2.5, EC:2.3, pH:5.8},
+  courgette: {fr:'Courgette', en:'Zucchini',   ar:'\u0643\u0648\u0633\u0627',           NO3:11,  NH4:1,   P:1.5, K:6,   Ca:3.5, Mg:1.5, SO4:2,   EC:2.0, pH:6.0},
+};
+
+/* Sequential fertilizer assignment (Incrocci, 2011):
+   1. Ca(NO3)2 for Ca  2. NH4NO3 for NH4  3. KH2PO4 for P
+   4. KNO3 for remaining K  5. MgSO4 for Mg              */
+window.arcCompute = function(cropKey, volumeL){
+  const c = window._arcCrops[cropKey];
+  if(!c || !volumeL || volumeL <= 0) return null;
+  const V = +volumeL;
+  // g = concentration(mmol/L) × MW(g/mol) × Volume(L) / 1000
+  const g = (mmol, MW) => Math.max(0, +(mmol * MW * V / 1000).toFixed(1));
+  const Krem = Math.max(0, c.K - c.P); // K remaining after KH2PO4 provides one K per P
+  return {
+    EC : c.EC,
+    pH : c.pH,
+    doses: [
+      {name:'Ca(NO\u2083)\u2082\u00b74H\u2082O', g:g(c.Ca, 236.15),  tank:'A', mM:+c.Ca.toFixed(1)},
+      {name:'NH\u2084NO\u2083',                  g:g(c.NH4, 80.04),   tank:'A', mM:+c.NH4.toFixed(1)},
+      {name:'KH\u2082PO\u2084',                  g:g(c.P, 136.09),    tank:'B', mM:+c.P.toFixed(1)},
+      {name:'KNO\u2083',                         g:g(Krem, 101.10),   tank:'B', mM:+Krem.toFixed(1)},
+      {name:'MgSO\u2084\u00b77H\u2082O',         g:g(c.Mg, 246.48),  tank:'B', mM:+c.Mg.toFixed(1)},
+    ],
+  };
+};
+
+window.arcResultsHTML = function(data, lang){
+  if(!data) return '<div class="arc-err">\u2014</div>';
+  const lbl = {
+    ta:{FR:'Cuve', EN:'Tank', AR:'\u062e\u0632\u0627\u0646'},
+    no:{FR:'M\u00e9thode s\u00e9quentielle Incrocci \u2014 Dissoudre A avant B. Ajuster pH et EC mesur\u00e9s.',
+        EN:'Sequential Incrocci method \u2014 Dissolve A before B. Adjust measured pH and EC.',
+        AR:'\u0637\u0631\u064a\u0642\u0629 Incrocci \u0627\u0644\u062a\u0633\u0644\u0633\u0644\u064a\u0629 \u2014 \u0623\u0630\u0628 A \u0642\u0628\u0644 B. \u0639\u062f\u0651\u0644 pH \u0648EC \u0627\u0644\u0645\u0642\u064a\u0633\u064a\u0646.'},
+  };
+  const lk = (k) => lbl[k]?.[lang] || lbl[k]?.FR || '';
+  const tc = t => t === 'A' ? '#0891b2' : '#059669';
+  return `
+    <div class="arc-kpis">
+      <div class="arc-kpi"><b class="arc-kv">${data.EC}</b><span class="arc-kl">EC mS/cm</span></div>
+      <div class="arc-kpi"><b class="arc-kv">${data.pH}</b><span class="arc-kl">pH cible</span></div>
+    </div>
+    <div class="arc-table">
+      ${data.doses.filter(d => d.g > 0).map(d => `
+        <div class="arc-dr">
+          <span class="arc-fn">${d.name}</span>
+          <span class="arc-ft" style="background:${tc(d.tank)}1a;color:${tc(d.tank)};border:1px solid ${tc(d.tank)}55">${lk('ta')} ${d.tank}</span>
+          <span class="arc-fg"><b>${d.g}</b>\u202fg</span>
+        </div>`).join('')}
+    </div>
+    <p class="arc-note">${lk('no')}</p>`;
+};
+
+window.arcUpdate = function(){
+  const sel = document.getElementById('arc-crop');
+  const inp = document.getElementById('arc-vol');
+  const res = document.getElementById('arc-res');
+  if(!sel || !inp || !res) return;
+  res.innerHTML = window.arcResultsHTML(
+    window.arcCompute(sel.value, +inp.value || 100),
+    window.currentLang || 'FR'
+  );
+};
+
+function buildFertigCalcHTML(lang){
+  const crops = window._arcCrops || {};
+  const names = {FR:'Culture', EN:'Crop', AR:'\u0627\u0644\u0645\u062d\u0635\u0648\u0644'};
+  const vols  = {FR:'Volume final', EN:'Final volume', AR:'\u0627\u0644\u062d\u062c\u0645 \u0627\u0644\u0643\u0644\u064a'};
+  const px    = o => (o && o[lang]) || o?.FR || '';
+  const options = Object.keys(crops).map(k => {
+    const c = crops[k];
+    const n = lang === 'AR' ? c.ar : lang === 'EN' ? c.en : c.fr;
+    return `<option value="${k}">${n}</option>`;
+  }).join('');
+  const initKey  = Object.keys(crops)[0] || 'fraise';
+  const initHTML = window.arcResultsHTML(window.arcCompute(initKey, 100), lang);
+  return `
+    <div class="arc-wrap">
+      <div class="arc-controls">
+        <div class="arc-field">
+          <span class="arc-lbl">${px(names)}</span>
+          <select class="arc-sel" id="arc-crop" onchange="window.arcUpdate()">${options}</select>
+        </div>
+        <div class="arc-field">
+          <span class="arc-lbl">${px(vols)}</span>
+          <div class="arc-vinp">
+            <input class="arc-inp" id="arc-vol" type="number" value="100" min="1" max="9999" oninput="window.arcUpdate()">
+            <span class="arc-unit">L</span>
+          </div>
+        </div>
+      </div>
+      <div id="arc-res" class="arc-res">${initHTML}</div>
+    </div>`;
+}
 
 /* ── Refresh hero text (title / category / status pill) for the current language ── */
 function arSetHeroText(desc){

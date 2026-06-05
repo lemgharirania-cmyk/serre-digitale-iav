@@ -1221,6 +1221,25 @@ const aurora=(c1,c2,c3)=>`<div style="position:absolute;width:64px;height:64px;b
 
 
 const HS_DEFS = {
+  'tablettes':{
+  style:pill(16,185,129)+';animation:hs-float 3s ease-in-out infinite',
+  html:aurora(
+    'rgba(187,247,208,.95)',
+    'rgba(110,231,183,.65)',
+    'rgba(167,243,208,.2)'
+  )+`<svg width="28" height="28" viewBox="0 0 24 24"
+      fill="none"
+      stroke="rgba(5,150,105,.9)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      style="position:relative;z-index:1">
+
+      <path d="m12 3 9 5-9 5-9-5z"/>
+      <path d="m3 13 9 5 9-5"/>
+
+    </svg>`
+},
 
 'chauffage':{
   style:pill(239,68,68)+';animation:hs-float 3.2s ease-in-out infinite',
@@ -2119,7 +2138,11 @@ const _al = {
   'système de chauffage':'chauffage',
   'lampes led':'lumiere',
 
-  'blé':'blé'
+  'blé':'blé',
+  
+  'tablettes':'tablettes',
+  
+'tables mobiles':'tablettes',
 };
 
 
@@ -2132,6 +2155,7 @@ const _al = {
 
 console.log('RAWKEY=', rawKey);
 console.log('HSKEY=', hsKey);
+
       const def=HS_DEFS[hsKey]||HS_DEFS['co2'];
 
 
