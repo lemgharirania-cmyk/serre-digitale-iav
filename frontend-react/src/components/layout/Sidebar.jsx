@@ -3,18 +3,20 @@ import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, LineChart, Bell, SlidersHorizontal,
-  Download, FlaskConical, LogOut, Sun, Moon,
-  Globe, Settings, Gauge,
+  Download, FlaskConical, LogOut, Sun, Moon, Globe, Settings, Gauge,
 } from 'lucide-react'
+
+// Sections scrollables (sur la page d'accueil du dashboard)
+const ANCHORS = ['vue', 'etat', 'graphiques']
 
 const NAV = [
   {
     section: { FR:'Supervision', EN:'Monitoring' },
     links: [
-      { anchor:'vue',        labelFR:'Vue d\'ensemble',   labelEN:'Overview',          Icon:LayoutDashboard },
-      { anchor:'etat',       labelFR:'État de la serre',  labelEN:'Greenhouse status', Icon:Gauge },
-      { anchor:'graphiques', labelFR:'Graphiques',        labelEN:'Charts',            Icon:LineChart },
-      { anchor:'alertes',    labelFR:'Alertes',           labelEN:'Alerts',            Icon:Bell, badge:true },
+      { anchor:'vue',        labelFR:'Vue d\'ensemble',  labelEN:'Overview',          Icon:LayoutDashboard },
+      { anchor:'etat',       labelFR:'État de la serre', labelEN:'Greenhouse status', Icon:Gauge },
+      { anchor:'graphiques', labelFR:'Graphiques',       labelEN:'Charts',            Icon:LineChart },
+      { route:'/dashboard/alertes', labelFR:'Alertes',   labelEN:'Alerts',            Icon:Bell, badge:true },
     ]
   },
   {
@@ -26,27 +28,25 @@ const NAV = [
   {
     section: { FR:'Configuration', EN:'Settings' },
     links: [
-      { anchor:'seuils',     labelFR:'Seuils agronomiques', labelEN:'Thresholds',  Icon:SlidersHorizontal },
-      { anchor:'export',     labelFR:'Export de données',   labelEN:'Export data', Icon:Download },
-      { anchor:'parametres', labelFR:'Paramètres',          labelEN:'Settings',    Icon:Settings },
+      { route:'/dashboard/seuils',     labelFR:'Seuils agronomiques', labelEN:'Thresholds',  Icon:SlidersHorizontal },
+      { route:'/dashboard/export',     labelFR:'Export de données',   labelEN:'Export data', Icon:Download },
+      { route:'/dashboard/parametres', labelFR:'Paramètres',          labelEN:'Settings',    Icon:Settings },
     ]
   },
 ]
 
-const ANCHORS = ['vue','etat','graphiques','alertes','seuils','export','parametres']
-
 export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) {
-  const navigate   = useNavigate()
-  const location   = useLocation()
-  const isDark     = theme === 'dark'
-  const onCalc     = location.pathname.includes('/calculateur')
-  const user       = JSON.parse(localStorage.getItem('sdi_user') || '{}')
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isDark   = theme === 'dark'
+  const onHome   = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
+  const user     = JSON.parse(localStorage.getItem('sdi_user') || '{}')
 
   const [activeId, setActiveId] = useState('vue')
 
-  // Scroll-spy : surligne la section visible
+  // Scroll-spy : surligne la section visible (uniquement sur la page d'accueil)
   useEffect(() => {
-    if (onCalc) return
+    if (!onHome) return
     const obs = new IntersectionObserver(
       (entries) => entries.forEach(e => { if (e.isIntersecting) setActiveId(e.target.id) }),
       { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
@@ -55,13 +55,13 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
       ANCHORS.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el) })
     }, 250)
     return () => { clearTimeout(timer); obs.disconnect() }
-  }, [onCalc])
+  }, [onHome])
 
   function goTo(id) {
     setActiveId(id)
-    if (onCalc) {
+    if (!onHome) {
       navigate('/dashboard')
-      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' }), 120)
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' }), 140)
     } else {
       document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' })
     }
@@ -73,12 +73,11 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
     navigate('/login')
   }
 
-  // Couleurs selon le thème
-  const bg          = isDark ? 'rgba(7,17,31,0.92)'    : 'rgba(255,255,255,0.72)'
+  const bg          = isDark ? 'rgba(7,17,31,0.92)'     : 'rgba(255,255,255,0.72)'
   const border      = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,48,36,0.08)'
-  const ink         = isDark ? '#F8FAFC'  : '#0c1f17'
-  const ink3        = isDark ? '#94A3B8'  : '#6b7e75'
-  const ink4        = isDark ? '#64748B'  : '#9aa8a0'
+  const ink         = isDark ? '#F8FAFC' : '#0c1f17'
+  const ink3        = isDark ? '#94A3B8' : '#6b7e75'
+  const ink4        = isDark ? '#64748B' : '#9aa8a0'
   const activeBg     = isDark ? 'linear-gradient(135deg,rgba(34,197,94,0.22),rgba(6,182,212,0.16))' : 'var(--ink)'
   const activeColor  = isDark ? '#F8FAFC' : 'white'
   const activeBorder = isDark ? '1px solid rgba(34,197,94,0.3)' : 'none'
@@ -87,14 +86,13 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
   const pillBorder   = isDark ? 'rgba(255,255,255,0.1)'  : 'rgba(16,48,36,0.12)'
 
   const linkStyle = (active) => ({
-    display:'flex', alignItems:'center', gap:10, padding:'9px 10px',
-    fontSize:13, borderRadius:10, cursor:'pointer', textDecoration:'none',
-    transition:'all 0.15s ease', marginBottom:2, width:'100%', textAlign:'left',
+    display:'flex', alignItems:'center', gap:10, padding:'9px 10px', fontSize:13,
+    borderRadius:10, cursor:'pointer', textDecoration:'none', transition:'all 0.15s ease',
+    marginBottom:2, width:'100%', textAlign:'left', fontFamily:'inherit',
     background: active ? activeBg : 'transparent',
     color: active ? activeColor : ink3,
     border: active ? activeBorder : '1px solid transparent',
     fontWeight: active ? 500 : 400,
-    fontFamily:'inherit',
   })
 
   const Badge = ({ active }) => (
@@ -109,9 +107,9 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
 
   return (
     <aside style={{
-      width:240, padding:'20px 14px', borderRight:`1px solid ${border}`,
-      background:bg, backdropFilter:'blur(14px)', position:'sticky', top:0, height:'100vh',
-      display:'flex', flexDirection:'column', gap:2, overflowY:'auto', transition:'background 0.3s ease',
+      width:240, padding:'20px 14px', borderRight:`1px solid ${border}`, background:bg,
+      backdropFilter:'blur(14px)', position:'sticky', top:0, alignSelf:'flex-start',
+      height:'100vh', display:'flex', flexDirection:'column', gap:2, overflowY:'auto', transition:'background 0.3s ease',
     }}>
 
       {/* Brand */}
@@ -141,28 +139,30 @@ export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) 
             const label = lang === 'FR' ? link.labelFR : link.labelEN
             const Icon  = link.Icon
 
-            // Lien de route (NS Calculateur)
             if (link.route) {
               return (
                 <NavLink key={link.route} to={link.route}
                   style={({ isActive }) => linkStyle(isActive)}
-                  onMouseEnter={e => { if (!onCalc) e.currentTarget.style.background = hoverBg }}
-                  onMouseLeave={e => { if (!location.pathname.includes('/calculateur')) e.currentTarget.style.background = 'transparent' }}>
-                  <Icon size={15} style={{ flexShrink:0 }} />
-                  <span style={{ flex:1 }}>{label}</span>
+                  onMouseEnter={e => { if (location.pathname !== link.route) e.currentTarget.style.background = hoverBg }}
+                  onMouseLeave={e => { if (location.pathname !== link.route) e.currentTarget.style.background = 'transparent' }}>
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={15} style={{ flexShrink:0 }} />
+                      <span style={{ flex:1 }}>{label}</span>
+                      {link.badge && <Badge active={isActive} />}
+                    </>
+                  )}
                 </NavLink>
               )
             }
 
-            // Lien d'ancre (défilement)
-            const active = !onCalc && activeId === link.anchor
+            const active = onHome && activeId === link.anchor
             return (
               <button key={link.anchor} onClick={() => goTo(link.anchor)} style={linkStyle(active)}
                 onMouseEnter={e => { if (!active) e.currentTarget.style.background = hoverBg }}
                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
                 <Icon size={15} style={{ flexShrink:0 }} />
                 <span style={{ flex:1 }}>{label}</span>
-                {link.badge && <Badge active={active} />}
               </button>
             )
           })}
