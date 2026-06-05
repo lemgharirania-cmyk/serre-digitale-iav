@@ -259,7 +259,7 @@ export default function Overview({ liveData, stats, countdown, refreshAll, meteo
           <h2>{t.alertesRecentes}</h2>
           <span
             style={{ fontSize:12, color:'var(--green-600)', fontWeight:500, cursor:'pointer' }}
-            onClick={() => scrollTo('alertes')}
+            onClick={() => navigate('/dashboard/alertes')}
           >
             {t.toutVoir}
           </span>
@@ -267,7 +267,7 @@ export default function Overview({ liveData, stats, countdown, refreshAll, meteo
         {stats.alertes_actives > 0 ? (
           <div style={{ fontSize:13, color:ink3, padding:'1rem 0' }}>
             {stats.alertes_actives} {t.alertesSub1}{stats.alertes_actives > 1 ? 's' : ''} {t.alertesSub2}{stats.alertes_actives > 1 ? 's' : ''} —{' '}
-            <span style={{ color:'var(--green-600)', cursor:'pointer' }} onClick={() => scrollTo('alertes')}>
+            <span style={{ color:'var(--green-600)', cursor:'pointer' }} onClick={() => navigate('/dashboard/alertes')}>
               {t.voirDetails}
             </span>
           </div>
