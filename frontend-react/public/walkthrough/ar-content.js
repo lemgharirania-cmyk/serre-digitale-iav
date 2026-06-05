@@ -226,6 +226,8 @@ function setLang(lang) {
     const def = getARDef(window.activeAR);
     if(def) renderARTab(window.activeTab || 0, def);
   }
+  // Refresh hero text (title / category / status) in the new language
+  if(window.activeAR) arSetHeroText(window.activeAR);
   // Play audio for current hotspot in new lang (future hook)
   if(window.activeAR) playARAudio(window.activeAR, lang);
 }
@@ -4509,7 +4511,7 @@ function openSimpleAR(desc){
 
 
 
-  activeAR = desc; activeTab = 0;
+  window.activeAR = desc; window.activeTab = 0;
 
 
 
@@ -4629,11 +4631,11 @@ function openSimpleAR(desc){
 
 
 
-  document.getElementById('ar-category-label').textContent = catMap[desc] || 'DIGITAL TWIN';
+  document.getElementById('ar-category-label').textContent = (typeof tCat==='function' ? tCat(desc) : (catMap[desc] || 'DIGITAL TWIN'));
 
 
 
-  document.getElementById('ar-title').textContent = def.title;
+  document.getElementById('ar-title').textContent = def['title_'+(window.currentLang||'FR').toLowerCase()] || def.title;
 
 
 
@@ -4677,7 +4679,7 @@ function openSimpleAR(desc){
 
 
 
-    _pillTxt.textContent = def.statusText || '—';
+    _pillTxt.textContent = def['statusText_'+(window.currentLang||'FR').toLowerCase()] || def.statusText || '—';
 
 
 
@@ -4697,7 +4699,7 @@ function openSimpleAR(desc){
 
 
 
-    _pillTxt.textContent = _on ? 'ACTIF' : 'INACTIF';
+    _pillTxt.textContent = _on ? (typeof t==='function'?t('active'):'ACTIF') : (typeof t==='function'?t('inactive'):'INACTIF');
 
 
 
@@ -4884,6 +4886,10 @@ function renderARTab(i, def){
 
 
 
+
+  // ── Equipment custom card (descriptive — live IoT lives in Capteurs) ──
+  if(def.type === 'equipment'){ renderEquipmentCard(el, def); return; }
+  if(def.type === 'info'){ renderInfoCard(el, def); return; }
 
   // ── Live sensor readings section (if IoT tab exists) ──
 
@@ -5296,7 +5302,7 @@ function closeAR(){
   document.getElementById('ar-card').classList.remove('open');
   /* ── Stop any playing audio ── */
   if(window._arAudioEl){ window._arAudioEl.pause(); window._arAudioEl.currentTime=0; }
-  activeAR=null;
+  window.activeAR=null;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -5386,6 +5392,9 @@ function renderSensorsCard(el, def){
   /* ── Build HTML ── */
   let html = '';
 
+  /* 0 — Live data (only card showing live IoT) */
+  html += eqSensorsLiveHTML(lang);
+
   /* 1 — Overview */
   html += `<div class="ar-section-title">${tx('secInfo')}</div>
   <div class="sns-overview">${tx('ovDesc')}</div>`;
@@ -5400,7 +5409,7 @@ function renderSensorsCard(el, def){
     const pingLabel = s.key === 'vpd'
       ? (lang==='AR'?'محسوب':lang==='EN'?'Computed':'Calculé')
       : (lang==='AR'?'متصل':lang==='EN'?'Online':'En ligne');
-    const iconHtml = `<span class="sns-item-icon" style="background:${s.bg};border-color:${s.border}"><i class="ti ${s.tiIcon}" style="font-size:16px;color:${s.iconColor};" aria-hidden="true"></i></span>`;
+    const iconHtml = `<span class="sns-item-icon" style="background:${s.bg};border-color:${s.border}">${eqIcon(s.tiIcon, s.iconColor)}</span>`;
     if (isWide) {
       html += `
       <div class="sns-item sns-item-wide" style="background:${s.bg};border-color:${s.border}">
@@ -5509,6 +5518,1216 @@ function snsToggleAudio(){
     if(icon) icon.textContent='▶';
     if(lbl)  lbl.textContent=L_play[lang]||L_play.FR;
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EQUIPMENT CARDS — Pass 1 redesign (glassmorphism · multilingual)
+   · Live IoT values appear ONLY in the Capteurs card (eqSensorsLiveHTML).
+   · Equipment cards are descriptive: what-grid · trigger conditions ·
+     spec range (config seuil, not live) · real-time-monitoring chips ·
+     settings · audio. No live values are pulled for these cards.
+   · Augments existing AR_CONTENT defs in place — backward compatible.
+   ───────────────────────────────────────────────────────────────────── */
+function eqPx(o, lang){ return (o && (o[lang] ?? o.FR)) || ''; }
+
+/* ── Inline SVG icon set (no external font dependency) ── */
+const EQ_ICONS = {
+'ti-leaf':'<path d="M5 21c0-9 5.5-15 15-15 0 9.5-6 15-15 15Z"/><path d="M5 21C9.5 16.5 13.5 12.5 18 9"/>',
+'ti-moon':'<path d="M20 14.4A8 8 0 1 1 9.6 4 6.5 6.5 0 0 0 20 14.4Z"/>',
+'ti-lock':'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+'ti-trending-up':'<path d="M3 17l6-6 4 4 8-8"/><path d="M16 7h5v5"/>',
+'ti-cylinder':'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/>',
+'ti-target':'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+'ti-cpu':'<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>',
+'ti-cloud':'<path d="M6.5 18A4.5 4.5 0 0 1 7 9a5 5 0 0 1 9.6 1.6A3.5 3.5 0 0 1 17 18Z"/>',
+'ti-temperature':'<path d="M12 3a2 2 0 0 0-2 2v9.1a4 4 0 1 0 4 0V5a2 2 0 0 0-2-2Z"/><line x1="12" y1="9" x2="12" y2="15"/>',
+'ti-temperature-minus':'<path d="M10 3.8A2 2 0 0 1 14 5v9.1a4 4 0 1 1-4 0V5c0-.45.15-.86.4-1.2"/><path d="M17 6h5"/>',
+'ti-temperature-plus':'<path d="M10 3.8A2 2 0 0 1 14 5v9.1a4 4 0 1 1-4 0V5c0-.45.15-.86.4-1.2"/><path d="M19.5 3.5v5M17 6h5"/>',
+'ti-droplet':'<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z"/>',
+'ti-gauge':'<path d="M5 18a8 8 0 1 1 14 0"/><path d="M12 14l3.5-3.5"/><circle cx="12" cy="14" r="1.3" fill="currentColor" stroke="none"/>',
+'ti-spray':'<rect x="8" y="10" width="7" height="11" rx="2"/><path d="M8 10V6h7v4"/><path d="M17 5h2M17 8h2M18 3h2M18 10h2"/>',
+'ti-windmill':'<circle cx="12" cy="12" r="1.7"/><path d="M12 10.3c-.3-2.6.2-5.6-1.7-6.1C8.7 3.7 7.6 6.1 9.8 7.4M13.7 12c2.6-.3 5.6.2 6.1-1.7.6-1.6-1.8-2.7-2.9-.5M12 13.7c.3 2.6-.2 5.6 1.7 6.1 1.6.6 2.7-1.8.5-2.9M10.3 12c-2.6.3-5.6-.2-6.1 1.7-.6 1.6 1.8 2.7 2.9.5"/>',
+'ti-settings':'<circle cx="12" cy="12" r="3"/><path d="M12 2v3.5M12 18.5V22M3.5 7l3 1.7M17.5 15.3l3 1.7M3.5 17l3-1.7M17.5 8.7l3-1.7"/>',
+'ti-bolt':'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+'ti-arrow-up-right':'<path d="M7 17 17 7"/><path d="M8 7h9v9"/>',
+'ti-refresh':'<path d="M4.5 12a7.5 7.5 0 0 1 12.9-5.2L20 9"/><path d="M20 4v5h-5"/><path d="M19.5 12a7.5 7.5 0 0 1-12.9 5.2L4 15"/><path d="M4 20v-5h5"/>',
+'ti-wind':'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h8a2.5 2.5 0 1 1-2.5 2.5"/>',
+'ti-sun':'<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.7 1.7M17.3 17.3 19 19M19 5l-1.7 1.7M5 19l1.7-1.7"/>',
+'ti-stack':'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+'ti-arrow-up':'<path d="M12 20V5"/><path d="m6 11 6-6 6 6"/>',
+'ti-volume-off':'<path d="M5 9v6h4l5 4V5L9 9z"/><path d="m17 9 4 6M21 9l-4 6"/>',
+'ti-shield':'<path d="M12 3 20 6v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+'ti-window':'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M12 3v18"/>',
+'ti-arrows-maximize':'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+'ti-flask':'<path d="M9 3h6M10 3v6.5L5.2 18A2 2 0 0 0 7 21h10a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/>',
+'ti-adjustments':'<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.1"/><circle cx="15" cy="12" r="2.1"/><circle cx="7" cy="17" r="2.1"/>',
+'ti-plant':'<path d="M12 21v-7"/><path d="M12 14c0-3-2-5.2-5.2-5.2C6.8 11.8 8.8 14 12 14Z"/><path d="M12 12.5c0-3.2 2.2-6 6-6 0 3.2-2.8 6-6 6Z"/>',
+'ti-clock':'<circle cx="12" cy="12" r="8"/><path d="M12 8v4.2l2.8 1.8"/>',
+'ti-bucket':'<path d="M5.5 8h13l-1.4 11.2a2 2 0 0 1-2 1.8H8.9a2 2 0 0 1-2-1.8z"/><path d="M4 8a8 3 0 0 1 16 0"/>',
+'ti-waves':'<path d="M3 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 13c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
+'ti-player-play-filled':'<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
+'ti-player-stop-filled':'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>',
+'ti-progress-alert':'<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
+'ti-calculator':'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/>',
+};
+function eqIcon(key, color){
+  const p = EQ_ICONS[key] || EQ_ICONS['ti-cpu'];
+  const c = color ? ' style="color:'+color+'"' : '';
+  return '<svg class="eq-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"'+c+'>'+p+'</svg>';
+}
+
+
+(function augmentEquipmentDefs(){
+  if(typeof AR_CONTENT === 'undefined') return;
+
+  const TC = {FR:'à confirmer', EN:'to confirm', AR:'قيد التأكيد'};   // flagged unknown spec
+  const M = {
+    temp:{FR:'Température',EN:'Temperature',AR:'الحرارة'},
+    hum: {FR:'Humidité',EN:'Humidity',AR:'الرطوبة'},
+    vpd: {FR:'VPD',EN:'VPD',AR:'VPD'},
+    co2: {FR:'CO₂',EN:'CO₂',AR:'CO₂'},
+    text:{FR:'T° extérieure',EN:'Outdoor temp.',AR:'الحرارة الخارجية'},
+    ph:  {FR:'pH',EN:'pH',AR:'pH'},
+    ec:  {FR:'EC',EN:'EC',AR:'EC'},
+    niv: {FR:'Niveau eau',EN:'Water level',AR:'مستوى الماء'},
+  };
+
+  const EQ = {
+
+    /* ── CO₂ — designed, NOT yet commissioned ── */
+    'co2': {
+      status: {FR:'Système prévu — non encore actif', EN:'Planned — not yet active', AR:'مُخطط — غير مُفعّل بعد'},
+      audio:  {FR:'audio/fr/co2.mp3', EN:'audio/en/co2.mp3', AR:'audio/ar/co2.mp3'},
+      eq: {
+        pending: {FR:'Système conçu mais pas encore mis en service. Les éléments ci-dessous décrivent le fonctionnement prévu.',
+                  EN:'System designed but not yet commissioned. The items below describe the planned operation.',
+                  AR:'النظام مُصمَّم لكنه لم يُشغَّل بعد. تصف العناصر أدناه التشغيل المُخطط له.'},
+        what: [
+          {i:'ti-leaf',       FR:'Enrichit l\u2019air en CO\u2082 pour stimuler la photosynthèse.', EN:'Enriches the air with CO\u2082 to boost photosynthesis.', AR:'يُثري الهواء بـ CO\u2082 لتعزيز التمثيل الضوئي.'},
+          {i:'ti-moon',       FR:'Injection suspendue la nuit — pas de photosynthèse.', EN:'Injection paused at night — no photosynthesis.', AR:'يُوقف الحقن ليلاً — لا تمثيل ضوئي.'},
+          {i:'ti-lock',       FR:'Se coupe si la ventilation s\u2019ouvre, pour éviter les pertes.', EN:'Cuts off when ventilation opens, to avoid losses.', AR:'يتوقف عند فتح التهوية لتفادي الهدر.'},
+          {i:'ti-trending-up',FR:'Peut augmenter les rendements de 20 à 30 %.', EN:'Can raise yields by 20–30%.', AR:'قد يرفع الإنتاجية بنسبة 20–30٪.'},
+        ],
+        trigger: {
+          on:  {FR:'Journée · ventilation fermée · photosynthèse active', EN:'Day · ventilation closed · active photosynthesis', AR:'نهاراً · التهوية مغلقة · تمثيل ضوئي نشط'},
+          off: {FR:'Nuit, ventilation ouverte ou cible atteinte', EN:'Night, ventilation open or target reached', AR:'ليلاً، التهوية مفتوحة أو بلوغ الهدف'},
+        },
+        band: {title:{FR:'Concentration CO\u2082 (cible)',EN:'CO\u2082 concentration (target)',AR:'تركيز CO\u2082 (الهدف)'}, unit:'ppm', scaleMin:400, scaleMax:2000, rangeLo:800, rangeHi:1200},
+        monitor: [M.co2, M.vpd],
+        set: [
+          {i:'ti-cylinder', k:{FR:'Source',EN:'Source',AR:'المصدر'}, v:{FR:'Bouteille CO\u2082 comprimé',EN:'Compressed CO\u2082 cylinder',AR:'أسطوانة CO\u2082 مضغوط'}},
+          {i:'ti-target',   k:{FR:'Cible',EN:'Target',AR:'الهدف'}, v:'800 – 1200 ppm'},
+          {i:'ti-cpu',      k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique (prévu)',EN:'Automatic (planned)',AR:'تلقائي (مُخطط)'}},
+        ],
+      },
+    },
+
+    /* ── Brumisateur — interior T°/humidity ── */
+    'brumisateur': {
+      status: {FR:'Automatique — piloté par capteurs', EN:'Automatic — sensor-driven', AR:'تلقائي — تتحكم به المستشعرات'},
+      audio:  {FR:'audio/fr/brumisateur.mp3', EN:'audio/en/brumisateur.mp3', AR:'audio/ar/brumisateur.mp3'},
+      eq: {
+        what: [
+          {i:'ti-cloud',             FR:'Brouillard de gouttelettes < 10 µm qui s\u2019évaporent en suspension.', EN:'Fog of <10 µm droplets that evaporate in suspension.', AR:'ضباب من قطيرات < 10 ميكرومتر تتبخر معلّقة.'},
+          {i:'ti-temperature-minus', FR:'Refroidit l\u2019air par évaporation sans mouiller les cultures.', EN:'Cools the air by evaporation without wetting crops.', AR:'يبرّد الهواء بالتبخر دون ترطيب المحاصيل.'},
+          {i:'ti-droplet',           FR:'Maintient l\u2019humidité dans la plage cible en temps réel.', EN:'Holds humidity in the target range in real time.', AR:'يحافظ على الرطوبة ضمن النطاق المستهدف فورياً.'},
+          {i:'ti-cpu',               FR:'Se déclenche et se coupe automatiquement.', EN:'Switches on and off automatically.', AR:'يعمل ويتوقف تلقائياً.'},
+        ],
+        trigger: {
+          on:  {FR:'T° au-dessus du seuil ou humidité trop basse', EN:'Temp. above threshold or humidity too low', AR:'الحرارة فوق العتبة أو الرطوبة منخفضة'},
+          off: {FR:'T° et humidité dans les plages cibles', EN:'Temp. and humidity within target ranges', AR:'الحرارة والرطوبة ضمن النطاقات'},
+        },
+        band: {title:{FR:'Température ambiante',EN:'Ambient temperature',AR:'الحرارة المحيطة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:28},
+        monitor: [M.temp, M.hum],
+        set: [
+          {i:'ti-gauge',   k:{FR:'Pression',EN:'Pressure',AR:'الضغط'}, v:TC, pending:true},
+          {i:'ti-droplet', k:{FR:'Débit',EN:'Flow rate',AR:'التدفق'}, v:TC, pending:true},
+          {i:'ti-spray',   k:{FR:'Buse',EN:'Nozzle',AR:'الفوهة'}, v:{FR:'Céramique HP',EN:'High-pressure ceramic',AR:'سيراميك عالي الضغط'}},
+          {i:'ti-cpu',     k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+        ],
+      },
+    },
+
+    /* ── Système de refroidissement — interior T° ── */
+    'système de refroidissement': {
+      status: {FR:'Automatique — selon T° intérieure', EN:'Automatic — by indoor temp.', AR:'تلقائي — حسب الحرارة الداخلية'},
+      audio:  {FR:'audio/fr/refroidissement.mp3', EN:'audio/en/refroidissement.mp3', AR:'audio/ar/refroidissement.mp3'},
+      eq: {
+        what: [
+          {i:'ti-temperature', FR:'Maintient la température dans la plage optimale.', EN:'Keeps temperature in the optimal range.', AR:'يحافظ على الحرارة ضمن النطاق الأمثل.'},
+          {i:'ti-windmill',    FR:'Travaille avec la ventilation et la brumisation.', EN:'Works with ventilation and misting.', AR:'يعمل مع التهوية والترذيذ.'},
+          {i:'ti-cpu',         FR:'S\u2019active quand la T° dépasse le seuil maximal.', EN:'Activates when temp. exceeds the max threshold.', AR:'يُفعَّل عند تجاوز الحرارة الحد الأقصى.'},
+          {i:'ti-leaf',        FR:'Protège les cultures du stress thermique.', EN:'Protects crops from heat stress.', AR:'يحمي المحاصيل من الإجهاد الحراري.'},
+        ],
+        trigger: {
+          on:  {FR:'T° intérieure au-dessus du seuil maximal', EN:'Indoor temp. above the max threshold', AR:'الحرارة الداخلية فوق الحد الأقصى'},
+          off: {FR:'Température dans la plage optimale', EN:'Temperature within the optimal range', AR:'الحرارة ضمن النطاق الأمثل'},
+        },
+        band: {title:{FR:'Température serre',EN:'Greenhouse temperature',AR:'حرارة الدفيئة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
+        monitor: [M.temp],
+        set: [
+          {i:'ti-settings',         k:{FR:'Type',EN:'Type',AR:'النوع'}, v:TC, pending:true},
+          {i:'ti-bolt',             k:{FR:'Puissance',EN:'Power',AR:'القدرة'}, v:TC, pending:true},
+          {i:'ti-temperature-plus', k:{FR:'Seuil',EN:'Threshold',AR:'العتبة'}, v:{FR:'T° > max',EN:'Temp > max',AR:'حرارة > الحد الأقصى'}},
+          {i:'ti-cpu',              k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+        ],
+      },
+    },
+
+    /* ── Ventilation mécanique — interior T°/humidity ── */
+    'ventilation': {
+      status: {FR:'Automatique — selon T° intérieure', EN:'Automatic — by indoor temp.', AR:'تلقائي — حسب الحرارة الداخلية'},
+      audio:  {FR:'audio/fr/ventilation.mp3', EN:'audio/en/ventilation.mp3', AR:'audio/ar/ventilation.mp3'},
+      eq: {
+        what: [
+          {i:'ti-arrow-up-right', FR:'Évacue la chaleur et l\u2019excès d\u2019humidité.', EN:'Removes heat and excess humidity.', AR:'يطرد الحرارة والرطوبة الزائدة.'},
+          {i:'ti-leaf',           FR:'Maintient le CO\u2082 à un niveau optimal.', EN:'Keeps CO\u2082 at an optimal level.', AR:'يحافظ على CO\u2082 عند مستوى أمثل.'},
+          {i:'ti-refresh',        FR:'Renouvelle l\u2019air pour éviter condensation et moisissures.', EN:'Renews the air to avoid condensation and mould.', AR:'يجدد الهواء لتفادي التكاثف والعفن.'},
+          {i:'ti-cpu',            FR:'Piloté par thermostat et hygrostat.', EN:'Driven by thermostat and hygrostat.', AR:'يُدار بمنظّم حرارة ورطوبة.'},
+        ],
+        trigger: {
+          on:  {FR:'T° proche du seuil max ou humidité excessive', EN:'Temp. near max threshold or excessive humidity', AR:'الحرارة قرب الحد الأقصى أو رطوبة مفرطة'},
+          off: {FR:'Conditions climatiques dans les plages', EN:'Climate conditions within ranges', AR:'الظروف المناخية ضمن النطاقات'},
+        },
+        band: {title:{FR:'Température ambiante',EN:'Ambient temperature',AR:'الحرارة المحيطة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
+        monitor: [M.temp, M.hum, M.vpd],
+        set: [
+          {i:'ti-windmill', k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Extracteur axial',EN:'Axial extractor',AR:'مروحة محورية'}},
+          {i:'ti-wind',     k:{FR:'Débit',EN:'Flow rate',AR:'التدفق'}, v:TC, pending:true},
+          {i:'ti-cpu',      k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Thermostat + hygrostat',EN:'Thermostat + hygrostat',AR:'منظّم حرارة + رطوبة'}},
+          {i:'ti-gauge',    k:{FR:'Vitesse',EN:'Speed',AR:'السرعة'}, v:TC, pending:true},
+        ],
+      },
+    },
+
+    /* ── Rideaux automatiques — exterior T°, NOT yet integrated ── */
+    'rideaux auto': {
+      status: {FR:'En cours d\u2019intégration', EN:'Integration in progress', AR:'قيد الدمج'},
+      audio:  {FR:'audio/fr/rideaux.mp3', EN:'audio/en/rideaux.mp3', AR:'audio/ar/rideaux.mp3'},
+      eq: {
+        pending: {FR:'Pilotage automatique pas encore intégré. Logique prévue, basée sur la température extérieure.',
+                  EN:'Automatic control not yet integrated. Planned logic, based on outdoor temperature.',
+                  AR:'التحكم الآلي غير مُدمج بعد. منطق مُخطط بناءً على الحرارة الخارجية.'},
+        what: [
+          {i:'ti-moon',        FR:'Réduit les pertes de chaleur la nuit sous la toiture.', EN:'Cuts night-time heat loss under the roof.', AR:'يقلل فقد الحرارة ليلاً تحت السقف.'},
+          {i:'ti-sun',         FR:'Protège de la surchauffe estivale par ombrage.', EN:'Protects from summer overheating via shading.', AR:'يحمي من الحرارة المفرطة صيفاً عبر التظليل.'},
+          {i:'ti-temperature', FR:'Se déploie uniquement dans la plage de T° extérieure.', EN:'Deploys only within the outdoor temp. range.', AR:'يُنشر فقط ضمن نطاق الحرارة الخارجية.'},
+          {i:'ti-cpu',         FR:'Piloté par la station météo extérieure (prévu).', EN:'Driven by the outdoor weather station (planned).', AR:'يُدار بمحطة الطقس الخارجية (مُخطط).'},
+        ],
+        trigger: {
+          onLabel:  {FR:'DÉPLOIEMENT',EN:'DEPLOY',AR:'النشر'},
+          offLabel: {FR:'RÉTRACTION',EN:'RETRACT',AR:'الطي'},
+          on:  {FR:'T° extérieure entre 10 °C et 32 °C', EN:'Outdoor temp. between 10°C and 32°C', AR:'الحرارة الخارجية بين 10 و32 °م'},
+          off: {FR:'T° extérieure hors plage ou vent fort', EN:'Outdoor temp. out of range or strong wind', AR:'الحرارة الخارجية خارج النطاق أو رياح قوية'},
+        },
+        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, rangeLo:10, rangeHi:32},
+        monitor: [M.text],
+        set: [
+          {i:'ti-stack', k:{FR:'Matériau',EN:'Material',AR:'المادة'}, v:TC, pending:true},
+          {i:'ti-sun',   k:{FR:'Transmission',EN:'Transmission',AR:'النفاذية'}, v:TC, pending:true},
+          {i:'ti-cpu',   k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique (prévu)',EN:'Automatic (planned)',AR:'تلقائي (مُخطط)'}},
+        ],
+      },
+    },
+
+    /* ── Fenêtres automatiques — CORRECTED: exterior T° ONLY ── */
+    'fenetre auto': {
+      status: {FR:'Automatique — selon T° extérieure', EN:'Automatic — by outdoor temp.', AR:'تلقائي — حسب الحرارة الخارجية'},
+      audio:  {FR:'audio/fr/fenetres.mp3', EN:'audio/en/fenetres.mp3', AR:'audio/ar/fenetres.mp3'},
+      eq: {
+        what: [
+          {i:'ti-arrow-up',   FR:'Ventilation naturelle par effet cheminée (châssis zénithaux).', EN:'Natural stack-effect ventilation (roof vents).', AR:'تهوية طبيعية بتأثير المدخنة (فتحات سقفية).'},
+          {i:'ti-temperature',FR:'S\u2019ouvrent et se ferment selon la T° extérieure — pilote actuel de la serre.', EN:'Open/close by outdoor temperature — the greenhouse\u2019s current driver.', AR:'تُفتح وتُغلق حسب الحرارة الخارجية — المتحكم الحالي للدفيئة.'},
+          {i:'ti-volume-off', FR:'Extraction passive et silencieuse.', EN:'Passive, silent extraction.', AR:'استخراج سلبي صامت.'},
+          {i:'ti-shield',     FR:'Se referment si la T° extérieure devient défavorable.', EN:'Close when outdoor temp. becomes unfavourable.', AR:'تُغلق عندما تصبح الحرارة الخارجية غير مناسبة.'},
+        ],
+        trigger: {
+          onLabel:  {FR:'OUVERTURE',EN:'OPENING',AR:'الفتح'},
+          offLabel: {FR:'FERMETURE',EN:'CLOSING',AR:'الإغلاق'},
+          on:  {FR:'T° extérieure dans la plage favorable à l\u2019aération', EN:'Outdoor temp. in the range favourable to venting', AR:'الحرارة الخارجية ضمن النطاق المناسب للتهوية'},
+          off: {FR:'T° extérieure trop basse ou défavorable', EN:'Outdoor temp. too low or unfavourable', AR:'الحرارة الخارجية منخفضة جداً أو غير مناسبة'},
+        },
+        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, pending:true},
+        monitor: [M.text],
+        set: [
+          {i:'ti-window',          k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Châssis zénithaux',EN:'Roof vents',AR:'فتحات سقفية'}},
+          {i:'ti-temperature',     k:{FR:'Déclenchement',EN:'Trigger',AR:'التشغيل'}, v:{FR:'T° extérieure',EN:'Outdoor temp.',AR:'الحرارة الخارجية'}},
+          {i:'ti-arrows-maximize', k:{FR:'Plage',EN:'Range',AR:'النطاق'}, v:TC, pending:true},
+          {i:'ti-cpu',             k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+        ],
+      },
+    },
+
+    /* ── Station de fertigation — calculator placeholder (file coming) ── */
+    'fertigation': {
+      status: {FR:'Automatique — pH & EC régulés', EN:'Automatic — pH & EC regulated', AR:'تلقائي — ضبط pH وEC'},
+      audio:  {FR:'audio/fr/fertigation.mp3', EN:'audio/en/fertigation.mp3', AR:'audio/ar/fertigation.mp3'},
+      eq: {
+        what: [
+          {i:'ti-flask',       FR:'Prépare et distribue la solution nutritive.', EN:'Prepares and distributes the nutrient solution.', AR:'يحضّر ويوزّع المحلول الغذائي.'},
+          {i:'ti-adjustments', FR:'Ajuste pH et EC selon les capteurs.', EN:'Adjusts pH and EC from the sensors.', AR:'يضبط pH وEC حسب المستشعرات.'},
+          {i:'ti-plant',       FR:'Adapte les nutriments au stade de croissance.', EN:'Adapts nutrients to the growth stage.', AR:'يكيّف العناصر مع مرحلة النمو.'},
+          {i:'ti-clock',       FR:'Irrigation programmée par cycles, 24 h/24.', EN:'Scheduled irrigation in cycles, 24/7.', AR:'ري مبرمج بدورات على مدار الساعة.'},
+        ],
+        bands: [
+          {title:{FR:'pH cible',EN:'Target pH',AR:'pH المستهدف'}, unit:'', scaleMin:4, scaleMax:8, rangeLo:5.5, rangeHi:6.5},
+          {title:{FR:'EC cible',EN:'Target EC',AR:'EC المستهدف'}, unit:'mS/cm', scaleMin:0, scaleMax:3, rangeLo:1.0, rangeHi:2.2},
+        ],
+        monitor: [M.ph, M.ec, M.niv],
+        calc: true,
+        set: [
+          {i:'ti-bucket',  k:{FR:'Réservoir',EN:'Tank',AR:'الخزان'}, v:'500 L'},
+          {i:'ti-droplet', k:{FR:'pH cible',EN:'Target pH',AR:'pH المستهدف'}, v:'5.5 – 6.5'},
+          {i:'ti-bolt',    k:{FR:'EC cible',EN:'Target EC',AR:'EC المستهدف'}, v:'1.0 – 2.2 mS/cm'},
+          {i:'ti-cpu',     k:{FR:'Régulation',EN:'Regulation',AR:'التنظيم'}, v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+        ],
+      },
+    },
+  };
+
+  Object.keys(EQ).forEach(k => {
+    const d = AR_CONTENT[k];
+    if(!d){ console.warn('[equipment] def missing:', k); return; }
+    d.type = 'equipment';
+    d.tabs = ['Info'];
+    d.stateKey = null;
+    d.eq = EQ[k].eq;
+    d.audio = EQ[k].audio;
+    d.statusText    = EQ[k].status.FR;
+    d.statusText_en = EQ[k].status.EN;
+    d.statusText_ar = EQ[k].status.AR;
+  });
+})();
+
+/* ── Equipment card renderer (descriptive · glassmorphism) ── */
+function renderEquipmentCard(el, def){
+  const lang = window.currentLang || 'FR';
+  const e = def.eq;
+  if(!e){ el.innerHTML = ''; return; }
+  const px = o => eqPx(o, lang);
+  const UI = {
+    secWhat:    {FR:'CE QUE FAIT CE SYSTÈME',EN:'WHAT THIS SYSTEM DOES',AR:'ما يقوم به هذا النظام'},
+    secTrigger: {FR:'CONDITIONS DE DÉCLENCHEMENT',EN:'TRIGGER CONDITIONS',AR:'شروط التشغيل'},
+    secMonitor: {FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'},
+    secSet:     {FR:'RÉGLAGES',EN:'SETTINGS',AR:'الإعدادات'},
+    secCalc:    {FR:'CALCULATEUR DE SOLUTION',EN:'NUTRIENT SOLUTION CALCULATOR',AR:'حاسبة المحلول الغذائي'},
+    secAudio:   {FR:'PRÉSENTATION AUDIO',EN:'AUDIO GUIDE',AR:'الشرح الصوتي'},
+    onLabel:    {FR:'ACTIVATION',EN:'ACTIVATION',AR:'تشغيل'},
+    offLabel:   {FR:'ARRÊT',EN:'STOP',AR:'إيقاف'},
+    monitorNote:{FR:'Suivi via les capteurs IoT — valeurs en direct dans la carte Capteurs.',EN:'Monitored via the IoT sensors — live values in the Capteurs card.',AR:'تتم المراقبة عبر مستشعرات IoT — القيم المباشرة في بطاقة المستشعرات.'},
+    calcTitle:  {FR:'Calculateur de solution nutritive',EN:'Nutrient solution calculator',AR:'حاسبة المحلول الغذائي'},
+    calcSub:    {FR:'Module à intégrer — basé sur la calculatrice du dashboard.',EN:'Module to integrate — based on the dashboard calculator.',AR:'وحدة قيد الدمج — مبنية على حاسبة لوحة التحكم.'},
+    audioPlay:  {FR:'Écouter la présentation',EN:'Listen to the presentation',AR:'استمع إلى الشرح'},
+    audioPause: {FR:'Pause',EN:'Pause',AR:'إيقاف مؤقت'},
+    audioLang:  {FR:'Narration en français',EN:'English narration',AR:'الشرح بالعربية'},
+    audioSub:   {FR:'Présentation du système',EN:'System presentation',AR:'عرض النظام'},
+    audioNA:    {FR:'Audio bientôt disponible',EN:'Audio available soon',AR:'الصوت متاح قريباً'},
+  };
+
+  el.classList.add('eq-card');
+  let h = '';
+
+  if(e.pending){
+    h += `<div class="eq-pending">${eqIcon('ti-progress-alert')}<div class="eq-pending-txt">${px(e.pending)}</div></div>`;
+  }
+
+  if(e.what && e.what.length){
+    h += `<div class="ar-section-title eq-sec">${px(UI.secWhat)}</div><div class="eq-what-grid">`
+      + e.what.map((w,idx) => `<div class="eq-what-card" style="animation-delay:${idx*60}ms"><div class="eq-what-icon">${eqIcon(w.i)}</div><div class="eq-what-txt">${px(w)}</div></div>`).join('')
+      + `</div>`;
+  }
+
+  if(e.trigger){
+    const onL  = px(e.trigger.onLabel  || UI.onLabel);
+    const offL = px(e.trigger.offLabel || UI.offLabel);
+    h += `<div class="ar-section-title eq-sec">${px(UI.secTrigger)}</div>`
+      + `<div class="eq-trigger">`
+      +   `<div class="eq-trigger-col on"><div class="eq-trigger-head">${eqIcon('ti-player-play-filled')}${onL}</div><div class="eq-trigger-txt">${px(e.trigger.on)}</div></div>`
+      +   `<div class="eq-trigger-col"><div class="eq-trigger-head off">${eqIcon('ti-player-stop-filled')}${offL}</div><div class="eq-trigger-txt">${px(e.trigger.off)}</div></div>`
+      + `</div>`;
+  }
+
+  const bands = e.bands || (e.band ? [e.band] : []);
+  if(bands.length){
+    h += `<div class="ar-section-title eq-sec">${px(bands[0].title)}</div>`;
+    bands.forEach((b, idx) => { if(idx) h += `<div class="ar-section-title eq-sec">${px(b.title)}</div>`; h += eqBandHTML(b, lang); });
+  }
+
+  if(e.monitor && e.monitor.length){
+    h += `<div class="ar-section-title eq-sec">${px(UI.secMonitor)}</div>`
+      + `<div class="eq-monitor"><div class="eq-monitor-chips">`
+      + e.monitor.map(m => `<span class="eq-chip"><span class="eq-chip-dot"></span>${px(m)}</span>`).join('')
+      + `</div><div class="eq-monitor-note">${px(UI.monitorNote)}</div></div>`;
+  }
+
+  if(e.set && e.set.length){
+    h += `<div class="ar-section-title eq-sec">${px(UI.secSet)}</div><div class="eq-set">`
+      + e.set.map(s => {
+          const val = (typeof s.v === 'string') ? s.v : px(s.v);
+          const cls = s.pending ? 'eq-set-val pending' : 'eq-set-val';
+          return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(s.i)}</span><span class="eq-set-label">${px(s.k)}</span><span class="${cls}">${val}</span></div>`;
+        }).join('')
+      + `</div>`;
+  }
+
+  if(e.calc){
+    h += `<div class="ar-section-title eq-sec">${px(UI.secCalc)}</div>`
+      + `<div class="eq-calc"><div class="eq-calc-icon">${eqIcon('ti-calculator')}</div>`
+      + `<div class="eq-calc-body"><div class="eq-calc-title">${px(UI.calcTitle)}</div><div class="eq-calc-sub">${px(UI.calcSub)}</div></div></div>`;
+  }
+
+  /* audio player — reuses the sns-audio component */
+  const audioSrc = def.audio && def.audio[lang];
+  const hasAudio = !!audioSrc;
+  const isPlaying = window._arAudioEl && !window._arAudioEl.paused
+    && window._arAudioEl._arKey === window.activeAR && window._arAudioEl._arLang === lang;
+  h += `<div class="ar-section-title eq-sec" style="margin-top:18px">${px(UI.secAudio)}</div>`
+    + `<div class="sns-audio-wrap"><div class="sns-audio-lang">${px(UI.audioLang)}</div>`
+    + `<button class="sns-audio-btn${hasAudio?'':' sns-audio-disabled'}" id="sns-audio-btn" onclick="eqToggleAudio()" ${hasAudio?'':'disabled'}>`
+    +   `<div class="sns-audio-play-circle"><span class="sns-audio-icon" id="sns-audio-icon">${isPlaying?'⏸':'▶'}</span></div>`
+    +   `<div class="sns-audio-text"><span class="sns-audio-main" id="sns-audio-label">${isPlaying?px(UI.audioPause):px(UI.audioPlay)}</span><span class="sns-audio-sub">${px(UI.audioSub)}</span></div>`
+    + `</button>`
+    + (hasAudio ? '' : `<span class="sns-audio-na">${px(UI.audioNA)}</span>`)
+    + `</div>`;
+
+  el.innerHTML = h;
+}
+
+/* ── Spec range band (config seuil OR range — never live) ── */
+function eqBandHTML(b, lang){
+  const px = o => eqPx(o, lang);
+  const span = (b.scaleMax - b.scaleMin) || 1;
+  const pc = v => Math.min(100, Math.max(0, ((v - b.scaleMin) / span) * 100));
+  let label = '', marker = '';
+  if(b.pending){
+    label = `<span>${px({FR:'Pilotée par la T° extérieure',EN:'Driven by outdoor temp.',AR:'حسب الحرارة الخارجية'})}</span><b>${px({FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'})}</b>`;
+    marker = `<div class="eq-band-fill" style="left:0;width:100%;opacity:.22"></div>`;
+  } else if(b.rangeLo != null){
+    const l = pc(b.rangeLo), w = pc(b.rangeHi) - l;
+    label = `<span>${px({FR:'Plage cible',EN:'Target range',AR:'النطاق المستهدف'})}</span><b>${b.rangeLo} – ${b.rangeHi}${b.unit?' '+b.unit:''}</b>`;
+    marker = `<div class="eq-band-fill" style="left:${l}%;width:${w}%"></div>`;
+  } else if(b.seuil != null){
+    label = `<span>${px({FR:'Seuil d\u2019activation',EN:'Activation threshold',AR:'عتبة التشغيل'})}</span><b>${b.seuil} ${b.unit}</b>`;
+    marker = `<div class="eq-band-fill" style="left:0;width:${pc(b.seuil)}%;opacity:.28"></div><div class="eq-band-seuil" style="left:${pc(b.seuil)}%"></div>`;
+  }
+  return `<div class="eq-band"><div class="eq-band-label">${label}</div><div class="eq-band-track">${marker}</div>`
+    + `<div class="eq-band-ticks"><span>${b.scaleMin}${b.unit?' '+b.unit:''}</span><span>${b.scaleMax}${b.unit?' '+b.unit:''}</span></div></div>`;
+}
+
+/* ── Capteurs live-data grid (the ONLY card with live IoT) ── */
+function eqSensorsLiveHTML(lang){
+  const px = o => eqPx(o, lang);
+  const iot = window.iotData;
+  const head = `<div class="ar-section-title eq-sec">${px({FR:'DONNÉES EN DIRECT',EN:'LIVE DATA',AR:'بيانات مباشرة'})}</div>`;
+  if(!iot){ return head + `<div class="sns-live-loading">${px({FR:'Interrogation des capteurs…',EN:'Querying sensors…',AR:'استجواب المستشعرات…'})}</div>`; }
+  const env = iot.env || {}, irr = iot.irr || {};
+  const thr = k => (typeof getThresh === 'function') ? getThresh(k) : {};
+  const fmt = v => v != null ? Number(v).toFixed(1) : '—';
+  const LBL = {
+    temperature:{FR:'Température',EN:'Temperature',AR:'الحرارة'},
+    humidite:   {FR:'Humidité',EN:'Humidity',AR:'الرطوبة'},
+    vpd:        {FR:'VPD',EN:'VPD',AR:'VPD'},
+    ph:         {FR:'pH solution',EN:'Solution pH',AR:'pH المحلول'},
+    ec:         {FR:'Conductivité',EN:'Conductivity',AR:'التوصيل'},
+    niveau_eau: {FR:'Niveau eau',EN:'Water level',AR:'مستوى الماء'},
+  };
+  function cell(key, val, unit, t){
+    const lo = t && t.valeur_min, hi = t && t.valeur_max;
+    let st = 'na';
+    if(val != null && lo != null && hi != null) st = (val >= lo && val <= hi) ? 'ok' : 'warn';
+    else if(val != null && lo == null) st = 'ok';
+    const range = (lo != null && hi != null) ? `${Number(lo).toFixed(1)}–${Number(hi).toFixed(1)}` : '';
+    return `<div class="sns-live-cell"><div class="sns-live-k">${px(LBL[key])}</div>`
+      + `<div class="sns-live-vrow"><span class="sns-live-v">${fmt(val)}</span><span class="sns-live-u">${unit}</span></div>`
+      + `<div class="sns-live-foot"><span class="sns-live-status-dot ${st}"></span><span class="sns-live-range">${range}</span></div></div>`;
+  }
+  const cells = [
+    cell('temperature', env.temperature, '°C',    thr('temperature')),
+    cell('humidite',    env.humidite,    '%',     thr('humidite')),
+    cell('vpd',         env.vpd,         'kPa',   null),
+    cell('ph',          irr.ph,          '',      thr('ph')),
+    cell('ec',          irr.ec,          'mS/cm', thr('ec')),
+    cell('niveau_eau',  irr.niveau_eau,  '%',     null),
+  ].join('');
+  const refresh = `onclick="(typeof fetchIoT!=='undefined')&&fetchIoT().then(()=>renderARTab(0,getARDef(window.activeAR)))"`;
+  return head
+    + `<div class="sns-live-head"><span class="sns-live-dot"></span><span class="sns-live-label">${px({FR:'EN DIRECT',EN:'LIVE',AR:'مباشر'})}</span>`
+    + `<span class="sns-live-time" ${refresh}>⟳ ${px({FR:'actualiser',EN:'refresh',AR:'تحديث'})}</span></div>`
+    + `<div class="sns-live-grid">${cells}</div>`;
+}
+
+/* ── Audio toggle for equipment cards (language-linked) ── */
+function eqToggleAudio(){
+  const def = getARDef(window.activeAR);
+  if(!def) return;
+  const lang = window.currentLang || 'FR';
+  const src  = def.audio && def.audio[lang];
+  const icon = document.getElementById('sns-audio-icon');
+  const lbl  = document.getElementById('sns-audio-label');
+  const L_pause = {FR:'Pause', EN:'Pause', AR:'إيقاف مؤقت'};
+  const L_play  = {FR:'Écouter la présentation', EN:'Listen to the presentation', AR:'استمع إلى الشرح'};
+
+  if(window._arAudioEl && !window._arAudioEl.paused
+     && window._arAudioEl._arKey === window.activeAR
+     && window._arAudioEl._arLang === lang){
+    window._arAudioEl.pause();
+    if(icon) icon.textContent = '▶';
+    if(lbl)  lbl.textContent = L_play[lang] || L_play.FR;
+    return;
+  }
+  if(window._arAudioEl){ window._arAudioEl.pause(); window._arAudioEl.currentTime = 0; }
+  if(!src) return;
+  const audio = new Audio(src);
+  audio._arKey  = window.activeAR;
+  audio._arLang = lang;
+  window._arAudioEl = audio;
+  audio.play().then(()=>{
+    if(icon) icon.textContent = '⏸';
+    if(lbl)  lbl.textContent = L_pause[lang] || L_pause.FR;
+  }).catch(()=>{ if(icon) icon.textContent = '▶'; });
+  audio.addEventListener('ended', ()=>{
+    if(icon) icon.textContent = '▶';
+    if(lbl)  lbl.textContent = L_play[lang] || L_play.FR;
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PASS 2a — Living-organism cards (crops + plant pathology)
+   · One reusable multilingual renderer: renderInfoCard(el, def)
+   · Driven by def.card = { pending?, sections:[{title,kind,items,note}], }
+     kinds: 'facts' | 'grid' | 'bullets' | 'chips'
+   · Reuses the Pass-1 glass components (eq-*) + inline SVG icons.
+   · Augments existing defs in place — full FR/EN/AR, no placeholders.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* extra inline icons (added to the existing EQ_ICONS object) */
+Object.assign(EQ_ICONS, {
+  'ti-point':'<circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>',
+  'ti-map-pin':'<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  'ti-flag':'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+  'ti-virus':'<circle cx="12" cy="12" r="5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2 2M16.4 16.4l2 2M18.4 5.6l-2 2M5.6 18.4l2-2"/><circle cx="12" cy="3" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="21" r=".9" fill="currentColor" stroke="none"/>',
+  'ti-bug':'<rect x="8" y="9" width="8" height="9" rx="4"/><path d="M8 12H4M20 12h-4M8 16l-3 2M16 16l3 2M8 10 5 8M16 10l3-2M12 5v4"/><path d="M10 6l2-2 2 2"/>',
+  'ti-microscope':'<path d="M6 20h11"/><path d="M5 23h14"/><path d="M10 20V9"/><path d="M10 9a3.5 3.5 0 1 1 4 3"/><path d="M8 9h4"/>',
+  'ti-scissors':'<circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 8l12 9M20 7 8 16"/>',
+  'ti-flower':'<circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.3"/><circle cx="12" cy="17.5" r="2.3"/><circle cx="6.5" cy="12" r="2.3"/><circle cx="17.5" cy="12" r="2.3"/>',
+  'ti-seedling':'<path d="M12 20v-8"/><path d="M12 12c0-3 2.5-5 5.5-5 0 3-2.5 5-5.5 5z"/><path d="M12 13c0-2.5-2-4.5-5-4.5 0 2.5 2 4.5 5 4.5z"/>',
+  'ti-test-pipe':'<path d="M14 3 7 17a3 3 0 0 0 5.6 2L19 5"/><path d="M9 13h7"/><path d="M13 3h5"/>',
+  'ti-grain':'<circle cx="12" cy="6" r="2"/><circle cx="9" cy="11" r="2"/><circle cx="15" cy="11" r="2"/><circle cx="12" cy="16" r="2"/>',
+});
+
+/* ── reusable info-card renderer ── */
+function renderInfoCard(el, def){
+  const lang = window.currentLang || 'FR';
+  const c = def.card;
+  if(!c){ el.innerHTML = ''; return; }
+  const px = o => eqPx(o, lang);
+  const UI = {
+    secAudio:  {FR:'PRÉSENTATION AUDIO',EN:'AUDIO GUIDE',AR:'الشرح الصوتي'},
+    audioPlay: {FR:'Écouter la présentation',EN:'Listen to the presentation',AR:'استمع إلى الشرح'},
+    audioPause:{FR:'Pause',EN:'Pause',AR:'إيقاف مؤقت'},
+    audioLang: {FR:'Narration en français',EN:'English narration',AR:'الشرح بالعربية'},
+    audioSub:  {FR:'Présentation de la fiche',EN:'Card presentation',AR:'عرض البطاقة'},
+    audioNA:   {FR:'Audio bientôt disponible',EN:'Audio available soon',AR:'الصوت متاح قريباً'},
+  };
+  el.classList.add('eq-card');
+  let h = '';
+
+  if(c.pending){
+    h += `<div class="eq-pending">${eqIcon('ti-progress-alert')}<div class="eq-pending-txt">${px(c.pending)}</div></div>`;
+  }
+
+  (c.sections || []).forEach(sec => {
+    h += `<div class="ar-section-title eq-sec">${px(sec.title)}</div>`;
+    if(sec.kind === 'facts'){
+      h += `<div class="eq-set">` + sec.items.map(it => {
+        const val = (typeof it.v === 'string') ? it.v : px(it.v);
+        const cls = it.flag ? 'eq-set-val pending' : 'eq-set-val';
+        return `<div class="eq-set-row"><span class="eq-set-icon">${eqIcon(it.i || 'ti-point')}</span><span class="eq-set-label">${px(it.k)}</span><span class="${cls}">${val}</span></div>`;
+      }).join('') + `</div>`;
+    } else if(sec.kind === 'grid'){
+      h += `<div class="eq-what-grid">` + sec.items.map((it, idx) =>
+        `<div class="eq-what-card" style="animation-delay:${idx*60}ms"><div class="eq-what-icon">${eqIcon(it.i || 'ti-point')}</div><div class="eq-what-txt">${px(it)}</div></div>`
+      ).join('') + `</div>`;
+    } else if(sec.kind === 'bullets'){
+      h += `<ul class="info-bullets">` + sec.items.map(it => `<li>${px(it)}</li>`).join('') + `</ul>`;
+    } else if(sec.kind === 'chips'){
+      h += `<div class="eq-monitor"><div class="eq-monitor-chips">` +
+        sec.items.map(it => `<span class="eq-chip"><span class="eq-chip-dot"></span>${px(it)}</span>`).join('') +
+        `</div>` + (sec.note ? `<div class="eq-monitor-note">${px(sec.note)}</div>` : '') + `</div>`;
+    }
+  });
+
+  /* audio player — reuses the sns-audio component */
+  const audioSrc = def.audio && def.audio[lang];
+  const hasAudio = !!audioSrc;
+  const isPlaying = window._arAudioEl && !window._arAudioEl.paused
+    && window._arAudioEl._arKey === window.activeAR && window._arAudioEl._arLang === lang;
+  h += `<div class="ar-section-title eq-sec" style="margin-top:18px">${px(UI.secAudio)}</div>`
+    + `<div class="sns-audio-wrap"><div class="sns-audio-lang">${px(UI.audioLang)}</div>`
+    + `<button class="sns-audio-btn${hasAudio?'':' sns-audio-disabled'}" id="sns-audio-btn" onclick="eqToggleAudio()" ${hasAudio?'':'disabled'}>`
+    +   `<div class="sns-audio-play-circle"><span class="sns-audio-icon" id="sns-audio-icon">${isPlaying?'⏸':'▶'}</span></div>`
+    +   `<div class="sns-audio-text"><span class="sns-audio-main" id="sns-audio-label">${isPlaying?px(UI.audioPause):px(UI.audioPlay)}</span><span class="sns-audio-sub">${px(UI.audioSub)}</span></div>`
+    + `</button>`
+    + (hasAudio ? '' : `<span class="sns-audio-na">${px(UI.audioNA)}</span>`)
+    + `</div>`;
+
+  el.innerHTML = h;
+}
+
+/* ── Pass 2a content + augmentation ── */
+(function augmentInfoDefs(){
+  if(typeof AR_CONTENT === 'undefined') return;
+
+  const addCat = (key, fr, en, ar) => {
+    if(typeof T === 'undefined') return;
+    if(T.FR && T.FR.catMap) T.FR.catMap[key] = fr;
+    if(T.EN && T.EN.catMap) T.EN.catMap[key] = en;
+    if(T.AR && T.AR.catMap) T.AR.catMap[key] = ar;
+  };
+  const CAT_CROP = ['CULTURE','CROP','محصول'];
+  const CAT_PATH = ['PHYTOPATHOLOGIE','PLANT PATHOLOGY','أمراض النبات'];
+
+  // localized labels reused across cards
+  const Lk = {
+    espece:{FR:'Espèce',EN:'Species',AR:'النوع'},
+    famille:{FR:'Famille',EN:'Family',AR:'الفصيلة'},
+    systeme:{FR:'Système',EN:'System',AR:'النظام'},
+    origine:{FR:'Origine',EN:'Origin',AR:'الأصل'},
+    statut:{FR:'Statut',EN:'Status',AR:'الحالة'},
+    temp:{FR:'Température',EN:'Temperature',AR:'الحرارة'},
+    tempJ:{FR:'Température jour',EN:'Day temperature',AR:'حرارة النهار'},
+    tempN:{FR:'Température nuit',EN:'Night temperature',AR:'حرارة الليل'},
+    hum:{FR:'Humidité',EN:'Humidity',AR:'الرطوبة'},
+    ph:{FR:'pH solution',EN:'Solution pH',AR:'pH المحلول'},
+    ec:{FR:'EC solution',EN:'Solution EC',AR:'EC المحلول'},
+    photo:{FR:'Photopériode',EN:'Photoperiod',AR:'الفترة الضوئية'},
+    light:{FR:'Lumière',EN:'Light',AR:'الإضاءة'},
+    sol:{FR:'Sol',EN:'Soil',AR:'التربة'},
+    isolement:{FR:'Isolement',EN:'Isolation',AR:'العزل'},
+    traitement:{FR:'Traitement',EN:'Treatment',AR:'العلاج'},
+    suivi:{FR:'Suivi',EN:'Monitoring',AR:'المتابعة'},
+    etude:{FR:'Type d\u2019étude',EN:'Study type',AR:'نوع الدراسة'},
+    methode:{FR:'Méthode',EN:'Method',AR:'الطريقة'},
+    application:{FR:'Application',EN:'Application',AR:'التطبيق'},
+  };
+  const monitorNote = {FR:'Suivi via les capteurs IoT — valeurs en direct dans la carte Capteurs.',EN:'Monitored via the IoT sensors — live values in the Capteurs card.',AR:'تتم المراقبة عبر مستشعرات IoT — القيم المباشرة في بطاقة المستشعرات.'};
+  const Mt = {FR:'Température',EN:'Temperature',AR:'الحرارة'}, Mh = {FR:'Humidité',EN:'Humidity',AR:'الرطوبة'}, Mph={FR:'pH',EN:'pH',AR:'pH'}, Mec={FR:'EC',EN:'EC',AR:'EC'};
+
+  const secId   = {FR:'IDENTIFICATION',EN:'IDENTIFICATION',AR:'التعريف'};
+  const secOpt  = {FR:'CONDITIONS OPTIMALES',EN:'OPTIMAL CONDITIONS',AR:'الظروف المثلى'};
+  const secCult = {FR:'CULTURE',EN:'CULTIVATION',AR:'الزراعة'};
+  const secMon  = {FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'};
+  const secDis  = {FR:'MALADIES ÉTUDIÉES',EN:'DISEASES STUDIED',AR:'الأمراض المدروسة'};
+  const secProto= {FR:'PROTOCOLE',EN:'PROTOCOL',AR:'البروتوكول'};
+  const secObj  = {FR:'OBJECTIFS DE RECHERCHE',EN:'RESEARCH OBJECTIVES',AR:'أهداف البحث'};
+
+  const INFO = {
+
+    /* ───── CROPS ───── */
+    'fraise': {
+      status:['Culture active','Active crop','محصول نشط'],
+      audio:['audio/fr/fraise.mp3','audio/en/fraise.mp3','audio/ar/fraise.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece, v:'Fragaria × ananassa'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Rosacées',EN:'Rosaceae',AR:'الوردية'}},
+          {i:'ti-droplet',  k:Lk.systeme, v:{FR:'Hydroponie hors-sol',EN:'Soilless hydroponics',AR:'زراعة مائية بدون تربة'}},
+        ]},
+        {title:secOpt, kind:'facts', items:[
+          {i:'ti-temperature', k:Lk.temp,  v:'18 – 22 °C'},
+          {i:'ti-droplet',     k:Lk.hum,   v:'60 – 75 %'},
+          {i:'ti-flask',       k:Lk.ph,    v:'5.8 – 6.2'},
+          {i:'ti-bolt',        k:Lk.ec,    v:'1.0 – 1.4 mS/cm'},
+          {i:'ti-sun',         k:Lk.photo, v:'12 – 16 h'},
+        ]},
+        {title:secCult, kind:'grid', items:[
+          {i:'ti-droplet', FR:'Cultivée en gouttières surélevées, solution nutritive recyclée.', EN:'Grown in raised gutters with recirculated nutrient solution.', AR:'تُزرع في مزاريب مرتفعة مع إعادة تدوير المحلول الغذائي.'},
+          {i:'ti-grain',   FR:'Substrat inerte (fibre de coco ou perlite) pour le drainage.', EN:'Inert substrate (coco coir or perlite) for drainage.', AR:'ركيزة خاملة (ألياف جوز الهند أو البرليت) للتصريف.'},
+          {i:'ti-clock',   FR:'Irrigation par cycles courts, pH et EC ajustés en continu.', EN:'Short irrigation cycles, pH and EC continuously adjusted.', AR:'ري بدورات قصيرة، ضبط pH وEC باستمرار.'},
+          {i:'ti-leaf',    FR:'Fructification continue, sensible à l\u2019oïdium et au Botrytis.', EN:'Continuous fruiting, sensitive to powdery mildew and Botrytis.', AR:'إثمار مستمر، حساس للبياض الدقيقي والبوتريتيس.'},
+        ]},
+        {title:secMon, kind:'chips', items:[Mt,Mh,Mph,Mec], note:monitorNote},
+      ]},
+    },
+
+    'courgette': {
+      status:['Culture active','Active crop','محصول نشط'],
+      audio:['audio/fr/courgette.mp3','audio/en/courgette.mp3','audio/ar/courgette.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece,  v:'Cucurbita pepo'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Cucurbitacées',EN:'Cucurbitaceae',AR:'القرعية'}},
+          {i:'ti-stack',    k:Lk.systeme, v:{FR:'Sol ou substrat',EN:'Soil or substrate',AR:'تربة أو ركيزة'}},
+        ]},
+        {title:secOpt, kind:'facts', items:[
+          {i:'ti-temperature',      k:Lk.tempJ, v:'22 – 28 °C'},
+          {i:'ti-temperature-minus',k:Lk.tempN, v:'15 – 18 °C'},
+          {i:'ti-droplet',          k:Lk.hum,   v:'60 – 70 %'},
+          {i:'ti-sun',              k:Lk.light, v:{FR:'Plein soleil',EN:'Full sun',AR:'شمس كاملة'}},
+        ]},
+        {title:secCult, kind:'grid', items:[
+          {i:'ti-arrow-up', FR:'Plante à croissance rapide, palissage vertical recommandé.', EN:'Fast-growing plant; vertical training recommended.', AR:'نبات سريع النمو، يُنصح بالتدعيم العمودي.'},
+          {i:'ti-flower',   FR:'Pollinisation par insectes auxiliaires ou manuelle.', EN:'Pollination by beneficial insects or manual.', AR:'التلقيح بالحشرات النافعة أو يدوياً.'},
+          {i:'ti-scissors', FR:'Récolte à stade immature (15–20 cm) pour la qualité gustative.', EN:'Harvested immature (15–20 cm) for taste quality.', AR:'يُحصد غير ناضج (15–20 سم) لجودة الطعم.'},
+          {i:'ti-leaf',     FR:'Sensible à l\u2019oïdium et au virus de la mosaïque (CMV).', EN:'Sensitive to powdery mildew and mosaic virus (CMV).', AR:'حساس للبياض الدقيقي وفيروس الموزاييك (CMV).'},
+        ]},
+        {title:secMon, kind:'chips', items:[Mt,Mh], note:monitorNote},
+      ]},
+    },
+
+    'avocatier': {
+      status:['Spécimen en observation','Specimen under observation','عينة قيد المراقبة'],
+      audio:['audio/fr/avocatier.mp3','audio/en/avocatier.mp3','audio/ar/avocatier.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece,  v:'Persea americana'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Lauracées',EN:'Lauraceae',AR:'الغارية'}},
+          {i:'ti-map-pin',  k:Lk.origine, v:{FR:'Mésoamérique',EN:'Mesoamerica',AR:'أمريكا الوسطى'}},
+        ]},
+        {title:secOpt, kind:'facts', items:[
+          {i:'ti-temperature', k:Lk.temp,  v:'18 – 30 °C'},
+          {i:'ti-droplet',     k:Lk.hum,   v:'60 – 75 %'},
+          {i:'ti-sun',         k:Lk.light, v:{FR:'Plein soleil à mi-ombre',EN:'Full sun to part shade',AR:'شمس كاملة إلى ظل جزئي'}},
+          {i:'ti-stack',       k:Lk.sol,   v:{FR:'Bien drainé, pH 6–7',EN:'Well-drained, pH 6–7',AR:'جيد التصريف، pH 6–7'}},
+        ]},
+        {title:secDis, kind:'bullets', items:[
+          {FR:'Cercosporose : taches nécrotiques foliaires (Cercospora sp.).', EN:'Cercospora leaf spot: necrotic leaf lesions (Cercospora sp.).', AR:'تبقع سركوسبورا: آفات نخرية على الأوراق (Cercospora sp.).'},
+          {FR:'Pourriture racinaire à Phytophthora cinnamomi.', EN:'Root rot caused by Phytophthora cinnamomi.', AR:'تعفن الجذور بفعل Phytophthora cinnamomi.'},
+          {FR:'Évaluation de la résistance variétale aux pathogènes.', EN:'Assessment of varietal resistance to pathogens.', AR:'تقييم مقاومة الأصناف لمسببات الأمراض.'},
+        ]},
+      ]},
+    },
+
+    'plante x': {
+      status:['Espèce à confirmer','Species to confirm','النوع قيد التأكيد'],
+      audio:null,
+      card:{
+        pending:{FR:'Spécimen non encore identifié — fiche à compléter par l\u2019unité.',EN:'Specimen not yet identified — record to be completed by the unit.',AR:'العينة لم تُعرَّف بعد — البطاقة قيد الاستكمال من الوحدة.'},
+        sections:[
+          {title:secId, kind:'facts', items:[
+            {i:'ti-seedling', k:Lk.espece,  v:{FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'}, flag:true},
+            {i:'ti-plant',    k:Lk.famille, v:{FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'}, flag:true},
+            {i:'ti-flag',     k:Lk.statut,  v:{FR:'En cours d\u2019identification',EN:'Being identified',AR:'قيد التعريف'}},
+          ]},
+        ],
+      },
+    },
+
+    /* ───── PLANT PATHOLOGY ───── */
+    'cactus malade': {
+      status:['Sujet malade en étude','Diseased specimen under study','عينة مريضة قيد الدراسة'],
+      audio:['audio/fr/cactus.mp3','audio/en/cactus.mp3','audio/ar/cactus.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-plant',   k:Lk.famille, v:{FR:'Cactacées',EN:'Cactaceae',AR:'الصباريات'}},
+          {i:'ti-map-pin', k:Lk.origine, v:{FR:'Amérique tropicale',EN:'Tropical America',AR:'أمريكا الاستوائية'}},
+          {i:'ti-flag',    k:Lk.statut,  v:{FR:'Sujet malade',EN:'Diseased',AR:'مريض'}},
+        ]},
+        {title:{FR:'PATHOLOGIES OBSERVÉES',EN:'OBSERVED PATHOLOGIES',AR:'الأمراض الملاحظة'}, kind:'bullets', items:[
+          {FR:'Pourriture molle ou sèche des cladodes — agents fongiques ou bactériens.', EN:'Soft or dry rot of cladodes — fungal or bacterial agents.', AR:'تعفن طري أو جاف للسيقان — عوامل فطرية أو بكتيرية.'},
+          {FR:'Cochenilles farineuses et à carapace — infestations fréquentes en serre.', EN:'Mealybugs and scale insects — common greenhouse infestations.', AR:'البق الدقيقي والحشرات القشرية — إصابات شائعة في الدفيئة.'},
+          {FR:'Chlorose des aréoles — carence ou infection possible.', EN:'Areole chlorosis — possible deficiency or infection.', AR:'اصفرار الهالات — نقص أو عدوى محتملة.'},
+        ]},
+        {title:secProto, kind:'facts', items:[
+          {i:'ti-lock',    k:Lk.isolement,  v:{FR:'Zone quarantaine',EN:'Quarantine zone',AR:'منطقة حجر'}},
+          {i:'ti-flask',   k:Lk.traitement, v:{FR:'En évaluation',EN:'Under evaluation',AR:'قيد التقييم'}},
+          {i:'ti-clock',   k:Lk.suivi,      v:{FR:'Hebdomadaire',EN:'Weekly',AR:'أسبوعي'}},
+        ]},
+      ]},
+    },
+
+    'tomate malade': {
+      status:['Étude phytopathologique','Plant pathology study','دراسة أمراض النبات'],
+      audio:['audio/fr/tomate.mp3','audio/en/tomate.mp3','audio/ar/tomate.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece,  v:'Solanum lycopersicum'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Solanacées',EN:'Solanaceae',AR:'الباذنجانية'}},
+          {i:'ti-flag',     k:Lk.statut,  v:{FR:'Plants malades',EN:'Diseased plants',AR:'نباتات مريضة'}},
+        ]},
+        {title:secDis, kind:'bullets', items:[
+          {FR:'Mildiou (Phytophthora infestans) — taches huileuses puis nécroses.', EN:'Late blight (Phytophthora infestans) — oily lesions then necrosis.', AR:'اللفحة المتأخرة (Phytophthora infestans) — بقع زيتية ثم نخر.'},
+          {FR:'Pourriture grise (Botrytis cinerea) sur tiges, feuilles et fruits.', EN:'Grey mould (Botrytis cinerea) on stems, leaves and fruit.', AR:'العفن الرمادي (Botrytis cinerea) على السيقان والأوراق والثمار.'},
+          {FR:'Viroses : mosaïque (ToMV) et feuilles jaunes en cuillère (TYLCV).', EN:'Viruses: mosaic (ToMV) and yellow leaf curl (TYLCV).', AR:'فيروسات: الموزاييك (ToMV) وتجعد واصفرار الأوراق (TYLCV).'},
+          {FR:'Alternariose (Alternaria solani) — taches concentriques.', EN:'Early blight (Alternaria solani) — concentric spots.', AR:'اللفحة المبكرة (Alternaria solani) — بقع متحدة المركز.'},
+        ]},
+        {title:secObj, kind:'facts', items:[
+          {i:'ti-microscope', k:Lk.etude,       v:{FR:'Épidémiologie',EN:'Epidemiology',AR:'علم الأوبئة'}},
+          {i:'ti-test-pipe',  k:Lk.methode,     v:{FR:'Inoculation contrôlée',EN:'Controlled inoculation',AR:'تلقيح محكوم'}},
+          {i:'ti-shield',     k:Lk.application, v:{FR:'Lutte intégrée',EN:'Integrated pest management',AR:'المكافحة المتكاملة'}},
+        ]},
+      ]},
+    },
+
+    'blé malade': {
+      status:['Céréale en observation','Cereal under observation','حبوب قيد المراقبة'],
+      audio:['audio/fr/ble.mp3','audio/en/ble.mp3','audio/ar/ble.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece,  v:'Triticum aestivum'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Poacées',EN:'Poaceae',AR:'النجيلية'}},
+          {i:'ti-flag',     k:Lk.statut,  v:{FR:'Plants en étude',EN:'Plants under study',AR:'نباتات قيد الدراسة'}},
+        ]},
+        {title:secDis, kind:'bullets', items:[
+          {FR:'Rouilles (Puccinia spp.) — pustules orangées à brunes sur feuilles.', EN:'Rusts (Puccinia spp.) — orange to brown pustules on leaves.', AR:'الأصداء (Puccinia spp.) — بثرات برتقالية إلى بنية على الأوراق.'},
+          {FR:'Septoriose (Zymoseptoria tritici) — taches nécrotiques à pycnides.', EN:'Septoria leaf blotch (Zymoseptoria tritici) — necrotic lesions with pycnidia.', AR:'تبقع الأوراق السبتوري (Zymoseptoria tritici) — آفات نخرية مع بكنيدات.'},
+          {FR:'Fusariose de l\u2019épi (Fusarium spp.) — risque de mycotoxines.', EN:'Fusarium head blight (Fusarium spp.) — mycotoxin risk.', AR:'لفحة السنابل (Fusarium spp.) — خطر السموم الفطرية.'},
+          {FR:'Oïdium (Blumeria graminis) — feutrage blanc poudreux.', EN:'Powdery mildew (Blumeria graminis) — white powdery growth.', AR:'البياض الدقيقي (Blumeria graminis) — نمو أبيض مسحوقي.'},
+        ]},
+        {title:secObj, kind:'facts', items:[
+          {i:'ti-microscope', k:Lk.etude,       v:{FR:'Résistance variétale',EN:'Varietal resistance',AR:'مقاومة الأصناف'}},
+          {i:'ti-test-pipe',  k:Lk.methode,     v:{FR:'Notation au champ',EN:'Field scoring',AR:'تقييم حقلي'}},
+          {i:'ti-shield',     k:Lk.application, v:{FR:'Sélection variétale',EN:'Plant breeding',AR:'تربية الأصناف'}},
+        ]},
+      ]},
+    },
+  };
+
+  // category labels
+  addCat('fraise', ...CAT_CROP);
+  addCat('courgette', ...CAT_CROP);
+  addCat('avocatier', ...CAT_CROP);
+  addCat('avocat', ...CAT_CROP);
+  addCat('plante x', ...CAT_CROP);
+  addCat('cactus malade', ...CAT_PATH);
+  addCat('tomate malade', ...CAT_PATH);
+  addCat('tomate malades', ...CAT_PATH);
+  addCat('tomates malades', ...CAT_PATH);
+  addCat('blé malade', ...CAT_PATH);
+  addCat('ble malade', ...CAT_PATH);
+
+  // localized hero titles (keep existing FR title; add EN/AR)
+  const TITLES = {
+    'fraise':        ['Fraise — Fragaria × ananassa','Strawberry — Fragaria × ananassa','الفراولة — Fragaria × ananassa'],
+    'courgette':     ['Courgette — Cucurbita pepo','Zucchini — Cucurbita pepo','الكوسة — Cucurbita pepo'],
+    'avocatier':     ['Avocatier — Persea americana','Avocado — Persea americana','الأفوكادو — Persea americana'],
+    'plante x':      ['Spécimen — à identifier','Specimen — to identify','عينة — قيد التعريف'],
+    'cactus malade': ['Cactus — spécimen pathologique','Cactus — diseased specimen','صبار — عينة مريضة'],
+    'tomate malade': ['Tomate — étude phytopathologique','Tomato — plant pathology study','الطماطم — دراسة أمراض النبات'],
+    'blé malade':    ['Blé — étude phytopathologique','Wheat — plant pathology study','القمح — دراسة أمراض النبات'],
+  };
+
+  function applyOne(key, content){
+    const d = AR_CONTENT[key];
+    if(!d){ console.warn('[info] def missing:', key); return; }
+    d.type = 'info';
+    d.tabs = ['Info'];
+    d.stateKey = null;
+    d.card = content.card;
+    d.audio = content.audio ? {FR:content.audio[0],EN:content.audio[1],AR:content.audio[2]} : null;
+    d.statusText    = content.status[0];
+    d.statusText_en = content.status[1];
+    d.statusText_ar = content.status[2];
+    const tt = TITLES[key];
+    if(tt){ d.title = tt[0]; d.title_en = tt[1]; d.title_ar = tt[2]; }
+  }
+
+  Object.keys(INFO).forEach(k => applyOne(k, INFO[k]));
+
+  // alias spellings used by different viewers → same content
+  const ALIAS = { 'avocat':'avocatier', 'tomate malades':'tomate malade', 'tomates malades':'tomate malade', 'ble malade':'blé malade' };
+  Object.keys(ALIAS).forEach(k => {
+    const src = INFO[ALIAS[k]];
+    if(src) applyOne(k, src);
+    // alias keeps its own title if the canonical one differs only by spelling
+    const tt = TITLES[ALIAS[k]];
+    if(tt && AR_CONTENT[k]){ AR_CONTENT[k].title = tt[0]; AR_CONTENT[k].title_en = tt[1]; AR_CONTENT[k].title_ar = tt[2]; }
+  });
+})();
+
+
+Object.assign(EQ_ICONS, {
+'ti-dna':'<path d="M7 4c0 4 10 5.5 10 8s-10 4-10 8"/><path d="M17 4c0 4-10 5.5-10 8s10 4 10 8"/><path d="M8.4 7h7.2M7.8 10.2h8.4M7.8 13.8h8.4M8.4 17h7.2"/>',
+'ti-users':'<circle cx="9" cy="8" r="3"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.5"/><path d="M18.5 19.5a5.5 5.5 0 0 0-3-4.7"/>',
+'ti-presentation':'<rect x="3" y="4" width="18" height="11" rx="1.5"/><path d="M12 15v4M9.5 21l2.5-2 2.5 2"/>',
+'ti-building':'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-3h4v3"/>',
+});
+
+/* INFO2_START — units, technical rooms & misc (Pass 2) */
+(function augmentInfoDefs2(){
+  if(typeof AR_CONTENT === 'undefined') return;
+  const TC = {FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'};
+  const addCat = (k,fr,en,ar)=>{ if(typeof T==='undefined')return; if(T.FR&&T.FR.catMap)T.FR.catMap[k]=fr; if(T.EN&&T.EN.catMap)T.EN.catMap[k]=en; if(T.AR&&T.AR.catMap)T.AR.catMap[k]=ar; };
+  const mNote = {FR:'Suivi via les capteurs IoT — valeurs en direct dans la carte Capteurs.',EN:'Monitored via the IoT sensors — live values in the Capteurs card.',AR:'تتم المراقبة عبر مستشعرات IoT — القيم المباشرة في بطاقة المستشعرات.'};
+  const Mt={FR:'Température',EN:'Temperature',AR:'الحرارة'},Mh={FR:'Humidité',EN:'Humidity',AR:'الرطوبة'},Mph={FR:'pH',EN:'pH',AR:'pH'},Mec={FR:'EC',EN:'EC',AR:'EC'};
+  const S = {
+    mission:{FR:'MISSION',EN:'MISSION',AR:'المهمة'}, info:{FR:'INFORMATIONS',EN:'INFORMATION',AR:'معلومات'},
+    fonc:{FR:'FONCTIONS',EN:'FUNCTIONS',AR:'الوظائف'}, equip:{FR:'ÉQUIPEMENTS',EN:'EQUIPMENT',AR:'التجهيزات'},
+    param:{FR:'PARAMÈTRES',EN:'PARAMETERS',AR:'المعايير'}, compo:{FR:'COMPOSANTS',EN:'COMPONENTS',AR:'المكونات'},
+    struct:{FR:'STRUCTURE',EN:'STRUCTURE',AR:'البنية'}, unites:{FR:'UNITÉS',EN:'UNITS',AR:'الوحدات'},
+    feat:{FR:'FONCTIONNALITÉS',EN:'FEATURES',AR:'الميزات'}, infra:{FR:'INFRASTRUCTURE',EN:'INFRASTRUCTURE',AR:'البنية التحتية'},
+  };
+  const Lacces={FR:'Accès',EN:'Access',AR:'الدخول'}, Lcode={FR:'Code serre',EN:'Greenhouse code',AR:'رمز الدفيئة'},
+        Lsurf={FR:'Surface',EN:'Area',AR:'المساحة'}, Lcult={FR:'Cultures',EN:'Crops',AR:'المحاصيل'},
+        Lstaff={FR:'Étudiants & personnel',EN:'Students & staff',AR:'الطلبة والموظفون'};
+
+  const INFO2 = {
+    /* ───── UNITS ───── */
+    'unité génétique et amélioration des plantes': { status:['Recherche active','Active research','بحث نشط'], card:{sections:[
+      {title:S.mission, kind:'grid', items:[
+        {i:'ti-dna',       FR:'Sélection variétale, croisements et évaluation des performances agronomiques.',EN:'Varietal selection, crossbreeding and agronomic performance evaluation.',AR:'الانتخاب الصنفي والتهجين وتقييم الأداء الزراعي.'},
+        {i:'ti-microscope',FR:'Étude des caractères de résistance, de qualité et de rendement.',EN:'Study of resistance, quality and yield traits.',AR:'دراسة صفات المقاومة والجودة والإنتاجية.'},
+        {i:'ti-seedling',  FR:'Production de lignées améliorées destinées à l\u2019expérimentation.',EN:'Production of improved lines for experimentation.',AR:'إنتاج سلالات محسّنة مخصّصة للتجارب.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-flag',k:Lcode,v:'S01'},
+        {i:'ti-arrows-maximize',k:Lsurf,v:TC,flag:true},
+        {i:'ti-plant',k:Lcult,v:{FR:'Espèces améliorées',EN:'Improved species',AR:'أنواع محسّنة'}},
+        {i:'ti-lock',k:Lacces,v:{FR:'Personnel autorisé',EN:'Authorized staff',AR:'موظفون مخوّلون'}},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh], note:mNote},
+    ]}},
+
+    'unité horticulture': { status:['Recherche active','Active research','بحث نشط'], card:{sections:[
+      {title:S.mission, kind:'grid', items:[
+        {i:'ti-flower',    FR:'Culture de plantes ornementales et maraîchères sous serre contrôlée.',EN:'Ornamental and vegetable crops under a controlled greenhouse.',AR:'زراعة نباتات الزينة والخضروات في دفيئة مُتحكَّم بها.'},
+        {i:'ti-leaf',      FR:'Étude des techniques de production et de conduite des cultures.',EN:'Study of production and crop-management techniques.',AR:'دراسة تقنيات الإنتاج وإدارة المحاصيل.'},
+        {i:'ti-microscope',FR:'Formation pratique des étudiants aux méthodes horticoles modernes.',EN:'Hands-on student training in modern horticultural methods.',AR:'تدريب عملي للطلبة على أساليب البستنة الحديثة.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-flag',k:Lcode,v:'S02'},
+        {i:'ti-arrows-maximize',k:Lsurf,v:TC,flag:true},
+        {i:'ti-plant',k:Lcult,v:{FR:'Ornementales & maraîchères',EN:'Ornamental & vegetable',AR:'زينة وخضروات'}},
+        {i:'ti-lock',k:Lacces,v:Lstaff},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh], note:mNote},
+    ]}},
+
+    'unité agronomie': { status:['Recherche active','Active research','بحث نشط'], card:{sections:[
+      {title:S.mission, kind:'grid', items:[
+        {i:'ti-grain',    FR:'Expérimentation sur les grandes cultures et les systèmes de production.',EN:'Trials on field crops and production systems.',AR:'تجارب على المحاصيل الحقلية وأنظمة الإنتاج.'},
+        {i:'ti-seedling', FR:'Évaluation de nouvelles variétés céréalières et de légumineuses.',EN:'Evaluation of new cereal and legume varieties.',AR:'تقييم أصناف جديدة من الحبوب والبقوليات.'},
+        {i:'ti-test-pipe',FR:'Optimisation des itinéraires techniques et de la fertilisation.',EN:'Optimisation of crop management and fertilisation.',AR:'تحسين المسارات التقنية والتسميد.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-flag',k:Lcode,v:'S03'},
+        {i:'ti-arrows-maximize',k:Lsurf,v:TC,flag:true},
+        {i:'ti-plant',k:Lcult,v:{FR:'Grandes cultures',EN:'Field crops',AR:'محاصيل حقلية'}},
+        {i:'ti-lock',k:Lacces,v:Lstaff},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh], note:mNote},
+    ]}},
+
+    'unité protection des plantes': { status:['Recherche active','Active research','بحث نشط'], card:{sections:[
+      {title:S.mission, kind:'grid', items:[
+        {i:'ti-virus',     FR:'Étude des maladies, ravageurs et adventices affectant les cultures.',EN:'Study of diseases, pests and weeds affecting crops.',AR:'دراسة الأمراض والآفات والأعشاب الضارة بالمحاصيل.'},
+        {i:'ti-shield',    FR:'Développement de méthodes de lutte biologique et intégrée.',EN:'Development of biological and integrated control methods.',AR:'تطوير أساليب المكافحة الحيوية والمتكاملة.'},
+        {i:'ti-microscope',FR:'Diagnostic phytosanitaire et conservation de plantes malades pour la recherche.',EN:'Phytosanitary diagnosis and conservation of diseased plants for research.',AR:'التشخيص الوقائي وحفظ النباتات المريضة للبحث.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-flag',k:Lcode,v:'S05'},
+        {i:'ti-arrows-maximize',k:Lsurf,v:TC,flag:true},
+        {i:'ti-target',k:{FR:'Spécialité',EN:'Specialty',AR:'التخصص'},v:{FR:'Phytopathologie & entomologie',EN:'Plant pathology & entomology',AR:'أمراض النبات والحشرات'}},
+        {i:'ti-lock',k:Lacces,v:Lstaff},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh], note:mNote},
+    ]}},
+
+    'unité hydroponie': { status:['Recherche active','Active research','بحث نشط'], card:{sections:[
+      {title:S.mission, kind:'grid', items:[
+        {i:'ti-droplet', FR:'Culture hors-sol avec solution nutritive recirculante (NFT, DWC).',EN:'Soilless culture with recirculating nutrient solution (NFT, DWC).',AR:'زراعة بدون تربة مع محلول مغذٍّ مُعاد التدوير (NFT، DWC).'},
+        {i:'ti-seedling',FR:'Expérimentation sur la production de légumes et de petits fruits.',EN:'Trials on vegetable and small-fruit production.',AR:'تجارب على إنتاج الخضروات والفواكه الصغيرة.'},
+        {i:'ti-gauge',   FR:'Monitoring IoT en temps réel : pH, EC, température et niveau.',EN:'Real-time IoT monitoring: pH, EC, temperature and level.',AR:'مراقبة IoT آنية: pH وEC والحرارة والمستوى.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-flag',k:Lcode,v:'S04'},
+        {i:'ti-settings',k:{FR:'Système',EN:'System',AR:'النظام'},v:'NFT / DWC'},
+        {i:'ti-cpu',k:{FR:'Monitoring',EN:'Monitoring',AR:'المراقبة'},v:'Guardian Pro IoT'},
+        {i:'ti-lock',k:Lacces,v:Lstaff},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh,Mph,Mec], note:mNote},
+    ]}},
+
+    /* ───── TECHNICAL ROOMS ───── */
+    'salle technique de commandes': { status:['Supervision 24/7','24/7 supervision','إشراف على مدار الساعة'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-cpu',  FR:'Centralise le pilotage et la supervision des équipements des serres.',EN:'Centralises control and supervision of the greenhouse equipment.',AR:'تُركّز قيادة ومراقبة تجهيزات الدفيئات.'},
+        {i:'ti-gauge',FR:'Interface SCADA pour la visualisation et le contrôle en temps réel.',EN:'SCADA interface for real-time visualisation and control.',AR:'واجهة SCADA للعرض والتحكم الآنيين.'},
+        {i:'ti-cloud',FR:'Connexion au réseau Guardian Pro et aux capteurs de chaque unité.',EN:'Connection to the Guardian Pro network and each unit\u2019s sensors.',AR:'الاتصال بشبكة Guardian Pro ومستشعرات كل وحدة.'},
+      ]},
+      {title:S.equip, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Automates',EN:'Controllers',AR:'المتحكمات'},v:{FR:'PLC industriels',EN:'Industrial PLCs',AR:'PLC صناعية'}},
+        {i:'ti-cpu',k:{FR:'Interface',EN:'Interface',AR:'الواجهة'},v:'SCADA / HMI'},
+        {i:'ti-cloud',k:{FR:'Connectivité',EN:'Connectivity',AR:'الاتصال'},v:{FR:'Réseau Guardian Pro',EN:'Guardian Pro network',AR:'شبكة Guardian Pro'}},
+        {i:'ti-clock',k:{FR:'Supervision',EN:'Supervision',AR:'الإشراف'},v:'24 h / 7 j'},
+      ]},
+    ]}},
+
+    'salle de lavage': { status:['Local technique','Technical room','مرفق تقني'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-spray', FR:'Nettoyage et décontamination du matériel végétal et des équipements.',EN:'Cleaning and decontamination of plant material and equipment.',AR:'تنظيف وتعقيم المواد النباتية والتجهيزات.'},
+        {i:'ti-waves', FR:'Gestion des effluents et des eaux de rinçage avant rejet ou recyclage.',EN:'Management of effluents and rinse water before discharge or reuse.',AR:'تدبير المياه العادمة ومياه الشطف قبل التصريف أو التدوير.'},
+        {i:'ti-shield',FR:'Prévention de la contamination croisée entre les unités de culture.',EN:'Prevention of cross-contamination between growing units.',AR:'الوقاية من التلوث المتبادل بين وحدات الزراعة.'},
+      ]},
+      {title:S.equip, kind:'facts', items:[
+        {i:'ti-bucket',k:{FR:'Bacs de lavage',EN:'Wash basins',AR:'أحواض الغسل'},v:TC,flag:true},
+        {i:'ti-temperature-plus',k:{FR:'Eau chaude',EN:'Hot water',AR:'ماء ساخن'},v:{FR:'Disponible',EN:'Available',AR:'متوفّر'}},
+        {i:'ti-waves',k:{FR:'Évacuation',EN:'Drainage',AR:'التصريف'},v:{FR:'Réseau d\u2019assainissement',EN:'Sewage network',AR:'شبكة الصرف الصحي'}},
+        {i:'ti-spray',k:{FR:'Désinfection',EN:'Disinfection',AR:'التعقيم'},v:{FR:'Protocole établi',EN:'Established protocol',AR:'بروتوكول معتمد'}},
+      ]},
+    ]}},
+
+    'salle de préparation': { status:['Local technique','Technical room','مرفق تقني'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-seedling',FR:'Préparation des semis, greffage et multiplication végétative.',EN:'Preparation of seedlings, grafting and vegetative propagation.',AR:'تحضير البذور والتطعيم والإكثار الخضري.'},
+        {i:'ti-plant',   FR:'Acclimatation des jeunes plants avant transplantation en serre.',EN:'Acclimatisation of young plants before transplanting.',AR:'تأقلم الشتلات قبل نقلها إلى الدفيئة.'},
+        {i:'ti-stack',   FR:'Préparation et stockage des substrats et mélanges terreau.',EN:'Preparation and storage of substrates and potting mixes.',AR:'تحضير وتخزين الركائز وخلطات التربة.'},
+      ]},
+      {title:S.equip, kind:'facts', items:[
+        {i:'ti-stack',k:{FR:'Tables de travail',EN:'Work benches',AR:'طاولات العمل'},v:{FR:'Inox, ergonomiques',EN:'Stainless, ergonomic',AR:'فولاذ، مريحة'}},
+        {i:'ti-sun',k:{FR:'Éclairage',EN:'Lighting',AR:'الإضاءة'},v:{FR:'LED spectre de croissance',EN:'Growth-spectrum LED',AR:'LED بطيف النمو'}},
+        {i:'ti-shield',k:{FR:'Hygiène',EN:'Hygiene',AR:'النظافة'},v:{FR:'Protocole de biosécurité',EN:'Biosecurity protocol',AR:'بروتوكول السلامة الحيوية'}},
+        {i:'ti-bucket',k:{FR:'Stockage',EN:'Storage',AR:'التخزين'},v:{FR:'Substrats & intrants',EN:'Substrates & inputs',AR:'الركائز والمدخلات'}},
+      ]},
+    ]}},
+
+    'salle de réunion': { status:['Espace commun','Common space','فضاء مشترك'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-users',       FR:'Formations, présentations et soutenances de projets.',EN:'Training sessions, presentations and project defences.',AR:'تكوينات وعروض ومناقشات المشاريع.'},
+        {i:'ti-presentation',FR:'Équipée de supports audiovisuels pour les présentations techniques.',EN:'Equipped with audiovisual aids for technical presentations.',AR:'مجهّزة بوسائل سمعية بصرية للعروض التقنية.'},
+      ]},
+      {title:S.equip, kind:'facts', items:[
+        {i:'ti-users',k:{FR:'Capacité',EN:'Capacity',AR:'السعة'},v:TC,flag:true},
+        {i:'ti-presentation',k:{FR:'Projection',EN:'Projection',AR:'العرض'},v:{FR:'Vidéoprojecteur / écran',EN:'Projector / screen',AR:'جهاز عرض / شاشة'}},
+        {i:'ti-cloud',k:{FR:'Connectivité',EN:'Connectivity',AR:'الاتصال'},v:{FR:'WiFi + filaire',EN:'WiFi + wired',AR:'WiFi + سلكي'}},
+        {i:'ti-stack',k:{FR:'Mobilier',EN:'Furniture',AR:'الأثاث'},v:{FR:'Table de conférence',EN:'Conference table',AR:'طاولة مؤتمرات'}},
+      ]},
+    ]}},
+
+    'bloc gestion technique et administrative': { status:['Bâtiment permanent','Permanent building','مبنى دائم'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-building',FR:'Centralise la gestion administrative et logistique du site.',EN:'Centralises site administration and logistics.',AR:'تُركّز التدبير الإداري واللوجستي للموقع.'},
+        {i:'ti-stack',   FR:'Regroupe salles de réunion, salle de contrôle et locaux techniques.',EN:'Houses meeting rooms, the control room and technical premises.',AR:'يضم قاعات الاجتماعات وغرفة التحكم والمرافق التقنية.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-building',k:{FR:'Type',EN:'Type',AR:'النوع'},v:{FR:'Bâtiment permanent',EN:'Permanent building',AR:'مبنى دائم'}},
+        {i:'ti-arrows-maximize',k:Lsurf,v:TC,flag:true},
+        {i:'ti-stack',k:{FR:'Niveaux',EN:'Levels',AR:'الطوابق'},v:TC,flag:true},
+        {i:'ti-map-pin',k:{FR:'Localisation',EN:'Location',AR:'الموقع'},v:{FR:'Entrée du campus',EN:'Campus entrance',AR:'مدخل الحرم'}},
+      ]},
+    ]}},
+
+    /* ───── STRUCTURE / MISC ───── */
+    'serre': { status:['5 unités spécialisées','5 specialised units','5 وحدات متخصصة'], card:{sections:[
+      {title:S.struct, kind:'grid', items:[
+        {i:'ti-window',FR:'Construction en verre et aluminium à toiture en arc, maximisant la luminosité.',EN:'Glass-and-aluminium structure with arched roof, maximising daylight.',AR:'هيكل من الزجاج والألمنيوم بسقف مقوّس يعظّم الإضاءة الطبيعية.'},
+        {i:'ti-stack', FR:'Cinq unités spécialisées reliées par un couloir central.',EN:'Five specialised units linked by a central corridor.',AR:'خمس وحدات متخصصة مرتبطة بممر مركزي.'},
+        {i:'ti-gauge', FR:'Climat et irrigation supervisés depuis la salle de contrôle.',EN:'Climate and irrigation supervised from the control room.',AR:'المناخ والري يُشرَف عليهما من غرفة التحكم.'},
+      ]},
+      {title:S.unites, kind:'facts', items:[
+        {i:'ti-dna',    k:{FR:'S01',EN:'S01',AR:'S01'},v:{FR:'Génétique & Amélioration',EN:'Genetics & Breeding',AR:'الوراثة والتحسين'}},
+        {i:'ti-flower', k:{FR:'S02',EN:'S02',AR:'S02'},v:{FR:'Horticulture',EN:'Horticulture',AR:'البستنة'}},
+        {i:'ti-grain',  k:{FR:'S03',EN:'S03',AR:'S03'},v:{FR:'Agronomie',EN:'Agronomy',AR:'علوم الفلاحة'}},
+        {i:'ti-droplet',k:{FR:'S04',EN:'S04',AR:'S04'},v:{FR:'Hydroponie',EN:'Hydroponics',AR:'الزراعة المائية'}},
+        {i:'ti-shield', k:{FR:'S05',EN:'S05',AR:'S05'},v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
+      ]},
+    ]}},
+
+    'monitoring': { status:['Temps réel','Real-time','آني'], card:{sections:[
+      {title:S.feat, kind:'grid', items:[
+        {i:'ti-gauge',FR:'Collecte et visualisation en temps réel des données des 5 serres.',EN:'Real-time collection and visualisation of data from the 5 greenhouses.',AR:'جمع وعرض آنيان لبيانات الدفيئات الخمس.'},
+        {i:'ti-flag', FR:'Alertes automatiques en cas de dépassement des seuils critiques.',EN:'Automatic alerts when critical thresholds are exceeded.',AR:'تنبيهات تلقائية عند تجاوز العتبات الحرجة.'},
+        {i:'ti-stack',FR:'Archivage historique des mesures pour analyse et optimisation.',EN:'Historical archiving of measurements for analysis and optimisation.',AR:'أرشفة تاريخية للقياسات للتحليل والتحسين.'},
+        {i:'ti-cloud',FR:'Accès distant via le géoportail web AgroBioTech.',EN:'Remote access through the AgroBioTech web geoportal.',AR:'وصول عن بُعد عبر البوابة الجغرافية AgroBioTech.'},
+      ]},
+      {title:S.infra, kind:'facts', items:[
+        {i:'ti-cpu',k:{FR:'Capteurs',EN:'Sensors',AR:'المستشعرات'},v:{FR:'5 serres — Guardian Pro',EN:'5 greenhouses — Guardian Pro',AR:'5 دفيئات — Guardian Pro'}},
+        {i:'ti-clock',k:{FR:'Fréquence',EN:'Frequency',AR:'التردد'},v:{FR:'Toutes les 5 min',EN:'Every 5 min',AR:'كل 5 دقائق'}},
+        {i:'ti-cloud',k:{FR:'API',EN:'API',AR:'API'},v:{FR:'REST — backend Render',EN:'REST — Render backend',AR:'REST — خادم Render'}},
+        {i:'ti-gauge',k:{FR:'Tableau de bord',EN:'Dashboard',AR:'لوحة القيادة'},v:{FR:'Géoportail Vercel',EN:'Vercel geoportal',AR:'بوابة Vercel'}},
+      ]},
+    ]}},
+
+    'station de fertigation': { status:['Automatisée','Automated','مؤتمتة'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-flask',      FR:'Préparation et distribution automatisées de la solution nutritive.',EN:'Automated preparation and distribution of the nutrient solution.',AR:'تحضير وتوزيع آليان للمحلول المغذي.'},
+        {i:'ti-adjustments',FR:'Injection proportionnelle des concentrés A, B, acide et base.',EN:'Proportional injection of A, B, acid and base concentrates.',AR:'حقن تناسبي للمركّزات A وB والحمض والقاعدة.'},
+        {i:'ti-gauge',      FR:'Régulation continue du pH et de la conductivité (EC).',EN:'Continuous regulation of pH and conductivity (EC).',AR:'تنظيم مستمر لـ pH والناقلية (EC).'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-cylinder',k:{FR:'Cuves concentrés',EN:'Concentrate tanks',AR:'خزانات المركّزات'},v:{FR:'A + B séparées',EN:'A + B separate',AR:'A + B منفصلة'}},
+        {i:'ti-flask',k:{FR:'pH cible',EN:'Target pH',AR:'pH المستهدف'},v:'5.5 – 6.5'},
+        {i:'ti-bolt',k:{FR:'EC cible',EN:'Target EC',AR:'EC المستهدف'},v:'1.0 – 2.2 mS/cm'},
+        {i:'ti-clock',k:{FR:'Cycles',EN:'Cycles',AR:'الدورات'},v:{FR:'Programmables',EN:'Programmable',AR:'قابلة للبرمجة'}},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mph,Mec], note:mNote},
+    ]}},
+
+    'chaudière': { status:['Chauffage','Heating','تدفئة'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-temperature-plus',FR:'Maintien des températures nocturnes au-dessus des seuils critiques.',EN:'Keeps night temperatures above the critical thresholds.',AR:'الحفاظ على حرارة الليل فوق العتبات الحرجة.'},
+        {i:'ti-droplet',         FR:'Alimentation du circuit de chauffage de la solution nutritive.',EN:'Feeds the heating circuit of the nutrient solution.',AR:'تغذية دائرة تسخين المحلول المغذي.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:TC,flag:true},
+        {i:'ti-bolt',k:{FR:'Puissance',EN:'Power',AR:'القدرة'},v:TC,flag:true},
+        {i:'ti-flask',k:{FR:'Combustible',EN:'Fuel',AR:'الوقود'},v:TC,flag:true},
+        {i:'ti-temperature',k:{FR:'Température',EN:'Temperature',AR:'الحرارة'},v:TC,flag:true},
+      ]},
+    ]}},
+
+    'audoucisseur': { status:['Traitement de l\u2019eau','Water treatment','معالجة المياه'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-droplet',FR:'Réduction de la dureté de l\u2019eau par échange ionique.',EN:'Reduces water hardness by ion exchange.',AR:'خفض عسر الماء بالتبادل الأيوني.'},
+        {i:'ti-refresh',FR:'Régénération automatique de la résine au chlorure de sodium (NaCl).',EN:'Automatic resin regeneration with sodium chloride (NaCl).',AR:'تجديد تلقائي للراتنج بكلوريد الصوديوم (NaCl).'},
+        {i:'ti-shield', FR:'Protège les circuits d\u2019irrigation et de fertigation du calcaire.',EN:'Protects the irrigation and fertigation lines from scale.',AR:'يحمي دارات الري والتسميد من الترسبات الكلسية.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:{FR:'Échangeur ionique',EN:'Ion exchanger',AR:'مبادل أيوني'}},
+        {i:'ti-cylinder',k:{FR:'Capacité',EN:'Capacity',AR:'السعة'},v:TC,flag:true},
+        {i:'ti-refresh',k:{FR:'Régénération',EN:'Regeneration',AR:'التجديد'},v:{FR:'NaCl — automatique',EN:'NaCl — automatic',AR:'NaCl — تلقائي'}},
+        {i:'ti-droplet',k:{FR:'Dureté cible',EN:'Target hardness',AR:'العسر المستهدف'},v:'< 7 °f'},
+      ]},
+    ]}},
+
+    /* ───── VENTILATION VARIANTS ───── */
+    'système de ventilation': { status:['Hybride · automatique','Hybrid · automatic','هجين · تلقائي'], card:{sections:[
+      {title:S.compo, kind:'grid', items:[
+        {i:'ti-wind', FR:'Extracteurs mécaniques, fenêtres automatiques et rideaux thermiques.',EN:'Mechanical extractors, automatic vents and thermal screens.',AR:'شفاطات ميكانيكية ونوافذ تلقائية وستائر حرارية.'},
+        {i:'ti-cpu',  FR:'Régulation centralisée par automates depuis la salle de contrôle.',EN:'Centralised PLC regulation from the control room.',AR:'تنظيم مركزي بالمتحكمات من غرفة التحكم.'},
+        {i:'ti-gauge',FR:'Monitoring en temps réel de la température, de l\u2019humidité et du VPD.',EN:'Real-time monitoring of temperature, humidity and VPD.',AR:'مراقبة آنية للحرارة والرطوبة وVPD.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:{FR:'Hybride — mécanique + naturel',EN:'Hybrid — mechanical + natural',AR:'هجين — ميكانيكي + طبيعي'}},
+        {i:'ti-cpu',k:{FR:'Contrôle',EN:'Control',AR:'التحكم'},v:{FR:'Automate PLC',EN:'PLC',AR:'متحكم PLC'}},
+        {i:'ti-gauge',k:{FR:'Capteurs',EN:'Sensors',AR:'المستشعرات'},v:{FR:'T°, HR, VPD',EN:'T°, RH, VPD',AR:'حرارة، رطوبة، VPD'}},
+        {i:'ti-cloud',k:{FR:'Protocole',EN:'Protocol',AR:'البروتوكول'},v:'Guardian Pro API'},
+      ]},
+      {title:{FR:'SUIVI EN TEMPS RÉEL',EN:'REAL-TIME MONITORING',AR:'المراقبة الفورية'}, kind:'chips', items:[Mt,Mh], note:mNote},
+    ]}},
+
+    'ventilation dehors': { status:['Extraction mécanique','Mechanical extraction','شفط ميكانيكي'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-wind', FR:'Complémente la ventilation zénithale naturelle des fenêtres automatiques.',EN:'Complements the natural roof ventilation from the automatic vents.',AR:'تكمّل التهوية العلوية الطبيعية للنوافذ التلقائية.'},
+        {i:'ti-gauge',FR:'Synchronisée avec les capteurs intérieurs pour une régulation dynamique.',EN:'Synchronised with indoor sensors for dynamic regulation.',AR:'متزامنة مع المستشعرات الداخلية لتنظيم ديناميكي.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-map-pin',k:{FR:'Emplacement',EN:'Location',AR:'الموقع'},v:{FR:'Mur pignon extérieur',EN:'Exterior gable wall',AR:'الجدار الجانبي الخارجي'}},
+        {i:'ti-windmill',k:{FR:'Type',EN:'Type',AR:'النوع'},v:{FR:'Extracteur centrifuge',EN:'Centrifugal extractor',AR:'شفاط طرد مركزي'}},
+        {i:'ti-wind',k:{FR:'Débit',EN:'Airflow',AR:'التدفق'},v:TC,flag:true},
+        {i:'ti-adjustments',k:{FR:'Contrôle',EN:'Control',AR:'التحكم'},v:{FR:'Automatique',EN:'Automatic',AR:'تلقائي'}},
+      ]},
+    ]}},
+
+    'ventilation ext': { status:['Naturelle assistée','Assisted natural','طبيعية مُعزَّزة'], card:{sections:[
+      {title:S.fonc, kind:'grid', items:[
+        {i:'ti-windmill',FR:'Extracteur de toiture assurant la ventilation naturelle assistée.',EN:'Roof extractor providing assisted natural ventilation.',AR:'شفاط سقفي يوفّر تهوية طبيعية مُعزَّزة.'},
+        {i:'ti-settings',FR:'Entretien minimal — pièces mécaniques accessibles depuis la toiture.',EN:'Minimal maintenance — mechanical parts accessible from the roof.',AR:'صيانة قليلة — أجزاء ميكانيكية يسهل الوصول إليها من السقف.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-windmill',k:{FR:'Type',EN:'Type',AR:'النوع'},v:{FR:'Éolienne de ventilation',EN:'Wind-driven turbine',AR:'دوّارة تهوية'}},
+        {i:'ti-map-pin',k:{FR:'Emplacement',EN:'Location',AR:'الموقع'},v:{FR:'Toiture de la serre',EN:'Greenhouse roof',AR:'سقف الدفيئة'}},
+        {i:'ti-refresh',k:{FR:'Maintenance',EN:'Maintenance',AR:'الصيانة'},v:{FR:'Annuelle',EN:'Annual',AR:'سنوية'}},
+      ]},
+    ]}},
+
+    'le truc exterieur': { status:['À documenter','To document','قيد التوثيق'], card:{sections:[
+      {title:S.info, kind:'grid', items:[
+        {i:'ti-map-pin',       FR:'Équipement ou infrastructure extérieure du campus AgroBioTech.',EN:'Outdoor equipment or infrastructure of the AgroBioTech campus.',AR:'تجهيز أو بنية خارجية بحرم AgroBioTech.'},
+        {i:'ti-progress-alert',FR:'Caractéristiques à préciser lors de la visite de terrain.',EN:'Details to be confirmed during the field visit.',AR:'تفاصيل تُحدَّد أثناء الزيارة الميدانية.'},
+      ]},
+      {title:S.info, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:TC,flag:true},
+        {i:'ti-target',k:{FR:'Fonction',EN:'Function',AR:'الوظيفة'},v:TC,flag:true},
+        {i:'ti-map-pin',k:{FR:'Emplacement',EN:'Location',AR:'الموقع'},v:{FR:'Extérieur du campus',EN:'Campus exterior',AR:'خارج الحرم'}},
+      ]},
+    ]}},
+  };
+
+  const CATS = {
+    'unité génétique et amélioration des plantes':['UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية'],
+    'unité horticulture':['UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية'],
+    'unité agronomie':['UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية'],
+    'unité protection des plantes':['UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية'],
+    'unité hydroponie':['UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية'],
+    'salle technique de commandes':['LOCAL TECHNIQUE','TECHNICAL ROOM','مرفق تقني'],
+    'salle de lavage':['LOCAL TECHNIQUE','TECHNICAL ROOM','مرفق تقني'],
+    'salle de préparation':['LOCAL TECHNIQUE','TECHNICAL ROOM','مرفق تقني'],
+    'salle de réunion':['ESPACE COMMUN','COMMON SPACE','فضاء مشترك'],
+    'bloc gestion technique et administrative':['ADMINISTRATION','ADMINISTRATION','الإدارة'],
+    'serre':['COMPLEXE DE SERRES','GREENHOUSE COMPLEX','مجمّع الدفيئات'],
+    'monitoring':['SUPERVISION','MONITORING','الإشراف'],
+    'station de fertigation':['STATION TECHNIQUE','TECHNICAL STATION','محطة تقنية'],
+    'chaudière':['ÉQUIPEMENT TECHNIQUE','TECHNICAL EQUIPMENT','معدات تقنية'],
+    'audoucisseur':['TRAITEMENT DE L\u2019EAU','WATER TREATMENT','معالجة المياه'],
+    'système de ventilation':['VENTILATION','VENTILATION','التهوية'],
+    'ventilation dehors':['VENTILATION','VENTILATION','التهوية'],
+    'ventilation ext':['VENTILATION','VENTILATION','التهوية'],
+    'le truc exterieur':['EXTÉRIEUR','OUTDOOR','الخارج'],
+  };
+
+  const TT = {
+    'unité génétique et amélioration des plantes':['Unité Génétique & Amélioration','Genetics & Breeding Unit','وحدة الوراثة والتحسين'],
+    'unité horticulture':['Unité Horticulture','Horticulture Unit','وحدة البستنة'],
+    'unité agronomie':['Unité Agronomie','Agronomy Unit','وحدة علوم الفلاحة'],
+    'unité protection des plantes':['Unité Protection des Plantes','Plant Protection Unit','وحدة وقاية النباتات'],
+    'unité hydroponie':['Unité Hydroponie','Hydroponics Unit','وحدة الزراعة المائية'],
+    'salle technique de commandes':['Salle Technique de Commandes','Control Room','غرفة التحكم'],
+    'salle de lavage':['Salle de Lavage','Washing Room','غرفة الغسل'],
+    'salle de préparation':['Salle de Préparation','Preparation Room','غرفة التحضير'],
+    'salle de réunion':['Salle de Réunion','Meeting Room','قاعة الاجتماعات'],
+    'bloc gestion technique et administrative':['Bloc Gestion & Administration','Administration Building','مبنى الإدارة'],
+    'serre':['Complexe de Serres AgroBioTech','AgroBioTech Greenhouse Complex','مجمّع دفيئات AgroBioTech'],
+    'monitoring':['Système de Monitoring','Monitoring System','نظام المراقبة'],
+    'station de fertigation':['Station de Fertigation','Fertigation Station','محطة التسميد بالري'],
+    'chaudière':['Chaudière','Boiler','المرجل'],
+    'audoucisseur':['Adoucisseur d\u2019Eau','Water Softener','مُليّن الماء'],
+    'système de ventilation':['Système de Ventilation','Ventilation System','نظام التهوية'],
+    'ventilation dehors':['Ventilation Extérieure','Exterior Ventilation','التهوية الخارجية'],
+    'ventilation ext':['Ventilation de Toiture','Roof Ventilation','تهوية السقف'],
+    'le truc exterieur':['Zone / Équipement Extérieur','Outdoor Area / Equipment','منطقة / تجهيز خارجي'],
+  };
+
+  function applyOne2(key, content){
+    const d = AR_CONTENT[key];
+    if(!d){ console.warn('[info2] def missing:', key); return; }
+    d.type = 'info'; d.tabs = ['Info']; d.stateKey = null;
+    d.card = content.card; d.audio = null;
+    d.statusText = content.status[0]; d.statusText_en = content.status[1]; d.statusText_ar = content.status[2];
+    const tt = TT[key]; if(tt){ d.title = tt[0]; d.title_en = tt[1]; d.title_ar = tt[2]; }
+    const ct = CATS[key]; if(ct) addCat(key, ct[0], ct[1], ct[2]);
+  }
+
+  Object.keys(INFO2).forEach(k => applyOne2(k, INFO2[k]));
+
+  /* alias: bloc protection des plantes → same card as unité protection, own title + category */
+  if(AR_CONTENT['bloc protection des plantes'] && INFO2['unité protection des plantes']){
+    applyOne2('bloc protection des plantes', INFO2['unité protection des plantes']);
+    const d = AR_CONTENT['bloc protection des plantes'];
+    d.title = 'Bloc Protection des Plantes'; d.title_en = 'Plant Protection Block'; d.title_ar = 'مبنى وقاية النباتات';
+    addCat('bloc protection des plantes', 'UNITÉ DE RECHERCHE','RESEARCH UNIT','وحدة بحثية');
+  }
+})();
+/* INFO2_END */
+
+/* ── Refresh hero text (title / category / status pill) for the current language ── */
+function arSetHeroText(desc){
+  const def = (typeof getARDef==='function') ? getARDef(desc) : null;
+  if(!def) return;
+  const lc = (window.currentLang||'FR').toLowerCase();
+  const catEl   = document.getElementById('ar-category-label');
+  const titleEl = document.getElementById('ar-title');
+  const pill    = document.getElementById('ar-state-pill');
+  const pillTxt = document.getElementById('ar-state-pill-text');
+  const rStrip  = document.getElementById('ar-reason-strip');
+  const rTxt    = document.getElementById('ar-reason-text');
+  if(catEl)   catEl.textContent   = (typeof tCat==='function') ? tCat(desc) : (catEl.textContent||'DIGITAL TWIN');
+  if(titleEl) titleEl.textContent = def['title_'+lc] || def.title || titleEl.textContent;
+  const state = (def.stateKey && typeof hsGetState==='function') ? hsGetState(def.stateKey) : null;
+  if(pillTxt){
+    if(state === null){
+      if(pill) pill.className = 'ar-state-pill unknown';
+      pillTxt.textContent = def['statusText_'+lc] || def.statusText || '—';
+      if(rStrip) rStrip.style.display = 'none';
+    } else {
+      const on = state === 'on';
+      if(pill) pill.className = 'ar-state-pill ' + (on ? 'on' : 'off');
+      pillTxt.textContent = on ? (typeof t==='function'?t('active'):'ACTIF') : (typeof t==='function'?t('inactive'):'INACTIF');
+      if(rStrip) rStrip.style.display = 'block';
+      if(rTxt && def.thresholds && def.thresholds.length) rTxt.textContent = on ? def.thresholds[0].onWhen : def.thresholds[0].offWhen;
+    }
+  }
 }
 
 /* ── Auto-inject lang switcher when DOM ready ── */

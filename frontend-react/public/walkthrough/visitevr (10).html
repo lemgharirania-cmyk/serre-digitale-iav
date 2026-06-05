@@ -573,7 +573,7 @@ async function load(zid,sid){
   const finish=()=>{
     try{
       curZone=zid;curScene=sid;
-      const list=((hotspots[zid]&&hotspots[zid][sid])||[]).slice();
+      const list=((hotspots[zid]&&hotspots[zid][sid])||[]).filter(h=>h.type!=='ar').slice();
       const idx=zone.scenes.indexOf(scene);
       const fwd=list.find(h=>h.type==='nav'&&h.targetSceneId!==sid&&h.targetZoneId===zid);
       const hasBack=list.some(h=>{const tz=zones[h.targetZoneId];return tz&&tz.scenes.findIndex(s=>s.id===h.targetSceneId)===idx-1;});

@@ -1189,10 +1189,10 @@
         },
         {
           "type": "ar",
-          "pitch": 9.4,
-          "yaw": -101.2,
-          "label": "ventilation ext",
-          "arDesc": "ventilation ext"
+          "pitch": 9.2,
+          "yaw": -100.4,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__001": [
@@ -1276,13 +1276,6 @@
           "targetZoneId": "exterieur",
           "targetSceneId": "exterieur__004",
           "label": "→ sc.5"
-        },
-        {
-          "type": "ar",
-          "pitch": 2.1,
-          "yaw": -101,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
         }
       ],
       "exterieur__004": [
@@ -1296,10 +1289,10 @@
         },
         {
           "type": "ar",
-          "pitch": 6.9,
-          "yaw": 46.6,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 6.8,
+          "yaw": 47.3,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__005": [
@@ -1313,17 +1306,17 @@
         },
         {
           "type": "ar",
-          "pitch": 29.1,
-          "yaw": -68.3,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 27.7,
+          "yaw": -69.9,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         },
         {
           "type": "ar",
-          "pitch": 22,
-          "yaw": 16.6,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 20.4,
+          "yaw": 20,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__006": [
@@ -1337,24 +1330,10 @@
         },
         {
           "type": "ar",
-          "pitch": 16.1,
-          "yaw": -89.2,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 29,
-          "yaw": 11.2,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 14.3,
-          "yaw": 41.3,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 28.9,
+          "yaw": 6.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__007": [
@@ -1368,10 +1347,10 @@
         },
         {
           "type": "ar",
-          "pitch": 16.7,
-          "yaw": -18.3,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 16.8,
+          "yaw": -17.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__008": [
@@ -1405,17 +1384,10 @@
         },
         {
           "type": "ar",
-          "pitch": 15.4,
-          "yaw": -14.1,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 9.3,
-          "yaw": 3.4,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 14.6,
+          "yaw": -12.4,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__011": [
@@ -1429,10 +1401,10 @@
         },
         {
           "type": "ar",
-          "pitch": 17.5,
-          "yaw": -132.2,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 16.2,
+          "yaw": -131.3,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__012": [
@@ -1446,24 +1418,10 @@
         },
         {
           "type": "ar",
-          "pitch": 20.9,
-          "yaw": -140.2,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 10.9,
-          "yaw": -113.3,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 19.8,
-          "yaw": 126.9,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 21.4,
+          "yaw": -139.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__013": [
@@ -1477,24 +1435,10 @@
         },
         {
           "type": "ar",
-          "pitch": -0.3,
-          "yaw": -23.2,
-          "label": "le truc exterieur",
-          "arDesc": "le truc exterieur"
-        },
-        {
-          "type": "ar",
-          "pitch": 15.5,
-          "yaw": 127.9,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
-        },
-        {
-          "type": "ar",
-          "pitch": 9.3,
-          "yaw": 109,
-          "label": "Ventilation ext",
-          "arDesc": "Ventilation ext"
+          "pitch": 16,
+          "yaw": 131.6,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "exterieur__014": [
@@ -1532,13 +1476,6 @@
           "yaw": -172.6,
           "label": "brumisateur",
           "arDesc": "brumisateur"
-        },
-        {
-          "type": "ar",
-          "pitch": 4.4,
-          "yaw": -159.9,
-          "label": "ventilation ext",
-          "arDesc": "ventilation ext"
         },
         {
           "type": "ar",
@@ -1609,13 +1546,6 @@
         },
         {
           "type": "ar",
-          "pitch": 5.1,
-          "yaw": -149.5,
-          "label": "ventilation ext",
-          "arDesc": "ventilation ext"
-        },
-        {
-          "type": "ar",
           "pitch": 36.3,
           "yaw": 103.5,
           "label": "ventilation",
@@ -1672,13 +1602,6 @@
           "yaw": -0.2,
           "label": "brumisateur",
           "arDesc": "brumisateur"
-        },
-        {
-          "type": "ar",
-          "pitch": 17.1,
-          "yaw": -132.7,
-          "label": "ventilation ext",
-          "arDesc": "ventilation ext"
         },
         {
           "type": "ar",
@@ -1765,13 +1688,6 @@
         },
         {
           "type": "ar",
-          "pitch": 5.8,
-          "yaw": 95.1,
-          "label": "Système de ventilation",
-          "arDesc": "Système de ventilation"
-        },
-        {
-          "type": "ar",
           "pitch": 46,
           "yaw": -19.1,
           "label": "Système de refroidissement",
@@ -1797,6 +1713,13 @@
           "yaw": 105.7,
           "label": "brumisateur",
           "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 32,
+          "yaw": 48.7,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "horticulture__001": [
@@ -1839,13 +1762,6 @@
         },
         {
           "type": "ar",
-          "pitch": 7.1,
-          "yaw": 160.1,
-          "label": "Système de ventilation",
-          "arDesc": "Système de ventilation"
-        },
-        {
-          "type": "ar",
           "pitch": 24.2,
           "yaw": 18.2,
           "label": "Système de refroidissement",
@@ -1871,6 +1787,13 @@
           "yaw": 174.1,
           "label": "brumisateur",
           "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 33.4,
+          "yaw": 40.1,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ],
       "horticulture__002": [
@@ -1905,13 +1828,6 @@
         },
         {
           "type": "ar",
-          "pitch": 14.5,
-          "yaw": 140.7,
-          "label": "Système de ventilation",
-          "arDesc": "Système de ventilation"
-        },
-        {
-          "type": "ar",
           "pitch": 15.9,
           "yaw": 0.3,
           "label": "Système de refroidissement",
@@ -1937,6 +1853,13 @@
           "yaw": -21.1,
           "label": "brumisateur",
           "arDesc": "brumisateur"
+        },
+        {
+          "type": "ar",
+          "pitch": 49.3,
+          "yaw": 75.3,
+          "label": "Ventilation",
+          "arDesc": "Ventilation"
         }
       ]
     },
@@ -2006,13 +1929,6 @@
           "yaw": -151.1,
           "label": "Sensors",
           "arDesc": "Sensors"
-        },
-        {
-          "type": "ar",
-          "pitch": 4.8,
-          "yaw": 173.5,
-          "label": "Ventilation dehors",
-          "arDesc": "Ventilation dehors"
         },
         {
           "type": "ar",
@@ -2097,13 +2013,6 @@
         },
         {
           "type": "ar",
-          "pitch": 3.7,
-          "yaw": 166.2,
-          "label": "Ventilation dehors",
-          "arDesc": "Ventilation dehors"
-        },
-        {
-          "type": "ar",
           "pitch": 10.4,
           "yaw": 117,
           "label": "rideaux auto",
@@ -2174,13 +2083,6 @@
           "yaw": -43.2,
           "label": "Sensors",
           "arDesc": "Sensors"
-        },
-        {
-          "type": "ar",
-          "pitch": 7.7,
-          "yaw": 141.5,
-          "label": "Ventilation dehors",
-          "arDesc": "Ventilation dehors"
         },
         {
           "type": "ar",
@@ -2549,10 +2451,10 @@
         },
         {
           "type": "ar",
-          "pitch": -10.8,
-          "yaw": 67.5,
-          "label": "Station de fertigation",
-          "arDesc": "Station de fertigation"
+          "pitch": -11.4,
+          "yaw": 66.3,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
         }
       ],
       "salle-fertigation__001": [
@@ -2588,20 +2490,13 @@
         },
         {
           "type": "ar",
-          "pitch": -4.9,
-          "yaw": 132.1,
-          "label": "Station de fertigation",
-          "arDesc": "Station de fertigation"
+          "pitch": -22.2,
+          "yaw": 128.7,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
         }
       ],
       "salle-fertigation__002": [
-        {
-          "type": "ar",
-          "pitch": -6.4,
-          "yaw": 97.5,
-          "label": "Station de fertigation",
-          "arDesc": "Station de fertigation"
-        },
         {
           "type": "nav",
           "pitch": -27.7,
@@ -2609,6 +2504,13 @@
           "targetZoneId": "salle-fertigation",
           "targetSceneId": "salle-fertigation__001",
           "label": "→ sc.2"
+        },
+        {
+          "type": "ar",
+          "pitch": -11,
+          "yaw": 97.4,
+          "label": "Fertigation",
+          "arDesc": "Fertigation"
         }
       ]
     },
@@ -2720,20 +2622,6 @@
         },
         {
           "type": "ar",
-          "pitch": 51.6,
-          "yaw": -14.8,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": 19.1,
-          "yaw": -38.2,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 20.9,
           "yaw": -55.4,
           "label": "co2",
@@ -2752,6 +2640,20 @@
           "yaw": -125.3,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 51.6,
+          "yaw": -14.2,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 26.1,
+          "yaw": -88.4,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         }
       ],
       "unite-protection__001": [
@@ -2816,20 +2718,6 @@
         },
         {
           "type": "ar",
-          "pitch": 33.6,
-          "yaw": -146.9,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": 23.7,
-          "yaw": -69.4,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 20.1,
           "yaw": -86.5,
           "label": "co2",
@@ -2848,6 +2736,20 @@
           "yaw": -142.1,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 33.2,
+          "yaw": -145.5,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 21.7,
+          "yaw": -105.1,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         }
       ],
       "unite-protection__002": [
@@ -2904,20 +2806,6 @@
         },
         {
           "type": "ar",
-          "pitch": 27.1,
-          "yaw": -114.2,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": 43.2,
-          "yaw": 53.8,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 43.2,
           "yaw": 11.1,
           "label": "co2",
@@ -2936,6 +2824,20 @@
           "yaw": -72.6,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 26.1,
+          "yaw": -114.7,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 42.6,
+          "yaw": 56.5,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         }
       ],
       "unite-protection__003": [
@@ -2984,20 +2886,6 @@
         },
         {
           "type": "ar",
-          "pitch": 27.2,
-          "yaw": -36,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": 33.5,
-          "yaw": -166.9,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 49.3,
           "yaw": 159.1,
           "label": "co2",
@@ -3016,6 +2904,20 @@
           "yaw": 18.7,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 27.2,
+          "yaw": -35.4,
+          "label": "sensors",
+          "arDesc": "sensors"
+        },
+        {
+          "type": "ar",
+          "pitch": 40,
+          "yaw": 75,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         }
       ],
       "unite-protection__004": [
@@ -3057,20 +2959,6 @@
         },
         {
           "type": "ar",
-          "pitch": 17.9,
-          "yaw": -82.6,
-          "label": "capteurs",
-          "arDesc": "capteurs"
-        },
-        {
-          "type": "ar",
-          "pitch": 15.1,
-          "yaw": -52.7,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 13.7,
           "yaw": -63,
           "label": "co2",
@@ -3089,6 +2977,13 @@
           "yaw": -0.6,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 17.5,
+          "yaw": -82.2,
+          "label": "sensors",
+          "arDesc": "sensors"
         }
       ],
       "unite-protection__005": [
@@ -3130,13 +3025,6 @@
         },
         {
           "type": "ar",
-          "pitch": 64,
-          "yaw": -38.2,
-          "label": "syst de refroidissement",
-          "arDesc": "syst de refroidissement"
-        },
-        {
-          "type": "ar",
           "pitch": 52.5,
           "yaw": -166.5,
           "label": "fenetres",
@@ -3148,6 +3036,13 @@
           "yaw": 24.2,
           "label": "rideaux",
           "arDesc": "rideaux"
+        },
+        {
+          "type": "ar",
+          "pitch": 64,
+          "yaw": -42.1,
+          "label": "Système de refroidissement",
+          "arDesc": "Système de refroidissement"
         }
       ]
     }

@@ -3,20 +3,6 @@ import { useEffect, useState, useRef } from 'react'
 /* ─────────────────────── DATA ─────────────────────── */
 const VISITE_MODES = [
   {
-    id: 'auto',
-    title: { fr: 'Visite automatique', en: 'Auto Tour' },
-    desc:  { fr: 'Parcours guidé animé du campus complet avec narration', en: 'Animated guided campus walkthrough with narration' },
-    sub:   { fr: 'Guidé · Audio · Toutes zones', en: 'Guided · Audio · All zones' },
-    file:  '/walkthrough/visiteautomatique.html',
-    color: '#22C55E',
-    tag:   { fr: 'Guidé', en: 'Guided' },
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="5 3 19 12 5 21 5 3"/>
-      </svg>
-    ),
-  },
-  {
     id: 'manual',
     title: { fr: 'Visite manuelle', en: 'Manual Tour' },
     desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
@@ -64,7 +50,6 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
   const [activeBloc,   setActiveBloc]  = useState(null)
   const [hovered,      setHovered]     = useState(null)
   const [globeKey,     setGlobeKey]    = useState(0)
-  const [showGlobeEnd, setShowGlobeEnd] = useState(false) // overlay after globe finishes
   const [lineProgress, setLineProgress] = useState(0)
   const [particleTick, setParticleTick] = useState(0)    // drives particle animation
   const [vrSupported,  setVrSupported]  = useState(null) // null=checking, true, false
@@ -96,7 +81,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     globeTitle:   lang === 'fr' ? 'Survol du campus' : 'Campus overview',
     globeSub:     lang === 'fr' ? 'Vue satellite interactive — campus IAV Hassan II, Rabat' : 'Interactive satellite view — IAV Hassan II campus, Rabat',
     tourTitle:    lang === 'fr' ? 'Campus complet' : 'Full campus tour',
-    tourSub:      lang === 'fr' ? 'Deux modes pour explorer le campus' : 'Two modes to explore the campus',
+    tourSub:      lang === 'fr' ? 'Explorer le campus complet' : 'Explore the whole campus',
     sallesTitle:  lang === 'fr' ? 'Explorer par espace' : 'Explore by space',
     sallesSub:    lang === 'fr' ? 'Sélectionnez une serre ou un local technique' : 'Select a greenhouse or technical space',
     serresLabel:  lang === 'fr' ? 'Serres de recherche' : 'Research Greenhouses',
@@ -106,12 +91,6 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     live:         lang === 'fr' ? 'Visite 360°'         : '360° Tour',
     selectTour:   lang === 'fr' ? 'Sélectionnez un mode ci-dessus'       : 'Select a mode above',
     selectSalle:  lang === 'fr' ? 'Sélectionnez un espace pour commencer' : 'Select a space to begin',
-    // globe end-screen
-    endTitle:     lang === 'fr' ? 'Que souhaitez-vous explorer ?' : 'What would you like to explore?',
-    endSub:       lang === 'fr' ? 'Le survol est terminé. Choisissez votre prochaine destination.' : 'Overview complete. Choose your next destination.',
-    endReplay:    lang === 'fr' ? 'Rejouer le survol' : 'Replay overview',
-    endTours:     lang === 'fr' ? 'Visiter le campus complet' : 'Tour full campus',
-    endSalles:    lang === 'fr' ? 'Explorer par espace' : 'Explore by space',
     vrReady:      lang === 'fr' ? 'Compatible Meta Quest' : 'Meta Quest ready',
     vrReadySub:   lang === 'fr' ? 'Ouvrez ce site depuis votre casque — tous les viewers sont en VR immersif' : 'Open this site from your headset — all viewers support immersive VR',
     vrDesktop:    lang === 'fr' ? 'Expérience VR disponible' : 'VR experience available',
@@ -153,28 +132,9 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     return () => clearInterval(id)
   }, [])
 
-  /* ── globe message bridge ── */
-  useEffect(() => {
-    function handle(e) {
-      if (e.data?.type !== 'agro-globe-done') return
-      setShowGlobeEnd(true)  // show end-screen overlay
-      if (e.data.choice === 'salles') scrollSmooth(sallesRef)
-      if (e.data.choice === 'tour')   scrollSmooth(toursRef)
-    }
-    window.addEventListener('message', handle)
-    return () => window.removeEventListener('message', handle)
-  }, [])
-
   function scrollSmooth(ref, delay = 0) {
     setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), delay)
   }
-
-  function replayGlobe() {
-    setShowGlobeEnd(false)
-    setGlobeKey(k => k + 1)
-  }
-  function goToTours()  { scrollSmooth(toursRef,  80) }
-  function goToSalles() { scrollSmooth(sallesRef, 80) }
 
   function pickTour(mode)  { setActiveTour(mode.file);  scrollSmooth(tourViewerRef,  80) }
   function pickSerre(file) { setActiveSerre(file);       scrollSmooth(serreViewerRef, 80) }
@@ -480,91 +440,6 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
               />
             </div>
-
-            {/* END-SCREEN OVERLAY */}
-            {showGlobeEnd && (
-              <div style={{
-                position: 'absolute', inset: 0, borderRadius: '24px',
-                background: isDark ? 'rgba(5,12,26,0.92)' : 'rgba(240,250,244,0.94)',
-                backdropFilter: 'blur(16px)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: '28px', zIndex: 10,
-                animation: 'fadeIn 0.4s ease',
-              }}>
-                {/* pulsing campus icon */}
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)', animation: 'ripple 2s ease-out infinite' }} />
-                  <div style={{ position: 'absolute', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(139,92,246,0.2)', animation: 'ripple 2s ease-out infinite 0.5s' }} />
-                  <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg,#8B5CF6,#06B6D4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 32px rgba(139,92,246,0.5)' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 0v20M2 12h20"/>
-                    </svg>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 'clamp(1.2rem,2.5vw,1.7rem)', fontWeight: 800, color: ink, fontFamily: "'Outfit',sans-serif", letterSpacing: '-0.03em', marginBottom: '8px' }}>
-                    {T.endTitle}
-                  </div>
-                  <div style={{ fontSize: '13px', color: inkSub, lineHeight: 1.7 }}>
-                    {T.endSub}
-                  </div>
-                </div>
-
-                {/* action buttons */}
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  {/* replay */}
-                  <button onClick={replayGlobe} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '11px 22px', borderRadius: '14px',
-                    border: `1.5px solid ${glassBorder}`,
-                    background: glass, backdropFilter: 'blur(12px)',
-                    color: inkSub, fontSize: '13px', fontWeight: 600,
-                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
-                    transition: 'all 0.2s',
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-                    </svg>
-                    {T.endReplay}
-                  </button>
-
-                  {/* tours */}
-                  <button onClick={goToTours} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '11px 22px', borderRadius: '14px',
-                    border: '1.5px solid rgba(34,197,94,0.4)',
-                    background: 'rgba(34,197,94,0.12)', backdropFilter: 'blur(12px)',
-                    color: '#22C55E', fontSize: '13px', fontWeight: 700,
-                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
-                    boxShadow: '0 0 20px rgba(34,197,94,0.15)',
-                    transition: 'all 0.2s',
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    {T.endTours}
-                  </button>
-
-                  {/* salles */}
-                  <button onClick={goToSalles} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '11px 22px', borderRadius: '14px',
-                    border: '1.5px solid rgba(245,158,11,0.4)',
-                    background: 'rgba(245,158,11,0.12)', backdropFilter: 'blur(12px)',
-                    color: '#F59E0B', fontSize: '13px', fontWeight: 700,
-                    cursor: 'pointer', fontFamily: "'Outfit',sans-serif",
-                    boxShadow: '0 0 20px rgba(245,158,11,0.15)',
-                    transition: 'all 0.2s',
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    {T.endSalles}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -636,8 +511,6 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
         @keyframes nodeBreath_salles{ 0%,100%{box-shadow:0 0 0 4px rgba(245,158,11,0.18),0 0 16px rgba(245,158,11,0.35)} 50%{box-shadow:0 0 0 9px rgba(245,158,11,0.07),0 0 28px rgba(245,158,11,0.18)} }
         @keyframes particleGlow    { 0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.6;transform:translate(-50%,-50%) scale(0.7)} }
         @keyframes popIn           { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-        @keyframes fadeIn          { from{opacity:0} to{opacity:1} }
-        @keyframes ripple          { 0%{transform:scale(0.8);opacity:0.6} 100%{transform:scale(2);opacity:0} }
       `}</style>
     </section>
   )
