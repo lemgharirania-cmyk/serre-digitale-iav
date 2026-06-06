@@ -506,7 +506,7 @@ const BADGE_ICON_MAP = {
   'système de ventilation':    'fan',
   'système de refroidissement':'thermometer-snowflake',
   'fenetre auto':              'panel-top-open',
-  'rideaux auto':              'blinds',
+  'rideaux auto':              'thermometer',
   'sensors':                   'radio-tower',
   'fertigation':               'flask-conical',
   'station de fertigation':    'flask-conical',
@@ -864,13 +864,25 @@ async function drawARCard(desc){
     c.fillText(statusText||desc,COL_L,divY+60);
   }
 
+  /* ── ✕ Close button (top right of card) ── */
+  const btnR = 36, btnX = CARD_W - CARD_PAD - btnR, btnY = CARD_PAD + btnR + 4;
+  /* Circle bg */
+  c.beginPath(); c.arc(btnX, btnY, btnR, 0, Math.PI*2);
+  c.fillStyle = 'rgba(15,23,42,0.08)'; c.fill();
+  c.strokeStyle = 'rgba(15,23,42,0.15)'; c.lineWidth = 1.5; c.stroke();
+  /* ✕ lines */
+  const cs = 12;
+  c.strokeStyle = '#334155'; c.lineWidth = 3; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(btnX-cs, btnY-cs); c.lineTo(btnX+cs, btnY+cs); c.stroke();
+  c.beginPath(); c.moveTo(btnX+cs, btnY-cs); c.lineTo(btnX-cs, btnY+cs); c.stroke();
+
   /* ── Footer ── */
   const footY=CARD_H-CARD_PAD-44;
   c.strokeStyle='rgba(0,0,0,0.06)';c.lineWidth=1;
   c.beginPath();c.moveTo(COL_L,footY-14);c.lineTo(COL_R,footY-14);c.stroke();
   c.font='500 22px "DM Sans",system-ui,sans-serif';
-  c.fillStyle='rgba(100,116,139,0.55)';c.textBaseline='alphabetic';
-  c.fillText('✕  Touchez pour fermer',COL_L,footY);
+  c.fillStyle='rgba(100,116,139,0.45)';c.textBaseline='alphabetic';
+  c.fillText('Cliquez n\u2019importe o\u00f9 pour fermer',COL_L,footY);
 
   /* AgroBioTech watermark right */
   c.font='500 20px "DM Mono",monospace';
@@ -923,11 +935,13 @@ function _doRaycast(clientX, clientY){
   const rc = new THREE.Raycaster();
   rc.setFromCamera({x:nx, y:ny}, sc.camera);
 
-  /* 1. If AR panel is open — any click anywhere closes it */
+  /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
   const ap = $('arpanel');
   const apVisible = ap && (ap.getAttribute('visible') === 'true' || ap.getAttribute('visible') === true);
   if(apVisible){
-    closeAR();
+    if(Date.now() - _arOpenedAt > 350){
+      closeAR();
+    }
     return;
   }
 
@@ -1012,9 +1026,12 @@ function makeHotspot(hs){
 }
 
 /* ── AR panel ── */
+let _arOpenedAt = 0;
+
 async function openAR(desc){
   const card = $('arpanel');
   if(!card) return;
+  _arOpenedAt = Date.now();
 
   card.setAttribute('visible', true);
   _placeCard(card, 2.6);
@@ -1105,52 +1122,370 @@ function showErr(msg){const e=$('err');e.textContent=msg;e.style.display='block'
 function nudgeOffset(d){YAW_OFFSET+=d;$('cal-val').textContent=YAW_OFFSET;if(curZone&&curScene)load(curZone,curScene,true);}
 function logOffset(){console.log('YAW_OFFSET =',YAW_OFFSET);alert('YAW_OFFSET = '+YAW_OFFSET);}
 
-/* ── Minimal AR_CONTENT — title + first bullet for each hotspot key.
-   Add/edit entries here as your content grows. ── */
+/* ── AR_CONTENT — full rich version synced from ar-content.js ── */
 var AR_CONTENT = {
-  'fraise':      {title:'Fraises — Fragaria × ananassa',    sections:[{bullets:['Cultivées en gouttières surélevées en système hydroponique NFT. pH cible 5.8–6.2, EC 1.0–1.4 mS/cm, température 18–22 °C.']}]},
-  'courgette':   {title:'Courgette — Cucurbita pepo',        sections:[{bullets:['Plante rampante à croissance rapide. Pollinisation manuelle ou par insectes auxiliaires. Récolte à 15–20 cm.']}]},
-  'co2':         {title:'Injection CO₂',                     sections:[{bullets:['Enrichissement en CO₂ pour stimuler la photosynthèse. Objectif 800–1200 ppm en journée. Suspendu la nuit.']}]},
-  'brumisateur': {title:'Brumisateur Haute Pression',         sections:[{bullets:['Gouttelettes < 10 µm pour refroidissement adiabatique. Activé si T° > seuil max ou humidité < seuil min.']}]},
-  'ventilation': {title:'Ventilation Mécanique',              sections:[{bullets:['Renouvellement de lair, évacuation chaleur et humidité. Contrôle automatique par thermostat et hygrostat.']}]},
-  'ventilation dehors': {title:'Ventilation Extérieure',      sections:[{bullets:['Extracteur mural évacuant lair vicié. Synchronisé avec capteurs intérieurs pour régulation dynamique.']}]},
-  'système de ventilation': {title:'Système de Ventilation',  sections:[{bullets:['Ensemble extracteurs mécaniques, fenêtres automatiques et rideaux thermiques. Piloté par automate PLC.']}]},
-  'système de refroidissement': {title:'Système de Refroidissement', sections:[{bullets:['Maintien température dans la plage optimale. Activé automatiquement si T° dépasse le seuil maximal.']}]},
-  'fenetre auto': {title:'Fenêtres Automatiques',             sections:[{bullets:['Ventilation naturelle par effet cheminée. Ouverture si T° intérieure > seuil ET T° extérieure plus fraîche.']}]},
-  'rideaux auto': {title:'Rideaux Automatiques',              sections:[{bullets:['Isolation thermique nocturne et ombrage en journée. Déployés si T° extérieure entre 10 et 32 °C.']}]},
-  'fertigation':  {title:'Station de Fertigation',            sections:[{bullets:['Préparation et distribution de la solution nutritive. Ajustement pH et EC en continu selon les capteurs.']}]},
-  'station de fertigation': {title:'Station de Fertigation',  sections:[{bullets:['Cuves concentrés A et B, injection proportionnelle. pH cible 5.5–6.5, EC cible 1.0–2.2 mS/cm.']}]},
-  'sensors':      {title:'Capteurs IoT Environnementaux',    sections:[{bullets:['Réseau de capteurs T°, HR, VPD, pH, EC et niveau eau. Transmission toutes les 5 min vers Guardian Pro.']}]},
-  'audoucisseur': {title:'Adoucisseur Eau',               sections:[{bullets:['Réduction dureté par échange ionique. Prévient le colmatage des goutteurs et optimise les solutions.']}]},
-  'avocatier':    {title:'Avocatier — Persea americana',     sections:[{bullets:['Espèce en observation phytosanitaire. Études sur la résistance aux maladies fongiques et bactériennes.']}]},
-  'avocat':       {title:'Avocat — Persea americana',        sections:[{bullets:['Spécimen en observation. Cercosporose et pourriture phytophthoreenne des racines étudiées.']}]},
-  'cactus malade':{title:'Cactus — Spécimen en observation', sections:[{bullets:['Pourriture molle ou sèche du pivot. Isolé en zone quarantaine pour diagnostic et traitement.']}]},
-  'tomates malades':{title:'Tomates — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus ToMV et TYLCV. Inoculation contrôlée pour développer la lutte intégrée.']}]},
-  'tomate malades':{title:'Tomate — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus de la mosaïque. Diagnostic différentiel en cours.']}]},
-  'tomate malade': {title:'Tomate — Spécimen pathologique',  sections:[{bullets:['Symptômes de maladie fongique ou virale. Plant isolé pour étude en conditions contrôlées.']}]},
-  'ble malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Rouille brune, septoriose, oïdium, fusariose de lépi. Enjeu sécurité alimentaire.']}]},
-  'blé malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Puccinia triticina, Septoria tritici, Fusarium culmorum étudiés pour sélection variétale résistante.']}]},
-  'plante x':     {title:'Plante X — Spécimen non identifié',sections:[{bullets:['Identification taxonomique en cours. Présence de symptômes à caractériser pour diagnostic différentiel.']}]},
-  'monitoring':   {title:'Système de Monitoring AgroBioTech',sections:[{bullets:['Collecte temps réel de toutes les serres. Alertes automatiques, archivage historique, accès via géoportail.']}]},
-  'serre':        {title:'Complexe de Serres AgroBioTech',   sections:[{bullets:['5 unités spécialisées interconnectées. ~espace dédiés à la recherche et expérimentation agronomique.']}]},
-  'chaudière':    {title:'Chaudière',                         sections:[{bullets:['Production eau chaude pour chauffage serres. Maintien températures nocturnes au-dessus des seuils critiques.']}]},
-  'unité hydroponie':      {title:'Unité Hydroponie — S04',   sections:[{bullets:['Culture hors-sol NFT/DWC. Monitoring IoT pH, EC, T° et niveau solution en temps réel.']}]},
-  'unité horticulture':    {title:'Unité Horticulture — S02', sections:[{bullets:['Culture et expérimentation de plantes horticoles ornementales et maraîchères en serre contrôlée.']}]},
-  'unité agronomie':       {title:'Unité Agronomie — S03',    sections:[{bullets:['Expérimentation sur grandes cultures. Études fertilisation, irrigation et gestion des intrants.']}]},
-  'unité protection des plantes': {title:'Unité Protection des Plantes — S05', sections:[{bullets:['Étude maladies, ravageurs. Développement lutte biologique et intégrée contre les bioagresseurs.']}]},
-  'unité génétique et amélioration des plantes': {title:'Unité Génétique — S01', sections:[{bullets:['Amélioration génétique des plantes. Sélection variétale, croisements, résistance aux stress.']}]},
-  'salle de lavage':       {title:'Salle de Lavage',          sections:[{bullets:['Nettoyage et décontamination du matériel. Prévention de la contamination croisée entre unités.']}]},
-  'salle technique de commandes': {title:'Salle Technique de Commandes', sections:[{bullets:['Automates PLC, interface SCADA. Pilotage et supervision des équipements techniques des serres.']}]},
-  'salle de réunion':      {title:'Salle de Réunion',         sections:[{bullets:['Espace collaboratif pour réunions, formations et soutenances. Équipement audiovisuel disponible.']}]},
-  'salle de préparation':  {title:'Salle de Préparation',     sections:[{bullets:['Semis, greffage et multiplication végétative. Acclimatation des plants avant transplantation.']}]},
-  'salle de fertilisation et traitement deau': {title:'Salle Fertilisation & Eau', sections:[{bullets:['Traitement eau : osmose inverse, adoucissement. Préparation solutions fertilisantes concentrées.']}]},
-  'local technique déquipements': {title:'Local Technique',  sections:[{bullets:['Stockage et maintenance des équipements. Accès réservé au personnel technique qualifié.']}]},
-  'bloc gestion technique et administrative': {title:'Bloc Gestion Technique', sections:[{bullets:['Bureaux direction, salle de contrôle et locaux techniques. Gestion administrative du site.']}]},
-  'bloc protection des plantes': {title:'Bloc Protection des Plantes', sections:[{bullets:['Diagnostic phytosanitaire, lutte biologique. Conservation de collections de plantes malades.']}]},
+
+  'fraise': {
+    title:'Fraises — Fragaria × ananassa', color:'#ef4444', type:'plant', statusText:'Culture active',
+    sections:[
+      {label:'IDENTIFICATION', items:[
+        {k:'Variété', v:'Fragaria × ananassa'},
+        {k:'Famille',  v:'Rosacées'},
+        {k:'Système',  v:'Hors-sol hydroponique', tag:'blue'},
+        {k:'Stade',    v:'À compléter'},
+      ]},
+      {label:'CONDITIONS OPTIMALES', items:[
+        {k:'Température', v:'18 – 22 °C'},
+        {k:'Humidité',    v:'60 – 75 %'},
+        {k:'pH solution', v:'5.8 – 6.2'},
+        {k:'EC solution', v:'1.0 – 1.4 mS/cm'},
+        {k:'Photopériode',v:'12 – 16 h'},
+      ]},
+      {label:'CULTURE', bullets:[
+        'Cultivée en gouttières surélevées pour optimiser la collecte de solution nutritive.',
+        'Substrat inerte (fibre de coco ou perlite) pour drainage et aération racinaire.',
+        'Irrigation programmée par cycles courts, pH et EC ajustés en continu.',
+      ]},
+    ],
+  },
+
+  'courgette': {
+    title:'Courgette — Cucurbita pepo', color:'#22c55e', type:'plant', statusText:'Culture active',
+    sections:[
+      {label:'IDENTIFICATION', items:[
+        {k:'Espèce',  v:'Cucurbita pepo'},
+        {k:'Famille', v:'Cucurbitacées'},
+        {k:'Système', v:'Sol ou substrat', tag:'green'},
+        {k:'Stade',   v:'À compléter'},
+      ]},
+      {label:'CONDITIONS OPTIMALES', items:[
+        {k:'Température jour', v:'22 – 28 °C'},
+        {k:'Température nuit', v:'15 – 18 °C'},
+        {k:'Humidité',         v:'60 – 70 %'},
+      ]},
+      {label:'CULTURE', bullets:[
+        'Plante rampante à croissance rapide requérant tuteurage ou palissage vertical.',
+        'Pollinisation nécessaire — assurée manuellement ou par insectes auxiliaires.',
+        'Récolte à stade immature (15–20 cm) pour meilleure qualité gustative.',
+      ]},
+    ],
+  },
+
+  'co2': {
+    title:'Injection CO₂', color:'#10b981', type:'system', statusText:'Injection active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "L'enrichissement en CO₂ stimule la photosynthèse et accélère la croissance végétale.",
+        "Objectif : maintenir une concentration entre 800 et 1200 ppm en journée.",
+        "Injection suspendue automatiquement la nuit ou lorsque la ventilation est ouverte.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Source',              v:'Bouteille CO₂ comprimé'},
+        {k:'Concentration cible', v:'800 – 1200 ppm'},
+        {k:'Déclenchement',       v:'Capteur VPD / minuterie'},
+        {k:'Sécurité',            v:'Coupure ventilation active'},
+      ]},
+    ],
+  },
+
+  'brumisateur': {
+    title:'Brumisateur Haute Pression', color:'#14b8a6', type:'system', statusText:'Brumisation active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Produit un brouillard de gouttelettes < 10 µm qui s'évaporent avant d'atteindre le sol.",
+        "Assure le refroidissement adiabatique de l'air ambiant et maintien de l'humidité.",
+        "Activé lorsque la température dépasse le seuil maximal ou l'humidité descend sous le seuil.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Pression',  v:'À compléter bar'},
+        {k:'Débit',     v:'À compléter L/h'},
+        {k:'Buse',      v:'Céramique haute pression'},
+        {k:'Contrôle',  v:'Automatique / seuil'},
+      ]},
+    ],
+  },
+
+  'ventilation': {
+    title:'Ventilation Mécanique', color:'#3b82f6', type:'system', statusText:'Ventilation active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Assure le renouvellement d'air et évacue la chaleur et l'excès d'humidité.",
+        "Maintient la concentration en CO₂ à un niveau optimal pour la photosynthèse.",
+        "Activée automatiquement selon les seuils de température et d'humidité.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Type',     v:'Extracteur axial'},
+        {k:'Débit',    v:'À compléter m³/h'},
+        {k:'Contrôle', v:'Thermostat + hygrostat'},
+        {k:'Vitesse',  v:'À compléter tr/min'},
+      ]},
+    ],
+  },
+
+  'ventilation dehors': {
+    title:'Ventilation Extérieure', color:'#06b6d4', type:'system', statusText:'Ventilation extérieure',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Extracteur mural assurant l'évacuation de l'air vicié vers l'extérieur.",
+        "Complémente la ventilation zénithale naturelle par les fenêtres automatiques.",
+        "Synchronisé avec les capteurs intérieurs pour une régulation dynamique.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Emplacement', v:'Mur pignon extérieur'},
+        {k:'Type',        v:'Extracteur centrifuge'},
+        {k:'Débit',       v:'À compléter m³/h'},
+        {k:'Contrôle',    v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'système de ventilation': {
+    title:'Système de Ventilation Général', color:'#3b82f6', type:'system', statusText:'Actif',
+    sections:[
+      {label:'COMPOSANTS', bullets:[
+        "Ensemble des extracteurs mécaniques, fenêtres automatiques et écrans thermiques.",
+        "Régulation centralisée depuis la salle de contrôle via automates programmables.",
+        "Monitoring en temps réel des paramètres climatiques par les capteurs IoT.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Type',      v:'Hybride — mécanique + naturel'},
+        {k:'Contrôle',  v:'Automate PLC'},
+        {k:'Capteurs',  v:'T°, HR, VPD'},
+        {k:'Protocole', v:'Guardian Pro API'},
+      ]},
+    ],
+  },
+
+  'système de refroidissement': {
+    title:'Système de Refroidissement', color:'#3b82f6', type:'system', statusText:'Refroidissement actif',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Assure le maintien de la température dans la plage optimale pour les cultures.",
+        "Fonctionne conjointement avec la ventilation et le système de brumisation.",
+        "Activé automatiquement lorsque la température mesurée dépasse le seuil maximal.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Type',                v:'À compléter'},
+        {k:'Puissance',           v:'À compléter kW'},
+        {k:'Seuil déclenchement', v:'T° > max configuré'},
+        {k:'Contrôle',            v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'rideaux auto': {
+    title:'Écrans Thermiques', color:'#fbbf24', type:'system', statusText:'Déployés',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Réduit les pertes thermiques nocturnes en formant une barrière isolante sous la toiture.",
+        "Assure un ombrage thermique en journée pour prévenir la surchauffe estivale.",
+        "Le déploiement est conditionné par la température extérieure pour éviter le confinement.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Matériau',            v:'À compléter'},
+        {k:'Transmission lumière',v:'À compléter'},
+        {k:'Plage déploiement',   v:'10 – 32 °C ext.'},
+        {k:'Contrôle',            v:'Automatique'},
+      ]},
+    ],
+  },
+
+  'fenetre auto': {
+    title:'Fenêtres Automatiques', color:'#22d3ee', type:'system', statusText:'Ouverture active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Ventilation naturelle par effet cheminée — l'air chaud s'échappe par les châssis zénithaux.",
+        "Ouverture conditionnée : T° intérieure > seuil max ET T° extérieure plus fraîche.",
+        "Extraction passive silencieuse, complémentaire à la ventilation mécanique.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Type',          v:'Châssis zénithaux'},
+        {k:'Déclenchement', v:'ΔT intérieur / extérieur'},
+        {k:'Ouverture',     v:'À compléter'},
+        {k:'Sécurité',      v:'À compléter'},
+      ]},
+    ],
+  },
+
+  'fertigation': {
+    title:'Station de Fertigation', color:'#0ea5e9', type:'fertigation', statusText:'Fertigation active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Prépare et distribue la solution nutritive aux cultures à intervalles programmés.",
+        "Ajuste dynamiquement pH et EC en fonction des mesures en temps réel.",
+        "Fertilisation précise en macro et micro-éléments selon le stade végétatif.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'Volume réservoir',  v:'À compléter L'},
+        {k:'pH cible',          v:'5.5 – 6.5'},
+        {k:'EC cible',          v:'1.0 – 2.2 mS/cm'},
+        {k:'Fréquence cycles',  v:'Programmable'},
+        {k:'Régulation',        v:'Automatique', tag:'blue'},
+      ]},
+    ],
+  },
+
+  'station de fertigation': {
+    title:'Station de Fertigation', color:'#0ea5e9', type:'fertigation', statusText:'Fertigation active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Cuves concentrés A et B avec injection proportionnelle par venturi ou pompe doseuse.",
+        "pH cible 5.5–6.5 maintenu par injection acide / base selon sondes en ligne.",
+        "EC cible 1.0–2.2 mS/cm selon la culture et le stade végétatif.",
+      ]},
+      {label:'PARAMÈTRES', items:[
+        {k:'pH cible',    v:'5.5 – 6.5'},
+        {k:'EC cible',    v:'1.0 – 2.2 mS/cm'},
+        {k:'Régulation',  v:'Automatique', tag:'blue'},
+      ]},
+    ],
+  },
+
+  'sensors': {
+    title:'Capteurs IoT Environnementaux', color:'#8b5cf6', type:'sensor', statusText:'Actif',
+    sections:[
+      {label:'CAPTEURS DÉPLOYÉS', items:[
+        {k:'Température ambiante', v:'°C'},
+        {k:'Humidité relative',    v:'%'},
+        {k:'VPD',                  v:'kPa'},
+        {k:'pH solution',          v:'—'},
+        {k:'Conductivité EC',      v:'mS/cm'},
+        {k:'Niveau eau',           v:'%'},
+      ]},
+      {label:'INFRASTRUCTURE', items:[
+        {k:'Réseau',      v:'Guardian Pro API'},
+        {k:'Fréquence',   v:'Toutes les 2 min'},
+        {k:'Alertes',     v:'Email automatique'},
+        {k:'Historique',  v:'Supabase / PostGIS'},
+      ]},
+    ],
+  },
+
+  'monitoring': {
+    title:'Système de Monitoring', color:'#6366f1', type:'system', statusText:'Supervision active',
+    sections:[
+      {label:'FONCTIONS', bullets:[
+        "Collecte en temps réel de toutes les serres via Guardian Pro API.",
+        "Alertes automatiques par email en cas de dépassement de seuil.",
+        "Archivage historique et visualisation via le géoportail AgroBioTech.",
+      ]},
+      {label:'ARCHITECTURE', items:[
+        {k:'Backend',     v:'FastAPI / Render'},
+        {k:'Base de données', v:'Supabase / PostGIS'},
+        {k:'Frontend',    v:'React + Leaflet'},
+        {k:'IoT API',     v:'Guardian Pro'},
+      ]},
+    ],
+  },
+
+  'unité génétique et amélioration des plantes': {
+    title:'Unité Génétique et Amélioration', color:'#10b981', type:'system', statusText:'Unité S01',
+    sections:[
+      {label:'MISSION', bullets:[
+        "Recherche sur l'amélioration génétique des plantes cultivées en conditions contrôlées.",
+        "Sélection variétale, croisements et évaluation de performances agronomiques.",
+        "Travaux sur la résistance aux maladies et l'adaptation aux stress climatiques.",
+      ]},
+      {label:'INFORMATIONS', items:[
+        {k:'Code serre', v:'S01', tag:'green'},
+        {k:'Surface',    v:'À compléter m²'},
+        {k:'Cultures',   v:'Espèces améliorées'},
+        {k:'Accès',      v:'Personnel autorisé'},
+      ]},
+    ],
+  },
+
+  'unité horticulture': {
+    title:'Unité Horticulture', color:'#22c55e', type:'system', statusText:'Unité S02',
+    sections:[
+      {label:'MISSION', bullets:[
+        "Culture et expérimentation de plantes horticoles ornementales et maraîchères.",
+        "Étude des techniques de production en conditions de serre contrôlée.",
+        "Formation pratique des étudiants aux méthodes horticoles modernes.",
+      ]},
+      {label:'INFORMATIONS', items:[
+        {k:'Code serre', v:'S02', tag:'green'},
+        {k:'Surface',    v:'À compléter m²'},
+        {k:'Cultures',   v:'Horticulture ornementale'},
+        {k:'Accès',      v:'Étudiants et personnel'},
+      ]},
+    ],
+  },
+
+  'unité agronomie': {
+    title:'Unité Agronomie', color:'#f59e0b', type:'system', statusText:'Unité S03',
+    sections:[
+      {label:'MISSION', bullets:[
+        "Expérimentation agronomique sur les grandes cultures et systèmes de production.",
+        "Études sur la fertilisation, l'irrigation et la gestion des intrants agricoles.",
+        "Évaluation de nouvelles variétés céréalières et légumineuses.",
+      ]},
+      {label:'INFORMATIONS', items:[
+        {k:'Code serre', v:'S03', tag:'amber'},
+        {k:'Surface',    v:'À compléter m²'},
+        {k:'Cultures',   v:'Grandes cultures'},
+        {k:'Accès',      v:'Étudiants et personnel'},
+      ]},
+    ],
+  },
+
+  'unité hydroponie': {
+    title:'Unité Hydroponie', color:'#06b6d4', type:'fertigation', statusText:'Unité S04',
+    sections:[
+      {label:'MISSION', bullets:[
+        "Culture hors-sol en systèmes NFT et DWC avec monitoring IoT en temps réel.",
+        "Suivi pH, EC, température et niveau de solution toutes les 2 minutes.",
+        "Pilotage via le géoportail AgroBioTech et alertes automatiques.",
+      ]},
+      {label:'INFORMATIONS', items:[
+        {k:'Code serre', v:'S04', tag:'blue'},
+        {k:'Système',    v:'NFT / DWC'},
+        {k:'IoT',        v:'Guardian Pro API'},
+        {k:'Accès',      v:'Étudiants et personnel'},
+      ]},
+    ],
+  },
+
+  'unité protection des plantes': {
+    title:'Unité Protection des Plantes', color:'#ef4444', type:'system', statusText:'Unité S05',
+    sections:[
+      {label:'MISSION', bullets:[
+        "Étude des maladies, ravageurs et bioagresseurs affectant les cultures.",
+        "Développement de méthodes de lutte biologique et intégrée.",
+        "Diagnostic phytosanitaire et élaboration de stratégies de protection.",
+      ]},
+      {label:'INFORMATIONS', items:[
+        {k:'Code serre', v:'S05', tag:'red'},
+        {k:'Surface',    v:'À compléter m²'},
+        {k:'Cultures',   v:'Spécimens pathologiques'},
+        {k:'Accès',      v:'Personnel autorisé'},
+      ]},
+    ],
+  },
+
+  'audoucisseur':  {title:'Adoucisseur d\u2019Eau', color:'#06b6d4', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Réduction de la dureté de l'eau par échange ionique.","Prévient le colmatage des goutteurs et optimise les solutions nutritives."]},{label:'PARAMÈTRES',items:[{k:'Type',v:'Échangeur ionique'},{k:'Débit',v:'À compléter m³/h'},{k:'Régénération',v:'Automatique / sel'}]}]},
+  'avocatier':     {title:'Avocatier — Persea americana', color:'#22c55e', type:'plant', statusText:'Observation', sections:[{label:'ÉTAT',bullets:["Espèce en observation phytosanitaire.","Études sur la résistance aux maladies fongiques et bactériennes."]}]},
+  'cactus malade': {title:'Cactus — Spécimen en observation', color:'#f59e0b', type:'plant', statusText:'Isolé', sections:[{label:'DIAGNOSTIC',bullets:["Pourriture molle ou sèche du pivot.","Isolé en zone quarantaine pour diagnostic et traitement."]}]},
+  'tomates malades':{title:'Tomates — Étude phytopathologique', color:'#ef4444', type:'plant', statusText:'Inoculées', sections:[{label:'PATHOGÈNES',bullets:["Mildiou, Botrytis, virus ToMV et TYLCV.","Inoculation contrôlée pour développer la lutte intégrée."]}]},
+  'tomate malades': {title:'Tomate — Étude phytopathologique', color:'#ef4444', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Mildiou, Botrytis, virus de la mosaïque.","Diagnostic différentiel en cours."]}]},
+  'tomate malade':  {title:'Tomate — Spécimen pathologique', color:'#ef4444', type:'plant', statusText:'Isolé', sections:[{label:'ÉTAT',bullets:["Symptômes de maladie fongique ou virale.","Plant isolé pour étude en conditions contrôlées."]}]},
+  'ble malade':     {title:'Blé — Étude phytopathologique', color:'#f59e0b', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Rouille brune, septoriose, oïdium, fusariose de l'épi.","Enjeu pour la sécurité alimentaire."]}]},
+  'blé malade':     {title:'Blé — Étude phytopathologique', color:'#f59e0b', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Puccinia triticina, Septoria tritici, Fusarium culmorum.","Études pour sélection variétale résistante."]}]},
+  'plante x':       {title:'Plante X — Spécimen non identifié', color:'#94a3b8', type:'plant', statusText:'À identifier', sections:[{label:'ÉTAT',bullets:["Identification taxonomique en cours.","Présence de symptômes à caractériser pour diagnostic différentiel."]}]},
+  'serre':          {title:'Complexe de Serres AgroBioTech', color:'#22c55e', type:'system', statusText:'5 unités actives', sections:[{label:'PRÉSENTATION',bullets:["5 unités spécialisées interconnectées : Génétique, Horticulture, Agronomie, Hydroponie, Protection.","Chaque serre est équipée de capteurs IoT et d'un système de contrôle climatique automatisé."]},{label:'DONNÉES',items:[{k:'Surface totale',v:'À compléter m²'},{k:'Serres',v:'5 unités spécialisées'},{k:'IoT',v:'Guardian Pro API'},{k:'Gestion',v:'IAV Hassan II'}]}]},
+  'chaudière':      {title:'Chaudière', color:'#f97316', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Production d'eau chaude pour le chauffage des serres.","Maintien des températures nocturnes au-dessus des seuils critiques."]},{label:'PARAMÈTRES',items:[{k:'Type',v:'À compléter'},{k:'Puissance',v:'À compléter kW'},{k:'Combustible',v:'À compléter'}]}]},
+  'salle de lavage':{title:'Salle de Lavage', color:'#06b6d4', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Nettoyage et décontamination du matériel de culture.","Prévention de la contamination croisée entre les unités."]}]},
+  'salle technique de commandes':{title:'Salle Technique de Commandes', color:'#6366f1', type:'system', statusText:'Supervision active', sections:[{label:'FONCTIONS',bullets:["Automates PLC et interface SCADA pour pilotage des équipements.","Supervision et monitoring de toutes les serres en temps réel."]},{label:'SYSTÈMES',items:[{k:'Automate',v:'PLC industriel'},{k:'Interface',v:'SCADA'},{k:'Capteurs',v:'Guardian Pro API'}]}]},
+  'salle de réunion':{title:'Salle de Réunion', color:'#8b5cf6', type:'system', statusText:'Disponible', sections:[{label:'FONCTIONS',bullets:["Espace collaboratif pour réunions, formations et soutenances.","Équipement audiovisuel disponible."]}]},
+  'salle de préparation':{title:'Salle de Préparation', color:'#22c55e', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Semis, greffage et multiplication végétative.","Acclimatation des plants avant transplantation en serre."]}]},
+  'salle de fertilisation et traitement deau':{title:'Salle Fertilisation & Eau', color:'#0ea5e9', type:'fertigation', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Traitement de l'eau par osmose inverse et adoucissement.","Préparation des solutions fertilisantes concentrées."]},{label:'ÉQUIPEMENTS',items:[{k:'Osmoseur',v:'À compléter'},{k:'Adoucisseur',v:'Échangeur ionique'},{k:'Stockage',v:'Cuves concentrés A/B'}]}]},
+  'local technique déquipements':{title:'Local Technique', color:'#64748b', type:'system', statusText:'Accès restreint', sections:[{label:'FONCTIONS',bullets:["Stockage et maintenance des équipements.","Accès réservé au personnel technique qualifié."]}]},
+  'bloc gestion technique et administrative':{title:'Bloc Gestion Technique', color:'#6366f1', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Bureaux de direction, salle de contrôle et locaux techniques.","Gestion administrative et technique du site AgroBioTech."]}]},
+  'bloc protection des plantes':{title:'Bloc Protection des Plantes', color:'#ef4444', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Diagnostic phytosanitaire et lutte biologique.","Conservation de collections de plantes malades pour référence."]}]},
 };
 /* Contrôle entries 1–15 */
 for(var _i=1;_i<=15;_i++){
-  AR_CONTENT['controle '+_i]={title:'Contrôle '+_i,sections:[{bullets:['Armoire de commande n°'+_i+' assurant la gestion automatisée des équipements. Protocole industriel.']}]};
+  AR_CONTENT['controle '+_i]={title:'Contrôle '+_i, color:'#6366f1', type:'system', statusText:'Armoire '+_i, sections:[{label:'FONCTIONS',bullets:['Armoire de commande n°'+_i+' assurant la gestion automatisée des équipements.','Protocole de communication industriel intégré.']}]};
 }
 
 async function bootVR(){
