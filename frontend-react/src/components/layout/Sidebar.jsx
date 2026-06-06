@@ -1,213 +1,289 @@
-// src/components/layout/Sidebar.jsx
-import { useState, useEffect } from 'react'
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+// src/components/layout/Sidebar.jsx  (dashboard admin)
+// Sidebar FIXE — position:fixed, height:100vh, indépendante du scroll du contenu
+import { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, LineChart, Bell, SlidersHorizontal,
-  Download, FlaskConical, LogOut, Sun, Moon, Globe, Settings, Gauge,
+  LayoutDashboard, Server, BarChart2, Bell, Sliders,
+  Download, Settings, FlaskConical,
+  ChevronLeft, ChevronRight, Sun, Moon,
 } from 'lucide-react'
 
-// Sections scrollables (sur la page d'accueil du dashboard)
-const ANCHORS = ['vue', 'etat', 'graphiques']
-
 const NAV = [
-  {
-    section: { FR:'Supervision', EN:'Monitoring' },
-    links: [
-      { anchor:'vue',        labelFR:'Vue d\'ensemble',  labelEN:'Overview',          Icon:LayoutDashboard },
-      { anchor:'etat',       labelFR:'État de la serre', labelEN:'Greenhouse status', Icon:Gauge },
-      { anchor:'graphiques', labelFR:'Graphiques',       labelEN:'Charts',            Icon:LineChart },
-      { route:'/dashboard/alertes', labelFR:'Alertes',   labelEN:'Alerts',            Icon:Bell, badge:true },
-    ]
-  },
-  {
-    section: { FR:'Outils', EN:'Tools' },
-    links: [
-      { route:'/dashboard/calculateur', labelFR:'Solution Nutritive', labelEN:'Nutrient Solution', Icon:FlaskConical },
-    ]
-  },
-  {
-    section: { FR:'Configuration', EN:'Settings' },
-    links: [
-      { route:'/dashboard/seuils',     labelFR:'Seuils agronomiques', labelEN:'Thresholds',  Icon:SlidersHorizontal },
-      { route:'/dashboard/export',     labelFR:'Export de données',   labelEN:'Export data', Icon:Download },
-      { route:'/dashboard/parametres', labelFR:'Paramètres',          labelEN:'Settings',    Icon:Settings },
-    ]
-  },
+  { to: '/dashboard',            icon: LayoutDashboard, labelFR: 'Vue d\'ensemble', labelEN: 'Overview',    id: 'vue'         },
+  { to: '/dashboard#seuils',     icon: Sliders,         labelFR: 'Seuils',          labelEN: 'Thresholds',  id: 'seuils'      },
+  { to: '/dashboard#etat',       icon: Server,          labelFR: 'État serre',      labelEN: 'Status',      id: 'etat'        },
+  { to: '/dashboard#graphiques', icon: BarChart2,       labelFR: 'Graphiques',      labelEN: 'Charts',      id: 'graphiques'  },
+  { to: '/dashboard#calculateur',icon: FlaskConical,    labelFR: 'Calculateur NS',  labelEN: 'NS Calc',     id: 'calculateur' },
+  { to: '/dashboard#export',     icon: Download,        labelFR: 'Export',          labelEN: 'Export',      id: 'export'      },
+  { to: '/dashboard/alertes',    icon: Bell,            labelFR: 'Alertes',         labelEN: 'Alerts',      id: 'alertes', badge: true },
+  { to: '/dashboard/parametres', icon: Settings,        labelFR: 'Paramètres',      labelEN: 'Settings',    id: 'parametres'  },
 ]
 
-export default function Sidebar({ alertCount, theme, setTheme, lang, setLang }) {
-  const navigate = useNavigate()
+export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang }) {
+  const [open, setOpen] = useState(true)
   const location = useLocation()
-  const isDark   = theme === 'dark'
-  const onHome   = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
-  const user     = JSON.parse(localStorage.getItem('sdi_user') || '{}')
+  const isDark = theme === 'dark'
 
-  const [activeId, setActiveId] = useState('vue')
+  const W         = open ? 220 : 60
+  const bg        = isDark ? '#070F1C' : '#FFFFFF'
+  const border    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'
+  const ink       = isDark ? '#F1F5F9' : '#0F172A'
+  const ink3      = isDark ? '#94A3B8' : '#64748B'
+  const ink4      = isDark ? '#475569' : '#94A3B8'
+  const hoverBg   = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  const activeBg  = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'
+  const activeClr = '#22C55E'
 
-  // Scroll-spy : surligne la section visible (uniquement sur la page d'accueil)
-  useEffect(() => {
-    if (!onHome) return
-    const obs = new IntersectionObserver(
-      (entries) => entries.forEach(e => { if (e.isIntersecting) setActiveId(e.target.id) }),
-      { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
-    )
-    const timer = setTimeout(() => {
-      ANCHORS.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el) })
-    }, 250)
-    return () => { clearTimeout(timer); obs.disconnect() }
-  }, [onHome])
+  function isActive(item) {
+    if (item.id === 'vue') return location.pathname === '/dashboard' || location.pathname === '/dashboard/'
+    if (item.to.startsWith('/dashboard/')) return location.pathname === item.to
+    return false
+  }
 
-  function goTo(id) {
-    setActiveId(id)
-    if (!onHome) {
-      navigate('/dashboard')
-      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' }), 140)
-    } else {
-      document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' })
+  function scrollTo(anchorId) {
+    const el = document.getElementById(anchorId)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function handleClick(item) {
+    if (item.to.includes('#')) {
+      const anchor = item.to.split('#')[1]
+      // If already on dashboard, just scroll
+      if (location.pathname === '/dashboard' || location.pathname === '/dashboard/') {
+        scrollTo(anchor)
+      }
+      // Otherwise navigate then scroll (React Router will handle the path)
     }
   }
 
-  function logout() {
-    localStorage.removeItem('sdi_token')
-    localStorage.removeItem('sdi_user')
-    navigate('/login')
-  }
-
-  const bg          = isDark ? 'rgba(7,17,31,0.92)'     : 'rgba(255,255,255,0.72)'
-  const border      = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,48,36,0.08)'
-  const ink         = isDark ? '#F8FAFC' : '#0c1f17'
-  const ink3        = isDark ? '#94A3B8' : '#6b7e75'
-  const ink4        = isDark ? '#64748B' : '#9aa8a0'
-  const activeBg     = isDark ? 'linear-gradient(135deg,rgba(34,197,94,0.22),rgba(6,182,212,0.16))' : 'var(--ink)'
-  const activeColor  = isDark ? '#F8FAFC' : 'white'
-  const activeBorder = isDark ? '1px solid rgba(34,197,94,0.3)' : 'none'
-  const hoverBg      = isDark ? 'rgba(255,255,255,0.05)' : 'var(--surface-glass)'
-  const pillBg       = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,48,36,0.05)'
-  const pillBorder   = isDark ? 'rgba(255,255,255,0.1)'  : 'rgba(16,48,36,0.12)'
-
-  const linkStyle = (active) => ({
-    display:'flex', alignItems:'center', gap:10, padding:'9px 10px', fontSize:13,
-    borderRadius:10, cursor:'pointer', textDecoration:'none', transition:'all 0.15s ease',
-    marginBottom:2, width:'100%', textAlign:'left', fontFamily:'inherit',
-    background: active ? activeBg : 'transparent',
-    color: active ? activeColor : ink3,
-    border: active ? activeBorder : '1px solid transparent',
-    fontWeight: active ? 500 : 400,
-  })
-
-  const Badge = ({ active }) => (
-    alertCount > 0 ? (
-      <span style={{
-        fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 6px', borderRadius:999,
-        background: active ? 'rgba(255,255,255,0.2)' : 'rgba(214,147,42,0.15)',
-        color: active ? 'white' : '#d6932a', fontWeight:600,
-      }}>{alertCount}</span>
-    ) : null
-  )
-
   return (
     <aside style={{
-      width:240, padding:'20px 14px', borderRight:`1px solid ${border}`, background:bg,
-      backdropFilter:'blur(14px)', position:'sticky', top:0, alignSelf:'flex-start',
-      height:'100vh', display:'flex', flexDirection:'column', gap:2, overflowY:'auto', transition:'background 0.3s ease',
+      // ── THE KEY FIX: position fixed, full viewport height ──
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      height: '100vh',
+      zIndex: 1000,
+      width: W,
+      flexShrink: 0,
+      // ──────────────────────────────────────────────────────
+      background: bg,
+      borderRight: '1px solid ' + border,
+      display: 'flex',
+      flexDirection: 'column',
+      transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+      overflow: 'hidden',
+      boxShadow: isDark
+        ? '4px 0 24px rgba(0,0,0,0.4)'
+        : '4px 0 16px rgba(0,0,0,0.06)',
     }}>
 
-      {/* Brand */}
-      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20, padding:'4px 8px' }}>
-        <div style={{ width:36, height:36, borderRadius:11, overflow:'hidden', flexShrink:0, background:'white',
-          boxShadow:'0 0 0 1px rgba(124,201,160,0.35),0 4px 12px rgba(47,154,100,0.2)' }}>
-          <img src="/iav_logo.png" alt="IAV Hassan II" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-        </div>
-        <div>
-          <div style={{ fontSize:13, fontWeight:600, letterSpacing:'-0.01em', color:ink }}>
-            {lang === 'FR' ? 'Espace Gérant' : 'Admin Space'}
+      {/* ── Logo / Brand ── */}
+      <div style={{
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+        padding: open ? '0 16px' : '0',
+        justifyContent: open ? 'space-between' : 'center',
+        borderBottom: '1px solid ' + border,
+        flexShrink: 0,
+      }}>
+        {open && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: 'linear-gradient(135deg,#22C55E,#059669)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>S</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                SDI
+              </div>
+              <div style={{ fontSize: 9, color: ink4, fontWeight: 500, letterSpacing: '0.03em', lineHeight: 1 }}>
+                AgroBioTech
+              </div>
+            </div>
           </div>
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:ink4, letterSpacing:'0.06em', textTransform:'uppercase' }}>
-            AgroBioTech · IAV
-          </div>
-        </div>
+        )}
+        <button
+          onClick={() => setOpen(o => !o)}
+          style={{
+            width: 28, height: 28, borderRadius: 8,
+            background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+            border: '1px solid ' + border,
+            color: ink3, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', flexShrink: 0,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'; e.currentTarget.style.color = activeClr }}
+          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = ink3 }}
+        >
+          {open ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+        </button>
       </div>
 
-      {/* Nav */}
-      {NAV.map(group => (
-        <div key={group.section.FR}>
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:ink4, letterSpacing:'0.12em', textTransform:'uppercase', padding:'12px 10px 4px' }}>
-            {lang === 'FR' ? group.section.FR : group.section.EN}
-          </div>
+      {/* ── Nav items ── */}
+      <nav style={{
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: '10px 8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        // Hide scrollbar
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}>
+        {NAV.map((item) => {
+          const Icon    = item.icon
+          const active  = isActive(item)
+          const hasAnchor = item.to.includes('#')
+          const badgeCount = item.badge ? alertCount : 0
 
-          {group.links.map(link => {
-            const label = lang === 'FR' ? link.labelFR : link.labelEN
-            const Icon  = link.Icon
+          const itemStyle = {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: open ? '0 10px' : '0',
+            justifyContent: open ? 'flex-start' : 'center',
+            height: 40,
+            borderRadius: 10,
+            border: 'none',
+            cursor: 'pointer',
+            background: active ? activeBg : 'transparent',
+            color: active ? activeClr : ink3,
+            fontSize: 13,
+            fontWeight: active ? 700 : 500,
+            fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
+            transition: 'all 0.15s',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            borderLeft: '2px solid ' + (active ? activeClr : 'transparent'),
+            width: '100%',
+            boxSizing: 'border-box',
+          }
 
-            if (link.route) {
-              return (
-                <NavLink key={link.route} to={link.route}
-                  style={({ isActive }) => linkStyle(isActive)}
-                  onMouseEnter={e => { if (location.pathname !== link.route) e.currentTarget.style.background = hoverBg }}
-                  onMouseLeave={e => { if (location.pathname !== link.route) e.currentTarget.style.background = 'transparent' }}>
-                  {({ isActive }) => (
-                    <>
-                      <Icon size={15} style={{ flexShrink:0 }} />
-                      <span style={{ flex:1 }}>{label}</span>
-                      {link.badge && <Badge active={isActive} />}
-                    </>
-                  )}
-                </NavLink>
-              )
-            }
+          const content = (
+            <>
+              <Icon
+                size={16}
+                style={{
+                  flexShrink: 0,
+                  color: active ? activeClr : ink4,
+                  transition: 'color 0.15s',
+                }}
+              />
+              {open && (
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {lang === 'EN' ? item.labelEN : item.labelFR}
+                </span>
+              )}
+              {open && badgeCount > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  padding: '1px 6px', borderRadius: 10,
+                  background: '#EF4444', color: 'white',
+                  flexShrink: 0,
+                }}>
+                  {badgeCount}
+                </span>
+              )}
+              {!open && badgeCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: 6, right: 6,
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: '#EF4444',
+                }} />
+              )}
+            </>
+          )
 
-            const active = onHome && activeId === link.anchor
+          if (hasAnchor) {
             return (
-              <button key={link.anchor} onClick={() => goTo(link.anchor)} style={linkStyle(active)}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = hoverBg }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
-                <Icon size={15} style={{ flexShrink:0 }} />
-                <span style={{ flex:1 }}>{label}</span>
+              <button
+                key={item.id}
+                onClick={() => handleClick(item)}
+                style={{ ...itemStyle, position: 'relative' }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 } }}
+              >
+                {content}
               </button>
             )
-          })}
-        </div>
-      ))}
+          }
 
-      <div style={{ flex:1 }} />
+          return (
+            <NavLink
+              key={item.id}
+              to={item.to}
+              style={{ ...itemStyle, position: 'relative' }}
+              onMouseEnter={e => { if (!active) { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink } }}
+              onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 } }}
+            >
+              {content}
+            </NavLink>
+          )
+        })}
+      </nav>
 
-      {/* Toggles thème + langue */}
-      <div style={{ display:'flex', gap:8, padding:'10px 8px', borderTop:`1px solid ${border}`, marginTop:8 }}>
-        <button onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} title={isDark ? 'Mode jour' : 'Mode nuit'}
-          style={{ flex:1, height:34, display:'flex', alignItems:'center', justifyContent:'center', gap:6,
-            borderRadius:8, border:`1px solid ${pillBorder}`, background:pillBg, color:ink3, fontSize:11, cursor:'pointer',
-            transition:'all 0.2s', fontFamily:'var(--font-sans)' }}>
-          {isDark ? <Sun size={13} /> : <Moon size={13} />}
-          {isDark ? 'Jour' : 'Nuit'}
+      {/* ── Footer controls ── */}
+      <div style={{
+        padding: '8px',
+        borderTop: '1px solid ' + border,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        flexShrink: 0,
+      }}>
+
+        {/* Theme toggle */}
+        <button
+          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: open ? '0 10px' : '0',
+            justifyContent: open ? 'flex-start' : 'center',
+            height: 36, borderRadius: 9,
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+            border: '1px solid ' + border,
+            color: ink3, cursor: 'pointer',
+            fontSize: 12, fontWeight: 500,
+            fontFamily: "'Manrope',system-ui,sans-serif",
+            transition: 'all 0.15s', width: '100%',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
+          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = ink3 }}
+        >
+          {isDark ? <Sun size={14} style={{ flexShrink: 0 }} /> : <Moon size={14} style={{ flexShrink: 0 }} />}
+          {open && <span>{isDark ? (lang === 'EN' ? 'Light mode' : 'Mode clair') : (lang === 'EN' ? 'Dark mode' : 'Mode sombre')}</span>}
         </button>
-        <button onClick={() => setLang(l => l === 'FR' ? 'EN' : 'FR')} title="Changer la langue"
-          style={{ flex:1, height:34, display:'flex', alignItems:'center', justifyContent:'center', gap:6,
-            borderRadius:8, border:`1px solid ${pillBorder}`, background:pillBg, color:ink3, fontSize:11, cursor:'pointer',
-            transition:'all 0.2s', fontFamily:'var(--font-sans)' }}>
-          <Globe size={13} />
-          {lang === 'FR' ? 'EN' : 'FR'}
-        </button>
-      </div>
 
-      {/* User + logout */}
-      <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 8px', borderTop:`1px solid ${border}` }}>
-        <div style={{ width:32, height:32, borderRadius:'50%', flexShrink:0,
-          background:'linear-gradient(135deg,var(--green-400,#4fb37f),var(--blue-400,#5690d2))',
-          display:'grid', placeItems:'center', fontSize:12, fontWeight:600, color:'white' }}>
-          {user.nom?.[0]?.toUpperCase() || 'A'}
-        </div>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:12, fontWeight:500, color:ink, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-            {user.nom || 'Admin'}
-          </div>
-          <div style={{ fontSize:10, color:ink4, fontFamily:'var(--font-mono)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-            {user.unit || 'ALL'}
-          </div>
-        </div>
-        <button onClick={logout} title="Déconnexion"
-          style={{ padding:6, borderRadius:8, border:`1px solid ${pillBorder}`, background:'transparent', color:ink4, cursor:'pointer',
-            transition:'all 0.2s', display:'flex', alignItems:'center' }}>
-          <LogOut size={14} />
+        {/* Lang toggle */}
+        <button
+          onClick={() => setLang(l => l === 'FR' ? 'EN' : 'FR')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: open ? '0 10px' : '0',
+            justifyContent: open ? 'flex-start' : 'center',
+            height: 36, borderRadius: 9,
+            background: 'transparent',
+            border: '1px solid ' + border,
+            color: ink3, cursor: 'pointer',
+            fontSize: 12, fontWeight: 600,
+            fontFamily: "'JetBrains Mono',monospace",
+            transition: 'all 0.15s', width: '100%',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 }}
+        >
+          <span style={{ flexShrink: 0, fontSize: 13 }}>{lang === 'FR' ? '🇫🇷' : '🇬🇧'}</span>
+          {open && <span>{lang === 'FR' ? 'FR → EN' : 'EN → FR'}</span>}
         </button>
       </div>
     </aside>
