@@ -787,14 +787,11 @@ function _doRaycast(clientX, clientY){
   const rc = new THREE.Raycaster();
   rc.setFromCamera({x:nx, y:ny}, sc.camera);
 
-  /* 1. Check arpanel close */
+  /* 1. If AR panel is open — any click anywhere closes it */
   const ap = $('arpanel');
   if(ap && ap.object3D.visible){
-    const apm = ap.getObject3D('mesh');
-    if(apm){
-      const h = rc.intersectObject(apm, true);
-      if(h.length){ closeAR(); return; }
-    }
+    closeAR();
+    return;
   }
 
   /* 2. Check registered hotspot meshes */
@@ -806,7 +803,6 @@ function _doRaycast(clientX, clientY){
     if(meshes.length){
       const hits = rc.intersectObjects(meshes, true);
       if(hits.length){
-        /* Walk up to find registered uuid */
         let obj = hits[0].object;
         while(obj){
           const a = _hotspotRegistry.get(obj.uuid);
