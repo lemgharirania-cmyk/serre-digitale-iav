@@ -417,9 +417,14 @@ function drawIcon(ctx,img,x,y,size,color){
 }
 
 /* Preload all icons we need at boot */
-const ICON_NAMES=['leaf','cpu','wifi','flask-conical','wind','droplets','fan',
+const ICON_NAMES=[
+  'leaf','cpu','wifi','flask-conical','wind','droplets','fan',
   'thermometer-snowflake','panel-top-open','blinds','radio-tower','monitor-dot',
-  'info','dna','sprout','shield','layers','settings','droplet','zap'];
+  'info','dna','sprout','shield','layers','settings','droplet','zap',
+  'strawberry','wheat','filter','flame','lightbulb','flower-2',
+  'shield-alert','help-circle','building-2','beaker','waves','users',
+  'arrow-up-right','corner-up-left','home',
+];
 
 async function preloadIcons(){
   await Promise.all(ICON_NAMES.map(n=>fetchLucideIcon(n)));
@@ -483,26 +488,157 @@ function getARDef(desc){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BADGE HOTSPOT (unchanged logic, kept identical)
+   BADGE HOTSPOT — Option 3: icône Lucide contextuelle, fond clair
+   Icône change selon le type de hotspot (ar/nav/cross) et arDesc.
 ═══════════════════════════════════════════════════════════════ */
-function drawBadge(type,color){
-  const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
-  const c=cv.getContext('2d'),cx=S/2,cy=S/2;
-  const g=c.createRadialGradient(cx,cy,24,cx,cy,S/2);
-  g.addColorStop(0,hexA(color,0.45));g.addColorStop(1,hexA(color,0));
-  c.fillStyle=g;c.fillRect(0,0,S,S);
-  c.beginPath();c.arc(cx,cy,76,0,Math.PI*2);
-  c.fillStyle='rgba(255,255,255,0.80)';c.fill();
-  c.lineWidth=9;c.strokeStyle=color;c.stroke();
-  c.strokeStyle=color;c.fillStyle=color;c.lineWidth=17;c.lineCap='round';c.lineJoin='round';
-  if(type==='ar'){
-    c.beginPath();c.arc(cx,cy-34,11,0,Math.PI*2);c.fill();
-    c.beginPath();c.moveTo(cx,cy-4);c.lineTo(cx,cy+46);c.stroke();
-  }else if(type==='cross'){
-    chevron(c,cx,cy-17,28);chevron(c,cx,cy+17,28);
-  }else{
-    chevron(c,cx,cy,44);
+
+/* Map arDesc keys → Lucide icon names for badges */
+const BADGE_ICON_MAP = {
+  'fraise':                    'strawberry',
+  'courgette':                 'leaf',
+  'blé':                       'wheat',
+  'ble':                       'wheat',
+  'co2':                       'wind',
+  'co₂':                       'wind',
+  'brumisateur':               'droplets',
+  'ventilation':               'fan',
+  'ventilation dehors':        'fan',
+  'système de ventilation':    'fan',
+  'système de refroidissement':'thermometer-snowflake',
+  'fenetre auto':              'panel-top-open',
+  'rideaux auto':              'blinds',
+  'sensors':                   'radio-tower',
+  'fertigation':               'flask-conical',
+  'station de fertigation':    'flask-conical',
+  'adoucisseur':               'filter',
+  'audoucisseur':              'filter',
+  'monitoring':                'monitor-dot',
+  'serre':                     'home',
+  'chaudière':                 'flame',
+  'chauffage':                 'flame',
+  'lumiere':                   'lightbulb',
+  'avocatier':                 'leaf',
+  'avocat':                    'leaf',
+  'cactus malade':             'leaf',
+  'tomate malade':             'shield-alert',
+  'tomates malades':           'shield-alert',
+  'tomate malades':            'shield-alert',
+  'ble malade':                'shield-alert',
+  'blé malade':                'shield-alert',
+  'plante x':                  'help-circle',
+  'unité horticulture':        'flower-2',
+  'unité agronomie':           'wheat',
+  'unité hydroponie':          'droplet',
+  'unité protection des plantes':'shield',
+  'unité génétique et amélioration des plantes':'dna',
+  'salle de lavage':           'waves',
+  'salle technique de commandes':'cpu',
+  'salle de réunion':          'users',
+  'salle de préparation':      'sprout',
+  'salle de fertilisation et traitement deau':'beaker',
+  'local technique déquipements':'settings',
+  'bloc gestion technique et administrative':'building-2',
+  'bloc protection des plantes':'shield',
+};
+
+function getBadgeIcon(type, arDesc) {
+  if(type === 'nav')   return 'arrow-up-right';
+  if(type === 'cross') return 'corner-up-left';
+  /* AR type — pick by arDesc */
+  const k = (arDesc||'').toLowerCase().trim();
+  return BADGE_ICON_MAP[k] || 'info';
+}
+
+/* Draw a badge using a preloaded Lucide icon image */
+function drawBadgeWithIcon(type, color, iconImg) {
+  const S = 256;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const c = cv.getContext('2d');
+  const cx = S/2, cy = S/2;
+
+  /* Outer soft glow */
+  const glow = c.createRadialGradient(cx, cy, 28, cx, cy, S/2);
+  glow.addColorStop(0, hexA(color, 0.28));
+  glow.addColorStop(1, hexA(color, 0));
+  c.fillStyle = glow;
+  c.fillRect(0, 0, S, S);
+
+  /* White circle bg — light, clean */
+  c.beginPath();
+  c.arc(cx, cy, 80, 0, Math.PI*2);
+  c.fillStyle = 'rgba(255,255,255,0.95)';
+  c.shadowColor = hexA(color, 0.35);
+  c.shadowBlur = 18;
+  c.fill();
+  c.shadowBlur = 0;
+
+  /* Colored ring */
+  c.beginPath();
+  c.arc(cx, cy, 80, 0, Math.PI*2);
+  c.strokeStyle = color;
+  c.lineWidth = 7;
+  c.stroke();
+
+  /* Inner accent ring */
+  c.beginPath();
+  c.arc(cx, cy, 68, 0, Math.PI*2);
+  c.strokeStyle = hexA(color, 0.18);
+  c.lineWidth = 2;
+  c.stroke();
+
+  /* Lucide icon — tinted to color, centered */
+  if(iconImg) {
+    const iSize = 72;
+    const off = document.createElement('canvas');
+    off.width = off.height = iSize;
+    const oc = off.getContext('2d');
+    oc.drawImage(iconImg, 0, 0, iSize, iSize);
+    oc.globalCompositeOperation = 'source-in';
+    oc.fillStyle = color;
+    oc.fillRect(0, 0, iSize, iSize);
+    c.drawImage(off, cx - iSize/2, cy - iSize/2, iSize, iSize);
+  } else {
+    /* Fallback: dot */
+    c.beginPath();
+    c.arc(cx, cy, 12, 0, Math.PI*2);
+    c.fillStyle = color;
+    c.fill();
   }
+
+  return cv;
+}
+
+/* Async version called from makeHotspot */
+async function drawBadgeAsync(type, color, arDesc) {
+  const iconName = getBadgeIcon(type, arDesc);
+  const iconImg  = await fetchLucideIcon(iconName).catch(() => null);
+  return drawBadgeWithIcon(type, color, iconImg);
+}
+
+/* Sync fallback — draws badge without icon (dot placeholder) */
+function drawBadge(type, color) {
+  const S=256;
+  const cv=document.createElement('canvas'); cv.width=cv.height=S;
+  const c=cv.getContext('2d'), cx=S/2, cy=S/2;
+  /* Glow */
+  const glow=c.createRadialGradient(cx,cy,28,cx,cy,S/2);
+  glow.addColorStop(0,hexA(color,0.28)); glow.addColorStop(1,hexA(color,0));
+  c.fillStyle=glow; c.fillRect(0,0,S,S);
+  /* White circle */
+  c.beginPath(); c.arc(cx,cy,80,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,0.95)';
+  c.shadowColor=hexA(color,0.35); c.shadowBlur=18;
+  c.fill(); c.shadowBlur=0;
+  /* Ring */
+  c.beginPath(); c.arc(cx,cy,80,0,Math.PI*2);
+  c.strokeStyle=color; c.lineWidth=7; c.stroke();
+  /* Inner ring */
+  c.beginPath(); c.arc(cx,cy,68,0,Math.PI*2);
+  c.strokeStyle=hexA(color,0.18); c.lineWidth=2; c.stroke();
+  /* Colored dot center while loading */
+  c.beginPath(); c.arc(cx,cy,14,0,Math.PI*2);
+  c.fillStyle=hexA(color,0.5); c.fill();
   return cv;
 }
 
@@ -789,7 +925,8 @@ function _doRaycast(clientX, clientY){
 
   /* 1. If AR panel is open — any click anywhere closes it */
   const ap = $('arpanel');
-  if(ap && ap.object3D.visible){
+  const apVisible = ap && (ap.getAttribute('visible') === 'true' || ap.getAttribute('visible') === true);
+  if(apVisible){
     closeAR();
     return;
   }
@@ -868,7 +1005,9 @@ function makeHotspot(hs){
   else badge.addEventListener('loaded', registerMesh, {once:true});
 
   wrap.appendChild(badge);
+  /* Draw placeholder immediately, then replace with icon version */
   applyCanvasTexture(badge, drawBadge(hs.type, color));
+  drawBadgeAsync(hs.type, color, arDesc).then(cv => applyCanvasTexture(badge, cv));
   return wrap;
 }
 
@@ -876,10 +1015,6 @@ function makeHotspot(hs){
 async function openAR(desc){
   const card = $('arpanel');
   if(!card) return;
-  const sceneEl = document.querySelector('a-scene');
-
-  /* Move card to scene root so its position is in world space */
-  if(sceneEl && card.parentElement !== sceneEl) sceneEl.appendChild(card);
 
   card.setAttribute('visible', true);
   _placeCard(card, 2.6);

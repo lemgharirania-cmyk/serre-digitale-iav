@@ -34,17 +34,15 @@ def convert_irr(raw: dict) -> dict:
         except (TypeError, ValueError):
             return None
 
-    # Les données IRR sont dans raw["detail"]["pool"][0]
     detail = raw.get("detail") or {}
-    pool = detail.get("pool") or []
-    
-    # Prendre le premier tank actif (no=1, celui de la serre)
+    pool   = detail.get("pool") or []
+
     tank = None
     for p in pool:
         if p.get("no") == 1:
             tank = p
             break
-    
+
     if not tank:
         return {"ph": None, "ec": None, "temp_eau": None, "niveau_eau": None}
 
@@ -55,6 +53,7 @@ def convert_irr(raw: dict) -> dict:
         "niveau_eau": safe(tank.get("wl"),       100),
     }
 
+
 async def fetch_env(device_id: int, token: str) -> Optional[dict]:
     url     = f"{IOT_BASE_URL}/detailR"
     headers = {"Authorization": token}
@@ -62,15 +61,33 @@ async def fetch_env(device_id: int, token: str) -> Optional[dict]:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(url, headers=headers, params=params)
-            resp.raise_for_status()
-            data = resp.json()
-            raw  = data.get("data") or data
-            converted = convert_env(raw)
-            converted["raw"] = raw.get("detail") or raw
-            return converted
+
+        data = resp.json()
+
+        # FIX: handle error codes BEFORE raise_for_status
+        # Pro-Leaf returns 418 / 501 / 200 with errno in body
+        errno = data.get("errno") or data.get("code")
+        if errno and int(errno) not in (0, 200):
+            msg = data.get("msg") or data.get("errmsg") or f"errno {errno}"
+            print(f"[IoT ENV] Device {device_id}: {msg} ({errno})")
+            return None
+
+        raw       = data.get("data") or data
+        converted = convert_env(raw)
+        converted["raw"] = raw.get("detail") or raw
+
+        # Check if we actually got valid data
+        has_data = any(v is not None for k, v in converted.items() if k != "raw")
+        if not has_data:
+            print(f"[IoT ENV] Device {device_id}: réponse vide — {data}")
+            return None
+
+        return converted
+
     except Exception as e:
         print(f"[IoT ENV] Erreur device {device_id}: {e}")
         return None
+
 
 async def fetch_irr(device_id: int, token: str) -> Optional[dict]:
     url     = f"{IOT_BASE_URL}/detail"
@@ -79,18 +96,25 @@ async def fetch_irr(device_id: int, token: str) -> Optional[dict]:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(url, headers=headers, params=params)
-            resp.raise_for_status()
-            data = resp.json()
-            if data.get("errno") == 418 or data.get("code") == 418:
-                print(f"[IoT IRR] Device {device_id}: pas de permission (418)")
-                return None
-            raw = data.get("data") or data
-            converted = convert_irr(raw)
-            converted["raw"] = raw
-            return converted
+
+        data = resp.json()
+
+        # Handle error codes
+        errno = data.get("errno") or data.get("code")
+        if errno and int(errno) not in (0, 200):
+            msg = data.get("msg") or data.get("errmsg") or f"errno {errno}"
+            print(f"[IoT IRR] Device {device_id}: {msg} ({errno})")
+            return None
+
+        raw       = data.get("data") or data
+        converted = convert_irr(raw)
+        converted["raw"] = raw
+        return converted
+
     except Exception as e:
         print(f"[IoT IRR] Erreur device {device_id}: {e}")
         return None
+
 
 async def fetch_serre_data(serre: dict) -> dict:
     import asyncio
