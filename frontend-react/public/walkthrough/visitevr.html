@@ -165,7 +165,7 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 
     <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
     <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
-      width="1.8" height="1.1"
+      width="2.4" height="1.6"
       material="shader:flat; transparent:true; side:double" billboard></a-plane>
 
     <a-entity id="rig" position="0 1.6 0">
@@ -327,7 +327,9 @@ function applyCanvasTexture(planeEl,canvas){
   if(planeEl.hasLoaded)set();else planeEl.addEventListener('loaded',set,{once:true});
 }
 
-/* ── Canvas helpers ── */
+/* ═══════════════════════════════════════════════════════════════
+   CANVAS HELPERS
+═══════════════════════════════════════════════════════════════ */
 function hexA(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 
 function roundRect(c,x,y,w,h,r){
@@ -339,16 +341,146 @@ function chevron(c,x,y,s){
 }
 
 function wrapText(c,text,x,y,maxW,lh,maxLines){
-  const words=String(text).split(/\s+/);let line='',count=0;
+  const words=String(text).split(/\s+/);let line='',count=0,startY=y;
   for(const w of words){
     const test=line?line+' '+w:w;
-    if(c.measureText(test).width>maxW&&line){c.fillText(line,x,y);y+=lh;line=w;count++;if(maxLines&&count>=maxLines)return;}
-    else line=test;
+    if(c.measureText(test).width>maxW&&line){
+      c.fillText(line,x,y);y+=lh;line=w;count++;
+      if(maxLines&&count>=maxLines){c.fillText(line+'…',x,y);return y;}
+    } else line=test;
   }
   if(!maxLines||count<maxLines)c.fillText(line,x,y);
+  return y;
 }
 
-/* ── Badge hotspot ── */
+/* ═══════════════════════════════════════════════════════════════
+   LUCIDE ICON PRELOADER
+   Fetches SVGs from CDN, tints them to a given color via
+   offscreen canvas + source-in compositing, returns ImageBitmap.
+═══════════════════════════════════════════════════════════════ */
+const _lucideCache={};
+const LUCIDE_BASE='https://unpkg.com/lucide-static@0.441.0/icons/';
+
+const LUCIDE_MAP={
+  plant:       'leaf',
+  system:      'cpu',
+  sensor:      'wifi',
+  fertigation: 'flask-conical',
+  fraise:      'strawberry',
+  courgette:   'leaf',
+  co2:         'wind',
+  brumisateur: 'droplets',
+  ventilation: 'wind',
+  'ventilation dehors':'wind',
+  'système de ventilation':'fan',
+  'système de refroidissement':'thermometer-snowflake',
+  'fenetre auto':'panel-top-open',
+  'rideaux auto':'blinds',
+  sensors:     'radio-tower',
+  fertigation2:'beaker',
+  monitoring:  'monitor-dot',
+  default:     'info',
+};
+
+async function fetchLucideIcon(name){
+  if(_lucideCache[name])return _lucideCache[name];
+  try{
+    const r=await fetch(LUCIDE_BASE+name+'.svg');
+    if(!r.ok)throw new Error('404');
+    const svg=await r.text();
+    const blob=new Blob([svg],{type:'image/svg+xml'});
+    const url=URL.createObjectURL(blob);
+    const img=await new Promise((res,rej)=>{
+      const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;
+    });
+    _lucideCache[name]=img;
+    return img;
+  }catch(e){
+    _lucideCache[name]=null;
+    return null;
+  }
+}
+
+/* Draw a tinted Lucide icon onto ctx at (x,y,size,size) */
+function drawIcon(ctx,img,x,y,size,color){
+  if(!img)return;
+  const off=document.createElement('canvas');off.width=size;off.height=size;
+  const oc=off.getContext('2d');
+  oc.drawImage(img,0,0,size,size);
+  oc.globalCompositeOperation='source-in';
+  oc.fillStyle=color;oc.fillRect(0,0,size,size);
+  ctx.drawImage(off,x,y,size,size);
+}
+
+/* Preload all icons we need at boot */
+const ICON_NAMES=['leaf','cpu','wifi','flask-conical','wind','droplets','fan',
+  'thermometer-snowflake','panel-top-open','blinds','radio-tower','monitor-dot',
+  'info','dna','sprout','shield','layers','settings','droplet','zap'];
+
+async function preloadIcons(){
+  await Promise.all(ICON_NAMES.map(n=>fetchLucideIcon(n)));
+}
+
+function getIconForDef(def,key){
+  if(def&&def.type&&LUCIDE_MAP[def.type])return LUCIDE_MAP[def.type];
+  if(LUCIDE_MAP[key])return LUCIDE_MAP[key];
+  return LUCIDE_MAP.default;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ALIAS MAP — key normalisation
+═══════════════════════════════════════════════════════════════ */
+const AR_ALIAS={
+  'ventilation':              'ventilation',
+  'brumisateur':              'brumisateur',
+  'co2':                      'co2',
+  'co₂':                      'co2',
+  'sensors':                  'sensors',
+  'capteur':                  'sensors',
+  'capteurs':                 'sensors',
+  'fenetre auto':             'fenetre auto',
+  'fenetre':                  'fenetre auto',
+  'fenetres':                 'fenetre auto',
+  'fenêtres':                 'fenetre auto',
+  'fenêtre auto':             'fenetre auto',
+  'rideaux auto':             'rideaux auto',
+  'rideaux':                  'rideaux auto',
+  'rideau':                   'rideaux auto',
+  'système de ventilation':   'système de ventilation',
+  'systeme de ventilation':   'système de ventilation',
+  'système de refroidissement':'système de refroidissement',
+  'syst de refroidissement':  'système de refroidissement',
+  'syst de refroidissment':   'système de refroidissement',
+  'ventilation dehors':       'ventilation dehors',
+  'ventilation ext':          'ventilation dehors',
+  'ventilation extérieure':   'ventilation dehors',
+  'ventilation exterieure':   'ventilation dehors',
+  'fertigation':              'fertigation',
+  'station de fertigation':   'fertigation',
+  'adoucisseur':              'adoucisseur',
+  'audoucisseur':             'adoucisseur',
+  'fraise':                   'fraise',
+  'courgette':                'courgette',
+  'blé':                      'blé',
+  'ble':                      'blé',
+  'monitoring':               'monitoring',
+  'serre':                    'serre',
+};
+
+function resolveARKey(desc){
+  const k=desc.toLowerCase().trim();
+  return AR_ALIAS[k]||k;
+}
+
+function getARDef(desc){
+  if(typeof AR_CONTENT==='undefined'||!AR_CONTENT)return null;
+  const k=resolveARKey(desc);
+  return AR_CONTENT[k]||AR_CONTENT[desc.toLowerCase().trim()]||null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BADGE HOTSPOT (unchanged logic, kept identical)
+═══════════════════════════════════════════════════════════════ */
 function drawBadge(type,color){
   const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
   const c=cv.getContext('2d'),cx=S/2,cy=S/2;
@@ -370,107 +502,242 @@ function drawBadge(type,color){
   return cv;
 }
 
-/* ── AR card canvas — extrait le contenu depuis AR_CONTENT ── */
-function getARContent(desc){
-  /* Try AR_CONTENT first (from ar-content.js if loaded) */
-  if(typeof AR_CONTENT!=='undefined'&&AR_CONTENT){
-    const key=desc.toLowerCase().trim();
-    /* alias map */
-    const _al = {
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM AR CARD CANVAS RENDERER
+   Mirrors visitemanuelle card structure:
+     • Header bar with icon + title + category chip + status pill
+     • Section blocks: label + bullets OR key/value rows
+     • Footer hint
+   Canvas: 1536 × 1024 px → mapped to a-plane 2.4 × 1.6 m
+═══════════════════════════════════════════════════════════════ */
+const CARD_W=1536, CARD_H=1024;
+const CARD_PAD=56, CARD_R=48;
+const COL_L=CARD_PAD+72;   /* left content margin */
+const COL_R=CARD_W-CARD_PAD-72;
 
-  'ventilation':'Système de ventilation',
-
-  'brumisateur':'brumisateur',
-
-  'co2':'co2',
-  'co₂':'co2',
-
-  'sensors':'Capteurs IoT',
-  'capteur':'Capteurs Iot',
-  'capteurs':'Capteurs IoT',
-
-  'fenetre auto':'Fenêtres automatiques',
-  'fenetre':'Fenêtres automatique',
-  'fenetres':'Fenêtres automatique',
-  'fenêtres':'Fenêtres automatique',
-
-  'rideaux auto':'Rideaux automatiques',
-  'rideaux':'Rideaux automatiques',
-  'rideau':'Rideaux automatiques',
-
-  'système de ventilation':'Système de ventilation',
-
-  'système de refroidissement':'Système de refroidissement',
-  'syst de refroidissement':'Système de refroidissement',
-  'syst de refroidissment':'Système de refroidissement',
-
-  'ventilation dehors':'Système de ventilation - Extérieur',
-  'ventilation ext':'Système de ventilation - Extérieur',
-  'ventilation extérieure':'Système de ventilation - Extérieur',
-  'ventilation exterieure':'Système de ventilation - Extérieur',
-
-  'fertigation':'Station de fertigation',
-  'station de fertigation':'Station de fertigation',
-
-  'audoucisseur':'Adoucisseur',
-
-  'fraise':'Fraise',
-  'courgette':'Courgette',
-
-  'blé':'blé',
-
+/* Tag color palette (matches ar-content CSS) */
+const TAG_COLORS={
+  green: {bg:'rgba(34,197,94,.18)',  border:'rgba(34,197,94,.45)',  text:'#15803d'},
+  blue:  {bg:'rgba(6,182,212,.18)',  border:'rgba(6,182,212,.45)',  text:'#0e7490'},
+  amber: {bg:'rgba(245,158,11,.18)', border:'rgba(245,158,11,.45)', text:'#92400e'},
+  red:   {bg:'rgba(239,68,68,.18)',  border:'rgba(239,68,68,.45)',  text:'#991b1b'},
+  default:{bg:'rgba(100,116,139,.14)',border:'rgba(100,116,139,.35)',text:'#475569'},
 };
-    const k=al[key]||key;
-    const def=AR_CONTENT[k];
-    if(def){
-      /* Extract readable body from sections */
-      let body='';
-      if(def.sections&&def.sections.length){
-        const sec=def.sections[0];
-        if(sec.bullets&&sec.bullets.length)body=sec.bullets[0];
-        else if(sec.items&&sec.items.length)body=sec.items.map(i=>i.k+' : '+i.v).join(' · ');
-      }
-      return{title:def.title||desc,body:body||def.statusText||''};
-    }
-  }
-  /* Fallback: use desc directly */
-  return{title:desc,body:''};
+
+function tagColor(tag){return TAG_COLORS[tag]||TAG_COLORS.default;}
+
+function drawTagPill(c,text,x,y,tag){
+  const tc=tagColor(tag);
+  c.font='600 20px "DM Sans",system-ui,sans-serif';
+  const tw=c.measureText(text).width;
+  const ph=28,pv=8,r=14;
+  const bx=x,by=y-ph+4,bw=tw+ph,bh=ph+pv;
+  roundRect(c,bx,by,bw,bh,r);
+  c.fillStyle=tc.bg;c.fill();
+  c.strokeStyle=tc.border;c.lineWidth=1.5;c.stroke();
+  c.fillStyle=tc.text;c.textBaseline='middle';
+  c.fillText(text,bx+ph/2,by+bh/2);
+  return bw+10;
 }
 
-function drawCard(title,body){
-  const W=1024,H=640,cv=document.createElement('canvas');cv.width=W;cv.height=H;
-  const c=cv.getContext('2d');
-  const pad=46,r=44,x0=pad+54;
+/* Draw a single section block; returns new Y after the block */
+function drawSection(c,sec,y,accentColor,iconImg){
+  const maxW=COL_R-COL_L;
 
-  /* frosted panel */
-  c.shadowColor='rgba(15,23,42,0.28)';c.shadowBlur=55;
-  const g=c.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(255,255,255,0.92)');g.addColorStop(1,'rgba(236,250,243,0.92)');
-  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);c.fillStyle=g;c.fill();c.shadowBlur=0;
-
-  /* border */
-  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);
-  c.lineWidth=2.5;c.strokeStyle='rgba(255,255,255,0.95)';c.stroke();
-
-  /* green accent top bar */
-  const barG=c.createLinearGradient(x0,0,x0+200,0);
-  barG.addColorStop(0,'#22C55E');barG.addColorStop(1,'#06B6D4');
-  c.fillStyle=barG;c.fillRect(x0,pad+44,200,5);
-
-  /* title */
-  c.fillStyle='#15803D';c.textBaseline='alphabetic';
-  c.font='700 52px "DM Sans",system-ui,sans-serif';
-  wrapText(c,title||'Info',x0,pad+108,W-2*x0+2*pad,58,2);
-
-  /* body */
-  if(body){
-    c.fillStyle='#1E293B';c.font='400 32px "DM Sans",system-ui,sans-serif';
-    wrapText(c,body,x0,pad+190,W-2*x0+2*pad,44,6);
+  /* Section label */
+  if(sec.label){
+    c.font='700 22px "DM Mono",monospace,sans-serif';
+    c.fillStyle=accentColor||'#22c55e';
+    c.globalAlpha=0.75;
+    c.textBaseline='alphabetic';
+    c.fillText(sec.label,COL_L,y);
+    c.globalAlpha=1;
+    y+=10;
+    /* thin rule under label */
+    c.strokeStyle=accentColor||'#22c55e';c.globalAlpha=0.18;c.lineWidth=1;
+    c.beginPath();c.moveTo(COL_L,y);c.lineTo(COL_L+maxW,y);c.stroke();
+    c.globalAlpha=1;
+    y+=22;
   }
 
-  /* footer hint */
-  c.fillStyle='rgba(100,116,139,0.6)';c.font='500 24px "DM Sans",system-ui,sans-serif';
-  c.fillText('Touchez pour fermer',x0,H-pad-34);
+  /* Bullet list */
+  if(sec.bullets&&sec.bullets.length){
+    sec.bullets.forEach(b=>{
+      const bStr=String(b);
+      /* bullet dot */
+      c.beginPath();c.arc(COL_L+8,y-8,5,0,Math.PI*2);
+      c.fillStyle=accentColor||'#22c55e';c.globalAlpha=0.7;c.fill();c.globalAlpha=1;
+      /* text */
+      c.font='400 26px "DM Sans",system-ui,sans-serif';
+      c.fillStyle='#1e293b';c.textBaseline='alphabetic';
+      const endY=wrapText(c,bStr,COL_L+24,y,maxW-24,36,3);
+      y=endY+34;
+    });
+  }
+
+  /* Key/value rows */
+  if(sec.items&&sec.items.length){
+    sec.items.forEach((item,i)=>{
+      const rowY=y;
+      /* alternating row bg */
+      if(i%2===0){
+        roundRect(c,COL_L-8,rowY-26,maxW+16,42,8);
+        c.fillStyle='rgba(0,0,0,0.028)';c.fill();
+      }
+      /* key */
+      c.font='500 24px "DM Sans",system-ui,sans-serif';
+      c.fillStyle='#64748b';c.textBaseline='alphabetic';
+      c.fillText(String(item.k||''),COL_L+4,rowY);
+      /* value + optional tag */
+      const valStr=String(item.v||'');
+      if(item.tag){
+        /* draw tag pill right-aligned */
+        const tc=tagColor(item.tag);
+        c.font='600 22px "DM Sans",system-ui,sans-serif';
+        const tw=c.measureText(valStr).width;
+        const px=12,py=6,rr=12;
+        const bx=COL_R-tw-px*2-2,by=rowY-24,bw=tw+px*2,bh=34;
+        roundRect(c,bx,by,bw,bh,rr);
+        c.fillStyle=tc.bg;c.fill();
+        c.strokeStyle=tc.border;c.lineWidth=1.2;c.stroke();
+        c.fillStyle=tc.text;c.textBaseline='middle';
+        c.fillText(valStr,bx+px,by+bh/2);
+      } else {
+        c.font='600 24px "DM Sans",system-ui,sans-serif';
+        c.fillStyle='#0f172a';c.textBaseline='alphabetic';
+        c.textAlign='right';
+        c.fillText(valStr,COL_R,rowY);
+        c.textAlign='left';
+      }
+      y+=48;
+    });
+  }
+
+  return y+12;
+}
+
+/* Main card draw — async because we need to wait for icon image */
+async function drawARCard(desc){
+  const cv=document.createElement('canvas');cv.width=CARD_W;cv.height=CARD_H;
+  const c=cv.getContext('2d');
+
+  const def=getARDef(desc);
+  const title=(def&&def.title)||desc;
+  const color=(def&&def.color)||'#22c55e';
+  const statusText=(def&&def.statusText)||'';
+  const category=(def&&def.type)||'system';
+  const sections=(def&&def.sections&&def.sections.length)?def.sections:[];
+
+  /* ── Background: glass panel ── */
+  const bg=c.createLinearGradient(0,0,0,CARD_H);
+  bg.addColorStop(0,'rgba(248,252,255,0.97)');
+  bg.addColorStop(1,'rgba(232,248,240,0.97)');
+  c.shadowColor='rgba(15,23,42,0.30)';c.shadowBlur=80;c.shadowOffsetY=12;
+  roundRect(c,CARD_PAD,CARD_PAD,CARD_W-2*CARD_PAD,CARD_H-2*CARD_PAD,CARD_R);
+  c.fillStyle=bg;c.fill();
+  c.shadowBlur=0;c.shadowOffsetY=0;
+
+  /* ── Glass border ── */
+  roundRect(c,CARD_PAD,CARD_PAD,CARD_W-2*CARD_PAD,CARD_H-2*CARD_PAD,CARD_R);
+  c.lineWidth=2;c.strokeStyle='rgba(255,255,255,0.9)';c.stroke();
+
+  /* ── Subtle inner highlight top ── */
+  c.fillStyle='rgba(255,255,255,0.55)';
+  roundRect(c,CARD_PAD+2,CARD_PAD+2,CARD_W-2*CARD_PAD-4,60,CARD_R-2);
+  c.fill();
+
+  /* ── Header accent bar (gradient) ── */
+  const barG=c.createLinearGradient(COL_L,0,COL_L+320,0);
+  barG.addColorStop(0,color);barG.addColorStop(1,'#06b6d4');
+  c.fillStyle=barG;
+  roundRect(c,COL_L,CARD_PAD+64,320,6,3);c.fill();
+
+  /* ── Category chip ── */
+  const catLabel=(category==='plant'?'BIOLOGIQUE':
+                  category==='sensor'?'TÉLÉMÉTRIE IoT':
+                  category==='fertigation'?'HYDROPONIQUE':
+                  'CONTRÔLE CLIMATIQUE').toUpperCase();
+  c.font='700 19px "DM Mono",monospace,sans-serif';
+  c.fillStyle=hexA(color,0.8);c.textBaseline='alphabetic';
+  c.fillText(catLabel,COL_L,CARD_PAD+52);
+
+  /* ── Icon circle (top right of header area) ── */
+  const iconCX=CARD_W-CARD_PAD-120,iconCY=CARD_PAD+120,iconR=68;
+  /* glow */
+  const iglow=c.createRadialGradient(iconCX,iconCY,0,iconCX,iconCY,iconR*2.2);
+  iglow.addColorStop(0,hexA(color,0.22));iglow.addColorStop(1,hexA(color,0));
+  c.fillStyle=iglow;c.beginPath();c.arc(iconCX,iconCY,iconR*2.2,0,Math.PI*2);c.fill();
+  /* circle bg */
+  c.beginPath();c.arc(iconCX,iconCY,iconR,0,Math.PI*2);
+  c.fillStyle=hexA(color,0.12);c.fill();
+  c.strokeStyle=hexA(color,0.35);c.lineWidth=2;c.stroke();
+  /* Lucide icon */
+  const iconName=getIconForDef(def,resolveARKey(desc));
+  const iconImg=await fetchLucideIcon(iconName);
+  const iSize=56;
+  drawIcon(c,iconImg,iconCX-iSize/2,iconCY-iSize/2,iSize,color);
+
+  /* ── Title ── */
+  c.font='700 54px "DM Sans",system-ui,sans-serif';
+  c.fillStyle='#0f172a';c.textBaseline='alphabetic';
+  const titleMaxW=CARD_W-2*CARD_PAD-280;
+  wrapText(c,title,COL_L,CARD_PAD+150,titleMaxW,62,2);
+
+  /* ── Status pill ── */
+  if(statusText){
+    const spx=COL_L,spy=CARD_PAD+180;
+    c.font='600 21px "DM Sans",system-ui,sans-serif';
+    const sw=c.measureText(statusText).width;
+    const sph=30,spv=7,spr=16;
+    roundRect(c,spx,spy,sw+sph,sph+spv,spr);
+    c.fillStyle=hexA(color,0.15);c.fill();
+    c.strokeStyle=hexA(color,0.4);c.lineWidth=1.5;c.stroke();
+    /* dot */
+    c.beginPath();c.arc(spx+16,spy+(sph+spv)/2,5,0,Math.PI*2);
+    c.fillStyle=color;c.fill();
+    c.fillStyle=hexA(color,0.9);c.textBaseline='middle';
+    c.fillText(statusText,spx+28,spy+(sph+spv)/2);
+  }
+
+  /* ── Divider ── */
+  const divY=CARD_PAD+240;
+  c.strokeStyle='rgba(0,0,0,0.07)';c.lineWidth=1;
+  c.beginPath();c.moveTo(COL_L,divY);c.lineTo(COL_R,divY);c.stroke();
+
+  /* ── Sections ── */
+  let y=divY+32;
+  const maxSections=sections.length>3?3:sections.length;
+  for(let i=0;i<maxSections;i++){
+    y=drawSection(c,sections[i],y,color,iconImg);
+    if(y>CARD_H-CARD_PAD-100)break;
+    if(i<maxSections-1){
+      c.strokeStyle='rgba(0,0,0,0.05)';c.lineWidth=1;
+      c.beginPath();c.moveTo(COL_L,y-6);c.lineTo(COL_R,y-6);c.stroke();
+      y+=4;
+    }
+  }
+
+  /* Fallback if no sections */
+  if(!sections.length){
+    c.font='400 28px "DM Sans",system-ui,sans-serif';
+    c.fillStyle='#475569';c.textBaseline='alphabetic';
+    c.fillText(statusText||desc,COL_L,divY+60);
+  }
+
+  /* ── Footer ── */
+  const footY=CARD_H-CARD_PAD-44;
+  c.strokeStyle='rgba(0,0,0,0.06)';c.lineWidth=1;
+  c.beginPath();c.moveTo(COL_L,footY-14);c.lineTo(COL_R,footY-14);c.stroke();
+  c.font='500 22px "DM Sans",system-ui,sans-serif';
+  c.fillStyle='rgba(100,116,139,0.55)';c.textBaseline='alphabetic';
+  c.fillText('✕  Touchez pour fermer',COL_L,footY);
+
+  /* AgroBioTech watermark right */
+  c.font='500 20px "DM Mono",monospace';
+  c.fillStyle='rgba(0,0,0,0.12)';c.textAlign='right';
+  c.fillText('AgroBioTech · IAV Hassan II',COL_R,footY);
+  c.textAlign='left';
+
   return cv;
 }
 
@@ -522,20 +789,32 @@ function makeHotspot(hs){
 }
 
 /* ── AR panel (3D dans la scène — visible en VR immersif) ── */
-function openAR(desc){
-  const{title,body}=getARContent(desc);
+async function openAR(desc){
   const card=$('arpanel');
-  applyCanvasTexture(card,drawCard(title,body));
-  placeInFront(card,2.2);
+  /* Show a loading state immediately */
   card.setAttribute('visible',true);
+  placeInFront(card,2.6);
+
+  const cv=await drawARCard(desc);
+  applyCanvasTexture(card,cv);
+  /* Re-place after texture swap in case camera moved */
+  placeInFront(card,2.6);
 }
+
 function closeAR(){$('arpanel').setAttribute('visible',false);}
 
 function placeInFront(el,dist){
   const cam=el.sceneEl&&el.sceneEl.camera;if(!cam)return;
-  const camPos=new THREE.Vector3(),camDir=new THREE.Vector3();
-  cam.getWorldPosition(camPos);cam.getWorldDirection(camDir);
-  el.object3D.position.copy(camPos).add(camDir.multiplyScalar(dist));
+  const camPos=new THREE.Vector3();
+  const camQuat=new THREE.Quaternion();
+  const camDir=new THREE.Vector3();
+  cam.getWorldPosition(camPos);
+  cam.getWorldQuaternion(camQuat);
+  /* Forward vector in world space — avoids sideways placement */
+  camDir.set(0,0,-1).applyQuaternion(camQuat);
+  el.object3D.position.copy(camPos).addScaledVector(camDir,dist);
+  /* Make panel face the camera exactly */
+  el.object3D.quaternion.copy(camQuat);
 }
 
 function refreshRaycasters(){
@@ -673,8 +952,18 @@ async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
   if(!AFRAME.components['billboard']){
     AFRAME.registerComponent('billboard',{
-      init(){this._v=new THREE.Vector3();},
-      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);}
+      init(){
+        this._camPos=new THREE.Vector3();
+        this._camQuat=new THREE.Quaternion();
+        this._m=new THREE.Matrix4();
+      },
+      tick(){
+        const cam=this.el.sceneEl.camera;if(!cam)return;
+        cam.getWorldPosition(this._camPos);
+        cam.getWorldQuaternion(this._camQuat);
+        /* Copy camera quaternion directly — panel faces camera exactly, never sideways */
+        this.el.object3D.quaternion.copy(this._camQuat);
+      }
     });
   }
   /* Hook VR events + click delegation — vrPhase is now active so a-scene is in the DOM */
@@ -684,6 +973,10 @@ async function bootVR(){
     sc.addEventListener('exit-vr', ()=>document.body.classList.remove('in-vr'));
   }
   attachSceneClicks();
+
+  /* Preload Lucide icons in background — non-blocking */
+  preloadIcons().catch(()=>{});
+
   try{
     const r=await fetch('images/manifest.json');
     if(!r.ok)throw new Error('manifest.json HTTP '+r.status);
