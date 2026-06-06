@@ -19,7 +19,7 @@ const METEO_URL =
   '&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,shortwave_radiation,is_day' +
   '&daily=sunrise,sunset&timezone=Africa%2FCasablanca&forecast_days=1'
 
-/* ── Bannière d'alerte critique persistante ── */
+/* ── Bannière alerte critique persistante ── */
 function AlertBanner({ liveData, theme, lang, onDismiss }) {
   const isDark = theme === 'dark'
   const critical = liveData.filter(d => {
@@ -32,41 +32,119 @@ function AlertBanner({ liveData, theme, lang, onDismiss }) {
   })
   if (!critical.length) return null
 
+  const names = critical.map(d => d.nom_fr?.split('&')[0].trim() || d.code).join(', ')
   const msg = lang === 'FR'
-    ? `⚠️ Alerte critique détectée dans ${critical.length} serre${critical.length>1?'s':''} — ${critical.map(d=>d.nom_fr?.split('&')[0].trim()||d.code).join(', ')}.`
-    : `⚠️ Critical alert in ${critical.length} greenhouse${critical.length>1?'s':''} — ${critical.map(d=>d.nom_en?.split('&')[0].trim()||d.code).join(', ')}.`
+    ? `Alerte critique dans ${critical.length} serre${critical.length > 1 ? 's' : ''} — ${names}.`
+    : `Critical alert in ${critical.length} greenhouse${critical.length > 1 ? 's' : ''} — ${names}.`
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
       background: isDark ? '#7f1d1d' : '#FEF2F2',
-      borderBottom: '1px solid #EF4444',
+      borderBottom: '2px solid #EF4444',
       padding: '10px 20px',
       display: 'flex', alignItems: 'center', gap: 10,
     }}>
-      <AlertTriangle size={16} color="#EF4444" style={{ flexShrink:0 }} />
-      <span style={{ flex:1, fontSize:13, fontWeight:600,
+      <AlertTriangle size={16} color="#EF4444" style={{ flexShrink: 0 }} />
+      <span style={{
+        flex: 1, fontSize: 13, fontWeight: 600,
         color: isDark ? '#FCA5A5' : '#991B1B',
-        fontFamily:"'Manrope','DM Sans',system-ui,sans-serif" }}>
-        {msg}
+        fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
+      }}>
+        {'\u26A0\uFE0F'} {msg}
       </span>
       <button onClick={onDismiss} style={{
-        background:'none', border:'none', cursor:'pointer', color:'#EF4444', padding:4,
-        display:'flex', alignItems:'center',
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: '#EF4444', padding: 4, display: 'flex', alignItems: 'center',
       }}>
-        <X size={15}/>
+        <X size={15} />
       </button>
     </div>
   )
 }
 
+/* ── Accordion NSCalculateur ── */
+function NSCalculateurAccordion({ theme, lang }) {
+  const [open, setOpen] = useState(false)
+  const isDark = theme === 'dark'
+  const label  = lang === 'FR' ? 'Calculateur de solution nutritive' : 'Nutrient solution calculator'
+  const subLbl = lang === 'FR'
+    ? 'Calculer la composition de la solution nutritive de fertigation'
+    : 'Calculate fertigation nutrient solution composition'
+  const cardBg = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
+  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
+  const ink    = isDark ? '#F1F5F9' : '#0F172A'
+  const ink3   = isDark ? '#94A3B8' : '#64748B'
+
+  return (
+    <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: 18, overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', padding: '18px 24px',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 11,
+            background: isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.08)',
+            border: '1px solid rgba(6,182,212,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: 18 }}>&#x2697;&#xFE0F;</span>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{label}</div>
+            <div style={{ fontSize: 11, color: ink3, marginTop: 2 }}>{subLbl}</div>
+          </div>
+        </div>
+        <div style={{
+          width: 28, height: 28, borderRadius: 8,
+          background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+          border: `1px solid ${border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: ink3, transition: 'transform 0.3s',
+          transform: open ? 'rotate(180deg)' : 'none',
+          fontSize: 16, flexShrink: 0,
+        }}>
+          &#9662;
+        </div>
+      </button>
+      {open && (
+        <div style={{ borderTop: `1px solid ${border}`, padding: '0 4px 4px' }}>
+          <NSCalculateur theme={theme} lang={lang} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Page scrollable principale ── */
+function ScrollHome(props) {
+  const sec = { scrollMarginTop: 24, marginBottom: 48 }
+  return (
+    <>
+      <section id="vue"          style={sec}><Overview    {...props} /></section>
+      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
+      <section id="etat"         style={sec}><EtatSerre   {...props} /></section>
+      <section id="graphiques"   style={sec}><Graphiques  {...props} /></section>
+      <section id="calculateur"  style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
+      <section id="export"       style={sec}><Export      {...props} /></section>
+    </>
+  )
+}
+
+/* ── Dashboard principal ── */
 export default function Dashboard() {
-  const [liveData,    setLiveData]    = useState([])
-  const [stats,       setStats]       = useState({})
-  const [alertCount,  setAlertCount]  = useState(0)
-  const [countdown,   setCountdown]   = useState(120)
-  const [meteo,       setMeteo]       = useState({})
-  const [bannerOff,   setBannerOff]   = useState(false)
+  const [liveData,   setLiveData]   = useState([])
+  const [stats,      setStats]      = useState({})
+  const [alertCount, setAlertCount] = useState(0)
+  const [countdown,  setCountdown]  = useState(120)
+  const [meteo,      setMeteo]      = useState({})
+  const [bannerOff,  setBannerOff]  = useState(false)
 
   const [theme, setTheme] = useState(() => localStorage.getItem('sdi_theme') || 'light')
   const [lang,  setLang]  = useState(() => localStorage.getItem('sdi_lang')  || 'FR')
@@ -74,7 +152,6 @@ export default function Dashboard() {
   useEffect(() => {
     document.body.dataset.theme = theme
     localStorage.setItem('sdi_theme', theme)
-    // Inject Manrope font
     if (!document.getElementById('manrope-font')) {
       const l = document.createElement('link')
       l.id   = 'manrope-font'
@@ -82,7 +159,6 @@ export default function Dashboard() {
       l.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap'
       document.head.appendChild(l)
     }
-    // Apply font globally
     document.body.style.fontFamily = "'Manrope','DM Sans',system-ui,sans-serif"
   }, [theme])
 
@@ -95,7 +171,7 @@ export default function Dashboard() {
       setStats(st)
       setAlertCount(st.alertes_actives || 0)
       setCountdown(120)
-      setBannerOff(false) // reset banner on refresh
+      setBannerOff(false)
     } catch (e) { console.error('Fetch error:', e) }
   }
 
@@ -129,7 +205,7 @@ export default function Dashboard() {
     return () => clearInterval(m)
   }, [])
 
-  const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
+  const countdownLabel = `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}`
 
   const sharedProps = {
     liveData, stats, alertCount, meteo,
@@ -148,107 +224,39 @@ export default function Dashboard() {
   })
 
   return (
-    <div className="admin-shell" data-theme={theme} style={{ fontFamily:"'Manrope','DM Sans',system-ui,sans-serif" }}>
-
-      {/* Bannière critique persistante */}
+    <div
+      className="admin-shell"
+      data-theme={theme}
+      style={{ fontFamily: "'Manrope','DM Sans',system-ui,sans-serif" }}
+    >
       {hasCritical && (
-        <AlertBanner liveData={liveData} theme={theme} lang={lang} onDismiss={() => setBannerOff(true)} />
+        <AlertBanner
+          liveData={liveData}
+          theme={theme}
+          lang={lang}
+          onDismiss={() => setBannerOff(true)}
+        />
       )}
 
-      <Sidebar alertCount={alertCount} theme={theme} setTheme={setTheme} lang={lang} setLang={setLang} />
+      <Sidebar
+        alertCount={alertCount}
+        theme={theme} setTheme={setTheme}
+        lang={lang}   setLang={setLang}
+      />
 
-      <main className="admin-main" style={{ paddingTop: hasCritical ? 'calc(var(--main-pt,1.5rem) + 40px)' : undefined }}>
+      <main
+        className="admin-main"
+        style={{ paddingTop: hasCritical ? 'calc(var(--main-pt,1.5rem) + 42px)' : undefined }}
+      >
         <Routes>
-          <Route path="/alertes"     element={<Alertes     {...sharedProps} />} />
-          <Route path="/seuils"      element={<Seuils      {...sharedProps} />} />
-          <Route path="/export"      element={<Export      {...sharedProps} />} />
-          <Route path="/parametres"  element={<Parametres  theme={theme} lang={lang} />} />
+          <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
+          <Route path="/seuils"      element={<Seuils     {...sharedProps} />} />
+          <Route path="/export"      element={<Export     {...sharedProps} />} />
+          <Route path="/parametres"  element={<Parametres theme={theme} lang={lang} />} />
           <Route path="/calculateur" element={<NSCalculateur theme={theme} lang={lang} />} />
-          <Route path="*"            element={<ScrollHome  {...sharedProps} />} />
+          <Route path="*"            element={<ScrollHome {...sharedProps} />} />
         </Routes>
       </main>
     </div>
   )
-}
-
-/* Trois sections scrollables reliées par la sidebar */
-function ScrollHome(props) {
-  const sec = { scrollMarginTop: 24, marginBottom: 48 }
-  return (
-    <>
-      {/* 1. Vue d'ensemble + greeting + status */}
-      <section id="vue" style={sec}><Overview {...props} /></section>
-
-      {/* 2. Seuils (juste après accueil pour action rapide) */}
-      <section id="seuils" style={sec}><Seuils {...props} /></section>
-
-      {/* 3. État de la serre */}
-      <section id="etat" style={sec}><EtatSerre {...props} /></section>
-
-      {/* 4. Graphiques analytiques */}
-      <section id="graphiques" style={sec}><Graphiques {...props} /></section>
-
-      {/* 5. Calculateur NS — compact accordion */}
-      <section id="calculateur" style={sec}><NSCalculateurAccordion {...props} /></section>
-
-      {/* 6. Export */}
-      <section id="export" style={sec}><ExportSection {...props} /></section>
-    </>
-  )
-}
-
-/* NSCalculateur en accordion pour réduire la hauteur */
-
-function NSCalculateurAccordion({ theme, lang }) {
-  const [open, setOpen] = useState(false)
-  const isDark = theme === 'dark'
-  const label  = lang === 'FR' ? 'Calculateur de solution nutritive' : 'Nutrient solution calculator'
-  const cardBg = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
-  const ink    = isDark ? '#F1F5F9' : '#0F172A'
-  const ink3   = isDark ? '#94A3B8' : '#64748B'
-
-  return (
-    <div style={{ background:cardBg, border:`1px solid ${border}`, borderRadius:18, overflow:'hidden' }}>
-      <button onClick={() => setOpen(o => !o)} style={{
-        width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'18px 24px', background:'none', border:'none', cursor:'pointer',
-        fontFamily:"'Manrope','DM Sans',system-ui,sans-serif",
-      }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ width:36, height:36, borderRadius:11,
-            background:isDark?'rgba(6,182,212,0.12)':'rgba(6,182,212,0.08)',
-            border:'1px solid rgba(6,182,212,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <span style={{ fontSize:18 }}>⚗️</span>
-          </div>
-          <div style={{ textAlign:'left' }}>
-            <div style={{ fontSize:14, fontWeight:700, color:ink }}>{label}</div>
-            <div style={{ fontSize:11, color:ink3, marginTop:2 }}>
-              {lang==='FR'
-                ? 'Calculer la composition de la solution nutritive de fertigation'
-                : 'Calculate fertigation nutrient solution composition'}
-            </div>
-          </div>
-        </div>
-        <div style={{
-          width:28, height:28, borderRadius:8,
-          background:isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)',
-          border:`1px solid ${border}`, display:'flex', alignItems:'center', justifyContent:'center',
-          color:ink3, transition:'transform 0.3s', transform: open?'rotate(180deg)':'none',
-          fontSize:16, flexShrink:0,
-        }}>
-          ▾
-        </div>
-      </button>
-      {open && (
-        <div style={{ borderTop:`1px solid ${border}`, padding:'0 4px 4px' }}>
-          <NSCalculateur theme={theme} lang={lang} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ExportSection(props) {
-  return <Export {...props} />
 }
