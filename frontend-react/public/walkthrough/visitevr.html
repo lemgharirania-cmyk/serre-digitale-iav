@@ -166,7 +166,7 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
     <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
       width="2.4" height="1.6"
-      material="shader:flat; transparent:true; side:double" billboard></a-plane>
+      material="shader:flat; color:#ffffff; opacity:0.95; transparent:true; side:double" billboard></a-plane>
 
     <a-entity id="rig" position="0 1.6 0">
       <a-entity id="hotspots"></a-entity>
@@ -316,14 +316,18 @@ function preload(url){
 }
 
 function applyCanvasTexture(planeEl,canvas){
-  const set=()=>{
-    const mesh=planeEl.getObject3D('mesh');if(!mesh)return;
+  function set(){
+    const mesh=planeEl.getObject3D('mesh');
+    if(!mesh){setTimeout(set,60);return;}
     const tex=new THREE.CanvasTexture(canvas);
     if('colorSpace' in tex)tex.colorSpace=THREE.SRGBColorSpace;
     tex.anisotropy=8;tex.needsUpdate=true;
-    mesh.material.map=tex;mesh.material.color.set('#ffffff');
-    mesh.material.transparent=true;mesh.material.needsUpdate=true;
-  };
+    mesh.material.map=tex;
+    mesh.material.color.set('#ffffff');
+    mesh.material.transparent=true;
+    mesh.material.opacity=1;
+    mesh.material.needsUpdate=true;
+  }
   if(planeEl.hasLoaded)set();else planeEl.addEventListener('loaded',set,{once:true});
 }
 
@@ -790,31 +794,70 @@ function makeHotspot(hs){
 
 /* ── AR panel (3D dans la scène — visible en VR immersif) ── */
 async function openAR(desc){
+  console.log('[AR] openAR called, desc=',JSON.stringify(desc));
   const card=$('arpanel');
-  /* Show a loading state immediately */
-  card.setAttribute('visible',true);
-  placeInFront(card,2.6);
+  if(!card){console.error('[AR] #arpanel not found');return;}
 
-  const cv=await drawARCard(desc);
-  applyCanvasTexture(card,cv);
-  /* Re-place after texture swap in case camera moved */
-  placeInFront(card,2.6);
+  /* Ensure card is child of scene root (not nested inside rig) */
+  const scene=document.querySelector('a-scene');
+  if(scene&&card.parentElement!==scene){scene.appendChild(card);}
+
+  card.setAttribute('visible',true);
+
+  /* Place immediately — before texture load */
+  const placed=tryPlaceInFront(card,2.6);
+  if(!placed){
+    /* Camera not ready yet — wait for scene to be fully loaded */
+    scene&&scene.addEventListener('loaded',()=>tryPlaceInFront(card,2.6),{once:true});
+  }
+
+  try{
+    const cv=await drawARCard(desc||'serre');
+    applyCanvasTexture(card,cv);
+    tryPlaceInFront(card,2.6);
+  }catch(err){
+    console.error('[AR] drawARCard failed:',err);
+  }
+}
+
+function tryPlaceInFront(el,dist){
+  const sceneEl=el.sceneEl||document.querySelector('a-scene');
+  const cam=sceneEl&&sceneEl.camera;
+  if(!cam){console.warn('[AR] tryPlaceInFront: no camera yet');return false;}
+  placeInFront(el,dist);
+  return true;
 }
 
 function closeAR(){$('arpanel').setAttribute('visible',false);}
 
 function placeInFront(el,dist){
-  const cam=el.sceneEl&&el.sceneEl.camera;if(!cam)return;
+  const sceneEl=el.sceneEl||document.querySelector('a-scene');
+  const cam=sceneEl&&sceneEl.camera;
+  if(!cam){console.warn('[AR] no camera');return;}
   const camPos=new THREE.Vector3();
   const camQuat=new THREE.Quaternion();
   const camDir=new THREE.Vector3();
   cam.getWorldPosition(camPos);
   cam.getWorldQuaternion(camQuat);
-  /* Forward vector in world space — avoids sideways placement */
   camDir.set(0,0,-1).applyQuaternion(camQuat);
-  el.object3D.position.copy(camPos).addScaledVector(camDir,dist);
-  /* Make panel face the camera exactly */
-  el.object3D.quaternion.copy(camQuat);
+
+  /* Target world position */
+  const worldPos=camPos.clone().addScaledVector(camDir,dist);
+
+  /* If el has a parent with a transform, convert to local space */
+  if(el.object3D.parent&&el.object3D.parent!==sceneEl.object3D){
+    const parentInv=new THREE.Matrix4().copy(el.object3D.parent.matrixWorld).invert();
+    worldPos.applyMatrix4(parentInv);
+    const parentWorldQuat=new THREE.Quaternion();
+    el.object3D.parent.getWorldQuaternion(parentWorldQuat);
+    const localQuat=parentWorldQuat.invert().multiply(camQuat);
+    el.object3D.position.copy(worldPos);
+    el.object3D.quaternion.copy(localQuat);
+  } else {
+    el.object3D.position.copy(worldPos);
+    el.object3D.quaternion.copy(camQuat);
+  }
+  el.object3D.updateMatrixWorld(true);
 }
 
 function refreshRaycasters(){
