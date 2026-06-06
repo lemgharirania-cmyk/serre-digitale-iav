@@ -104,7 +104,7 @@ async def send_verification_email(
             port=SMTP_PORT,
             username=SMTP_USER,
             password=SMTP_PASSWORD,
-            start_tls=True,
+            use_tls=True,
         )
         print(f"[Email] ✅ Code de vérification envoyé à {to_email}")
         return True
@@ -161,7 +161,7 @@ async def send_alert_email(
             port=SMTP_PORT,
             username=SMTP_USER,
             password=SMTP_PASSWORD,
-            start_tls=True,
+            use_tls=True,
         )
         print(f"[Email] ✅ Alerte envoyée à {to_email} pour {serre_nom} — {capteur}")
         return True
