@@ -22,7 +22,9 @@ UNITES = {
 # ════════════════════════════════════════════════════════════
 #  VÉRIFICATION EMAIL — génération du code
 # ════════════════════════════════════════════════════════════
-
+async def send_verification_email(to_email, code, nom=""):
+    print(f"[Email] DEBUG: SMTP_USER='{SMTP_USER}' FROM='{EMAIL_FROM}' TO='{to_email}'")
+    if not SMTP_USER or not SMTP_PASSWORD:
 def generate_verification_code() -> str:
     """Génère un code numérique à 6 chiffres"""
     return ''.join(random.choices(string.digits, k=6))
