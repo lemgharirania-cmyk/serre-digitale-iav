@@ -907,14 +907,15 @@ function attachSceneClicks(){
   if(_clickListenerAttached) return;
   _clickListenerAttached = true;
 
-  /* Listen on document — always fires regardless of A-Frame canvas state */
-  document.addEventListener('mouseup', e=>{
+  /* Use 'click' not 'mouseup' — click fires AFTER A-Frame's own click,
+     so _arOpen is already true when we check it for closing. */
+  document.addEventListener('click', e=>{
     if(e.button!==0) return;
     _doRaycast(e.clientX, e.clientY);
   });
   document.addEventListener('touchend', e=>{
     if(e.changedTouches.length===0) return;
-    _doRaycast(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    setTimeout(()=>_doRaycast(e.changedTouches[0].clientX, e.changedTouches[0].clientY), 50);
   });
 }
 
@@ -938,7 +939,7 @@ function _doRaycast(clientX, clientY){
   /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
   const ap = $('arpanel');
   if(_arOpen){
-    if(Date.now() - _arOpenedAt > 350){
+    if(Date.now() - _arOpenedAt > 100){
       closeAR();
     }
     return;
@@ -984,6 +985,8 @@ function makeHotspot(hs){
   let _fired = false;
   function doAction(){
     if(_fired) return; _fired=true; setTimeout(()=>{_fired=false;}, 600);
+    /* If AR panel is open, let _doRaycast handle the close — don't reopen */
+    if(_arOpen){ closeAR(); return; }
     if(isAR) openAR(arDesc);
     else     goTo(navZone, navScene);
   }
