@@ -1286,9 +1286,9 @@ const AR_CONTENT = {
 
 
 
-    title:'Écrans thermique',
-    title_en:'Thermic Screens',
-    title_ar:'الشاشات الحرارية ',
+    title:'Rideaux Automatiques',
+    title_en:'Automatic Curtains',
+    title_ar:'الستائر الأوتوماتيكية',
 
 
 
@@ -4589,7 +4589,8 @@ function openSimpleAR(desc){
 
 
 
-iw.innerHTML = def.icon || '';
+  iw.innerHTML = def.icon;
+
 
 
 
@@ -5861,20 +5862,6 @@ function eqIcon(key, color){
   Object.keys(EQ).forEach(k => {
     if(!AR_CONTENT[k]) AR_CONTENT[k] = {title:EQ[k].title?.FR||k, color:'#059669', tabs:['Info'], sections:[], thresholds:[]};
     const d = AR_CONTENT[k];
-    if(k === 'lumiere'){
-  d.icon = eqIcon('ti-sun','#f59e0b');
-
-  d.iconBg = 'rgba(245,158,11,.18)';
-  d.iconBorder = 'rgba(252,211,77,.3)';
-  d.color = '#f59e0b';
-}
-if(k === 'tablettes'){
-  d.icon = eqIcon('ti-stack','#10b981');
-
-  d.iconBg = 'rgba(16,185,129,.18)';
-  d.iconBorder = 'rgba(110,231,183,.3)';
-  d.color = '#10b981';
-}
     if(k === 'chauffage'){
   d.icon = eqIcon('ti-temperature-plus','#ef4444');
   d.iconBg = 'rgba(239,68,68,.18)';
@@ -6559,9 +6546,9 @@ Object.assign(EQ_ICONS, {
     /* ───── TECHNICAL ROOMS ───── */
     'salle technique de commandes': { status:['Supervision 24/7','24/7 supervision','إشراف على مدار الساعة'], card:{sections:[
       {title:S.fonc, kind:'grid', items:[
-        {i:'ti-cpu',         FR:'Centre de pilotage de la serre : données relevées en continu par les capteurs et la station météo centralisées et visualisées.',EN:'Greenhouse control centre: data collected continuously by sensors and the weather station, centralised and visualised.',AR:'مركز قيادة الدفيئة: البيانات التي تجمعها أجهزة الاستشعار ومحطة الأرصاد الجوية باستمرار مُجمَّعة ومُتاحة للعرض.'},
-        {i:'ti-adjustments', FR:'Suivi et ajustement des équipements de régulation : ventilation, chauffage, refroidissement et brumisation.',EN:'Monitoring and adjustment of regulation equipment: ventilation, heating, cooling and misting.',AR:'متابعة وضبط تجهيزات التنظيم: التهوية والتدفئة والتبريد والرذاذ.'},
-        {i:'ti-leaf',        FR:'Supervision de l’éclairage, de l’injection de CO₂ et de la fertigation depuis ce point central.',EN:'Supervision of lighting, CO₂ injection and fertigation from this central point.',AR:'الإشراف على الإضاءة وحقن ثاني أكسيد الكربون والتسميد بالري من هذا المركز.'},
+        {i:'ti-flask',     FR:'La salle fait office de laboratoire de la serre : réalisation des manipulations de base et des opérations sophistiquées exigeant des conditions contrôlées, dont la culture in vitro.',EN:'The room serves as the greenhouse laboratory: performing basic procedures and sophisticated operations requiring controlled conditions, including in-vitro culture.',AR:'تعمل الغرفة مختبراً للدفيئة: إجراء التحضيرات الأساسية والعمليات الدقيقة التي تستلزم ظروفاً مضبوطة، بما فيها الزراعة في المختبر.'},
+        {i:'ti-test-pipe', FR:'Siège des analyses requises pour le suivi des cultures et des essais.',EN:'The site for analyses required to monitor crops and trials.',AR:'مقر التحاليل اللازمة لمتابعة المزروعات والتجارب.'},
+        {i:'ti-microscope',FR:'Offre l\u2019environnement maîtrisé aux préparations délicates et à la production des données scientifiques sur lesquelles s\u2019appuie le travail expérimental de l\u2019unité.',EN:'Provides the controlled environment for delicate preparations and the scientific data underpinning the unit\u2019s experimental work.',AR:'يوفر البيئة المضبوطة للتحضيرات الدقيقة وإنتاج البيانات العلمية التي يرتكز عليها العمل التجريبي للوحدة.'},
       ]},
     ]}},
 
@@ -6642,9 +6629,15 @@ Object.assign(EQ_ICONS, {
 
     'chaudière': { status:['Automatique — T° < seuil','Automatic — temp. below threshold','تلقائي — حرارة تحت العتبة'], card:{sections:[
       {title:S.fonc, kind:'grid', items:[
-        {i:'ti-temperature-plus',FR:'Chauffe l\u2019eau du circuit de fertigation et maintient sa temp\u00e9rature dans la plage optimale pour l\u2019absorption des nutriments par les racines.',EN:'Heats the water in the fertigation circuit and maintains its temperature in the optimal range for nutrient uptake by the roots.',AR:'\u064a\u064f\u0633\u062e\u0651\u0646 \u0645\u0627\u0621 \u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u0633\u0645\u064a\u062f \u0628\u0627\u0644\u0631\u064a \u0648\u064a\u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u062f\u0631\u062c\u0629 \u062d\u0631\u0627\u0631\u062a\u0647 \u0641\u064a \u0627\u0644\u0646\u0637\u0627\u0642 \u0627\u0644\u0623\u0645\u062b\u0644.'},
-        {i:'ti-droplet',         FR:'Alimente le syst\u00e8me de chauffage de la zone racinaire des tablettes mobiles \u2014 un substrat chaud stimule l\u2019activit\u00e9 racinaire et l\u2019absorption des min\u00e9raux.',EN:'Feeds the root-zone heating circuit of the mobile tables \u2014 a warm substrate stimulates root activity and mineral uptake.',AR:'\u064a\u063a\u0630\u0651\u064a \u062f\u0627\u0631\u0629 \u062a\u062f\u0641\u0626\u0629 \u0627\u0644\u0645\u0646\u0637\u0642\u0629 \u0627\u0644\u062c\u0630\u0631\u064a\u0629 \u0644\u0637\u0627\u0648\u0644\u0627\u062a \u0627\u0644\u0632\u0631\u0627\u0639\u0629 \u0627\u0644\u0645\u062a\u0646\u0642\u0644\u0629.'},
-        {i:'ti-settings',        FR:'Fonctionne en mode automatique selon la temp\u00e9rature consigne du circuit d\u2019eau.',EN:'Operates automatically according to the water circuit set-point temperature.',AR:'\u064a\u0639\u0645\u0644 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627 \u0648\u0641\u0642 \u062f\u0631\u062c\u0629 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u0645\u0636\u0628\u0648\u0637\u0629 \u0644\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0621.'},
+        {i:'ti-temperature-plus',FR:'Diffuse de l\u2019air chaud quand la T° intérieure descend sous le seuil requis.',EN:'Diffuses hot air when indoor temperature drops below the required threshold.',AR:'ينفث هواءً ساخناً حين تنخفض الحرارة الداخلية عن الحد المطلوب.'},
+        {i:'ti-shield',          FR:'Réchauffe l’air et réduit la condensation sur le feuillage — limite les maladies cryptogamiques.',EN:'Warms the air and reduces condensation on foliage — limits cryptogamic diseases.',AR:'يُدفّئ الهواء ويقلل التكاثف على الأوراق — يحدّ من الأمراض الفطرية.'},
+        {i:'ti-droplet',         FR:'Peut alimenter le circuit de chauffage de la zone racinaire.',EN:'Can feed the root-zone heating circuit.',AR:'يمكنه تغذية دائرة تدفئة المنطقة الجذرية.'},
+      ]},
+      {title:S.param, kind:'facts', items:[
+        {i:'ti-settings',k:{FR:'Type',EN:'Type',AR:'النوع'},v:TC,flag:true},
+        {i:'ti-bolt',k:{FR:'Puissance',EN:'Power',AR:'القدرة'},v:TC,flag:true},
+        {i:'ti-flask',k:{FR:'Combustible',EN:'Fuel',AR:'الوقود'},v:TC,flag:true},
+        {i:'ti-temperature',k:{FR:'Température',EN:'Temperature',AR:'الحرارة'},v:TC,flag:true},
       ]},
     ]}},
 
@@ -6714,30 +6707,6 @@ Object.assign(EQ_ICONS, {
         {i:'ti-map-pin',k:{FR:'Emplacement',EN:'Location',AR:'الموقع'},v:{FR:'Extérieur du campus',EN:'Campus exterior',AR:'خارج الحرم'}},
       ]},
     ]}},
-
-    /* ─ corridor hotspots — exact manifest arDesc keys ─ */
-    'salle de fertilisation et traitement d\'eau': { status:['Automatisée','Automated','مؤتمتة'], card:{sections:[
-      {title:S.fonc, kind:'grid', items:[
-        {i:'ti-flask',       FR:'Préparation précise des solutions nutritives.',EN:'Precise preparation of nutrient solutions.',AR:'تحضير دقيق للمحاليل المغذية.'},
-        {i:'ti-gauge',       FR:'Contrôle du pH et de la conductivité électrique (CE) de la solution nutritive.',EN:'Control of pH and electrical conductivity (EC) of the nutrient solution.',AR:'مراقبة درجة الحموضة والتوصيلية الكهربائية للمحلول المغذي.'},
-        {i:'ti-adjustments', FR:'Ajustement des doses d’engrais selon les besoins des cultures.',EN:'Adjustment of fertiliser doses to crop requirements.',AR:'ضبط جرعات الأسمدة وفق احتياجات المحاصيل.'},
-        {i:'ti-list',        FR:'Gestion de plusieurs programmes de fertilisation.',EN:'Management of multiple fertilisation programmes.',AR:'إدارة برامج تسميد متعددة.'},
-      ]},
-      {title:{FR:'PRINCIPES',EN:'PRINCIPLES',AR:'المبادئ'}, kind:'grid', items:[
-        {i:'ti-droplet',     FR:'La fertigation associe en un seul geste l’irrigation et la nutrition par injection automatisée des fertilisants dans le réseau d’irrigation.',EN:'Fertigation combines irrigation and nutrition in a single step via automated injection of fertilisers into the irrigation network.',AR:'التسميد بالري يجمع الري والتغذية في عملية واحدة عبر الحقن التلقائي للأسمدة في شبكة الري.'},
-        {i:'ti-bolt',        FR:'La CE renseigne sur la concentration totale en sels dissous ; le pH conditionne la disponibilité des éléments nutritifs — un pH mal maîtrisé peut bloquer l’assimilation du fer, du phosphore ou d’autres éléments.',EN:'EC reflects the total dissolved salt concentration; pH governs nutrient availability — poor pH control can block uptake of iron, phosphorus and other elements.',AR:'التوصيلية تعكس تركيز الأملاح الذائبة، ودرجة الحموضة تتحكم في توافر العناصر الغذائية.'},
-        {i:'ti-leaf',        FR:'Pilotage fin des macroéléments (azote, phosphore, potassium, calcium, magnésium, soufre) et des oligоéléments pour ajuster la nutrition au stade de la culture et optimiser l’efficience de l’eau et des intrants.',EN:'Fine-tuned management of macroelements (N, P, K, Ca, Mg, S) and microelements to match crop stage and optimise water and input efficiency.',AR:'ضبط دقيق للعناصر الكبرى (N, P, K, Ca, Mg, S) والصغرى لمواءمة التغذية مع مرحلة المحصول وتحسين كفاءة الماء والمدخلات.'},
-      ]},
-    ]}},
-
-    'local technique d\'\u00e9quipements': { status:['Automatisation','Automation','أتمتة'], card:{sections:[
-      {title:S.fonc, kind:'grid', items:[
-        {i:'ti-cpu',     FR:'Abrite les boîtiers d’automatisation et de contrôle qui assurent la gestion automatisée des serres.',EN:'Houses the automation and control cabinets that manage the greenhouses automatically.',AR:'يضم خزانات الأتمتة والتحكم التي تتولى الإدارة الآلية للدفيئات.'},
-        {i:'ti-settings',FR:'Pilotage de l’irrigation, de la ventilation, du chauffage, du refroidissement et des équipements climatiques.',EN:'Control of irrigation, ventilation, heating, cooling and climate equipment.',AR:'التحكم في الري والتهوية والتدفئة والتبريد وتجهيزات المناخ.'},
-        {i:'ti-cloud',   FR:'Connexion au réseau de capteurs Guardian Pro de chaque unité de culture.',EN:'Connection to the Guardian Pro sensor network of each growing unit.',AR:'الاتصال بشبكة مستشعرات Guardian Pro لكل وحدة زراعة.'},
-      ]},
-    ]}},
-
   };
 
   const CATS = {
@@ -6776,9 +6745,7 @@ Object.assign(EQ_ICONS, {
     'serre':['Complexe de Serres AgroBioTech','AgroBioTech Greenhouse Complex','مجمّع دفيئات AgroBioTech'],
     'monitoring':['Système de Monitoring','Monitoring System','نظام المراقبة'],
     'station de fertigation':['Station de Fertigation','Fertigation Station','محطة التسميد بالري'],
-    'salle de fertilisation et traitement d\'eau':['Salle de Fertilisation','Fertilisation Room','قاعة التسميد'],
-    'local technique d\'\u00e9quipements':['Local Technique',"Local Technique",'\u0627\u0644\u0645\u062d\u0644 \u0627\u0644\u062a\u0642\u0646\u064a'],
-    'chaudière':['Chaudière','Boiler','غلاية'],
+    'chaudière':['Chauffage à l\u2019Air Chaud','Hot-Air Heating','التدفئة بالهواء الساخن'],
     'audoucisseur':['Adoucisseur d\u2019Eau','Water Softener','مُليّن الماء'],
     'système de ventilation':['Système de Ventilation','Ventilation System','نظام التهوية'],
     'ventilation dehors':['Ventilation Extérieure','Exterior Ventilation','التهوية الخارجية'],
@@ -6808,8 +6775,6 @@ Object.assign(EQ_ICONS, {
     'ventilation dehors':                          'ventilation-dehors',
     'ventilation ext':                             'ventilation-toiture',
     'le truc exterieur':                           'exterieur',
-    'salle de fertilisation et traitement d\'eau': 'salle-fertigation',
-    'local technique d\'\u00e9quipements':              'local-technique',
   };
   function _audioObj(stem){ return stem ? {FR:'audio/fr/'+stem+'.mp3',EN:'audio/en/'+stem+'.mp3',AR:'audio/ar/'+stem+'.mp3'} : null; }
 

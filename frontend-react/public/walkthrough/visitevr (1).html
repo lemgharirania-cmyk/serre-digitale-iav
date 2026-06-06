@@ -109,36 +109,6 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 #err{position:absolute;bottom:18px;left:18px;right:18px;pointer-events:none;background:rgba(254,226,226,.85);backdrop-filter:blur(12px);border:1px solid rgba(239,68,68,.5);color:#B91C1C;border-radius:12px;padding:12px 16px;font-size:13px;display:none}
 #cal{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);pointer-events:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(16px);border:1px solid rgba(6,182,212,.4);color:#0E7490;border-radius:12px;padding:10px 16px;font-size:12px;font-family:'DM Mono',monospace;display:none;gap:10px;align-items:center}
 #cal button{pointer-events:auto;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.5);color:#0E7490;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:inherit}
-
-/* AR overlay */
-@keyframes arSlideIn{from{opacity:0;transform:translateY(-50%) translateX(40px) scale(.97)}to{opacity:1;transform:translateY(-50%) translateX(0) scale(1)}}
-@keyframes hs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes hs-straw{0%,100%{transform:translateY(0);filter:drop-shadow(0 4px 12px rgba(244,100,100,.4))}50%{transform:translateY(-6px);filter:drop-shadow(0 8px 18px rgba(244,100,100,.25))}}
-@keyframes hs-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
-@keyframes hero-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.06)}}
-
-/* Lang buttons */
-.lang-btn{padding:5px 12px;border-radius:100px;border:1px solid rgba(0,0,0,.15);background:transparent;font-size:11px;font-weight:600;cursor:pointer;color:rgba(0,0,0,.45);transition:all .2s;font-family:inherit}
-.lang-btn.active{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45);color:#15803d}
-.lang-btn[data-lang="AR"]{font-family:'Noto Sans Arabic',sans-serif}
-
-/* AR body sections */
-.ar-section-label{font-size:8px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.28);margin:14px 0 6px;padding:0 2px}
-.ar-section-label:first-child{margin-top:0}
-.ar-bullet{display:flex;gap:8px;margin-bottom:5px;font-size:12.5px;line-height:1.45;color:rgba(0,0,0,.72)}
-.ar-bullet::before{content:'•';color:rgba(34,197,94,.7);flex-shrink:0;margin-top:1px}
-.ar-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.045);font-size:12.5px}
-.ar-row:last-child{border-bottom:none}
-.ar-row-k{color:rgba(0,0,0,.45);font-weight:500}
-.ar-row-v{color:rgba(0,0,0,.78);font-weight:600;text-align:right}
-.ar-tag{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
-.ar-tag-green{background:rgba(34,197,94,.12);color:#15803d;border:1px solid rgba(34,197,94,.3)}
-.ar-tag-blue{background:rgba(6,182,212,.12);color:#0e7490;border:1px solid rgba(6,182,212,.3)}
-.ar-tag-amber{background:rgba(245,158,11,.12);color:#92400e;border:1px solid rgba(245,158,11,.3)}
-.ar-tag-red{background:rgba(239,68,68,.12);color:#991b1b;border:1px solid rgba(239,68,68,.3)}
-.ar-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:12px}
-.ar-status-dot{width:6px;height:6px;border-radius:50%;animation:dot-pulse 2.4s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -193,7 +163,10 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <a-assets timeout="60000"></a-assets>
     <a-sky id="sky" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
 
-
+    <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
+    <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
+      width="2.4" height="1.6"
+      material="shader:flat; color:#ffffff; opacity:0.95; transparent:true; side:double" billboard></a-plane>
 
     <a-entity id="rig" position="0 1.6 0">
       <a-entity id="hotspots"></a-entity>
@@ -217,43 +190,10 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <button class="arrow L off" id="prev" onclick="stepScene(-1)">&#8249;</button>
     <button class="arrow R off" id="next" onclick="stepScene(1)">&#8250;</button>
     <div id="err"></div>
-    <!-- AR Card HTML overlay — same DOM approach as visitemanuelle -->
-    <div id="ar-overlay" onclick="closeAR()" style="display:none;position:fixed;inset:0;z-index:400;pointer-events:all">
-      <div id="ar-card" onclick="event.stopPropagation()" style="
-        position:absolute;right:20px;top:50%;transform:translateY(-50%);
-        width:320px;max-height:calc(100vh - 48px);
-        background:rgba(255,255,255,.88);
-        backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
-        border:1px solid rgba(255,255,255,.9);border-radius:24px;
-        box-shadow:0 8px 40px rgba(0,20,60,.13),0 1px 0 rgba(255,255,255,.95) inset;
-        display:flex;flex-direction:column;overflow:hidden;
-        animation:arSlideIn .38s cubic-bezier(.34,1.08,.64,1) forwards">
-        <div id="ar-hero" style="position:relative;height:130px;flex-shrink:0;overflow:hidden;display:flex;align-items:flex-end;padding-bottom:18px">
-          <div id="ar-hero-bg" style="position:absolute;inset:0;opacity:.7"></div>
-          <div id="ar-hero-anim" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"></div>
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-end;gap:12px;padding:0 16px;width:100%">
-            <div id="ar-hero-icon" style="width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:2px"></div>
-            <div style="flex:1;min-width:0">
-              <div id="ar-hero-label" style="font-size:8.5px;font-weight:500;text-transform:uppercase;letter-spacing:1.1px;color:rgba(255,255,255,.55);margin-bottom:3px"></div>
-              <div id="ar-hero-title" style="font-size:17px;font-weight:700;color:#fff;line-height:1.2;text-shadow:0 1px 8px rgba(0,0,0,.25)"></div>
-            </div>
-          </div>
-          <!-- Close button -->
-          <button onclick="closeAR()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.18);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:16px;z-index:10;backdrop-filter:blur(8px)">✕</button>
-        </div>
-        <div id="ar-body" style="flex:1;overflow-y:auto;padding:16px;min-height:0"></div>
-        <!-- Audio player row -->
-        <div id="ar-audio-row" style="display:none;padding:10px 16px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">
-          <audio id="ar-audio" controls style="width:100%;height:32px;border-radius:8px"></audio>
-        </div>
-        <!-- Lang switcher -->
-        <div style="padding:10px 16px;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:6px;flex-shrink:0">
-          <button class="lang-btn active" data-lang="FR" onclick="setLang('FR')">FR</button>
-          <button class="lang-btn" data-lang="EN" onclick="setLang('EN')">EN</button>
-          <button class="lang-btn" data-lang="AR" onclick="setLang('AR')">AR</button>
-        </div>
-      </div>
-    </div>
+    <div id="ar-debug" style="position:fixed;bottom:8px;left:8px;z-index:9999;
+      background:rgba(0,0,0,0.75);color:#4ade80;font:11px/1.5 monospace;
+      padding:8px 12px;border-radius:8px;pointer-events:none;max-width:320px;
+      border:1px solid rgba(74,222,128,0.3)">AR debug: waiting…</div>
     <div id="cal">
       yaw offset: <b id="cal-val">0</b>°
       <button onclick="nudgeOffset(-5)">−5</button><button onclick="nudgeOffset(5)">+5</button>
@@ -552,167 +492,504 @@ function getARDef(desc){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BADGE HOTSPOT VISUALS — mirrors HS_VISUALS from visitemanuelle
-   Each entry: { style: CSS string, html: inner HTML string }
+   BADGE HOTSPOT — Option 3: icône Lucide contextuelle, fond clair
+   Icône change selon le type de hotspot (ar/nav/cross) et arDesc.
 ═══════════════════════════════════════════════════════════════ */
 
-function buildPill(r,g,b){
-  return `width:46px;height:46px;border-radius:50%;background:rgba(${r},${g},${b},.06);backdrop-filter:blur(14px) saturate(130%);-webkit-backdrop-filter:blur(14px) saturate(130%);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 14px rgba(${r},${g},${b},.15),0 1px 0 rgba(255,255,255,.5) inset;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .22s;overflow:hidden`;
-}
-function buildAurora(c1,c2,c3){
-  return `<div style="position:absolute;width:64px;height:64px;border-radius:50%;background:radial-gradient(ellipse at 65% 35%,${c1} 0%,${c2} 42%,${c3||'transparent'} 70%);top:-9px;left:-9px;pointer-events:none;z-index:0;opacity:.55"></div><div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(160deg,rgba(255,255,255,.28) 0%,transparent 50%);pointer-events:none;z-index:0"></div>`;
-}
-
-const HS_VISUALS = {
-  'fraise':{style:buildPill(244,100,100)+';animation:hs-straw 3s ease-in-out infinite',html:buildAurora('rgba(255,200,200,.95)','rgba(255,140,180,.6)','rgba(255,200,120,.25)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(220,80,80,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"/><circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"/></svg>`},
-  'co2':{style:buildPill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="3" cy="7" r="2.5"/><circle cx="12" cy="7" r="3.2"/><circle cx="21" cy="7" r="2.5"/><line x1="5.5" y1="7" x2="8.8" y2="7"/><line x1="15.2" y1="7" x2="18.5" y2="7"/></svg>`},
-  'brumisateur':{style:buildPill(45,212,191)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(167,243,208,.95)','rgba(94,234,212,.6)','rgba(186,230,253,.25)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(13,148,136,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="9" width="10" height="6" rx="2"/><path d="M12 12h3"/><path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"/><circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none"/></svg>`},
-  'ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/></svg>`},
-  'ventilation dehors':{style:buildPill(6,182,212)+';animation:hs-float 2.6s ease-in-out .3s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="4" width="12" height="16" rx="2"/><line x1="5" y1="8" x2="11" y2="8" opacity=".6"/><line x1="5" y1="11" x2="11" y2="11" opacity=".6"/><line x1="5" y1="14" x2="11" y2="14" opacity=".6"/><path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6"/></svg>`},
-  'système de ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/></svg>`},
-  'système de refroidissement':{style:buildPill(59,130,246)+';animation:hs-float 3.2s ease-in-out .6s infinite',html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="30" height="26" viewBox="0 0 24 20" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="1" y="2" width="22" height="14" rx="2.5"/><line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"/><line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"/></svg>`},
-  'rideaux auto':{style:buildPill(217,119,6)+';animation:hs-float 3.4s ease-in-out .1s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.85)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><line x1="2" y1="4" x2="22" y2="4"/><circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"/><path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"/></svg>`},
-  'fenetre auto':{style:buildPill(6,182,212)+';animation:hs-float 3s ease-in-out .5s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" opacity=".35"/><line x1="2" y1="12" x2="22" y2="12" opacity=".35"/><path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"/></svg>`},
-  'sensors':{style:buildPill(109,40,217)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="7" width="18" height="12" rx="2"/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="30" viewBox="0 0 24 26" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="4" y="2" width="16" height="10" rx="2"/><text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK</text><line x1="8" y1="12" x2="8" y2="18"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="16" y1="12" x2="16" y2="18"/></svg>`},
-  'station de fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .1s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="5" width="7" height="10" rx="1.5"/><rect x="14" y="5" width="7" height="10" rx="1.5"/><path d="M10 10h4M12 7v6"/><path d="M6 15v4M18 15v4M10 19h4"/></svg>`},
-  'monitoring':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'chaudiere':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><path d="M9 5V3M15 5V3"/><path d="M7 19v2M17 19v2"/></svg>`},
-  'audoucisseur':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="10" rx="5" ry="7"/><path d="M7 14c0 3 2.5 5 5 5s5-2 5-5"/><path d="M9 7l3-2 3 2" opacity=".5"/></svg>`},
-  'unité génétique et amélioration des plantes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 1-2-2V3m6 11h10m0 0a2 2 0 0 0 2-2V7m-2 7v4a2 2 0 0 1-2 2H9m10-4H9m0 0v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"/><circle cx="12" cy="11" r="1.5" fill="rgba(109,40,217,.7)" stroke="none"/></svg>`},
-  'unité horticulture':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .1s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`},
-  'unité agronomie':{style:buildPill(245,158,11)+';animation:hs-float 3.1s ease-in-out .2s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22V11"/><path d="M12 11C12 11 6 9 6 4c0 0 4 0 6 4 2-4 6-4 6-4 0 5-6 7-6 7z"/><path d="M6 20h12"/></svg>`},
-  'unité hydroponie':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M8 14c0 2 2 4 4 4s4-2 4-4" opacity=".55"/></svg>`},
-  'unité protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/></svg>`},
-  'salle de lavage':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M4 12h16M4 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M6 12v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/><path d="M10 16v-4M14 16v-4"/></svg>`},
-  'salle technique de commandes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out .1s infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'salle de réunion':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`},
-  'salle de préparation':{style:buildPill(234,179,8)+';animation:hs-float 3.1s ease-in-out .1s infinite',html:buildAurora('rgba(254,249,195,.95)','rgba(253,224,71,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(161,98,7,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>`},
-  'serre':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .2s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M9 21v-6h6v6"/></svg>`},
-  'bloc protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/></svg>`},
-  'bloc gestion technique et administrative':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`},
+/* Map arDesc keys → Lucide icon names for badges */
+const BADGE_ICON_MAP = {
+  'fraise':                    'strawberry',
+  'courgette':                 'leaf',
+  'blé':                       'wheat',
+  'ble':                       'wheat',
+  'co2':                       'wind',
+  'co₂':                       'wind',
+  'brumisateur':               'droplets',
+  'ventilation':               'fan',
+  'ventilation dehors':        'fan',
+  'système de ventilation':    'fan',
+  'système de refroidissement':'thermometer-snowflake',
+  'fenetre auto':              'panel-top-open',
+  'rideaux auto':              'thermometer',
+  'sensors':                   'radio-tower',
+  'fertigation':               'flask-conical',
+  'station de fertigation':    'flask-conical',
+  'adoucisseur':               'filter',
+  'audoucisseur':              'filter',
+  'monitoring':                'monitor-dot',
+  'serre':                     'home',
+  'chaudière':                 'flame',
+  'chauffage':                 'flame',
+  'lumiere':                   'lightbulb',
+  'avocatier':                 'leaf',
+  'avocat':                    'leaf',
+  'cactus malade':             'leaf',
+  'tomate malade':             'shield-alert',
+  'tomates malades':           'shield-alert',
+  'tomate malades':            'shield-alert',
+  'ble malade':                'shield-alert',
+  'blé malade':                'shield-alert',
+  'plante x':                  'help-circle',
+  'unité horticulture':        'flower-2',
+  'unité agronomie':           'wheat',
+  'unité hydroponie':          'droplet',
+  'unité protection des plantes':'shield',
+  'unité génétique et amélioration des plantes':'dna',
+  'salle de lavage':           'waves',
+  'salle technique de commandes':'cpu',
+  'salle de réunion':          'users',
+  'salle de préparation':      'sprout',
+  'salle de fertilisation et traitement deau':'beaker',
+  'local technique déquipements':'settings',
+  'bloc gestion technique et administrative':'building-2',
+  'bloc protection des plantes':'shield',
 };
 
-/* Fallback for unknown keys */
-function getHSVisual(key){
-  if(HS_VISUALS[key]) return HS_VISUALS[key];
-  const def = getARDef(key);
-  const t = def&&def.type||'system';
-  const map = {
-    plant:[34,197,94,'rgba(187,247,208,.95)','rgba(110,231,183,.65)'],
-    sensor:[109,40,217,'rgba(237,233,254,.95)','rgba(196,181,253,.65)'],
-    system:[100,116,139,'rgba(229,231,235,.95)','rgba(156,163,175,.65)'],
-    fertigation:[14,165,233,'rgba(186,230,253,.95)','rgba(125,211,252,.65)'],
-  };
-  const [r,g,b,a1,a2] = map[t]||map.system;
-  const iconSVG = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-  return {style:buildPill(r,g,b)+';animation:hs-float 3s ease-in-out infinite', html:buildAurora(a1,a2)+iconSVG};
+function getBadgeIcon(type, arDesc) {
+  if(type === 'nav')   return 'arrow-up-right';
+  if(type === 'cross') return 'corner-up-left';
+  /* AR type — pick by arDesc */
+  const k = (arDesc||'').toLowerCase().trim();
+  return BADGE_ICON_MAP[k] || 'info';
+}
+
+/* Draw a badge using a preloaded Lucide icon image */
+function drawBadgeWithIcon(type, color, iconImg) {
+  const S = 256;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const c = cv.getContext('2d');
+  const cx = S/2, cy = S/2;
+
+  /* Outer soft glow */
+  const glow = c.createRadialGradient(cx, cy, 28, cx, cy, S/2);
+  glow.addColorStop(0, hexA(color, 0.28));
+  glow.addColorStop(1, hexA(color, 0));
+  c.fillStyle = glow;
+  c.fillRect(0, 0, S, S);
+
+  /* White circle bg — light, clean */
+  c.beginPath();
+  c.arc(cx, cy, 80, 0, Math.PI*2);
+  c.fillStyle = 'rgba(255,255,255,0.95)';
+  c.shadowColor = hexA(color, 0.35);
+  c.shadowBlur = 18;
+  c.fill();
+  c.shadowBlur = 0;
+
+  /* Colored ring */
+  c.beginPath();
+  c.arc(cx, cy, 80, 0, Math.PI*2);
+  c.strokeStyle = color;
+  c.lineWidth = 7;
+  c.stroke();
+
+  /* Inner accent ring */
+  c.beginPath();
+  c.arc(cx, cy, 68, 0, Math.PI*2);
+  c.strokeStyle = hexA(color, 0.18);
+  c.lineWidth = 2;
+  c.stroke();
+
+  /* Lucide icon — tinted to color, centered */
+  if(iconImg) {
+    const iSize = 72;
+    const off = document.createElement('canvas');
+    off.width = off.height = iSize;
+    const oc = off.getContext('2d');
+    oc.drawImage(iconImg, 0, 0, iSize, iSize);
+    oc.globalCompositeOperation = 'source-in';
+    oc.fillStyle = color;
+    oc.fillRect(0, 0, iSize, iSize);
+    c.drawImage(off, cx - iSize/2, cy - iSize/2, iSize, iSize);
+  } else {
+    /* Fallback: dot */
+    c.beginPath();
+    c.arc(cx, cy, 12, 0, Math.PI*2);
+    c.fillStyle = color;
+    c.fill();
+  }
+
+  return cv;
+}
+
+/* Async version called from makeHotspot */
+async function drawBadgeAsync(type, color, arDesc) {
+  const iconName = getBadgeIcon(type, arDesc);
+  const iconImg  = await fetchLucideIcon(iconName).catch(() => null);
+  return drawBadgeWithIcon(type, color, iconImg);
+}
+
+/* Sync fallback — draws badge without icon (dot placeholder) */
+function drawBadge(type, color) {
+  const S=256;
+  const cv=document.createElement('canvas'); cv.width=cv.height=S;
+  const c=cv.getContext('2d'), cx=S/2, cy=S/2;
+  /* Glow */
+  const glow=c.createRadialGradient(cx,cy,28,cx,cy,S/2);
+  glow.addColorStop(0,hexA(color,0.28)); glow.addColorStop(1,hexA(color,0));
+  c.fillStyle=glow; c.fillRect(0,0,S,S);
+  /* White circle */
+  c.beginPath(); c.arc(cx,cy,80,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,0.95)';
+  c.shadowColor=hexA(color,0.35); c.shadowBlur=18;
+  c.fill(); c.shadowBlur=0;
+  /* Ring */
+  c.beginPath(); c.arc(cx,cy,80,0,Math.PI*2);
+  c.strokeStyle=color; c.lineWidth=7; c.stroke();
+  /* Inner ring */
+  c.beginPath(); c.arc(cx,cy,68,0,Math.PI*2);
+  c.strokeStyle=hexA(color,0.18); c.lineWidth=2; c.stroke();
+  /* Colored dot center while loading */
+  c.beginPath(); c.arc(cx,cy,14,0,Math.PI*2);
+  c.fillStyle=hexA(color,0.5); c.fill();
+  return cv;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   HOTSPOT FACTORY
-   Strategy: DOM pills projected onto screen (like visitemanuelle).
-   Click is a plain DOM onclick — zero A-Frame event system involved.
-   A rAF loop keeps positions synced every frame.
+   PREMIUM AR CARD CANVAS RENDERER
+   Mirrors visitemanuelle card structure:
+     • Header bar with icon + title + category chip + status pill
+     • Section blocks: label + bullets OR key/value rows
+     • Footer hint
+   Canvas: 1536 × 1024 px → mapped to a-plane 2.4 × 1.6 m
 ═══════════════════════════════════════════════════════════════ */
+const CARD_W=1536, CARD_H=1024;
+const CARD_PAD=56, CARD_R=48;
+const COL_L=CARD_PAD+72;   /* left content margin */
+const COL_R=CARD_W-CARD_PAD-72;
 
-/* All active DOM pills for this scene — cleared on load() */
-let _activePills = [];
-let _rafRunning  = false;
+/* Tag color palette (matches ar-content CSS) */
+const TAG_COLORS={
+  green: {bg:'rgba(34,197,94,.18)',  border:'rgba(34,197,94,.45)',  text:'#15803d'},
+  blue:  {bg:'rgba(6,182,212,.18)',  border:'rgba(6,182,212,.45)',  text:'#0e7490'},
+  amber: {bg:'rgba(245,158,11,.18)', border:'rgba(245,158,11,.45)', text:'#92400e'},
+  red:   {bg:'rgba(239,68,68,.18)',  border:'rgba(239,68,68,.45)',  text:'#991b1b'},
+  default:{bg:'rgba(100,116,139,.14)',border:'rgba(100,116,139,.35)',text:'#475569'},
+};
 
-function startPillLoop(){
-  if(_rafRunning) return;
-  _rafRunning = true;
-  function tick(){
-    if(!_activePills.length){ _rafRunning=false; return; }
-    const sc = document.querySelector('a-scene');
-    if(sc && sc.camera && sc.renderer){
-      const canvas = sc.canvas;
-      const rect   = canvas.getBoundingClientRect();
-      _activePills.forEach(({el, wx, wy, wz})=>{
-        const v = new THREE.Vector3(wx, wy, wz).project(sc.camera);
-        if(v.z > 1){ el.style.display='none'; return; }
-        const x = (v.x * 0.5 + 0.5) * rect.width  + rect.left;
-        const y = (-v.y * 0.5 + 0.5) * rect.height + rect.top;
-        el.style.display = 'flex';
-        el.style.left    = (x - 23) + 'px';
-        el.style.top     = (y - 23) + 'px';
-      });
-    }
-    requestAnimationFrame(tick);
+function tagColor(tag){return TAG_COLORS[tag]||TAG_COLORS.default;}
+
+function drawTagPill(c,text,x,y,tag){
+  const tc=tagColor(tag);
+  c.font='600 20px "DM Sans",system-ui,sans-serif';
+  const tw=c.measureText(text).width;
+  const ph=28,pv=8,r=14;
+  const bx=x,by=y-ph+4,bw=tw+ph,bh=ph+pv;
+  roundRect(c,bx,by,bw,bh,r);
+  c.fillStyle=tc.bg;c.fill();
+  c.strokeStyle=tc.border;c.lineWidth=1.5;c.stroke();
+  c.fillStyle=tc.text;c.textBaseline='middle';
+  c.fillText(text,bx+ph/2,by+bh/2);
+  return bw+10;
+}
+
+/* Draw a single section block; returns new Y after the block */
+function drawSection(c,sec,y,accentColor,iconImg){
+  const maxW=COL_R-COL_L;
+
+  /* Section label */
+  if(sec.label){
+    c.font='700 22px "DM Mono",monospace,sans-serif';
+    c.fillStyle=accentColor||'#22c55e';
+    c.globalAlpha=0.75;
+    c.textBaseline='alphabetic';
+    c.fillText(sec.label,COL_L,y);
+    c.globalAlpha=1;
+    y+=10;
+    /* thin rule under label */
+    c.strokeStyle=accentColor||'#22c55e';c.globalAlpha=0.18;c.lineWidth=1;
+    c.beginPath();c.moveTo(COL_L,y);c.lineTo(COL_L+maxW,y);c.stroke();
+    c.globalAlpha=1;
+    y+=22;
   }
-  requestAnimationFrame(tick);
+
+  /* Bullet list */
+  if(sec.bullets&&sec.bullets.length){
+    sec.bullets.forEach(b=>{
+      const bStr=String(b);
+      /* bullet dot */
+      c.beginPath();c.arc(COL_L+8,y-8,5,0,Math.PI*2);
+      c.fillStyle=accentColor||'#22c55e';c.globalAlpha=0.7;c.fill();c.globalAlpha=1;
+      /* text */
+      c.font='400 26px "DM Sans",system-ui,sans-serif';
+      c.fillStyle='#1e293b';c.textBaseline='alphabetic';
+      const endY=wrapText(c,bStr,COL_L+24,y,maxW-24,36,3);
+      y=endY+34;
+    });
+  }
+
+  /* Key/value rows */
+  if(sec.items&&sec.items.length){
+    sec.items.forEach((item,i)=>{
+      const rowY=y;
+      /* alternating row bg */
+      if(i%2===0){
+        roundRect(c,COL_L-8,rowY-26,maxW+16,42,8);
+        c.fillStyle='rgba(0,0,0,0.028)';c.fill();
+      }
+      /* key */
+      c.font='500 24px "DM Sans",system-ui,sans-serif';
+      c.fillStyle='#64748b';c.textBaseline='alphabetic';
+      c.fillText(String(item.k||''),COL_L+4,rowY);
+      /* value + optional tag */
+      const valStr=String(item.v||'');
+      if(item.tag){
+        /* draw tag pill right-aligned */
+        const tc=tagColor(item.tag);
+        c.font='600 22px "DM Sans",system-ui,sans-serif';
+        const tw=c.measureText(valStr).width;
+        const px=12,py=6,rr=12;
+        const bx=COL_R-tw-px*2-2,by=rowY-24,bw=tw+px*2,bh=34;
+        roundRect(c,bx,by,bw,bh,rr);
+        c.fillStyle=tc.bg;c.fill();
+        c.strokeStyle=tc.border;c.lineWidth=1.2;c.stroke();
+        c.fillStyle=tc.text;c.textBaseline='middle';
+        c.fillText(valStr,bx+px,by+bh/2);
+      } else {
+        c.font='600 24px "DM Sans",system-ui,sans-serif';
+        c.fillStyle='#0f172a';c.textBaseline='alphabetic';
+        c.textAlign='right';
+        c.fillText(valStr,COL_R,rowY);
+        c.textAlign='left';
+      }
+      y+=48;
+    });
+  }
+
+  return y+12;
 }
 
-function clearDOMPills(){
-  _activePills.forEach(({el})=>el.parentNode&&el.parentNode.removeChild(el));
-  _activePills = [];
-  _rafRunning  = false;
+/* Main card draw — async because we need to wait for icon image */
+async function drawARCard(desc){
+  const cv=document.createElement('canvas');cv.width=CARD_W;cv.height=CARD_H;
+  const c=cv.getContext('2d');
+
+  const def=getARDef(desc);
+  const title=(def&&def.title)||desc;
+  const color=(def&&def.color)||'#22c55e';
+  const statusText=(def&&def.statusText)||'';
+  const category=(def&&def.type)||'system';
+  const sections=(def&&def.sections&&def.sections.length)?def.sections:[];
+
+  /* ── Background: glass panel ── */
+  const bg=c.createLinearGradient(0,0,0,CARD_H);
+  bg.addColorStop(0,'rgba(248,252,255,0.97)');
+  bg.addColorStop(1,'rgba(232,248,240,0.97)');
+  c.shadowColor='rgba(15,23,42,0.30)';c.shadowBlur=80;c.shadowOffsetY=12;
+  roundRect(c,CARD_PAD,CARD_PAD,CARD_W-2*CARD_PAD,CARD_H-2*CARD_PAD,CARD_R);
+  c.fillStyle=bg;c.fill();
+  c.shadowBlur=0;c.shadowOffsetY=0;
+
+  /* ── Glass border ── */
+  roundRect(c,CARD_PAD,CARD_PAD,CARD_W-2*CARD_PAD,CARD_H-2*CARD_PAD,CARD_R);
+  c.lineWidth=2;c.strokeStyle='rgba(255,255,255,0.9)';c.stroke();
+
+  /* ── Subtle inner highlight top ── */
+  c.fillStyle='rgba(255,255,255,0.55)';
+  roundRect(c,CARD_PAD+2,CARD_PAD+2,CARD_W-2*CARD_PAD-4,60,CARD_R-2);
+  c.fill();
+
+  /* ── Header accent bar (gradient) ── */
+  const barG=c.createLinearGradient(COL_L,0,COL_L+320,0);
+  barG.addColorStop(0,color);barG.addColorStop(1,'#06b6d4');
+  c.fillStyle=barG;
+  roundRect(c,COL_L,CARD_PAD+64,320,6,3);c.fill();
+
+  /* ── Category chip ── */
+  const catLabel=(category==='plant'?'BIOLOGIQUE':
+                  category==='sensor'?'TÉLÉMÉTRIE IoT':
+                  category==='fertigation'?'HYDROPONIQUE':
+                  'CONTRÔLE CLIMATIQUE').toUpperCase();
+  c.font='700 19px "DM Mono",monospace,sans-serif';
+  c.fillStyle=hexA(color,0.8);c.textBaseline='alphabetic';
+  c.fillText(catLabel,COL_L,CARD_PAD+52);
+
+  /* ── Icon circle (top right of header area) ── */
+  const iconCX=CARD_W-CARD_PAD-120,iconCY=CARD_PAD+120,iconR=68;
+  /* glow */
+  const iglow=c.createRadialGradient(iconCX,iconCY,0,iconCX,iconCY,iconR*2.2);
+  iglow.addColorStop(0,hexA(color,0.22));iglow.addColorStop(1,hexA(color,0));
+  c.fillStyle=iglow;c.beginPath();c.arc(iconCX,iconCY,iconR*2.2,0,Math.PI*2);c.fill();
+  /* circle bg */
+  c.beginPath();c.arc(iconCX,iconCY,iconR,0,Math.PI*2);
+  c.fillStyle=hexA(color,0.12);c.fill();
+  c.strokeStyle=hexA(color,0.35);c.lineWidth=2;c.stroke();
+  /* Lucide icon */
+  const iconName=getIconForDef(def,resolveARKey(desc));
+  const iconImg=await fetchLucideIcon(iconName);
+  const iSize=56;
+  drawIcon(c,iconImg,iconCX-iSize/2,iconCY-iSize/2,iSize,color);
+
+  /* ── Title ── */
+  c.font='700 54px "DM Sans",system-ui,sans-serif';
+  c.fillStyle='#0f172a';c.textBaseline='alphabetic';
+  const titleMaxW=CARD_W-2*CARD_PAD-280;
+  wrapText(c,title,COL_L,CARD_PAD+150,titleMaxW,62,2);
+
+  /* ── Status pill ── */
+  if(statusText){
+    const spx=COL_L,spy=CARD_PAD+180;
+    c.font='600 21px "DM Sans",system-ui,sans-serif';
+    const sw=c.measureText(statusText).width;
+    const sph=30,spv=7,spr=16;
+    roundRect(c,spx,spy,sw+sph,sph+spv,spr);
+    c.fillStyle=hexA(color,0.15);c.fill();
+    c.strokeStyle=hexA(color,0.4);c.lineWidth=1.5;c.stroke();
+    /* dot */
+    c.beginPath();c.arc(spx+16,spy+(sph+spv)/2,5,0,Math.PI*2);
+    c.fillStyle=color;c.fill();
+    c.fillStyle=hexA(color,0.9);c.textBaseline='middle';
+    c.fillText(statusText,spx+28,spy+(sph+spv)/2);
+  }
+
+  /* ── Divider ── */
+  const divY=CARD_PAD+240;
+  c.strokeStyle='rgba(0,0,0,0.07)';c.lineWidth=1;
+  c.beginPath();c.moveTo(COL_L,divY);c.lineTo(COL_R,divY);c.stroke();
+
+  /* ── Sections ── */
+  let y=divY+32;
+  const maxSections=sections.length>3?3:sections.length;
+  for(let i=0;i<maxSections;i++){
+    y=drawSection(c,sections[i],y,color,iconImg);
+    if(y>CARD_H-CARD_PAD-100)break;
+    if(i<maxSections-1){
+      c.strokeStyle='rgba(0,0,0,0.05)';c.lineWidth=1;
+      c.beginPath();c.moveTo(COL_L,y-6);c.lineTo(COL_R,y-6);c.stroke();
+      y+=4;
+    }
+  }
+
+  /* Fallback if no sections */
+  if(!sections.length){
+    c.font='400 28px "DM Sans",system-ui,sans-serif';
+    c.fillStyle='#475569';c.textBaseline='alphabetic';
+    c.fillText(statusText||desc,COL_L,divY+60);
+  }
+
+  /* ── ✕ Close button (top right of card) ── */
+  const btnR = 36, btnX = CARD_W - CARD_PAD - btnR, btnY = CARD_PAD + btnR + 4;
+  /* Circle bg */
+  c.beginPath(); c.arc(btnX, btnY, btnR, 0, Math.PI*2);
+  c.fillStyle = 'rgba(15,23,42,0.08)'; c.fill();
+  c.strokeStyle = 'rgba(15,23,42,0.15)'; c.lineWidth = 1.5; c.stroke();
+  /* ✕ lines */
+  const cs = 12;
+  c.strokeStyle = '#334155'; c.lineWidth = 3; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(btnX-cs, btnY-cs); c.lineTo(btnX+cs, btnY+cs); c.stroke();
+  c.beginPath(); c.moveTo(btnX+cs, btnY-cs); c.lineTo(btnX-cs, btnY+cs); c.stroke();
+
+  /* ── Footer ── */
+  const footY=CARD_H-CARD_PAD-44;
+  c.strokeStyle='rgba(0,0,0,0.06)';c.lineWidth=1;
+  c.beginPath();c.moveTo(COL_L,footY-14);c.lineTo(COL_R,footY-14);c.stroke();
+  c.font='500 22px "DM Sans",system-ui,sans-serif';
+  c.fillStyle='rgba(100,116,139,0.45)';c.textBaseline='alphabetic';
+  c.fillText('Cliquez n\u2019importe o\u00f9 pour fermer',COL_L,footY);
+
+  /* AgroBioTech watermark right */
+  c.font='500 20px "DM Mono",monospace';
+  c.fillStyle='rgba(0,0,0,0.12)';c.textAlign='right';
+  c.fillText('AgroBioTech · IAV Hassan II',COL_R,footY);
+  c.textAlign='left';
+
+  return cv;
 }
 
-function makeHotspot(hs){
-  const isAR    = hs.type === 'ar';
-  const pitch   = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);
-  const pos3d   = yawPitchToXYZ(hs.yaw, pitch);
-  const arDesc  = isAR ? (hs.arDesc||hs.label||'') : '';
-  const navZone  = !isAR && hs.targetZoneId  != null ? String(hs.targetZoneId)  : '';
-  const navScene = !isAR && hs.targetSceneId != null ? String(hs.targetSceneId) : '';
-
-  /* ── DOM pill (visible, clickable) ── */
-  const vis = isAR ? getHSVisual(resolveARKey(arDesc)||arDesc)
-                   : getNavVisual(hs.type);
-
-  const pill = document.createElement('div');
-  pill.style.cssText = vis.style + ';position:fixed;z-index:300;pointer-events:all;cursor:pointer;display:flex;align-items:center;justify-content:center';
-  pill.innerHTML     = vis.html;
-
-  let _fired = false;
-  pill.addEventListener('click', e=>{
-    e.stopPropagation();
-    if(_fired) return; _fired=true; setTimeout(()=>{_fired=false;}, 500);
-    if(isAR) openAR(arDesc);
-    else     goTo(navZone, navScene);
-  });
-  pill.addEventListener('mouseenter', ()=>{ pill.style.transform='scale(1.14)'; });
-  pill.addEventListener('mouseleave', ()=>{ pill.style.transform=''; });
-
-  const overlay = document.getElementById('overlay');
-  if(overlay) overlay.appendChild(pill);
-
-  /* world position: hotspot is in scene space, rig is at y=1.6 */
-  _activePills.push({ el:pill, wx:pos3d.x, wy:pos3d.y+1.6, wz:pos3d.z });
-  startPillLoop();
-
-  /* ── Invisible A-Frame plane for VR controller laser ── */
-  const wrap = document.createElement('a-entity');
-  wrap.setAttribute('position', pos3d.x+' '+(pos3d.y+1.6)+' '+pos3d.z);
-
-  const aPlane = document.createElement('a-plane');
-  aPlane.setAttribute('width',  '0.6');
-  aPlane.setAttribute('height', '0.6');
-  aPlane.setAttribute('material','shader:flat;transparent:true;opacity:0.001;side:double;depthWrite:false');
-  aPlane.classList.add('clickable');
-  /* VR controller trigger */
-  aPlane.addEventListener('triggerdown', ()=>{
-    if(isAR) openAR(arDesc);
-    else     goTo(navZone, navScene);
-  });
-  wrap.appendChild(aPlane);
-  return wrap;
-}
-
-/* Nav/cross hotspot visuals */
-function getNavVisual(type){
-  const isCross = type === 'cross';
-  const r = isCross ? 147 : 255, g = isCross ? 197 : 255, b = isCross ? 253 : 255;
-  const style = `width:52px;height:52px;border-radius:50%;background:rgba(${r},${g},${b},.13);border:1px solid rgba(${r},${g},${b},.38);box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(${r},${g},${b},.05);display:flex;align-items:center;justify-content:center;animation:nav-breathe 3.5s ease-in-out infinite`;
-  const color = isCross ? 'rgba(200,225,255,.95)' : 'rgba(255,255,255,.95)';
-  const html  = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-  return {style, html};
-}
+/* ═══════════════════════════════════════════════════════════════
+   HOTSPOT + AR CLICK SYSTEM
+   Strategy: store doAction closures in a Map keyed by mesh uuid.
+   On every mouseup on the document, raycast manually against those
+   meshes — bypasses all A-Frame event quirks on dynamically-added
+   elements. A-Frame 'click' kept as secondary fallback.
+═══════════════════════════════════════════════════════════════ */
+const _hotspotRegistry = new Map(); /* uuid → doAction */
+let _clickListenerAttached = false;
 
 function attachSceneClicks(){
-  /* Nothing needed — all clicks handled by DOM pill onclick */
+  if(_clickListenerAttached) return;
+  _clickListenerAttached = true;
+
+  /* CLOSE SYSTEM — pointerup on window with capture:true
+     Capture phase fires before A-Frame can stopPropagation.
+     We check _arOpen AFTER a small timeout so openAR has time to set it. */
+  window.addEventListener('pointerup', e=>{
+    const sc=document.querySelector('a-scene');
+    if(!sc||!sc.canvas)return;
+    const rect=sc.canvas.getBoundingClientRect();
+    const inside=e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
+    if(!inside)return;
+    /* Delay 50ms so openAR() has run if this was an open-click */
+    setTimeout(()=>{
+      const _dbg=document.getElementById('ar-debug');
+      const age=Date.now()-_arOpenedAt;
+      if(_dbg)_dbg.textContent='pointerup | _arOpen='+_arOpen+' age='+age+'ms';
+      if(_arOpen && age > 80){
+        closeAR();
+      } else if(!_arOpen){
+        _doRaycast(e.clientX, e.clientY);
+      }
+    }, 50);
+  }, {capture:true});
+
+  window.addEventListener('touchend', e=>{
+    if(!e.changedTouches.length)return;
+    const t=e.changedTouches[0];
+    setTimeout(()=>{
+      if(_arOpen && Date.now()-_arOpenedAt > 80){
+        closeAR();
+      } else if(!_arOpen){
+        _doRaycast(t.clientX, t.clientY);
+      }
+    }, 50);
+  }, {capture:true});
+}
+
+function _doRaycast(clientX, clientY){
+  const sc = document.querySelector('a-scene');
+  if(!sc || !sc.camera || !sc.canvas) return;
+
+  const canvas = sc.canvas;
+  const rect   = canvas.getBoundingClientRect();
+
+  /* Ignore clicks outside the canvas */
+  if(clientX < rect.left || clientX > rect.right ||
+     clientY < rect.top  || clientY > rect.bottom) return;
+
+  const nx = ((clientX - rect.left) / rect.width)  * 2 - 1;
+  const ny = -((clientY - rect.top)  / rect.height) * 2 + 1;
+
+  const rc = new THREE.Raycaster();
+  rc.setFromCamera({x:nx, y:ny}, sc.camera);
+
+  /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
+  const ap = $('arpanel');
+  if(_arOpen){
+    if(Date.now() - _arOpenedAt > 100){
+      closeAR();
+    }
+    return;
+  }
+
+  /* 2. Check registered hotspot meshes */
+  if(_hotspotRegistry.size > 0){
+    const meshes = [];
+    _hotspotRegistry.forEach((_, uuid) => {
+      sc.object3D.traverse(o => { if(o.uuid === uuid) meshes.push(o); });
+    });
+    if(meshes.length){
+      const hits = rc.intersectObjects(meshes, true);
+      if(hits.length){
+        let obj = hits[0].object;
+        while(obj){
+          const a = _hotspotRegistry.get(obj.uuid);
+          if(a){ a(); return; }
+          obj = obj.parent;
+        }
+      }
+    }
+  }
 }
 
 function refreshRaycasters(){
@@ -722,99 +999,107 @@ function refreshRaycasters(){
   setTimeout(scan,100); setTimeout(scan,400);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   AR CARD — HTML DOM exactly like visitemanuelle
-═══════════════════════════════════════════════════════════════ */
-let _currentLang = 'FR';
-let _lastARDesc  = '';
+/* ── Hotspot factory ── */
+function makeHotspot(hs){
+  const isAR   = hs.type === 'ar';
+  const pitch  = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);
+  const pos    = yawPitchToXYZ(hs.yaw, pitch);
+  const arDesc = isAR ? (hs.arDesc || hs.label || '') : '';
+  const navZone  = !isAR && hs.targetZoneId  != null ? String(hs.targetZoneId)  : '';
+  const navScene = !isAR && hs.targetSceneId != null ? String(hs.targetSceneId) : '';
+  const color  = isAR ? '#F59E0B' : (hs.type==='cross' ? '#06B6D4' : '#22C55E');
 
-function setLang(lang){
-  _currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
-  if(_lastARDesc) renderARBody(_lastARDesc);
-}
-
-function openAR(desc){
-  _lastARDesc  = desc;
-  const overlay = document.getElementById('ar-overlay');
-  const card    = document.getElementById('ar-card');
-  if(!overlay||!card) return;
-
-  const def   = getARDef(desc);
-  const vis   = getHSVisual(resolveARKey(desc)||desc);
-  const color = (def&&def.color)||'#22c55e';
-
-  /* Hero */
-  const heroBg   = document.getElementById('ar-hero-bg');
-  const heroAnim  = document.getElementById('ar-hero-anim');
-  const heroIcon  = document.getElementById('ar-hero-icon');
-  const heroLabel = document.getElementById('ar-hero-label');
-  const heroTitle = document.getElementById('ar-hero-title');
-
-  if(heroBg)   heroBg.style.background   = `radial-gradient(ellipse at 50% 50%, ${color}44 0%, ${color}22 40%, transparent 70%)`;
-  if(heroIcon) heroIcon.innerHTML         = vis.html;
-  if(heroLabel) heroLabel.textContent     = def&&def.type ? def.type.toUpperCase() : 'SYSTÈME';
-  if(heroTitle) heroTitle.textContent     = (def&&def.title)||desc||'Information';
-
-  renderARBody(desc);
-  tryLoadAudio(desc);
-
-  overlay.style.display = 'block';
-  /* Animate card in */
-  if(card.style.animation) card.style.animation='none';
-  requestAnimationFrame(()=>{ card.style.animation=''; });
-}
-
-function renderARBody(desc){
-  const def  = getARDef(desc);
-  const body = document.getElementById('ar-body');
-  if(!body) return;
-  const color = (def&&def.color)||'#22c55e';
-  let html = '';
-
-  if(def&&def.statusText){
-    html += `<div class="ar-status-pill" style="background:${color}18;border:1px solid ${color}44;color:${color}">
-      <div class="ar-status-dot" style="background:${color}"></div>
-      ${def.statusText}
-    </div>`;
+  let _fired = false;
+  function doAction(){
+    if(_fired) return; _fired=true; setTimeout(()=>{_fired=false;}, 600);
+    if(isAR) openAR(arDesc);
+    else     goTo(navZone, navScene);
   }
 
-  if(def&&def.sections&&def.sections.length){
-    def.sections.forEach(sec=>{
-      if(sec.label) html += `<div class="ar-section-label" style="color:${color}">${sec.label}</div>`;
-      if(sec.bullets) sec.bullets.forEach(b=>{ html += `<div class="ar-bullet">${b}</div>`; });
-      if(sec.items)   sec.items.forEach(item=>{
-        const tag = item.tag
-          ? `<span class="ar-tag ar-tag-${item.tag}">${item.v}</span>`
-          : `<span class="ar-row-v">${item.v}</span>`;
-        html += `<div class="ar-row"><span class="ar-row-k">${item.k}</span>${tag}</div>`;
-      });
-    });
-  } else {
-    html = `<div style="color:rgba(0,0,0,.4);font-size:13px;padding:12px 0">Aucune information disponible.</div>`;
-  }
+  const wrap = document.createElement('a-entity');
+  wrap.setAttribute('position', pos.x+' '+pos.y+' '+pos.z);
+  wrap.setAttribute('billboard', '');
 
-  body.innerHTML = html;
+  const badge = document.createElement('a-plane');
+  badge.setAttribute('width',  '0.72');
+  badge.setAttribute('height', '0.72');
+  badge.setAttribute('material',
+    'shader:flat; transparent:true; side:double; alphaTest:0.01; depthWrite:false; opacity:0.99');
+  badge.setAttribute('animation__pulse',
+    'property:scale; dir:alternate; loop:true; dur:1600; from:1 1 1; to:1.08 1.08 1');
+  badge.classList.add('clickable');
+
+  /* A-Frame click — secondary path */
+  badge.addEventListener('click',      doAction);
+  badge.addEventListener('triggerdown', doAction);
+  badge.addEventListener('mouseenter', ()=> wrap.object3D.scale.set(1.18,1.18,1.18));
+  badge.addEventListener('mouseleave', ()=> wrap.object3D.scale.set(1,1,1));
+
+  /* Primary path — register in registry once mesh is ready */
+  function registerMesh(){
+    const mesh = badge.getObject3D('mesh');
+    if(!mesh){ setTimeout(registerMesh, 60); return; }
+    _hotspotRegistry.set(mesh.uuid, doAction);
+    mesh.traverse(c => { if(c !== mesh && c.isMesh) _hotspotRegistry.set(c.uuid, doAction); });
+  }
+  if(badge.hasLoaded) registerMesh();
+  else badge.addEventListener('loaded', registerMesh, {once:true});
+
+  wrap.appendChild(badge);
+  /* Draw placeholder immediately, then replace with icon version */
+  applyCanvasTexture(badge, drawBadge(hs.type, color));
+  drawBadgeAsync(hs.type, color, arDesc).then(cv => applyCanvasTexture(badge, cv));
+  return wrap;
 }
 
-function tryLoadAudio(desc){
-  const audioEl  = document.getElementById('ar-audio');
-  const audioRow = document.getElementById('ar-audio-row');
-  if(!audioEl||!audioRow) return;
-  const key = (desc||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
-  const src = `audio/scenes/${_currentLang.toLowerCase()}/${key}.mp3`;
-  audioEl.src = src;
-  audioEl.load();
-  audioEl.oncanplaythrough = ()=>{ audioRow.style.display='block'; audioEl.play().catch(()=>{}); };
-  audioEl.onerror          = ()=>{ audioRow.style.display='none'; };
+/* ── AR panel ── */
+let _arOpenedAt = 0;
+let _arOpen = false;
+
+async function openAR(desc){
+  const card = $('arpanel');
+  if(!card) return;
+  _arOpen = true;
+  _arOpenedAt = Date.now();
+  const _dbg=document.getElementById('ar-debug');
+  if(_dbg)_dbg.textContent='OPEN "'+desc+'" @ '+Date.now()%100000+' | _arOpen='+_arOpen;
+
+  card.setAttribute('visible', true);
+  if(card.object3D) card.object3D.visible = true;
+  _placeCard(card, 2.6);
+
+  try{
+    const cv = await drawARCard(desc || 'serre');
+    applyCanvasTexture(card, cv);
+    _placeCard(card, 2.6);
+  } catch(err){ console.error('[AR]', err); }
+}
+
+function _placeCard(el, dist){
+  const sceneEl = el.sceneEl || document.querySelector('a-scene');
+  const cam = sceneEl && sceneEl.camera;
+  if(!cam) return;
+
+  const camPos = new THREE.Vector3();
+  const camQuat = new THREE.Quaternion();
+  cam.getWorldPosition(camPos);
+  cam.getWorldQuaternion(camQuat);
+
+  const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camQuat);
+  el.object3D.position.copy(camPos).addScaledVector(fwd, dist);
+  el.object3D.quaternion.copy(camQuat);
+  el.object3D.updateMatrixWorld(true);
 }
 
 function closeAR(){
-  const overlay = document.getElementById('ar-overlay');
-  if(overlay) overlay.style.display = 'none';
-  const audioEl = document.getElementById('ar-audio');
-  if(audioEl){ audioEl.pause(); audioEl.src=''; }
-  _lastARDesc = '';
+  _arOpen = false;
+  const _dbg=document.getElementById('ar-debug');
+  if(_dbg)_dbg.textContent='CLOSED @ '+Date.now()%100000+' | _arOpen=false';
+  const ap = $('arpanel');
+  if(!ap) return;
+  ap.setAttribute('visible', false);
+  /* Force object3D sync immediately */
+  if(ap.object3D) ap.object3D.visible = false;
 }
 
 /* ── Scene loader ── */
@@ -825,7 +1110,7 @@ async function load(zid,sid){
   try{await preload(scene.file);}catch(e){showErr('Image introuvable: '+scene.file);busy=false;return;}
   const host=$('hotspots');
   while(host.firstChild)host.removeChild(host.firstChild);
-  clearDOMPills();
+  _hotspotRegistry.clear();
   closeAR();
   const finish=()=>{
     try{
