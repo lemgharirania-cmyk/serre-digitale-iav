@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar'
 import { iotAPI } from '../api/client'
-import { X, AlertTriangle } from 'lucide-react'
+import { X, AlertTriangle, Beaker as BeakerIcon, ChevronDown as ChevronDownIcon } from 'lucide-react'
 
 import Overview      from './dashboard/Overview'
 import EtatSerre     from './dashboard/EtatSerre'
@@ -70,51 +70,50 @@ function NSCalculateurAccordion({ theme, lang }) {
   const label  = lang === 'FR' ? 'Calculateur de solution nutritive' : 'Nutrient solution calculator'
   const subLbl = lang === 'FR'
     ? 'Calculer la composition de la solution nutritive de fertigation'
-    : 'Calculate fertigation nutrient solution composition'
+    : 'Calculate the fertigation nutrient solution composition'
   const cardBg = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
   const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
   const ink    = isDark ? '#F1F5F9' : '#0F172A'
   const ink3   = isDark ? '#94A3B8' : '#64748B'
 
   return (
-    <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: 18, overflow: 'hidden' }}>
+    <div style={{ background: cardBg, border: '1px solid ' + border, borderRadius: 18, overflow: 'hidden' }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', padding: '18px 24px',
+          justifyContent: 'space-between', padding: '20px 24px',
           background: 'none', border: 'none', cursor: 'pointer',
           fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 11,
+            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
             background: isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.08)',
             border: '1px solid rgba(6,182,212,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#06B6D4',
           }}>
-            <span style={{ fontSize: 18 }}>&#x2697;&#xFE0F;</span>
+            <BeakerIcon size={18} />
           </div>
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{label}</div>
-            <div style={{ fontSize: 11, color: ink3, marginTop: 2 }}>{subLbl}</div>
+          <div style={{ textAlign: 'left', minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: ink, letterSpacing: '-0.01em' }}>{label}</div>
+            <div style={{ fontSize: 12, color: ink3, marginTop: 3 }}>{subLbl}</div>
           </div>
         </div>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8,
-          background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-          border: `1px solid ${border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: ink3, transition: 'transform 0.3s',
-          transform: open ? 'rotate(180deg)' : 'none',
-          fontSize: 16, flexShrink: 0,
-        }}>
-          &#9662;
-        </div>
+        <ChevronDownIcon
+          size={18}
+          style={{
+            flexShrink: 0, color: ink3,
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.3s',
+            marginLeft: 12,
+          }}
+        />
       </button>
       {open && (
-        <div style={{ borderTop: `1px solid ${border}`, padding: '0 4px 4px' }}>
+        <div style={{ borderTop: '1px solid ' + border, padding: '0 4px 4px' }}>
           <NSCalculateur theme={theme} lang={lang} />
         </div>
       )}
@@ -145,6 +144,7 @@ export default function Dashboard() {
   const [countdown,  setCountdown]  = useState(120)
   const [meteo,      setMeteo]      = useState({})
   const [bannerOff,  setBannerOff]  = useState(false)
+  const [sidebarW,   setSidebarW]   = useState(240) // synced with sidebar collapse
 
   const [theme, setTheme] = useState(() => localStorage.getItem('sdi_theme') || 'light')
   const [lang,  setLang]  = useState(() => localStorage.getItem('sdi_lang')  || 'FR')
@@ -246,10 +246,11 @@ export default function Dashboard() {
         alertCount={alertCount}
         theme={theme} setTheme={setTheme}
         lang={lang}   setLang={setLang}
+        onWidthChange={setSidebarW}
       />
 
-      {/* Spacer that pushes main right of the fixed sidebar */}
-      <div style={{ width: 220, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
+      {/* Spacer that matches fixed sidebar width */}
+      <div id="sidebar-spacer" style={{ width: sidebarW, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
 
       <main
         className="admin-main"
