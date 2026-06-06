@@ -1,290 +1,374 @@
 // src/components/layout/Sidebar.jsx  (dashboard admin)
-// Sidebar FIXE — position:fixed, height:100vh, indépendante du scroll du contenu
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Server, BarChart2, Bell, Sliders,
-  Download, Settings, FlaskConical,
+  Download, Settings, Beaker,
   ChevronLeft, ChevronRight, Sun, Moon,
+  ArrowLeft, LogOut, Languages,
 } from 'lucide-react'
 
-const NAV = [
-  { to: '/dashboard',            icon: LayoutDashboard, labelFR: 'Vue d\'ensemble', labelEN: 'Overview',    id: 'vue'         },
-  { to: '/dashboard#seuils',     icon: Sliders,         labelFR: 'Seuils',          labelEN: 'Thresholds',  id: 'seuils'      },
-  { to: '/dashboard#etat',       icon: Server,          labelFR: 'État serre',      labelEN: 'Status',      id: 'etat'        },
-  { to: '/dashboard#graphiques', icon: BarChart2,       labelFR: 'Graphiques',      labelEN: 'Charts',      id: 'graphiques'  },
-  { to: '/dashboard#calculateur',icon: FlaskConical,    labelFR: 'Calculateur NS',  labelEN: 'NS Calc',     id: 'calculateur' },
-  { to: '/dashboard#export',     icon: Download,        labelFR: 'Export',          labelEN: 'Export',      id: 'export'      },
-  { to: '/dashboard/alertes',    icon: Bell,            labelFR: 'Alertes',         labelEN: 'Alerts',      id: 'alertes', badge: true },
-  { to: '/dashboard/parametres', icon: Settings,        labelFR: 'Paramètres',      labelEN: 'Settings',    id: 'parametres'  },
+// ── Toutes les sections scroll dans la ScrollHome ──────────────────────────
+// "Vue d'ensemble" est la page principale — les ancres #xxx scrollent dedans
+// Les routes /alertes /parametres sont des pages séparées
+const NAV_GROUPS = [
+  {
+    labelFR: 'Monitoring', labelEN: 'Monitoring',
+    items: [
+      {
+        id: 'vue', labelFR: "Vue d'ensemble", labelEN: 'Overview',
+        icon: LayoutDashboard,
+        // navigue vers /dashboard PUIS scrolle en haut
+        action: 'home',
+      },
+      {
+        id: 'etat', labelFR: 'État serre', labelEN: 'GH Status',
+        icon: Server, action: 'anchor', anchor: 'etat',
+      },
+      {
+        id: 'graphiques', labelFR: 'Graphiques', labelEN: 'Charts',
+        icon: BarChart2, action: 'anchor', anchor: 'graphiques',
+      },
+      {
+        id: 'alertes', labelFR: 'Alertes', labelEN: 'Alerts',
+        icon: Bell, action: 'route', to: '/dashboard/alertes', badge: true,
+      },
+    ],
+  },
+  {
+    labelFR: 'Outils', labelEN: 'Tools',
+    items: [
+      {
+        id: 'calculateur', labelFR: 'Solution nutritive', labelEN: 'Nutrient Solution',
+        icon: Beaker, action: 'anchor', anchor: 'calculateur',
+      },
+    ],
+  },
+  {
+    labelFR: 'Configuration', labelEN: 'Settings',
+    items: [
+      {
+        id: 'seuils', labelFR: 'Seuils', labelEN: 'Thresholds',
+        icon: Sliders, action: 'anchor', anchor: 'seuils',
+      },
+      {
+        id: 'export', labelFR: 'Export données', labelEN: 'Export data',
+        icon: Download, action: 'anchor', anchor: 'export',
+      },
+      {
+        id: 'parametres', labelFR: 'Paramètres', labelEN: 'Settings',
+        icon: Settings, action: 'route', to: '/dashboard/parametres',
+      },
+    ],
+  },
 ]
 
-export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang }) {
+export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang, onWidthChange }) {
   const [open, setOpen] = useState(true)
-  const location = useLocation()
-  const isDark = theme === 'dark'
+  function toggleOpen() {
+    setOpen(o => {
+      const next = !o
+      onWidthChange?.(next ? 240 : 64)
+      return next
+    })
+  }
+  const location        = useLocation()
+  const navigate        = useNavigate()
+  const isDark          = theme === 'dark'
 
-  const W         = open ? 220 : 60
-  const bg        = isDark ? '#070F1C' : '#FFFFFF'
-  const border    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'
-  const ink       = isDark ? '#F1F5F9' : '#0F172A'
-  const ink3      = isDark ? '#94A3B8' : '#64748B'
-  const ink4      = isDark ? '#475569' : '#94A3B8'
-  const hoverBg   = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
-  const activeBg  = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'
-  const activeClr = '#22C55E'
+  const W        = open ? 240 : 64
+  const bg       = isDark ? '#060D1A' : '#FFFFFF'
+  const border   = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'
+  const ink      = isDark ? '#F1F5F9' : '#0F172A'
+  const ink2     = isDark ? '#CBD5E1' : '#334155'
+  const ink3     = isDark ? '#94A3B8' : '#64748B'
+  const ink4     = isDark ? '#475569' : '#94A3B8'
+  const hoverBg  = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  const activeBg = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'
+  const green    = '#22C55E'
+
+  const user     = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
+  const userName = user.prenom || user.nom || 'Admin'
+  const userRole = user.role || 'ALL'
+  const initials = (user.prenom?.[0] || user.nom?.[0] || 'A').toUpperCase()
+
+  const onDashboard = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
 
   function isActive(item) {
-    if (item.id === 'vue') return location.pathname === '/dashboard' || location.pathname === '/dashboard/'
-    if (item.to.startsWith('/dashboard/')) return location.pathname === item.to
-    return false
+    if (item.action === 'home') return onDashboard
+    if (item.action === 'route') return location.pathname === item.to
+    return false // ancres : pas d'active visuel persistant
   }
 
-  function scrollTo(anchorId) {
-    const el = document.getElementById(anchorId)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  function handleClick(item) {
-    if (item.to.includes('#')) {
-      const anchor = item.to.split('#')[1]
-      // If already on dashboard, just scroll
-      if (location.pathname === '/dashboard' || location.pathname === '/dashboard/') {
-        scrollTo(anchor)
+  function handleNav(item) {
+    if (item.action === 'home') {
+      if (onDashboard) {
+        // déjà sur /dashboard → scroll vers le haut
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        document.querySelector('.admin-main')?.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        navigate('/dashboard')
       }
-      // Otherwise navigate then scroll (React Router will handle the path)
+    } else if (item.action === 'anchor') {
+      if (!onDashboard) {
+        // navigue vers /dashboard, puis scroll après mount
+        navigate('/dashboard')
+        setTimeout(() => {
+          document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 350)
+      } else {
+        document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else if (item.action === 'route') {
+      navigate(item.to)
     }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('sdi_token')
+    localStorage.removeItem('sdi_user')
+    navigate('/')   // retour site public
+  }
+
+  // Style partagé des items nav — TOUT aligné à gauche
+  const navItem = (active) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',   // ← toujours left
+    gap: 10,
+    width: '100%',
+    height: 40,
+    padding: open ? '0 12px' : '0 0 0 0',
+    // Quand fermé : centrer l'icône dans le 64px
+    ...(open ? {} : { justifyContent: 'center', padding: 0 }),
+    borderRadius: 10,
+    border: 'none',
+    cursor: 'pointer',
+    background: active ? activeBg : 'transparent',
+    color: active ? green : ink3,
+    fontSize: 13,
+    fontWeight: active ? 700 : 500,
+    fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
+    transition: 'all 0.15s',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    borderLeft: open ? ('2px solid ' + (active ? green : 'transparent')) : 'none',
+    position: 'relative',
+    textAlign: 'left',
+  })
+
+  const ctrlBtn = {
+    display: 'flex', alignItems: 'center',
+    justifyContent: open ? 'flex-start' : 'center',
+    gap: open ? 9 : 0,
+    width: '100%', height: 36, boxSizing: 'border-box',
+    padding: open ? '0 12px' : '0',
+    borderRadius: 9, border: '1px solid ' + border,
+    cursor: 'pointer', fontSize: 12, fontWeight: 500,
+    fontFamily: "'Manrope',system-ui,sans-serif",
+    transition: 'all 0.15s',
+    whiteSpace: 'nowrap', overflow: 'hidden',
   }
 
   return (
     <aside style={{
-      // ── THE KEY FIX: position fixed, full viewport height ──
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      height: '100vh',
-      zIndex: 1000,
-      width: W,
-      flexShrink: 0,
-      // ──────────────────────────────────────────────────────
-      background: bg,
-      borderRight: '1px solid ' + border,
-      display: 'flex',
-      flexDirection: 'column',
+      position: 'fixed', top: 0, left: 0, bottom: 0,
+      height: '100vh', zIndex: 1000, width: W, flexShrink: 0,
+      background: bg, borderRight: '1px solid ' + border,
+      display: 'flex', flexDirection: 'column',
       transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
       overflow: 'hidden',
-      boxShadow: isDark
-        ? '4px 0 24px rgba(0,0,0,0.4)'
-        : '4px 0 16px rgba(0,0,0,0.06)',
+      boxShadow: isDark ? '4px 0 32px rgba(0,0,0,0.45)' : '4px 0 16px rgba(0,0,0,0.06)',
     }}>
 
-      {/* ── Logo / Brand ── */}
+      {/* ── Logo + collapse ── */}
       <div style={{
-        height: 56,
-        display: 'flex',
-        alignItems: 'center',
-        padding: open ? '0 16px' : '0',
+        height: 56, flexShrink: 0, display: 'flex', alignItems: 'center',
+        padding: open ? '0 12px 0 16px' : '0',
         justifyContent: open ? 'space-between' : 'center',
         borderBottom: '1px solid ' + border,
-        flexShrink: 0,
       }}>
         {open && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: 'linear-gradient(135deg,#22C55E,#059669)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>S</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg,#22C55E,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'white', fontFamily: 'monospace' }}>S</span>
             </div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                SDI
-              </div>
-              <div style={{ fontSize: 9, color: ink4, fontWeight: 500, letterSpacing: '0.03em', lineHeight: 1 }}>
-                AgroBioTech
-              </div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>SDI Admin</div>
+              <div style={{ fontSize: 9, color: ink4, letterSpacing: '0.04em', lineHeight: 1 }}>AgroBioTech · IAV</div>
             </div>
           </div>
         )}
-        <button
-          onClick={() => setOpen(o => !o)}
-          style={{
-            width: 28, height: 28, borderRadius: 8,
-            background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-            border: '1px solid ' + border,
-            color: ink3, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.15s', flexShrink: 0,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'; e.currentTarget.style.color = activeClr }}
-          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = ink3 }}
+        <button onClick={toggleOpen} style={{
+          width: 28, height: 28, borderRadius: 8, border: '1px solid ' + border,
+          background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+          color: ink3, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.15s', flexShrink: 0,
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.color = green }}
+          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = ink3 }}
         >
           {open ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
         </button>
       </div>
 
-      {/* ── Nav items ── */}
+      {/* ── Retour au site visiteur ── */}
+      <div style={{ padding: '10px 8px 6px', flexShrink: 0 }}>
+        <button onClick={() => navigate('/')} style={{
+          ...navItem(false),
+          background: isDark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)',
+          border: '1px solid ' + (isDark ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.15)'),
+          borderLeft: '2px solid ' + green,
+          color: green, fontWeight: 600, height: 38,
+          padding: open ? '0 12px' : '0',
+          justifyContent: open ? 'flex-start' : 'center',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(34,197,94,0.13)' : 'rgba(34,197,94,0.1)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)' }}
+        >
+          <ArrowLeft size={15} style={{ flexShrink: 0, color: green }} />
+          {open && <span style={{ fontSize: 12, fontWeight: 600, color: green }}>{lang === 'EN' ? 'Back to site' : 'Site visiteur'}</span>}
+        </button>
+      </div>
+
+      {/* ── Nav groupée ── */}
       <nav style={{
-        flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        padding: '10px 8px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        // Hide scrollbar
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        flex: 1, overflowY: 'auto', overflowX: 'hidden',
+        padding: '4px 8px', display: 'flex', flexDirection: 'column',
+        scrollbarWidth: 'none', msOverflowStyle: 'none',
       }}>
-        {NAV.map((item) => {
-          const Icon    = item.icon
-          const active  = isActive(item)
-          const hasAnchor = item.to.includes('#')
-          const badgeCount = item.badge ? alertCount : 0
+        {NAV_GROUPS.map((group) => (
+          <div key={group.labelFR} style={{ marginBottom: 6 }}>
+            {/* Label groupe */}
+            {open ? (
+              <div style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+                textTransform: 'uppercase', color: ink4,
+                padding: '10px 12px 4px', textAlign: 'left',
+              }}>
+                {lang === 'EN' ? group.labelEN : group.labelFR}
+              </div>
+            ) : <div style={{ height: 10 }} />}
 
-          const itemStyle = {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: open ? '0 10px' : '0',
-            justifyContent: open ? 'flex-start' : 'center',
-            height: 40,
-            borderRadius: 10,
-            border: 'none',
-            cursor: 'pointer',
-            background: active ? activeBg : 'transparent',
-            color: active ? activeClr : ink3,
-            fontSize: 13,
-            fontWeight: active ? 700 : 500,
-            fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
-            transition: 'all 0.15s',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            borderLeft: '2px solid ' + (active ? activeClr : 'transparent'),
-            width: '100%',
-            boxSizing: 'border-box',
-          }
+            {group.items.map((item) => {
+              const Icon   = item.icon
+              const active = isActive(item)
+              const badge  = item.badge ? alertCount : 0
 
-          const content = (
-            <>
-              <Icon
-                size={16}
-                style={{
-                  flexShrink: 0,
-                  color: active ? activeClr : ink4,
-                  transition: 'color 0.15s',
-                }}
-              />
-              {open && (
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {lang === 'EN' ? item.labelEN : item.labelFR}
-                </span>
-              )}
-              {open && badgeCount > 0 && (
-                <span style={{
-                  fontSize: 10, fontWeight: 700,
-                  padding: '1px 6px', borderRadius: 10,
-                  background: '#EF4444', color: 'white',
-                  flexShrink: 0,
-                }}>
-                  {badgeCount}
-                </span>
-              )}
-              {!open && badgeCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: 6, right: 6,
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: '#EF4444',
-                }} />
-              )}
-            </>
-          )
-
-          if (hasAnchor) {
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleClick(item)}
-                style={{ ...itemStyle, position: 'relative' }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 } }}
-              >
-                {content}
-              </button>
-            )
-          }
-
-          return (
-            <NavLink
-              key={item.id}
-              to={item.to}
-              style={{ ...itemStyle, position: 'relative' }}
-              onMouseEnter={e => { if (!active) { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink } }}
-              onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 } }}
-            >
-              {content}
-            </NavLink>
-          )
-        })}
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNav(item)}
+                  style={navItem(active)}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink2 } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 } }}
+                >
+                  <Icon size={16} style={{ flexShrink: 0, color: active ? green : ink4, transition: 'color 0.15s' }} />
+                  {open && (
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>
+                      {lang === 'EN' ? item.labelEN : item.labelFR}
+                    </span>
+                  )}
+                  {open && badge > 0 && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 10, background: '#EF4444', color: '#fff', flexShrink: 0 }}>
+                      {badge}
+                    </span>
+                  )}
+                  {!open && badge > 0 && (
+                    <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#EF4444' }} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* ── Footer controls ── */}
-      <div style={{
-        padding: '8px',
-        borderTop: '1px solid ' + border,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-        flexShrink: 0,
-      }}>
+      {/* ── Footer : theme · lang · user · logout ── */}
+      <div style={{ padding: '8px', borderTop: '1px solid ' + border, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
 
-        {/* Theme toggle */}
-        <button
-          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: open ? '0 10px' : '0',
-            justifyContent: open ? 'flex-start' : 'center',
-            height: 36, borderRadius: 9,
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-            border: '1px solid ' + border,
-            color: ink3, cursor: 'pointer',
-            fontSize: 12, fontWeight: 500,
-            fontFamily: "'Manrope',system-ui,sans-serif",
-            transition: 'all 0.15s', width: '100%',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
-          onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = ink3 }}
-        >
-          {isDark ? <Sun size={14} style={{ flexShrink: 0 }} /> : <Moon size={14} style={{ flexShrink: 0 }} />}
-          {open && <span>{isDark ? (lang === 'EN' ? 'Light mode' : 'Mode clair') : (lang === 'EN' ? 'Dark mode' : 'Mode sombre')}</span>}
-        </button>
+        {/* Boutons theme + lang côte à côte (style original) */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            title={isDark ? (lang === 'EN' ? 'Light mode' : 'Mode clair') : (lang === 'EN' ? 'Dark mode' : 'Mode sombre')}
+            style={{
+              ...ctrlBtn,
+              flex: 1,
+              background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+              color: ink3,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
+            onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = ink3 }}
+          >
+            {isDark ? <Sun size={14} style={{ flexShrink: 0 }} /> : <Moon size={14} style={{ flexShrink: 0 }} />}
+            {open && <span>{isDark ? (lang === 'EN' ? 'Jour' : 'Jour') : (lang === 'EN' ? 'Nuit' : 'Nuit')}</span>}
+          </button>
 
-        {/* Lang toggle */}
-        <button
-          onClick={() => setLang(l => l === 'FR' ? 'EN' : 'FR')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: open ? '0 10px' : '0',
-            justifyContent: open ? 'flex-start' : 'center',
-            height: 36, borderRadius: 9,
-            background: 'transparent',
-            border: '1px solid ' + border,
-            color: ink3, cursor: 'pointer',
-            fontSize: 12, fontWeight: 600,
-            fontFamily: "'JetBrains Mono',monospace",
-            transition: 'all 0.15s', width: '100%',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 }}
-        >
-          <span style={{ flexShrink: 0, fontSize: 13 }}>{lang === 'FR' ? '🇫🇷' : '🇬🇧'}</span>
-          {open && <span>{lang === 'FR' ? 'FR → EN' : 'EN → FR'}</span>}
-        </button>
+          <button
+            onClick={() => setLang(l => l === 'FR' ? 'EN' : 'FR')}
+            title={lang === 'FR' ? 'Switch to English' : 'Passer en français'}
+            style={{
+              ...ctrlBtn,
+              flex: 1,
+              background: 'transparent',
+              color: ink3,
+              fontFamily: "'JetBrains Mono',monospace",
+              fontWeight: 600, fontSize: 11,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = ink }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = ink3 }}
+          >
+            <Languages size={14} style={{ flexShrink: 0 }} />
+            {open && <span>{lang === 'FR' ? 'FR' : 'EN'}</span>}
+          </button>
+        </div>
+
+        {/* User card + logout */}
+        <div style={{
+          padding: open ? '10px 12px' : '8px 0',
+          borderRadius: 12, border: '1px solid ' + border,
+          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+          display: 'flex', alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+          gap: 8,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: open ? 9 : 0, minWidth: 0 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,#22C55E,#059669)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, fontWeight: 800, color: 'white',
+            }}>
+              {initials}
+            </div>
+            {open && (
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</div>
+                <div style={{ fontSize: 9, color: ink4, fontFamily: 'monospace', letterSpacing: '0.04em' }}>{userRole}</div>
+              </div>
+            )}
+          </div>
+          {open && (
+            <button
+              onClick={handleLogout}
+              title={lang === 'EN' ? 'Sign out' : 'Se déconnecter'}
+              style={{
+                width: 28, height: 28, borderRadius: 7, border: '1px solid ' + border,
+                background: 'none', cursor: 'pointer', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: ink4, transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = ink4; e.currentTarget.style.borderColor = border }}
+            >
+              <LogOut size={13} />
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   )
