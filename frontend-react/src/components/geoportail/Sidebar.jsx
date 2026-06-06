@@ -7,8 +7,8 @@ const NAV = [
   { id: 'apropos', icon: Info,            labelFr: 'À Propos',         labelEn: 'About' },
   { id: 'campus',  icon: MapPin,          labelFr: 'AgroBioTech',      labelEn: 'AgroBioTech' },
   { id: 'plan2d',  icon: Map,             labelFr: 'Plan 2D',          labelEn: '2D Plan' },
-  { id: 'donnees', icon: BarChart2,       labelFr: 'Données',          labelEn: 'Data' },
   { id: 'visite',  icon: Scan,            labelFr: 'Visite Virtuelle', labelEn: 'Virtual Tour' },
+  { id: 'donnees', icon: BarChart2,       labelFr: 'Données',          labelEn: 'Data' },
 ]
 
 export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
