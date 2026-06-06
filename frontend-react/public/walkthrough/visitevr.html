@@ -164,7 +164,7 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <a-sky id="sky" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
 
     <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
-    <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
+    <a-plane id="arpanel" data-action="closeAR" visible="false"
       width="2.4" height="1.6"
       material="shader:flat; color:#ffffff; opacity:0.95; transparent:true; side:double" billboard></a-plane>
 
@@ -907,15 +907,14 @@ function attachSceneClicks(){
   if(_clickListenerAttached) return;
   _clickListenerAttached = true;
 
-  /* Use 'click' not 'mouseup' — click fires AFTER A-Frame's own click,
-     so _arOpen is already true when we check it for closing. */
-  document.addEventListener('click', e=>{
+  /* Listen on document — always fires regardless of A-Frame canvas state */
+  document.addEventListener('mouseup', e=>{
     if(e.button!==0) return;
     _doRaycast(e.clientX, e.clientY);
   });
   document.addEventListener('touchend', e=>{
     if(e.changedTouches.length===0) return;
-    setTimeout(()=>_doRaycast(e.changedTouches[0].clientX, e.changedTouches[0].clientY), 50);
+    _doRaycast(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
   });
 }
 
@@ -939,7 +938,7 @@ function _doRaycast(clientX, clientY){
   /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
   const ap = $('arpanel');
   if(_arOpen){
-    if(Date.now() - _arOpenedAt > 100){
+    if(Date.now() - _arOpenedAt > 350){
       closeAR();
     }
     return;
@@ -985,8 +984,7 @@ function makeHotspot(hs){
   let _fired = false;
   function doAction(){
     if(_fired) return; _fired=true; setTimeout(()=>{_fired=false;}, 600);
-    /* If AR panel is open, let _doRaycast handle the close — don't reopen */
-    if(_arOpen){ closeAR(); return; }
+    if(_arOpen) return;
     if(isAR) openAR(arDesc);
     else     goTo(navZone, navScene);
   }
