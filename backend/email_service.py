@@ -1,57 +1,60 @@
-# email_service.py
-import os, random, string
+# email_service.py — utilise Resend API (HTTP) au lieu de SMTP
+# Render bloque tous les ports SMTP (25, 465, 587)
+import os, random, string, httpx
 from datetime import datetime, timedelta
-import aiosmtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-# ── Config SMTP ──────────────────────────────────────────────
-SMTP_HOST     = os.getenv("SMTP_HOST",     "smtp.gmail.com")
-SMTP_PORT     = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER     = os.getenv("SMTP_USER",     "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-EMAIL_FROM    = os.getenv("EMAIL_FROM",    SMTP_USER)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+EMAIL_FROM     = os.getenv("EMAIL_FROM", "onboarding@resend.dev")
 
-# ── Unités pour alertes capteurs ────────────────────────────
 UNITES = {
     "temperature": "°C", "humidite": "%", "vpd": "kPa",
     "ph": "pH", "ec": "mS/cm", "niveau_eau": "m", "co2": "PPM"
 }
 
 
-# ════════════════════════════════════════════════════════════
-#  VÉRIFICATION EMAIL — génération du code
-# ════════════════════════════════════════════════════════════
-
 def generate_verification_code() -> str:
-    """Génère un code numérique à 6 chiffres"""
     return ''.join(random.choices(string.digits, k=6))
 
 def get_code_expiry() -> datetime:
-    """Le code expire dans 30 minutes"""
     return datetime.utcnow() + timedelta(minutes=30)
 
 
-async def send_verification_email(
-    to_email: str,
-    code: str,
-    nom: str = ""
-) -> bool:
-    """Envoie l'email avec le code de vérification à 6 chiffres"""
-
-    # DEBUG — visible dans les logs Render
-    print(f"[Email] DEBUG SMTP_USER='{SMTP_USER}' EMAIL_FROM='{EMAIL_FROM}' TO='{to_email}'")
-
-    if not SMTP_USER or not SMTP_PASSWORD:
-        print(f"[Email] SMTP non configuré — code non envoyé à {to_email}")
-        print(f"[Email] Code de test : {code}")
+async def _send_resend(to_email: str, subject: str, html: str) -> bool:
+    """Envoi via Resend API HTTP — contourne le blocage SMTP de Render."""
+    if not RESEND_API_KEY:
+        print(f"[Email] ❌ RESEND_API_KEY non configurée")
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {RESEND_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from":    f"SDI IAV Hassan II <{EMAIL_FROM}>",
+                    "to":      [to_email],
+                    "subject": subject,
+                    "html":    html,
+                }
+            )
+        if resp.status_code == 200 or resp.status_code == 201:
+            print(f"[Email] ✅ Envoyé à {to_email} (Resend id: {resp.json().get('id')})")
+            return True
+        else:
+            print(f"[Email] ❌ Resend erreur {resp.status_code}: {resp.text}")
+            return False
+    except Exception as e:
+        print(f"[Email] ❌ Exception Resend: {e}")
         return False
 
-    subject = "Votre code de vérification — Serre Digitale IAV"
 
+async def send_verification_email(to_email: str, code: str, nom: str = "") -> bool:
+    print(f"[Email] Envoi code vérification → {to_email}")
+    subject = "Votre code de vérification — Serre Digitale IAV"
     html = f"""<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
+<html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#f4f8f6">
   <div style="max-width:520px;margin:40px auto;background:white;border-radius:18px;
               overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
@@ -88,83 +91,33 @@ async def send_verification_email(
       Serre Digitale Intelligente · IAV Hassan II · Rabat, Maroc
     </div>
   </div>
-</body>
-</html>"""
+</body></html>"""
+    return await _send_resend(to_email, subject, html)
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = f"SDI IAV Hassan II <{EMAIL_FROM}>"
-    msg["To"]      = to_email
-    msg.attach(MIMEText(html, "html"))
-
-    try:
-        await aiosmtplib.send(
-            msg,
-            hostname=SMTP_HOST,
-            port=SMTP_PORT,
-            username=SMTP_USER,
-            password=SMTP_PASSWORD,
-            use_tls=True,
-        )
-        print(f"[Email] ✅ Code de vérification envoyé à {to_email}")
-        return True
-    except Exception as e:
-        print(f"[Email] ❌ Erreur envoi vérification: {e}")
-        return False
-
-
-# ════════════════════════════════════════════════════════════
-#  ALERTES CAPTEURS
-# ════════════════════════════════════════════════════════════
 
 async def send_alert_email(
-    to_email: str,
-    serre_nom: str,
-    capteur: str,
-    valeur: float,
-    seuil_min: float,
-    seuil_max: float
-):
-    if not SMTP_USER or not SMTP_PASSWORD:
-        print(f"[Email] SMTP non configuré — alerte non envoyée pour {serre_nom}")
-        return False
-
+    to_email: str, serre_nom: str, capteur: str,
+    valeur: float, seuil_min: float, seuil_max: float
+) -> bool:
+    print(f"[Email] Envoi alerte {capteur} → {to_email}")
     unite     = UNITES.get(capteur, "")
     direction = "en dessous du minimum" if (seuil_min and valeur < seuil_min) else "au dessus du maximum"
     seuil_val = seuil_min if (seuil_min and valeur < seuil_min) else seuil_max
-
-    subject = f"Alerte Serre — {serre_nom} — {capteur.capitalize()}"
-    body = f"""<html><body style="font-family:Arial,sans-serif;color:#333">
-<div style="background:#f0fdf4;border-left:4px solid #16a34a;padding:20px;border-radius:8px">
+    subject   = f"Alerte Serre — {serre_nom} — {capteur.capitalize()}"
+    html = f"""<html><body style="font-family:Arial,sans-serif;color:#333">
+<div style="background:#f0fdf4;border-left:4px solid #16a34a;padding:20px;border-radius:8px;max-width:520px;margin:40px auto">
     <h2 style="color:#15803d">Serre Digitale Intelligente — IAV Hassan II</h2>
     <h3 style="color:#dc2626">Alerte Capteur Détectée</h3>
     <table style="width:100%;border-collapse:collapse">
         <tr><td style="padding:8px;font-weight:bold">Serre</td><td>{serre_nom}</td></tr>
         <tr style="background:#f9fafb"><td style="padding:8px;font-weight:bold">Capteur</td><td>{capteur.capitalize()}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold">Valeur</td><td style="color:#dc2626;font-size:1.2em"><b>{valeur} {unite}</b></td></tr>
-        <tr style="background:#f9fafb"><td style="padding:8px;font-weight:bold">Seuil</td><td>{seuil_val} {unite} ({direction})</td></tr>
-        <tr><td style="padding:8px;font-weight:bold">Plage autorisée</td><td>{seuil_min} – {seuil_max} {unite}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold">Valeur</td>
+            <td style="color:#dc2626;font-size:1.2em"><b>{valeur} {unite}</b></td></tr>
+        <tr style="background:#f9fafb"><td style="padding:8px;font-weight:bold">Seuil</td>
+            <td>{seuil_val} {unite} ({direction})</td></tr>
+        <tr><td style="padding:8px;font-weight:bold">Plage autorisée</td>
+            <td>{seuil_min} – {seuil_max} {unite}</td></tr>
     </table>
 </div>
 </body></html>"""
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = EMAIL_FROM
-    msg["To"]      = to_email
-    msg.attach(MIMEText(body, "html"))
-
-    try:
-        await aiosmtplib.send(
-            msg,
-            hostname=SMTP_HOST,
-            port=SMTP_PORT,
-            username=SMTP_USER,
-            password=SMTP_PASSWORD,
-            use_tls=True,
-        )
-        print(f"[Email] ✅ Alerte envoyée à {to_email} pour {serre_nom} — {capteur}")
-        return True
-    except Exception as e:
-        print(f"[Email] ❌ Erreur envoi alerte: {e}")
-        return False
+    return await _send_resend(to_email, subject, html)
