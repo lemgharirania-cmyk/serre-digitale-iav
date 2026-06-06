@@ -937,9 +937,7 @@ function _doRaycast(clientX, clientY){
 
   /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
   const ap = $('arpanel');
-  /* Check visibility via object3D (reliable) AND attribute (fallback) */
-  const apVis = ap && ap.object3D && ap.object3D.visible;
-  if(apVis){
+  if(_arOpen){
     if(Date.now() - _arOpenedAt > 350){
       closeAR();
     }
@@ -1028,10 +1026,12 @@ function makeHotspot(hs){
 
 /* ── AR panel ── */
 let _arOpenedAt = 0;
+let _arOpen = false;
 
 async function openAR(desc){
   const card = $('arpanel');
   if(!card) return;
+  _arOpen = true;
   _arOpenedAt = Date.now();
 
   card.setAttribute('visible', true);
@@ -1062,6 +1062,7 @@ function _placeCard(el, dist){
 }
 
 function closeAR(){
+  _arOpen = false;
   const ap = $('arpanel');
   if(!ap) return;
   ap.setAttribute('visible', false);
