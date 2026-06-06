@@ -127,12 +127,53 @@ function ScrollHome(props) {
   return (
     <>
       <section id="vue"          style={sec}><Overview    {...props} /></section>
-      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
       <section id="etat"         style={sec}><EtatSerre   {...props} /></section>
       <section id="graphiques"   style={sec}><Graphiques  {...props} /></section>
+      <section id="alertes-home" style={sec}><AlertesInline {...props} /></section>
+      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
       <section id="calculateur"  style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
       <section id="export"       style={sec}><Export      {...props} /></section>
     </>
+  )
+}
+
+/* Alertes inline dans ScrollHome */
+import { useNavigate as _useNav } from 'react-router-dom'
+function AlertesInline({ stats, theme, lang }) {
+  const navigate   = _useNav()
+  const isDark     = theme === 'dark'
+  const cardBg     = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
+  const border     = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'
+  const ink        = isDark ? '#F1F5F9' : '#0F172A'
+  const alertCount = stats?.alertes_actives || 0
+  const title   = lang === 'EN' ? 'Recent alerts' : 'Alertes recentes'
+  const viewAll = lang === 'EN' ? 'View all' : 'Tout voir'
+  const noAlert = lang === 'EN' ? 'No active alerts.' : 'Aucune alerte active.'
+  const warnMsg = lang === 'EN'
+    ? alertCount + ' active alert' + (alertCount > 1 ? 's' : '') + ' - click to view'
+    : alertCount + ' alerte' + (alertCount > 1 ? 's' : '') + ' active' + (alertCount > 1 ? 's' : '')
+  return (
+    <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, padding:'20px 24px' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+        <h2 style={{ fontSize:14, fontWeight:700, margin:0, color:ink, fontFamily:"'Manrope',system-ui,sans-serif" }}>{title}</h2>
+        <button onClick={() => navigate('/dashboard/alertes')} style={{
+          fontSize:12, fontWeight:600, color:'#22C55E', background:'none', border:'none', cursor:'pointer' }}>
+          {viewAll} &rarr;
+        </button>
+      </div>
+      {alertCount > 0 ? (
+        <div onClick={() => navigate('/dashboard/alertes')} style={{ padding:'14px 16px', borderRadius:12, cursor:'pointer',
+          background:isDark?'rgba(245,158,11,0.07)':'rgba(245,158,11,0.05)', border:'1px solid rgba(245,158,11,0.2)',
+          fontSize:13, color:isDark?'#FDE68A':'#92400E', fontWeight:500 }}>
+          &#9888;&#65039; {warnMsg}
+        </div>
+      ) : (
+        <div style={{ padding:'14px 16px', borderRadius:12, fontSize:13, fontWeight:500, color:'#22C55E',
+          background:isDark?'rgba(34,197,94,0.06)':'rgba(34,197,94,0.04)', border:'1px solid rgba(34,197,94,0.15)' }}>
+          &#10003; {noAlert}
+        </div>
+      )}
+    </div>
   )
 }
 
