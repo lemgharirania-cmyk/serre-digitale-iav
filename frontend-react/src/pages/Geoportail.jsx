@@ -41,7 +41,7 @@ export default function Geoportail() {
 
   // Track active section on scroll
   useEffect(() => {
-    const ids = ['projet','apropos','campus','plan2d','donnees','visite']
+    const ids = ['projet','apropos','campus','plan2d','visite','donnees']
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) setActiveSection(entry.target.id)
@@ -87,12 +87,12 @@ export default function Geoportail() {
         <SectionApropos lang={lang}                     darkMode={darkMode} />
         <SectionCampus  lang={lang}                     darkMode={darkMode} />
         <SectionPlan2D  lang={lang} liveData={liveData} darkMode={darkMode} />
+        <SectionVisite  lang={lang} liveData={liveData} darkMode={darkMode} />
         <SectionDonnees
           lang={lang} liveData={liveData}
           countdown={countdownLabel} onRefresh={fetchAll}
           darkMode={darkMode}
         />
-        <SectionVisite  lang={lang} liveData={liveData} darkMode={darkMode} />
         <FooterGeoportail lang={lang} darkMode={darkMode} />
       </main>
 
