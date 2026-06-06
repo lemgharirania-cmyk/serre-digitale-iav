@@ -22,16 +22,17 @@ async def collect_and_store():
                 env = await fetch_env(serre["env_device_id"], serre["env_token"])
                 if env:
                     raw = env.pop("raw", {})
+                    # FIX: supprimé ON CONFLICT DO NOTHING — chaque collecte doit être sauvegardée
                     await db.execute("""
                         INSERT INTO mesures_iot
                             (serre_id, type_api, temperature, humidite, vpd, co2, luminosite, raw_data)
                         VALUES ($1, 'ENV', $2, $3, $4, $5, $6, $7)
-                        ON CONFLICT DO NOTHING
                     """, serre["id"],
                         env.get("temperature"), env.get("humidite"),
                         env.get("vpd"), env.get("co2"), env.get("luminosite"),
                         json.dumps(raw)
                     )
+                    print(f"[Scheduler] ✅ ENV serre {serre['code']} sauvegardée")
                     for capteur in ["temperature", "humidite", "vpd", "co2"]:
                         val = env.get(capteur)
                         if val is not None:
@@ -44,16 +45,17 @@ async def collect_and_store():
                 irr = await fetch_irr(serre["irr_device_id"], serre["irr_token"])
                 if irr:
                     raw = irr.pop("raw", {})
+                    # FIX: supprimé ON CONFLICT DO NOTHING — chaque collecte doit être sauvegardée
                     await db.execute("""
                         INSERT INTO mesures_iot
                             (serre_id, type_api, ph, ec, temp_eau, niveau_eau, raw_data)
                         VALUES ($1, 'IRR', $2, $3, $4, $5, $6)
-                        ON CONFLICT DO NOTHING
                     """, serre["id"],
                         irr.get("ph"), irr.get("ec"),
                         irr.get("temp_eau"), irr.get("niveau_eau"),
                         json.dumps(raw)
                     )
+                    print(f"[Scheduler] ✅ IRR serre {serre['code']} sauvegardée")
                     for capteur in ["ph", "ec", "niveau_eau"]:
                         val = irr.get(capteur)
                         if val is not None:
@@ -102,7 +104,7 @@ async def check_threshold(db, serre: dict, capteur: str, valeur):
 
             if not recent:
                 alerte_id = await db.fetchval("""
-                    INSERT INTO alertes 
+                    INSERT INTO alertes
                         (serre_id, capteur, valeur, seuil_min, seuil_max, message_fr, message_en)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                     RETURNING id
