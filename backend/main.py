@@ -14,7 +14,6 @@ load_dotenv()
 from database import get_pool, close_pool
 from scheduler import start_scheduler
 from routers import auth_router, iot_router, dashboard_router, serres_router
-from ns_recipes_router import router as ns_recipes_router
 
 
 # ─── App ────────────────────────────────────────────────────
@@ -41,7 +40,6 @@ app.include_router(auth_router.router)
 app.include_router(iot_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(serres_router.router)
-app.include_router(ns_recipes_router)
 
 # ─── Startup / Shutdown ─────────────────────────────────────
 @app.on_event("startup")
