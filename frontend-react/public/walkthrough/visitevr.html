@@ -751,15 +751,15 @@ function makeHotspot(hs){
   const pitch=hs.pitch+(isAR?AR_PITCH_OFFSET:0);
   const pos=yawPitchToXYZ(hs.yaw,pitch);
 
-  /* Closure — zero dataset dependency */
   const arDesc  =isAR?(hs.arDesc||hs.label||''):'';
-  const navZone =!isAR&&hs.targetZoneId !=null?String(hs.targetZoneId) :'';
+  const navZone =!isAR&&hs.targetZoneId!=null?String(hs.targetZoneId):'';
   const navScene=!isAR&&hs.targetSceneId!=null?String(hs.targetSceneId):'';
   const color   =isAR?'#F59E0B':(hs.type==='cross'?'#06B6D4':'#22C55E');
 
   var _fired=false;
   function doAction(){
-    if(_fired)return;_fired=true;setTimeout(()=>{_fired=false;},400);
+    if(_fired)return;_fired=true;setTimeout(()=>{_fired=false;},500);
+    console.log('[HS] doAction isAR=',isAR,' arDesc=',arDesc);
     if(isAR)openAR(arDesc);
     else    goTo(navZone,navScene);
   }
@@ -768,26 +768,32 @@ function makeHotspot(hs){
   wrap.setAttribute('position',pos.x+' '+pos.y+' '+pos.z);
   wrap.setAttribute('billboard','');
 
-  const hit=document.createElement('a-circle');
-  hit.setAttribute('radius',0.36);
-  hit.setAttribute('material','shader:flat; color:#000; opacity:0.001; transparent:true; side:double; depthWrite:false');
-  hit.classList.add('clickable');
-  hit.addEventListener('click',doAction);
-  hit.addEventListener('triggerdown',doAction);
-  hit.addEventListener('mouseenter',()=>wrap.object3D.scale.set(1.15,1.15,1.15));
-  hit.addEventListener('mouseleave',()=>wrap.object3D.scale.set(1,1,1));
-  wrap.appendChild(hit);
-
+  /* Visible badge plane — this is what gets raycasted */
   const badge=document.createElement('a-plane');
-  badge.setAttribute('width',0.64);badge.setAttribute('height',0.64);
-  badge.setAttribute('position','0 0 0.01');
-  badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
-  badge.setAttribute('animation__pulse','property:scale; dir:alternate; loop:true; dur:1600; from:1 1 1; to:1.08 1.08 1');
+  badge.setAttribute('width',0.7);
+  badge.setAttribute('height',0.7);
+  badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.01; depthWrite:false; opacity:0.99');
+  badge.setAttribute('animation__pulse','property:scale; dir:alternate; loop:true; dur:1600; from:1 1 1; to:1.1 1.1 1');
   badge.classList.add('clickable');
-  badge.addEventListener('click',doAction);
-  badge.addEventListener('triggerdown',doAction);
-  hit.appendChild(badge);
-  applyCanvasTexture(badge,drawBadge(hs.type,color));
+  /* A-Frame click (works when raycaster is set up) */
+  badge.addEventListener('click', doAction);
+  badge.addEventListener('triggerdown', doAction);
+  wrap.appendChild(badge);
+  applyCanvasTexture(badge, drawBadge(hs.type, color));
+
+  /* Register for direct raycaster hit */
+  badge.addEventListener('loaded', ()=>{
+    const mesh=badge.getObject3D('mesh');
+    if(mesh){
+      _hotspotRegistry.set(mesh.uuid, doAction);
+      /* also register children meshes */
+      mesh.traverse&&mesh.traverse(c=>{if(c.isMesh)_hotspotRegistry.set(c.uuid,doAction);});
+    }
+  });
+
+  /* Scale on hover via A-Frame cursor */
+  badge.addEventListener('mouseenter',()=>wrap.object3D.scale.set(1.18,1.18,1.18));
+  badge.addEventListener('mouseleave',()=>wrap.object3D.scale.set(1,1,1));
 
   return wrap;
 }
@@ -865,22 +871,92 @@ function refreshRaycasters(){
   setTimeout(scan,50);setTimeout(scan,250);
 }
 
-/* Click delegation attached in bootVR after vrPhase is active */
+/* ── Click system — uses direct raycaster on mousedown for reliability ── */
+/* Registry of all active hotspot actions, keyed by their object3D uuid */
+const _hotspotRegistry = new Map();
+
 function attachSceneClicks(){
   const sc=document.querySelector('a-scene');
   if(!sc)return;
+
+  /* A-Frame click delegation (backup) */
   sc.addEventListener('click',e=>{
     let el=e.target;
     while(el&&el.tagName){
       const d=el.dataset;
       if(d){
         if(d.action==='closeAR'){closeAR();return;}
-        if(d.hs==='ar'){openAR(d.arDesc||'');return;}
-        if(d.hs==='nav'){goTo(d.tz,d.ts);return;}
       }
       el=el.parentElement;
     }
   });
+
+  /* Direct canvas mousedown — most reliable on flat screen */
+  sc.addEventListener('mousedown', e=>{
+    if(e.button!==0)return;
+    performRaycast(e.clientX, e.clientY);
+  });
+
+  /* Touch support */
+  sc.addEventListener('touchend', e=>{
+    if(e.changedTouches.length===0)return;
+    const t=e.changedTouches[0];
+    performRaycast(t.clientX, t.clientY);
+  });
+}
+
+function performRaycast(clientX, clientY){
+  const sc=document.querySelector('a-scene');
+  if(!sc||!sc.camera)return;
+
+  const canvas=sc.canvas;
+  const rect=canvas.getBoundingClientRect();
+  const x=((clientX-rect.left)/rect.width)*2-1;
+  const y=-((clientY-rect.top)/rect.height)*2+1;
+
+  const raycaster=new THREE.Raycaster();
+  raycaster.setFromCamera({x,y}, sc.camera);
+
+  /* Collect all registered meshes */
+  const meshes=[];
+  _hotspotRegistry.forEach((action,uuid)=>{
+    const sc2=document.querySelector('a-scene');
+    if(!sc2)return;
+    sc2.object3D.traverse(obj=>{
+      if(obj.uuid===uuid)meshes.push(obj);
+    });
+  });
+
+  /* Also check arpanel */
+  const arpanel=$('arpanel');
+  if(arpanel&&arpanel.object3D&&arpanel.getAttribute('visible')){
+    const apMesh=arpanel.getObject3D('mesh');
+    if(apMesh){
+      const hits=raycaster.intersectObject(apMesh,true);
+      if(hits.length>0){closeAR();return;}
+    }
+  }
+
+  if(meshes.length===0){
+    /* Fallback: traverse entire scene for clickable objects */
+    const allMeshes=[];
+    sc.object3D.traverse(obj=>{if(obj.isMesh)allMeshes.push(obj);});
+    const hits=raycaster.intersectObjects(allMeshes,false);
+    if(hits.length>0){
+      const action=_hotspotRegistry.get(hits[0].object.uuid);
+      if(action){action();return;}
+      /* check parent uuid */
+      const pAction=_hotspotRegistry.get(hits[0].object.parent&&hits[0].object.parent.uuid);
+      if(pAction){pAction();return;}
+    }
+    return;
+  }
+
+  const hits=raycaster.intersectObjects(meshes,false);
+  if(hits.length>0){
+    const action=_hotspotRegistry.get(hits[0].object.uuid);
+    if(action)action();
+  }
 }
 
 /* ── Scene loader ── */
@@ -891,6 +967,7 @@ async function load(zid,sid){
   try{await preload(scene.file);}catch(e){showErr('Image introuvable: '+scene.file);busy=false;return;}
   const host=$('hotspots');
   while(host.firstChild)host.removeChild(host.firstChild);
+  _hotspotRegistry.clear();
   closeAR();
   const finish=()=>{
     try{
