@@ -1286,9 +1286,9 @@ const AR_CONTENT = {
 
 
 
-    title:'Rideaux Automatiques',
-    title_en:'Automatic Curtains',
-    title_ar:'الستائر الأوتوماتيكية',
+    title:'Écrans Thermique',
+    title_en:'Thermic Screens',
+    title_ar:'الشاشات الحرارية',
 
 
 
@@ -4384,7 +4384,9 @@ function getARDef(desc){
 
 
 'système de chauffage': 'chauffage',
+
 'tablettes': 'tablettes',   // then add the key to AR_CONTENT
+
 'lumiere': 'lumiere',
 
     'ventilation':'ventilation',
@@ -4589,7 +4591,7 @@ function openSimpleAR(desc){
 
 
 
-  iw.innerHTML = def.icon;
+  iw.innerHTML = def.icon || '';
 
 
 
@@ -5595,7 +5597,7 @@ function eqIcon(key, color){
 
     /* ── CO₂ — designed, NOT yet commissioned ── */
     'co2': {
-      status: {FR:'Système prévu — non encore actif', EN:'Planned — not yet active', AR:'مُخطط — غير مُفعّل بعد'},
+      status: {FR:'Injection de Co2', EN:'Co2 Injection', AR:'حقن ثاني أكسيد الكربون'},
       audio:  {FR:'audio/fr/co2.mp3', EN:'audio/en/co2.mp3', AR:'audio/ar/co2.mp3'},
       eq: {
           what: [
@@ -5862,6 +5864,16 @@ function eqIcon(key, color){
   Object.keys(EQ).forEach(k => {
     if(!AR_CONTENT[k]) AR_CONTENT[k] = {title:EQ[k].title?.FR||k, color:'#059669', tabs:['Info'], sections:[], thresholds:[]};
     const d = AR_CONTENT[k];
+    if(k === 'tablettes'){
+  d.icon = eqIcon('ti-stack','#10b981');
+}
+   if(k === 'lumiere'){
+  d.icon = eqIcon('ti-sun','#f59e0b');
+
+  d.iconBg = 'rgba(245,158,11,.18)';
+  d.iconBorder = 'rgba(252,211,77,.3)';
+  d.color = '#f59e0b';
+}
     if(k === 'chauffage'){
   d.icon = eqIcon('ti-temperature-plus','#ef4444');
   d.iconBg = 'rgba(239,68,68,.18)';
