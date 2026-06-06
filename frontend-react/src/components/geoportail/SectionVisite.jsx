@@ -97,6 +97,27 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     vrDesktopSub: lang === 'fr' ? 'Visitez ce site depuis un Meta Quest pour une immersion 360° complète' : 'Visit this site from a Meta Quest headset for full 360° immersion',
   }
 
+  /* ── Listen to selectSerre event from SectionPlan2D ── */
+  useEffect(() => {
+    function onSelectSerre(e) {
+      const { id } = e.detail           // ex: 'S01', 'S02' …
+      // Map zone id → serre file
+      const serre = SERRES.find(s => s.badge === id)
+      if (!serre) return
+      // Activate "par espace" node in timeline
+      setActiveNode('salles')
+      setLineProgress(100)
+      // Select the serre → triggers viewer
+      setActiveSerre(serre.file)
+      // Small delay to let React render the viewer before scrolling
+      setTimeout(() => {
+        serreViewerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 120)
+    }
+    window.addEventListener('selectSerre', onSelectSerre)
+    return () => window.removeEventListener('selectSerre', onSelectSerre)
+  }, [])
+
   /* ── WebXR VR detection ── */
   useEffect(() => {
     if (!navigator.xr) { setVrSupported(false); return }
