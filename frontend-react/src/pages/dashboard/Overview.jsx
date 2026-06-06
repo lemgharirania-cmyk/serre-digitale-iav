@@ -255,13 +255,13 @@ export default function Overview({ liveData, stats, countdown, refreshAll, meteo
           {extStats.map((s, i) => (
             <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 14px',
               borderRadius:12, border:`1px solid ${borderLine}`, background:surfaceBg }}>
-              <span style={{ width:32, height:32, borderRadius:9, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', background:`${s.color}15`, color:s.color }}>
+              <span style={{ width:40, height:40, borderRadius:10, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', background:''+s.color+'18', color:s.color }}>
                 {s.icon}
               </span>
               <div>
-                <div style={{ fontSize:10, color:ink3, fontWeight:600 }}>{s.label}</div>
-                <div style={{ fontSize:16, fontWeight:700, fontFamily:'monospace', color:s.color }}>
-                  {s.val}<span style={{ fontSize:10, color:ink4, marginLeft:2 }}>{s.unit}</span>
+                <div style={{ fontSize:10, color:ink3, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' }}>{s.label}</div>
+                <div style={{ fontSize:24, fontWeight:800, fontFamily:"'JetBrains Mono',monospace", color:s.color, letterSpacing:'-0.02em', lineHeight:1.1 }}>
+                  {s.val}<span style={{ fontSize:11, color:ink4, marginLeft:3, fontWeight:500 }}>{s.unit}</span>
                 </div>
               </div>
             </div>
