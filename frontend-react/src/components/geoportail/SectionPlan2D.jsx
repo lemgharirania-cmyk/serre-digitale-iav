@@ -393,59 +393,50 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
 
                 {/* ── TAB: VISITE 3D ── */}
                 {tab === 'visite' && (
-                  <div style={{ padding: '14px 16px' }}>
+                  <div style={{ padding: '20px 16px' }}>
                     {zone.visitFile ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* Preview iframe */}
-                        <div style={{ borderRadius: '12px', overflow: 'hidden', border: `1px solid ${zone.color}30`, aspectRatio: '16/9', position: 'relative' }}>
-                          <iframe
-                            src={zone.visitFile}
-                            width="100%"
-                            height="100%"
-                            style={{ position: 'absolute', inset: 0, border: 'none', width: '100%', height: '100%' }}
-                            allowFullScreen
-                            title={lang === 'fr' ? zone.nameFr : zone.nameEn}
-                          />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {/* Visual badge */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px 16px', background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${zone.color}20`, borderRadius: '14px' }}>
+                          <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: `${zone.color}15`, border: `1px solid ${zone.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Video size={22} color={zone.color} />
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: textColor, marginBottom: '4px' }}>
+                              {lang === 'fr' ? 'Visite immersive disponible' : 'Immersive tour available'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: mutedColor, lineHeight: 1.5 }}>
+                              {isSerre
+                                ? (lang === 'fr' ? `Serre ${zone.id} — ${(zone.nameFr).replace('Unité — ','')}` : `Unit ${zone.id} — ${(zone.nameEn).replace('Unit — ','')}`)
+                                : (lang === 'fr' ? zone.nameFr : zone.nameEn)
+                              }
+                            </div>
+                          </div>
                         </div>
-                        {/* Open full screen button */}
-                        <a
-                          href={zone.visitFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        {/* Single CTA — scroll to #visite with serre pre-selected */}
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById('visite')
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            // Dispatch custom event so SectionVisite can pre-select this serre
+                            window.dispatchEvent(new CustomEvent('selectSerre', { detail: { id: zone.id, badge: zone.visitBadge } }))
+                          }}
                           style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                            padding: '11px', borderRadius: '12px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                            padding: '13px', borderRadius: '12px', width: '100%',
                             background: `linear-gradient(135deg, ${zone.color}, ${zone.color}cc)`,
-                            color: 'white', fontSize: '13px', fontWeight: 600,
-                            fontFamily: 'inherit', textDecoration: 'none',
-                            boxShadow: `0 4px 16px ${zone.color}40`,
+                            color: 'white', fontSize: '13px', fontWeight: 700,
+                            fontFamily: 'inherit', border: 'none', cursor: 'pointer',
+                            boxShadow: `0 4px 20px ${zone.color}40`,
                             transition: 'transform 0.2s, box-shadow 0.2s',
                           }}
-                          onMouseEnter={e => { e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow=`0 8px 24px ${zone.color}50` }}
-                          onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow=`0 4px 16px ${zone.color}40` }}
+                          onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=`0 8px 28px ${zone.color}55` }}
+                          onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow=`0 4px 20px ${zone.color}40` }}
                         >
-                          <ExternalLink size={14} />
-                          {lang === 'fr' ? 'Ouvrir en plein écran' : 'Open fullscreen'}
-                        </a>
-                        {/* Also scroll to visite section */}
-                        <a
-                          href="#visite"
-                          onClick={e => { e.preventDefault(); document.getElementById('visite')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                            padding: '9px', borderRadius: '12px',
-                            background: 'transparent',
-                            border: `1px solid ${zone.color}40`,
-                            color: zone.color, fontSize: '12px', fontWeight: 600,
-                            fontFamily: 'inherit', textDecoration: 'none', cursor: 'pointer',
-                            transition: 'background 0.2s',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background=`${zone.color}10`}
-                          onMouseLeave={e => e.currentTarget.style.background='transparent'}
-                        >
-                          <Video size={13} />
-                          {lang === 'fr' ? 'Voir dans la section Visite Virtuelle' : 'View in Virtual Visit section'}
-                        </a>
+                          <Video size={15} />
+                          {lang === 'fr' ? 'Accéder à la visite virtuelle' : 'Go to virtual tour'}
+                          <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                        </button>
                       </div>
                     ) : (
                       <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
