@@ -198,8 +198,6 @@ function ScrollHome(props) {
 }
 
 /* NSCalculateur en accordion pour réduire la hauteur */
-import NSCalculateur from './dashboard/NSCalculateur'
-import Export from './dashboard/Export'
 
 function NSCalculateurAccordion({ theme, lang }) {
   const [open, setOpen] = useState(false)

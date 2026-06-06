@@ -5,9 +5,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const TEXTS = [
   { titleFr:'5 Serres Connectées',    titleEn:'5 Connected Greenhouses',   textFr:"Le complexe AgroBioTech de l'IAV Hassan II dispose de 5 serres de recherche entièrement équipées de capteurs IoT pour le monitoring en temps réel.", textEn:'The AgroBioTech complex at IAV Hassan II has 5 research greenhouses fully equipped with IoT sensors for real-time monitoring.' },
   { titleFr:'10 Capteurs Actifs',     titleEn:'10 Active Sensors',          textFr:"Chaque serre est équipée de capteurs environnementaux (température, humidité, VPD, CO₂) et d'irrigation (pH, EC, température eau, niveau eau).", textEn:'Each greenhouse has environmental sensors (temperature, humidity, VPD, CO₂) and irrigation sensors (pH, EC, water temperature, water level).' },
-  { titleFr:'Vision du Projet',       titleEn:'Project Vision',             textFr:'"Le jumeau numérique représente l'avenir de la recherche agronomique — une interface entre le monde physique des serres et la puissance du numérique."', textEn:'"The digital twin represents the future of agronomic research — an interface between the physical world of greenhouses and the power of digital technology."' },
+  { titleFr:'Vision du Projet',       titleEn:'Project Vision',             textFr:'"Le jumeau numérique représente l avenir de la recherche agronomique — une interface entre le monde physique des serres et la puissance du numérique."', textEn:'"The digital twin represents the future of agronomic research — an interface between the physical world of greenhouses and the power of digital technology."' },
   { titleFr:'15 Scans Matterport',    titleEn:'15 Matterport Scans',        textFr:"Le campus a été entièrement numérisé avec 15 scans Matterport Pro 2, permettant une visite virtuelle immersive de chaque espace.", textEn:'The campus was fully digitized with 15 Matterport Pro 2 scans, enabling an immersive virtual tour of every space.' },
-  { titleFr:"Projet de Fin d'Études", titleEn:'Final Year Project',       textFr:'"Ce géoportail est le fruit de mois de travail alliant géomatique, développement web et IoT — une fierté pour notre parcours d'ingénieur topographe."', textEn:'"This geoportal is the result of months of work combining geomatics, web development and IoT — a proud achievement in our topographic engineering journey."' },
+  { titleFr:"Projet de Fin d'Études", titleEn:'Final Year Project',       textFr:'"Ce géoportail est le fruit de mois de travail alliant géomatique, développement web et IoT — une fierté pour notre parcours d ingénieur topographe."', textEn:'"This geoportal is the result of months of work combining geomatics, web development and IoT — a proud achievement in our topographic engineering journey."' },
   { titleFr:'Collecte Automatique',   titleEn:'Automatic Collection',       textFr:"Les données sont collectées automatiquement toutes les 2 minutes, 24h/24, 7j/7, garantissant un historique complet pour l'analyse agronomique.", textEn:'Data is collected automatically every 2 minutes, 24/7, ensuring a complete history for agronomic analysis.' },
 ]
 
@@ -72,7 +72,7 @@ export default function SectionApropos({ lang, darkMode }) {
 
           {/* ── Left — text carousel ── */}
           <div style={{
-            background: cardBg, border: ,
+            background: cardBg, border:'1px solid rgba(255,255,255,.12)',
             borderRadius: '24px', padding: '2rem', position: 'relative',
             display: 'flex', flexDirection: 'column',
             backdropFilter: 'blur(16px)',
@@ -92,7 +92,7 @@ export default function SectionApropos({ lang, darkMode }) {
 
             {/* Progress bar */}
             <div style={{ height: '2px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '1px', margin: '1.5rem 0 1rem', overflow: 'hidden' }}>
-              <div style={{ height: '100%', background: '#22C55E', borderRadius: '1px', width: , transition: 'width 0.4s ease' }} />
+              <div style={{ height: '100%', background: '#22C55E', borderRadius: '1px', width: '100%' , transition: 'width 0.4s ease' }} />
             </div>
             {/* Dots */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '0.5rem' }}>
@@ -101,7 +101,7 @@ export default function SectionApropos({ lang, darkMode }) {
               ))}
             </div>
             {/* Arrows */}
-            <button onClick={() => setTxtIdx(i => (i - 1 + TEXTS.length) % TEXTS.length)} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: , color: mutedColor, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={() => setTxtIdx(i => (i - 1 + TEXTS.length) % TEXTS.length)} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: '1px solid rgba(128,128,128,0.2)', color: mutedColor, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronLeft size={14} />
             </button>
             <button onClick={() => setTxtIdx(i => (i + 1) % TEXTS.length)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#22C55E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -111,7 +111,7 @@ export default function SectionApropos({ lang, darkMode }) {
 
           {/* ── Right — real photo carousel ── */}
           <div style={{
-            background: cardBg, border: ,
+            background: cardBg, border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.07)',
             borderRadius: '24px', overflow: 'hidden', position: 'relative',
             backdropFilter: 'blur(16px)',
             boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)',
@@ -144,12 +144,12 @@ export default function SectionApropos({ lang, darkMode }) {
               ))}
 
               {/* Counter badge */}
-              <div style={{ position: 'absolute', top: '12px', right: '12px', background: darkMode ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', fontWeight: 600, color: textSecond, fontFamily: "'Outfit',sans-serif", border: , zIndex: 2 }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px', background: darkMode ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', fontWeight: 600, color: textSecond, fontFamily: "'Outfit',sans-serif", border: darkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)', zIndex: 2 }}>
                 {imgIdx + 1} / {PHOTOS.length}
               </div>
 
               {/* Arrows */}
-              <button onClick={() => setImgIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length)} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: darkMode ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.88)', border: , color: textSecond, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, backdropFilter: 'blur(8px)' }}>
+              <button onClick={() => setImgIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length)} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: darkMode ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.88)', border: darkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)', color: textSecond, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, backdropFilter: 'blur(8px)' }}>
                 <ChevronLeft size={15} />
               </button>
               <button onClick={() => setImgIdx(i => (i + 1) % PHOTOS.length)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(34,197,94,0.18)', border: '1px solid rgba(34,197,94,0.35)', color: '#22C55E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, backdropFilter: 'blur(8px)' }}>
@@ -158,7 +158,7 @@ export default function SectionApropos({ lang, darkMode }) {
             </div>
 
             {/* Caption + dots bar */}
-            <div style={{ padding: '14px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: , background: darkMode ? 'rgba(7,17,31,0.6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
+            <div style={{ padding: '14px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)', background: darkMode ? 'rgba(7,17,31,0.6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
               <span style={{ fontSize: '12px', color: textSecond, fontStyle: 'italic', lineHeight: 1.4, flex: 1 }}>
                 {lang === 'fr' ? photo.labelFr : photo.labelEn}
               </span>
