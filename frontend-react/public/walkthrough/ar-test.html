@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR Card Test — AgroBioTech</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0B1728;font-family:'DM Sans',system-ui,sans-serif}
+#info{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:999;
+  background:rgba(0,0,0,.65);color:#fff;padding:10px 22px;border-radius:100px;
+  font-size:13px;font-weight:500;letter-spacing:.03em;pointer-events:none;
+  border:1px solid rgba(255,255,255,.15)}
+#log{position:fixed;bottom:0;left:0;right:0;z-index:999;max-height:140px;overflow-y:auto;
+  background:rgba(0,0,0,.8);color:#4ade80;font-family:monospace;font-size:11px;padding:8px 12px}
+.log-line{margin:1px 0}
+#btns{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:999;
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button.tb{padding:8px 18px;border-radius:8px;border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer}
+button.tb:hover{background:rgba(34,197,94,.3);border-color:#22c55e}
+</style>
+</head>
+<body>
+
+<div id="info">🔵 Clique sur le badge jaune · Orange = AR · Vert = Nav · Cyan = Cross</div>
+
+<div id="btns">
+  <button class="tb" onclick="testCard('fraise')">🍓 fraise</button>
+  <button class="tb" onclick="testCard('brumisateur')">💧 brumisateur</button>
+  <button class="tb" onclick="testCard('sensors')">📡 sensors</button>
+  <button class="tb" onclick="testCard('co2')">🌿 co2</button>
+  <button class="tb" onclick="testCard('fenetre auto')">🪟 fenetre auto</button>
+  <button class="tb" onclick="testCard('fertigation')">🧪 fertigation</button>
+  <button class="tb" onclick="testCard('')">❓ empty desc</button>
+</div>
+
+<div id="log"></div>
+
+<a-scene
+  loading-screen="dotsColor:#22C55E; backgroundColor:#0B1728"
+  vr-mode-ui="enabled:false"
+  renderer="colorManagement:true; antialias:true"
+  background="color:#1a2a1a">
+
+  <a-assets timeout="30000"></a-assets>
+
+  <!-- Simple sky background -->
+  <a-sky color="#1a3a2a"></a-sky>
+
+  <!-- AR panel -->
+  <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
+    width="2.4" height="1.6"
+    material="shader:flat; color:#ffffff; opacity:0.95; transparent:true; side:double"
+    billboard></a-plane>
+
+  <!-- Test hotspot in front of camera -->
+  <a-entity id="hotspots"></a-entity>
+
+  <a-entity id="rig" position="0 1.6 0">
+    <a-camera id="cam" wasd-controls-enabled="false" position="0 0 0"
+      look-controls="reverseMouseDrag:false; touchEnabled:true">
+      <a-entity id="mcursor" cursor="rayOrigin:mouse"
+        raycaster="objects:.clickable; far:30"></a-entity>
+    </a-camera>
+  </a-entity>
+</a-scene>
+
+<script>
+/* ── Logger ── */
+function log(msg, color='#4ade80'){
+  const d=document.getElementById('log');
+  const line=document.createElement('div');
+  line.className='log-line';
+  line.style.color=color;
+  line.textContent='['+new Date().toISOString().slice(11,23)+'] '+msg;
+  d.appendChild(line);
+  d.scrollTop=d.scrollHeight;
+  console.log(msg);
+}
+
+const $=id=>document.getElementById(id);
+
+/* ── Minimal AR_CONTENT for test ── */
+const AR_CONTENT = {
+  'fraise':      {title:'Fraises — Fragaria × ananassa', color:'#ef4444', type:'plant', statusText:'Culture active',
+    sections:[
+      {label:'IDENTIFICATION', items:[{k:'Variété',v:'Fragaria × ananassa'},{k:'Famille',v:'Rosacées'},{k:'Système',v:'Hors-sol hydroponique',tag:'blue'}]},
+      {label:'CONDITIONS OPTIMALES', items:[{k:'Température',v:'18 – 22 °C'},{k:'pH solution',v:'5.8 – 6.2'},{k:'EC solution',v:'1.0 – 1.4 mS/cm'}]},
+      {label:'CULTURE', bullets:['Cultivée en gouttières surélevées NFT.','Irrigation programmée, pH et EC ajustés en continu.']},
+    ]},
+  'brumisateur': {title:'Brumisateur Haute Pression', color:'#14b8a6', type:'system', statusText:'Brumisation active',
+    sections:[
+      {label:'FONCTIONS', bullets:['Produit un brouillard < 10 µm pour refroidissement adiabatique.','Activé si T° dépasse le seuil max.']},
+      {label:'PARAMÈTRES', items:[{k:'Pression',v:'À compléter bar'},{k:'Buse',v:'Céramique haute pression'},{k:'Contrôle',v:'Automatique',tag:'green'}]},
+    ]},
+  'sensors':     {title:'Capteurs IoT Environnementaux', color:'#8b5cf6', type:'sensor', statusText:'Actif',
+    sections:[
+      {label:'CAPTEURS ACTIFS', items:[{k:'Température',v:'24.3 °C'},{k:'Humidité',v:'68 %'},{k:'VPD',v:'0.97 kPa'},{k:'pH solution',v:'5.9'},{k:'EC',v:'1.42 mS/cm'}]},
+    ]},
+  'co2':         {title:'Injection CO₂', color:'#10b981', type:'system', statusText:'Injection active',
+    sections:[
+      {label:'FONCTIONS', bullets:['Stimule la photosynthèse. Objectif 800–1200 ppm.','Suspendu la nuit ou si ventilation ouverte.']},
+      {label:'PARAMÈTRES', items:[{k:'Source',v:'Bouteille CO₂'},{k:'Concentration cible',v:'800 – 1200 ppm'},{k:'Contrôle',v:'Automatique',tag:'green'}]},
+    ]},
+  'fenetre auto':{title:'Fenêtres Automatiques', color:'#22d3ee', type:'system', statusText:'Ouverture active',
+    sections:[
+      {label:'FONCTIONS', bullets:['Ventilation naturelle par effet cheminée.','Ouverture si T° intérieure > seuil ET T° extérieure plus fraîche.']},
+      {label:'PARAMÈTRES', items:[{k:'Type',v:'Châssis zénithaux'},{k:'Déclenchement',v:'ΔT intérieur/extérieur'}]},
+    ]},
+  'fertigation': {title:'Station de Fertigation', color:'#0ea5e9', type:'fertigation', statusText:'Fertigation active',
+    sections:[
+      {label:'FONCTIONS', bullets:['Prépare et distribue la solution nutritive.','Ajuste pH et EC en temps réel.']},
+      {label:'PARAMÈTRES', items:[{k:'pH cible',v:'5.5 – 6.5'},{k:'EC cible',v:'1.0 – 2.2 mS/cm'},{k:'Régulation',v:'Automatique',tag:'blue'}]},
+    ]},
+};
+
+const AR_ALIAS={
+  'co₂':'co2','capteur':'sensors','capteurs':'sensors',
+  'fenetre':'fenetre auto','fenetres':'fenetre auto',
+};
+function resolveARKey(desc){ const k=(desc||'').toLowerCase().trim(); return AR_ALIAS[k]||k; }
+function getARDef(desc){ const k=resolveARKey(desc); return AR_CONTENT[k]||null; }
+
+/* ── Canvas helpers ── */
+function hexA(hex,a){const n=parseInt(hex.replace('#',''),16);return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function wrapText(c,text,x,y,maxW,lh,maxLines){
+  const words=String(text).split(/\s+/);let line='',count=0;
+  for(const w of words){
+    const test=line?line+' '+w:w;
+    if(c.measureText(test).width>maxW&&line){c.fillText(line,x,y);y+=lh;line=w;count++;if(maxLines&&count>=maxLines){c.fillText(line+'…',x,y);return y;}}
+    else line=test;
+  }
+  c.fillText(line,x,y);return y;
+}
+
+/* ── Lucide icons ── */
+const _iconCache={};
+async function fetchIcon(name){
+  if(_iconCache[name]!==undefined)return _iconCache[name];
+  try{
+    const r=await fetch('https://unpkg.com/lucide-static@0.441.0/icons/'+name+'.svg');
+    if(!r.ok)throw 0;
+    const svg=await r.text();
+    const blob=new Blob([svg],{type:'image/svg+xml'});
+    const url=URL.createObjectURL(blob);
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});
+    _iconCache[name]=img;return img;
+  }catch(e){_iconCache[name]=null;return null;}
+}
+function tintIcon(ctx,img,x,y,size,color){
+  if(!img)return;
+  const off=document.createElement('canvas');off.width=size;off.height=size;
+  const oc=off.getContext('2d');
+  oc.drawImage(img,0,0,size,size);
+  oc.globalCompositeOperation='source-in';
+  oc.fillStyle=color;oc.fillRect(0,0,size,size);
+  ctx.drawImage(off,x,y,size,size);
+}
+const ICON_MAP={plant:'leaf',system:'cpu',sensor:'radio-tower',fertigation:'flask-conical'};
+
+/* ── Premium card renderer ── */
+const CW=1536,CH=1024,PAD=56,CR=48,CL=PAD+72,CRIGHT=CW-PAD-72;
+const TAG_COLORS={
+  green:{bg:'rgba(34,197,94,.18)',border:'rgba(34,197,94,.45)',text:'#15803d'},
+  blue:{bg:'rgba(6,182,212,.18)',border:'rgba(6,182,212,.45)',text:'#0e7490'},
+  amber:{bg:'rgba(245,158,11,.18)',border:'rgba(245,158,11,.45)',text:'#92400e'},
+  default:{bg:'rgba(100,116,139,.14)',border:'rgba(100,116,139,.35)',text:'#475569'},
+};
+function tc(tag){return TAG_COLORS[tag]||TAG_COLORS.default;}
+
+function drawSection(c,sec,y,color){
+  const maxW=CRIGHT-CL;
+  if(sec.label){
+    c.font='700 22px monospace';c.fillStyle=color;c.globalAlpha=.75;c.textBaseline='alphabetic';
+    c.fillText(sec.label,CL,y);c.globalAlpha=1;y+=10;
+    c.strokeStyle=color;c.globalAlpha=.18;c.lineWidth=1;
+    c.beginPath();c.moveTo(CL,y);c.lineTo(CL+maxW,y);c.stroke();c.globalAlpha=1;y+=22;
+  }
+  if(sec.bullets&&sec.bullets.length){
+    sec.bullets.forEach(b=>{
+      c.beginPath();c.arc(CL+8,y-8,5,0,Math.PI*2);c.fillStyle=color;c.globalAlpha=.7;c.fill();c.globalAlpha=1;
+      c.font='400 26px sans-serif';c.fillStyle='#1e293b';c.textBaseline='alphabetic';
+      y=wrapText(c,String(b),CL+24,y,maxW-24,36,3)+34;
+    });
+  }
+  if(sec.items&&sec.items.length){
+    sec.items.forEach((item,i)=>{
+      if(i%2===0){roundRect(c,CL-8,y-26,maxW+16,42,8);c.fillStyle='rgba(0,0,0,.028)';c.fill();}
+      c.font='500 24px sans-serif';c.fillStyle='#64748b';c.textBaseline='alphabetic';c.fillText(String(item.k||''),CL+4,y);
+      const vs=String(item.v||'');
+      if(item.tag){
+        const t=tc(item.tag);c.font='600 22px sans-serif';
+        const tw=c.measureText(vs).width,px=12,py=6,rr=12;
+        const bx=CRIGHT-tw-px*2-2,by=y-24,bw=tw+px*2,bh=34;
+        roundRect(c,bx,by,bw,bh,rr);c.fillStyle=t.bg;c.fill();c.strokeStyle=t.border;c.lineWidth=1.2;c.stroke();
+        c.fillStyle=t.text;c.textBaseline='middle';c.fillText(vs,bx+px,by+bh/2);
+      } else {
+        c.font='600 24px sans-serif';c.fillStyle='#0f172a';c.textAlign='right';c.textBaseline='alphabetic';
+        c.fillText(vs,CRIGHT,y);c.textAlign='left';
+      }
+      y+=48;
+    });
+  }
+  return y+12;
+}
+
+async function drawARCard(desc){
+  const cv=document.createElement('canvas');cv.width=CW;cv.height=CH;
+  const c=cv.getContext('2d');
+  const def=getARDef(desc);
+  const title=(def&&def.title)||(desc||'Information');
+  const color=(def&&def.color)||'#22c55e';
+  const status=(def&&def.statusText)||'';
+  const sections=(def&&def.sections)||[];
+
+  /* Background */
+  const bg=c.createLinearGradient(0,0,0,CH);
+  bg.addColorStop(0,'rgba(248,252,255,.97)');bg.addColorStop(1,'rgba(232,248,240,.97)');
+  c.shadowColor='rgba(15,23,42,.3)';c.shadowBlur=80;c.shadowOffsetY=12;
+  roundRect(c,PAD,PAD,CW-2*PAD,CH-2*PAD,CR);c.fillStyle=bg;c.fill();
+  c.shadowBlur=0;c.shadowOffsetY=0;
+
+  /* Border */
+  roundRect(c,PAD,PAD,CW-2*PAD,CH-2*PAD,CR);
+  c.lineWidth=2;c.strokeStyle='rgba(255,255,255,.9)';c.stroke();
+
+  /* Top highlight */
+  c.fillStyle='rgba(255,255,255,.55)';
+  roundRect(c,PAD+2,PAD+2,CW-2*PAD-4,60,CR-2);c.fill();
+
+  /* Accent bar */
+  const barG=c.createLinearGradient(CL,0,CL+320,0);
+  barG.addColorStop(0,color);barG.addColorStop(1,'#06b6d4');
+  c.fillStyle=barG;roundRect(c,CL,PAD+64,320,6,3);c.fill();
+
+  /* Category */
+  const cat=(def&&def.type==='plant'?'BIOLOGIQUE':def&&def.type==='sensor'?'TÉLÉMÉTRIE IoT':def&&def.type==='fertigation'?'HYDROPONIQUE':'CONTRÔLE CLIMATIQUE');
+  c.font='700 19px monospace';c.fillStyle=hexA(color,.8);c.textBaseline='alphabetic';c.fillText(cat,CL,PAD+52);
+
+  /* Icon circle */
+  const icx=CW-PAD-120,icy=PAD+120,icr=68;
+  const ig=c.createRadialGradient(icx,icy,0,icx,icy,icr*2.2);
+  ig.addColorStop(0,hexA(color,.22));ig.addColorStop(1,hexA(color,0));
+  c.fillStyle=ig;c.beginPath();c.arc(icx,icy,icr*2.2,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(icx,icy,icr,0,Math.PI*2);
+  c.fillStyle=hexA(color,.12);c.fill();
+  c.strokeStyle=hexA(color,.35);c.lineWidth=2;c.stroke();
+  const iconName=ICON_MAP[(def&&def.type)||'system']||'info';
+  const iconImg=await fetchIcon(iconName);
+  tintIcon(c,iconImg,icx-28,icy-28,56,color);
+
+  /* Title */
+  c.font='700 54px sans-serif';c.fillStyle='#0f172a';c.textBaseline='alphabetic';
+  wrapText(c,title,CL,PAD+150,CW-2*PAD-280,62,2);
+
+  /* Status pill */
+  if(status){
+    const spx=CL,spy=PAD+180;
+    c.font='600 21px sans-serif';
+    const sw=c.measureText(status).width;
+    roundRect(c,spx,spy,sw+30,37,16);c.fillStyle=hexA(color,.15);c.fill();
+    c.strokeStyle=hexA(color,.4);c.lineWidth=1.5;c.stroke();
+    c.beginPath();c.arc(spx+16,spy+18,5,0,Math.PI*2);c.fillStyle=color;c.fill();
+    c.fillStyle=hexA(color,.9);c.textBaseline='middle';c.fillText(status,spx+28,spy+18);
+  }
+
+  /* Divider */
+  const divY=PAD+240;
+  c.strokeStyle='rgba(0,0,0,.07)';c.lineWidth=1;
+  c.beginPath();c.moveTo(CL,divY);c.lineTo(CRIGHT,divY);c.stroke();
+
+  /* Sections */
+  let y=divY+32;
+  const maxS=Math.min(sections.length,3);
+  for(let i=0;i<maxS;i++){
+    y=drawSection(c,sections[i],y,color);
+    if(y>CH-PAD-100)break;
+    if(i<maxS-1){c.strokeStyle='rgba(0,0,0,.05)';c.lineWidth=1;c.beginPath();c.moveTo(CL,y-6);c.lineTo(CRIGHT,y-6);c.stroke();y+=4;}
+  }
+  if(!sections.length){c.font='400 28px sans-serif';c.fillStyle='#475569';c.textBaseline='alphabetic';c.fillText(status||desc||'—',CL,divY+60);}
+
+  /* Footer */
+  const fy=CH-PAD-44;
+  c.strokeStyle='rgba(0,0,0,.06)';c.lineWidth=1;c.beginPath();c.moveTo(CL,fy-14);c.lineTo(CRIGHT,fy-14);c.stroke();
+  c.font='500 22px sans-serif';c.fillStyle='rgba(100,116,139,.55)';c.textBaseline='alphabetic';c.fillText('✕  Touchez pour fermer',CL,fy);
+  c.textAlign='right';c.fillText('AgroBioTech · IAV Hassan II',CRIGHT,fy);c.textAlign='left';
+
+  return cv;
+}
+
+/* ── A-Frame texture apply ── */
+function applyCanvasTexture(planeEl,canvas){
+  function set(){
+    const mesh=planeEl.getObject3D('mesh');
+    if(!mesh){log('mesh not ready, retry in 60ms','#f59e0b');setTimeout(set,60);return;}
+    const tex=new THREE.CanvasTexture(canvas);
+    if('colorSpace' in tex)tex.colorSpace=THREE.SRGBColorSpace;
+    tex.anisotropy=8;tex.needsUpdate=true;
+    mesh.material.map=tex;mesh.material.color.set('#ffffff');
+    mesh.material.transparent=true;mesh.material.opacity=1;mesh.material.needsUpdate=true;
+    log('✅ Texture applied to '+planeEl.id,'#4ade80');
+  }
+  if(planeEl.hasLoaded)set();
+  else planeEl.addEventListener('loaded',set,{once:true});
+}
+
+/* ── placeInFront ── */
+function placeInFront(el,dist){
+  const sceneEl=el.sceneEl||document.querySelector('a-scene');
+  const cam=sceneEl&&sceneEl.camera;
+  if(!cam){log('⚠ no camera in placeInFront','#f59e0b');return false;}
+  const camPos=new THREE.Vector3();
+  const camQuat=new THREE.Quaternion();
+  const camDir=new THREE.Vector3();
+  cam.getWorldPosition(camPos);cam.getWorldQuaternion(camQuat);
+  camDir.set(0,0,-1).applyQuaternion(camQuat);
+  const worldPos=camPos.clone().addScaledVector(camDir,dist);
+  if(el.object3D.parent&&el.object3D.parent!==sceneEl.object3D){
+    const inv=new THREE.Matrix4().copy(el.object3D.parent.matrixWorld).invert();
+    worldPos.applyMatrix4(inv);
+    const pq=new THREE.Quaternion();el.object3D.parent.getWorldQuaternion(pq);
+    el.object3D.position.copy(worldPos);el.object3D.quaternion.copy(pq.invert().multiply(camQuat));
+  } else {
+    el.object3D.position.copy(worldPos);el.object3D.quaternion.copy(camQuat);
+  }
+  el.object3D.updateMatrixWorld(true);
+  log('📍 placed at dist='+dist+' cam=('+camPos.x.toFixed(1)+','+camPos.y.toFixed(1)+','+camPos.z.toFixed(1)+')');
+  return true;
+}
+
+/* ── openAR / closeAR ── */
+async function openAR(desc){
+  log('🔓 openAR("'+desc+'")','#06b6d4');
+  const card=$('arpanel');
+  const scene=document.querySelector('a-scene');
+  if(scene&&card.parentElement!==scene){scene.appendChild(card);}
+  card.setAttribute('visible',true);
+  placeInFront(card,2.6);
+  try{
+    const cv=await drawARCard(desc||'serre');
+    log('🎨 card canvas drawn, applying texture…');
+    applyCanvasTexture(card,cv);
+    placeInFront(card,2.6);
+  }catch(err){log('❌ drawARCard error: '+err.message,'#ef4444');}
+}
+function closeAR(){$('arpanel').setAttribute('visible',false);log('❎ closeAR');}
+
+/* ── Test button helper ── */
+function testCard(desc){openAR(desc);}
+
+/* ── Direct raycaster on mousedown ── */
+const _registry=new Map();
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const scene=document.querySelector('a-scene');
+
+  /* Register billboard component */
+  if(!AFRAME.components['billboard']){
+    AFRAME.registerComponent('billboard',{
+      init(){this._cq=new THREE.Quaternion();},
+      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldQuaternion(this._cq);this.el.object3D.quaternion.copy(this._cq);}
+    });
+  }
+
+  scene.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    const rect=scene.canvas.getBoundingClientRect();
+    const x=((e.clientX-rect.left)/rect.width)*2-1;
+    const y=-((e.clientY-rect.top)/rect.height)*2+1;
+    const rc=new THREE.Raycaster();
+    rc.setFromCamera({x,y},scene.camera);
+    const meshes=[];
+    _registry.forEach((_,uuid)=>{
+      scene.object3D.traverse(o=>{if(o.uuid===uuid)meshes.push(o);});
+    });
+    /* Also check arpanel */
+    const ap=$('arpanel');
+    if(ap&&ap.getAttribute('visible')){
+      const apm=ap.getObject3D('mesh');
+      if(apm){const h=rc.intersectObject(apm,true);if(h.length){closeAR();return;}}
+    }
+    if(meshes.length){
+      const hits=rc.intersectObjects(meshes,false);
+      if(hits.length){const a=_registry.get(hits[0].object.uuid);if(a){a();return;}}
+    }
+    /* Broad fallback */
+    const all=[];scene.object3D.traverse(o=>{if(o.isMesh)all.push(o);});
+    const hits2=rc.intersectObjects(all,false);
+    if(hits2.length){
+      log('broad hit on: '+hits2[0].object.name+' uuid='+hits2[0].object.uuid,'#f59e0b');
+      const a=_registry.get(hits2[0].object.uuid);if(a)a();
+    }
+  });
+
+  /* Spawn one test AR hotspot in front of camera */
+  scene.addEventListener('loaded',()=>{
+    log('✅ A-Frame scene loaded','#4ade80');
+
+    /* Spawn badge at z=-4 (straight ahead) */
+    spawnTestHotspot(0,0,-4,'fraise','ar');
+    spawnTestHotspot(-1.5,0,-4,'nav','nav');
+    spawnTestHotspot(1.5,0,-4,'brumisateur','ar');
+  });
+});
+
+function spawnTestHotspot(x,y,z,desc,type){
+  const scene=document.querySelector('a-scene');
+  const host=$('hotspots');
+
+  const color=type==='ar'?'#F59E0B':'#22C55E';
+
+  const wrap=document.createElement('a-entity');
+  wrap.setAttribute('position',x+' '+(y+1.6)+' '+z);
+  wrap.setAttribute('billboard','');
+
+  const badge=document.createElement('a-plane');
+  badge.setAttribute('width','0.7');
+  badge.setAttribute('height','0.7');
+  badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.01; depthWrite:false; opacity:0.99');
+  badge.classList.add('clickable');
+
+  /* Draw badge canvas */
+  const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
+  const c=cv.getContext('2d'),cx=S/2,cy=S/2;
+  const g=c.createRadialGradient(cx,cy,24,cx,cy,S/2);
+  g.addColorStop(0,hexA(color,.45));g.addColorStop(1,hexA(color,0));
+  c.fillStyle=g;c.fillRect(0,0,S,S);
+  c.beginPath();c.arc(cx,cy,76,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.8)';c.fill();
+  c.lineWidth=9;c.strokeStyle=color;c.stroke();
+  /* i symbol */
+  c.fillStyle=color;c.font='bold 56px sans-serif';c.textAlign='center';c.textBaseline='middle';
+  c.fillText(type==='ar'?'i':'↑',cx,cy);
+  applyCanvasTexture(badge,cv);
+
+  /* Register */
+  badge.addEventListener('loaded',()=>{
+    const mesh=badge.getObject3D('mesh');
+    if(mesh){
+      _registry.set(mesh.uuid,()=>{
+        log('🎯 hotspot clicked: '+desc+' (type='+type+')','#06b6d4');
+        if(type==='ar')openAR(desc);
+        else log('nav hotspot — goTo would trigger here','#94a3b8');
+      });
+      log('📌 hotspot registered: '+desc+' mesh.uuid='+mesh.uuid.slice(0,8));
+    }
+  });
+
+  badge.addEventListener('mouseenter',()=>wrap.object3D.scale.set(1.2,1.2,1.2));
+  badge.addEventListener('mouseleave',()=>wrap.object3D.scale.set(1,1,1));
+  badge.addEventListener('click',()=>{
+    log('⚡ A-Frame click event on: '+desc,'#fbbf24');
+    if(type==='ar')openAR(desc);
+  });
+
+  wrap.appendChild(badge);
+  host.appendChild(wrap);
+  log('🔵 spawned hotspot "'+desc+'" at ('+x+','+y+','+z+')');
+}
+</script>
+</body>
+</html>
