@@ -12,8 +12,6 @@ if not DATABASE_URL:
 safe_url = DATABASE_URL.split("@")[-1] if "@" in DATABASE_URL else DATABASE_URL
 print(f"[DB] Connexion vers: ...@{safe_url}")
 
-# FIX: port 5432 sur pooler Supabase = mode Session → remplacer par 6543 (Transaction)
-# Le mode Transaction supporte correctement les pools asyncpg multi-connexions
 if "pooler.supabase.com:5432" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace(":5432/", ":6543/")
     print("[DB] Port corrigé: 5432 → 6543 (mode Transaction pooler)")
@@ -26,13 +24,16 @@ async def get_pool():
         try:
             _pool = await asyncpg.create_pool(
                 DATABASE_URL,
-                min_size=1,       # FIX: 1 au lieu de 2 — le pooler Supabase free tier
-                max_size=5,       # limite à 5 connexions simultanées max
-                ssl="require",    # toujours requis avec Supabase
-                max_inactive_connection_lifetime=300,  # recycle les connexions idle
+                min_size=1,
+                max_size=5,
+                ssl="require",
+                max_inactive_connection_lifetime=300,
                 command_timeout=30,
+                # FIX CRITIQUE: port 6543 = pgbouncer mode Transaction
+                # Les prepared statements ne sont pas supportés → on les désactive
+                statement_cache_size=0,
             )
-            print("[DB] ✅ Pool de connexions créé")
+            print("[DB] ✅ Pool de connexions créé (statement_cache_size=0)")
         except Exception as e:
             print(f"[DB] ❌ Echec création pool: {e}")
             raise
