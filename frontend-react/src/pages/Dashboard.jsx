@@ -227,7 +227,11 @@ export default function Dashboard() {
     <div
       className="admin-shell"
       data-theme={theme}
-      style={{ fontFamily: "'Manrope','DM Sans',system-ui,sans-serif" }}
+      style={{
+        fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
+        display: 'flex',
+        minHeight: '100vh',
+      }}
     >
       {hasCritical && (
         <AlertBanner
@@ -244,9 +248,20 @@ export default function Dashboard() {
         lang={lang}   setLang={setLang}
       />
 
+      {/* Spacer that pushes main right of the fixed sidebar */}
+      <div style={{ width: 220, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
+
       <main
         className="admin-main"
-        style={{ paddingTop: hasCritical ? 'calc(var(--main-pt,1.5rem) + 42px)' : undefined }}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          height: '100vh',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '1.5rem',
+          paddingTop: hasCritical ? 'calc(1.5rem + 42px)' : '1.5rem',
+        }}
       >
         <Routes>
           <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
