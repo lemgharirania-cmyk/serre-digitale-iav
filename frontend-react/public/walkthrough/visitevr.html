@@ -937,8 +937,9 @@ function _doRaycast(clientX, clientY){
 
   /* 1. If AR panel is open — click closes it (debounced: ignore if just opened) */
   const ap = $('arpanel');
-  const apVisible = ap && (ap.getAttribute('visible') === 'true' || ap.getAttribute('visible') === true);
-  if(apVisible){
+  /* Check visibility via object3D (reliable) AND attribute (fallback) */
+  const apVis = ap && ap.object3D && ap.object3D.visible;
+  if(apVis){
     if(Date.now() - _arOpenedAt > 350){
       closeAR();
     }
@@ -1034,6 +1035,7 @@ async function openAR(desc){
   _arOpenedAt = Date.now();
 
   card.setAttribute('visible', true);
+  if(card.object3D) card.object3D.visible = true;
   _placeCard(card, 2.6);
 
   try{
@@ -1059,7 +1061,13 @@ function _placeCard(el, dist){
   el.object3D.updateMatrixWorld(true);
 }
 
-function closeAR(){ $('arpanel').setAttribute('visible', false); }
+function closeAR(){
+  const ap = $('arpanel');
+  if(!ap) return;
+  ap.setAttribute('visible', false);
+  /* Force object3D sync immediately */
+  if(ap.object3D) ap.object3D.visible = false;
+}
 
 /* ── Scene loader ── */
 async function load(zid,sid){
