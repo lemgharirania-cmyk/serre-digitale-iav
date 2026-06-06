@@ -20,9 +20,14 @@ async def collect_and_store():
             # ── ENV ──────────────────────────────────────────
             try:
                 env = await fetch_env(serre["env_device_id"], serre["env_token"])
-                if env:
+                # FIX: vérifier qu'au moins une valeur est non-nulle avant d'insérer
+                # (l'API Pro-Leaf retourne {"msg":"No current data"} → toutes les valeurs sont None)
+                env_valide = env and any(
+                    env.get(k) is not None
+                    for k in ["temperature", "humidite", "vpd", "co2", "luminosite"]
+                )
+                if env_valide:
                     raw = env.pop("raw", {})
-                    # FIX: supprimé ON CONFLICT DO NOTHING — chaque collecte doit être sauvegardée
                     await db.execute("""
                         INSERT INTO mesures_iot
                             (serre_id, type_api, temperature, humidite, vpd, co2, luminosite, raw_data)
@@ -37,6 +42,8 @@ async def collect_and_store():
                         val = env.get(capteur)
                         if val is not None:
                             await check_threshold(db, serre, capteur, val)
+                else:
+                    print(f"[Scheduler] ⚠️ ENV serre {serre['code']} — pas de données valides (device hors ligne?)")
             except Exception as e:
                 print(f"[Scheduler] ❌ ENV serre {serre['id']}: {e}")
 
