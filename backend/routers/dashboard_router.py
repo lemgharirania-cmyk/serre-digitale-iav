@@ -88,6 +88,12 @@ async def comparer_serres(
     db=Depends(get_db),
     user=Depends(get_current_user)
 ):
+    CAPTEURS_VALIDES = {
+        "temperature", "humidite", "vpd", "co2", "luminosite",
+        "ph", "ec", "temp_eau", "niveau_eau"
+    }
+    if capteur not in CAPTEURS_VALIDES:
+        raise HTTPException(status_code=400, detail=f"Capteur invalide: {capteur}")
     serres = await db.fetch("SELECT id, code, nom_fr FROM serres WHERE actif=TRUE")
     result = []
     for serre in serres:
@@ -96,9 +102,9 @@ async def comparer_serres(
             FROM mesures_iot
             WHERE serre_id=$1
               AND {capteur} IS NOT NULL
-              AND capture_at > NOW() - ($2 || ' hours')::INTERVAL
+              AND capture_at > NOW() - ($2 * INTERVAL '1 hour')
             ORDER BY capture_at ASC
-        """, serre["id"], str(heures))
+        """, serre["id"], heures)
         result.append({
             "serre_id": serre["id"],
             "code":     serre["code"],
@@ -141,9 +147,9 @@ async def export_data(
                ph, ec, temp_eau, niveau_eau
         FROM mesures_iot
         WHERE serre_id=$1
-          AND capture_at > NOW() - ($2 || ' hours')::INTERVAL
+          AND capture_at > NOW() - ($2 * INTERVAL '1 hour')
         ORDER BY capture_at ASC
-    """, serre_id, str(heures))
+    """, serre_id, heures)
 
     if not rows:
         raise HTTPException(status_code=404, detail="Aucune donnée disponible pour cette période.")
@@ -173,76 +179,61 @@ async def export_data(
             headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.csv"'}
         )
 
-    # ── EXCEL (XML Spreadsheet — aucune librairie requise) ────
+    # ── EXCEL (openpyxl — vrai .xlsx compatible Excel moderne) ──
     if format == "excel":
-        def esc(v):
-            if v is None or v == "":
-                return ""
-            s = str(v)
-            return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
 
-        def cell_xml(val, bold=False, bg=None):
-            style = ""
-            if bold:
-                style += ' ss:StyleID="header"'
-            elif bg:
-                style += ' ss:StyleID="alt"'
-            if val is None or val == "":
-                return f'<Cell{style}><Data ss:Type="String"></Data></Cell>'
-            try:
-                float(val)
-                return f'<Cell{style}><Data ss:Type="Number">{esc(val)}</Data></Cell>'
-            except (TypeError, ValueError):
-                return f'<Cell{style}><Data ss:Type="String">{esc(val)}</Data></Cell>'
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f"{serre['code']} {heures}h"
 
-        xml_rows = []
+        # Styles
+        header_font    = Font(bold=True, color="FFFFFF", size=11)
+        header_fill    = PatternFill("solid", fgColor="1B4332")
+        header_align   = Alignment(horizontal="center", vertical="center")
+        alt_fill       = PatternFill("solid", fgColor="F0FDF4")
+        center_align   = Alignment(horizontal="center")
+        thin_border    = Border(
+            bottom=Side(style="thin", color="D1D5DB")
+        )
+
         # Header row
-        hdr_cells = "".join(cell_xml(label, bold=True) for label in col_labels)
-        xml_rows.append(f"<Row ss:Height='22'>{hdr_cells}</Row>")
+        ws.append(col_labels)
+        for col_idx, cell in enumerate(ws[1], 1):
+            cell.font      = header_font
+            cell.fill      = header_fill
+            cell.alignment = header_align
+        ws.row_dimensions[1].height = 22
 
         # Data rows
         for ri, row in enumerate(rows):
-            use_alt = (ri % 2 == 1)
-            data = row_to_list(dict(row))
-            cells = "".join(cell_xml(v, bg=use_alt) for v in data)
-            xml_rows.append(f"<Row>{cells}</Row>")
+            ws.append(row_to_list(dict(row)))
+            if ri % 2 == 1:
+                for cell in ws[ri + 2]:
+                    cell.fill      = alt_fill
+                    cell.alignment = center_align
+            else:
+                for cell in ws[ri + 2]:
+                    cell.alignment = center_align
 
-        xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:x="urn:schemas-microsoft-com:office:excel">
-  <Styles>
-    <Style ss:ID="header">
-      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"/>
-      <Interior ss:Color="#1B4332" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-    </Style>
-    <Style ss:ID="alt">
-      <Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center"/>
-    </Style>
-    <Style ss:ID="Default">
-      <Alignment ss:Horizontal="Center"/>
-    </Style>
-  </Styles>
-  <Worksheet ss:Name="{esc(serre['code'])} {heures}h">
-    <Table>
-      {"".join(xml_rows)}
-    </Table>
-    <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
-      <FreezePanes/>
-      <FrozenNoSplit/>
-      <SplitHorizontal>1</SplitHorizontal>
-      <TopRowBottomPane>1</TopRowBottomPane>
-    </WorksheetOptions>
-  </Worksheet>
-</Workbook>"""
+        # Auto column width
+        for col_idx, col_cells in enumerate(ws.columns, 1):
+            max_len = max((len(str(c.value or "")) for c in col_cells), default=10)
+            ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 4, 30)
+
+        # Freeze header row
+        ws.freeze_panes = "A2"
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
 
         return StreamingResponse(
-            io.BytesIO(xml.encode("utf-8")),
-            media_type="application/vnd.ms-excel",
-            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.xls"'}
+            buf,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.xlsx"'}
         )
 
     raise HTTPException(status_code=400, detail="Format non supporté. Utilisez 'csv' ou 'excel'.")
