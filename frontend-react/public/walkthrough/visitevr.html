@@ -96,7 +96,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 /* 2D overlay — hidden in VR immersif */
 #overlay{position:absolute;inset:0;pointer-events:none;z-index:10;transition:opacity .3s ease}
 body.in-vr #overlay{opacity:0;pointer-events:none!important}
-/* En VR immersif, le DOM disparaît; on cache la card pour éviter qu'elle reste "ouverte" virtuellement */
 body.in-vr .ar-overlay{display:none!important}
 #overlay *{pointer-events:none}
 #overlay button,#overlay .arrow,#overlay #cal,#overlay #cal button{pointer-events:auto}
@@ -168,8 +167,23 @@ body.in-vr .ar-overlay{display:none!important}
 
     <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
     <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
-      width="1.8" height="1.1"
+      width="1.8" height="2.25"
       material="shader:flat; transparent:true; side:double" billboard></a-plane>
+
+    <!-- Switcher FR/EN/AR 3D (3 boutons billboardés sous la card AR en VR) -->
+    <a-entity id="lang-switcher-3d" visible="false" billboard>
+      <a-plane id="lang-btn-FR" class="clickable" data-lang="FR" position="-0.25 0 0" width="0.20" height="0.12"
+        material="shader:flat; color:#22C55E; transparent:true; opacity:0.92; side:double"></a-plane>
+      <a-text value="FR" position="-0.25 0 0.001" align="center" anchor="center" baseline="center" color="#ffffff" width="1.5"></a-text>
+
+      <a-plane id="lang-btn-EN" class="clickable" data-lang="EN" position="0 0 0" width="0.20" height="0.12"
+        material="shader:flat; color:#94A3B8; transparent:true; opacity:0.85; side:double"></a-plane>
+      <a-text value="EN" position="0 0 0.001" align="center" anchor="center" baseline="center" color="#ffffff" width="1.5"></a-text>
+
+      <a-plane id="lang-btn-AR" class="clickable" data-lang="AR" position="0.25 0 0" width="0.20" height="0.12"
+        material="shader:flat; color:#94A3B8; transparent:true; opacity:0.85; side:double"></a-plane>
+      <a-text value="AR" position="0.25 0 0.001" align="center" anchor="center" baseline="center" color="#ffffff" width="1.5"></a-text>
+    </a-entity>
 
     <a-entity id="rig" position="0 1.6 0">
       <a-entity id="hotspots"></a-entity>
@@ -201,8 +215,7 @@ body.in-vr .ar-overlay{display:none!important}
     </div>
   </div>
 
-  <!-- AR Card DOM — visible en flat mode, géré par ar-content.js (openSimpleAR/closeAR)
-       En VR immersif, le DOM disparaît et c'est le #arpanel 3D dans la scène qui prend le relais -->
+  <!-- AR Card DOM — flat mode (DOM riche via ar-content.js openSimpleAR) -->
   <div class="ar-overlay">
     <div class="ar-card" id="ar-card">
       <div class="ar-hero" id="ar-hero">
@@ -389,131 +402,251 @@ function wrapText(c,text,x,y,maxW,lh,maxLines){
   if(!maxLines||count<maxLines)c.fillText(line,x,y);
 }
 
-/* ── Badge hotspot ── */
-function drawBadge(type,color){
-  const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
-  const c=cv.getContext('2d'),cx=S/2,cy=S/2;
-  const g=c.createRadialGradient(cx,cy,24,cx,cy,S/2);
-  g.addColorStop(0,hexA(color,0.45));g.addColorStop(1,hexA(color,0));
-  c.fillStyle=g;c.fillRect(0,0,S,S);
-  c.beginPath();c.arc(cx,cy,76,0,Math.PI*2);
-  c.fillStyle='rgba(255,255,255,0.80)';c.fill();
-  c.lineWidth=9;c.strokeStyle=color;c.stroke();
-  c.strokeStyle=color;c.fillStyle=color;c.lineWidth=17;c.lineCap='round';c.lineJoin='round';
-  if(type==='ar'){
-    c.beginPath();c.arc(cx,cy-34,11,0,Math.PI*2);c.fill();
-    c.beginPath();c.moveTo(cx,cy-4);c.lineTo(cx,cy+46);c.stroke();
-  }else if(type==='cross'){
-    chevron(c,cx,cy-17,28);chevron(c,cx,cy+17,28);
-  }else{
-    chevron(c,cx,cy,44);
-  }
-  return cv;
-}
+/* ══════════════════════════════════════════════════════════════════════
+   RICH HOTSPOT ICONS + AR CARDS — mirrors visitemanuelle
+   ══════════════════════════════════════════════════════════════════════ */
 
-/* ── AR card canvas — extrait le contenu depuis AR_CONTENT ── */
-function getARContent(desc){
-  /* Try AR_CONTENT first (from ar-content.js if loaded) */
-  if(typeof AR_CONTENT!=='undefined'&&AR_CONTENT){
-    const key=desc.toLowerCase().trim();
-    /* alias map */
-    const _al = {
-
-  'ventilation':'Système de ventilation',
-
-  'brumisateur':'brumisateur',
-
-  'co2':'co2',
-  'co₂':'co2',
-
-  'sensors':'Capteurs IoT',
-  'capteur':'Capteurs Iot',
-  'capteurs':'Capteurs IoT',
-
-  'fenetre auto':'Fenêtres automatiques',
-  'fenetre':'Fenêtres automatique',
-  'fenetres':'Fenêtres automatique',
-  'fenêtres':'Fenêtres automatique',
-
-  'rideaux auto':'Rideaux automatiques',
-  'rideaux':'Rideaux automatiques',
-  'rideau':'Rideaux automatiques',
-
-  'système de ventilation':'Système de ventilation',
-
-  'système de refroidissement':'Système de refroidissement',
-  'syst de refroidissement':'Système de refroidissement',
-  'syst de refroidissment':'Système de refroidissement',
-
-  'ventilation dehors':'Système de ventilation - Extérieur',
-  'ventilation ext':'Système de ventilation - Extérieur',
-  'ventilation extérieure':'Système de ventilation - Extérieur',
-  'ventilation exterieure':'Système de ventilation - Extérieur',
-
-  'fertigation':'Station de fertigation',
-  'station de fertigation':'Station de fertigation',
-
-  'audoucisseur':'Adoucisseur',
-
-  'fraise':'Fraise',
-  'courgette':'Courgette',
-
-  'blé':'blé',
-
+/* ── HS_VISUALS — copied from visitemanuelle (SVG icons per hotspot key) ── */
+/* Each entry: { color:[r,g,b], iconSVG:"<path .../><circle .../>...", vb:"0 0 24 24" } */
+const HS_ICONS = {
+  'fraise':       {color:[244,100,100], vb:'0 0 24 24', icon:'<path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"/><circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"/>'},
+  'co2':          {color:[16,185,129],  vb:'0 0 24 14', icon:'<circle cx="3" cy="7" r="2.5"/><circle cx="12" cy="7" r="3.2"/><circle cx="21" cy="7" r="2.5"/><line x1="5.5" y1="7" x2="8.8" y2="7"/><line x1="15.2" y1="7" x2="18.5" y2="7"/><text x="1.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O</text><text x="9.8" y="9.2" font-size="4.5" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">C</text><text x="19.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O</text>'},
+  'brumisateur':  {color:[45,212,191],  vb:'0 0 24 24', icon:'<rect x="2" y="9" width="10" height="6" rx="2"/><path d="M12 12h3"/><path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"/><circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none"/>'},
+  'ventilation':  {color:[59,130,246],  vb:'0 0 24 24', icon:'<circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/>'},
+  'ventilation dehors': {color:[6,182,212], vb:'0 0 24 24', icon:'<rect x="2" y="4" width="12" height="16" rx="2"/><line x1="5" y1="8" x2="11" y2="8" opacity=".6"/><line x1="5" y1="11" x2="11" y2="11" opacity=".6"/><line x1="5" y1="14" x2="11" y2="14" opacity=".6"/><path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6"/>'},
+  'systeme de ventilation': {color:[59,130,246], vb:'0 0 24 24', icon:'<circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/>'},
+  'systeme de refroidissement': {color:[59,130,246], vb:'0 0 24 20', icon:'<rect x="1" y="2" width="22" height="14" rx="2.5"/><line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"/><line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"/>'},
+  'rideaux auto': {color:[217,119,6], vb:'0 0 24 24', icon:'<line x1="2" y1="4" x2="22" y2="4"/><circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"/><path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"/>'},
+  'fenetre auto': {color:[6,182,212],  vb:'0 0 24 24', icon:'<rect x="2" y="3" width="20" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" opacity=".35"/><line x1="2" y1="12" x2="22" y2="12" opacity=".35"/><path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"/>'},
+  'sensors':      {color:[109,40,217], vb:'0 0 24 24', icon:'<rect x="3" y="7" width="18" height="12" rx="2"/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"/>'},
+  'fertigation':  {color:[14,165,233], vb:'0 0 24 26', icon:'<rect x="4" y="2" width="16" height="10" rx="2"/><text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK</text><line x1="8" y1="12" x2="8" y2="18"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="16" y1="12" x2="16" y2="18"/>'},
+  'station de fertigation': {color:[14,165,233], vb:'0 0 24 24', icon:'<rect x="3" y="5" width="7" height="10" rx="1.5"/><rect x="14" y="5" width="7" height="10" rx="1.5"/><path d="M10 10h4M12 7v6"/><path d="M6 15v4M18 15v4M10 19h4"/>'},
+  'monitoring':   {color:[99,102,241], vb:'0 0 24 24', icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/>'},
+  'chaudiere':    {color:[239,68,68],  vb:'0 0 24 24', icon:'<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><path d="M9 5V3M15 5V3"/><path d="M7 19v2M17 19v2"/>'},
+  'audoucisseur': {color:[14,165,233], vb:'0 0 24 24', icon:'<ellipse cx="12" cy="10" rx="5" ry="7"/><path d="M7 14c0 3 2.5 5 5 5s5-2 5-5"/><path d="M9 7l3-2 3 2" opacity=".5"/>'},
+  'serre':        {color:[34,197,94],  vb:'0 0 24 24', icon:'<path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M9 21v-6h6v6"/>'},
+  'unite horticulture': {color:[34,197,94], vb:'0 0 24 24', icon:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>'},
+  'unite agronomie': {color:[245,158,11], vb:'0 0 24 24', icon:'<path d="M12 22V11"/><path d="M12 11C12 11 6 9 6 4c0 0 4 0 6 4 2-4 6-4 6-4 0 5-6 7-6 7z"/><path d="M6 20h12"/>'},
+  'unite hydroponie': {color:[14,165,233], vb:'0 0 24 24', icon:'<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M8 14c0 2 2 4 4 4s4-2 4-4" opacity=".55"/>'},
+  'unite protection des plantes': {color:[239,68,68], vb:'0 0 24 24', icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/>'},
+  'unite genetique et amelioration des plantes': {color:[139,92,246], vb:'0 0 24 24', icon:'<path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 1-2-2V3m6 11h10m0 0a2 2 0 0 0 2-2V7m-2 7v4a2 2 0 0 1-2 2H9m10-4H9m0 0v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"/><circle cx="12" cy="11" r="1.5" fill="rgba(109,40,217,.7)" stroke="none"/>'},
+  'salle de lavage': {color:[14,165,233], vb:'0 0 24 24', icon:'<path d="M4 12h16M4 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M6 12v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/><path d="M10 16v-4M14 16v-4"/>'},
+  'salle technique de commandes': {color:[139,92,246], vb:'0 0 24 24', icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/>'},
+  'salle de reunion': {color:[99,102,241], vb:'0 0 24 24', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+  'salle de preparation': {color:[234,179,8], vb:'0 0 24 24', icon:'<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/>'},
+  'bloc protection des plantes': {color:[239,68,68], vb:'0 0 24 24', icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/>'},
+  'bloc gestion technique et administrative': {color:[99,102,241], vb:'0 0 24 24', icon:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>'},
 };
-    const k=al[key]||key;
-    const def=AR_CONTENT[k];
-    if(def){
-      /* Extract readable body from sections */
-      let body='';
-      if(def.sections&&def.sections.length){
-        const sec=def.sections[0];
-        if(sec.bullets&&sec.bullets.length)body=sec.bullets[0];
-        else if(sec.items&&sec.items.length)body=sec.items.map(i=>i.k+' : '+i.v).join(' · ');
-      }
-      return{title:def.title||desc,body:body||def.statusText||''};
-    }
-  }
-  /* Fallback: use desc directly */
-  return{title:desc,body:''};
+
+/* Fallback icons per type (matches visitemanuelle) */
+const FALLBACK_ICONS = {
+  plant:  '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  sensor: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  system: '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/>',
+};
+const FALLBACK_COLORS = {plant:[45,142,80], sensor:[109,40,217], system:[100,116,139]};
+
+/* AR_ALIAS — normalize variants to canonical keys */
+const AR_ALIAS_LOCAL = {
+  'fenêtre auto':'fenetre auto', 'fenêtres auto':'fenetre auto', 'fenetres auto':'fenetre auto',
+  'fenêtre':'fenetre auto','fenêtres':'fenetre auto','fenetres':'fenetre auto','fenetre':'fenetre auto',
+  'rideaux':'rideaux auto','rideau':'rideaux auto',
+  'système de ventilation':'systeme de ventilation',
+  'système de refroidissement':'systeme de refroidissement',
+  'syst de refroidissement':'systeme de refroidissement',
+  'co₂':'co2','co_2':'co2',
+  'capteurs':'sensors','capteur':'sensors','capteurs iot':'sensors',
+  'station de fertigation':'station de fertigation',
+  'adoucisseur':'audoucisseur',
+  'unité horticulture':'unite horticulture',
+  'unité agronomie':'unite agronomie',
+  'unité hydroponie':'unite hydroponie',
+  'unité protection des plantes':'unite protection des plantes',
+  'unité génétique et amélioration des plantes':'unite genetique et amelioration des plantes',
+  'salle de réunion':'salle de reunion',
+  'salle de préparation':'salle de preparation',
+  'chaudière':'chaudiere',
+};
+function resolveARKeyLocal(desc){
+  const k = (desc||'').toLowerCase().trim();
+  return AR_ALIAS_LOCAL[k] || k;
 }
 
-function drawCard(title,body){
-  const W=1024,H=640,cv=document.createElement('canvas');cv.width=W;cv.height=H;
-  const c=cv.getContext('2d');
-  const pad=46,r=44,x0=pad+54;
-
-  /* frosted panel */
-  c.shadowColor='rgba(15,23,42,0.28)';c.shadowBlur=55;
-  const g=c.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(255,255,255,0.92)');g.addColorStop(1,'rgba(236,250,243,0.92)');
-  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);c.fillStyle=g;c.fill();c.shadowBlur=0;
-
-  /* border */
-  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);
-  c.lineWidth=2.5;c.strokeStyle='rgba(255,255,255,0.95)';c.stroke();
-
-  /* green accent top bar */
-  const barG=c.createLinearGradient(x0,0,x0+200,0);
-  barG.addColorStop(0,'#22C55E');barG.addColorStop(1,'#06B6D4');
-  c.fillStyle=barG;c.fillRect(x0,pad+44,200,5);
-
-  /* title */
-  c.fillStyle='#15803D';c.textBaseline='alphabetic';
-  c.font='700 52px "DM Sans",system-ui,sans-serif';
-  wrapText(c,title||'Info',x0,pad+108,W-2*x0+2*pad,58,2);
-
-  /* body */
-  if(body){
-    c.fillStyle='#1E293B';c.font='400 32px "DM Sans",system-ui,sans-serif';
-    wrapText(c,body,x0,pad+190,W-2*x0+2*pad,44,6);
+/* Get icon definition for a hotspot key — returns {color:[r,g,b], iconSVG, vb} */
+function getHSIcon(desc){
+  const k = resolveARKeyLocal(desc);
+  if(HS_ICONS[k]) return HS_ICONS[k];
+  /* Fallback by type from AR_CONTENT */
+  let type = 'system';
+  if(typeof AR_CONTENT !== 'undefined' && AR_CONTENT){
+    const def = AR_CONTENT[k] || AR_CONTENT[desc];
+    if(def && def.type) type = def.type;
   }
+  const fbIcon  = FALLBACK_ICONS[type]  || FALLBACK_ICONS.system;
+  const fbColor = FALLBACK_COLORS[type] || FALLBACK_COLORS.system;
+  return {color:fbColor, vb:'0 0 24 24', icon:fbIcon};
+}
 
-  /* footer hint */
-  c.fillStyle='rgba(100,116,139,0.6)';c.font='500 24px "DM Sans",system-ui,sans-serif';
-  c.fillText('Touchez pour fermer',x0,H-pad-34);
+/* ── SVG → Image → Canvas helper ── */
+function svgToImage(svgString){
+  return new Promise((resolve)=>{
+    const blob = new Blob([svgString], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload  = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = (e)=>{ console.warn('[SVG→IMG] load failed',e); URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+/* ── Rich badge: replicates visitemanuelle pill look at hi-res ── */
+function drawRichBadge(desc, fallbackType){
+  const S=256;
+  const cv=document.createElement('canvas');cv.width=cv.height=S;
+  const c=cv.getContext('2d');
+  const info=getHSIcon(desc);
+  const [r,g,b]=info.color;
+
+  /* Aurora background (outer glow) */
+  const grad=c.createRadialGradient(S*0.65,S*0.35,10,S/2,S/2,S/2);
+  grad.addColorStop(0,`rgba(${r},${g},${b},0.55)`);
+  grad.addColorStop(0.55,`rgba(${r},${g},${b},0.18)`);
+  grad.addColorStop(1,`rgba(${r},${g},${b},0)`);
+  c.fillStyle=grad;c.fillRect(0,0,S,S);
+
+  /* White frosted pill (circle) */
+  c.beginPath();c.arc(S/2,S/2,S*0.38,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,0.88)';c.fill();
+  c.lineWidth=4;c.strokeStyle=`rgba(${r},${g},${b},0.55)`;c.stroke();
+
+  /* Inner highlight */
+  c.beginPath();c.arc(S*0.42,S*0.40,S*0.18,0,Math.PI*2);
+  const hg=c.createRadialGradient(S*0.42,S*0.40,1,S*0.42,S*0.40,S*0.18);
+  hg.addColorStop(0,'rgba(255,255,255,0.55)');hg.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=hg;c.fill();
+
+  /* Render the SVG icon via SVG→Image (async, will repaint canvas when ready) */
+  const iconSize = S*0.56;
+  const iconX = (S-iconSize)/2, iconY = (S-iconSize)/2;
+  const colorStr = `rgba(${r},${g},${b},0.95)`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="${info.vb}" fill="none" stroke="${colorStr}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${info.icon}</svg>`;
+  svgToImage(svg).then(img=>{
+    if(!img) return;
+    c.drawImage(img, iconX, iconY, iconSize, iconSize);
+    /* Trigger texture refresh on any plane using this canvas */
+    if(cv._refreshFn) cv._refreshFn();
+  });
+
   return cv;
 }
+
+/* ══ AR card via SVG foreignObject (rich HTML rendered to canvas texture) ══ */
+function escHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+function buildCardHTML(def, lang){
+  const lc = lang.toLowerCase();
+  const title      = def['title_'+lc]      || def.title      || 'Information';
+  const statusText = def['statusText_'+lc] || def.statusText || '';
+  const color = def.color || '#22C55E';
+  const type  = (def.type || 'system').toUpperCase();
+  const sections = def.sections || [];
+
+  const sectionsHTML = sections.map(s=>{
+    const label = s['label_'+lc] || s.label || '';
+    const bullets = s['bullets_'+lc] || s.bullets;
+    const items   = s['items_'+lc]   || s.items;
+
+    let inner = '';
+    if(bullets && bullets.length){
+      inner += bullets.map(b=>`
+        <div style="font-size:22px;line-height:1.5;color:#1E293B;margin-bottom:10px;padding-left:24px;position:relative;">
+          <span style="position:absolute;left:0;top:0;color:${color};font-weight:700;">&#8226;</span>${escHTML(b)}
+        </div>`).join('');
+    }
+    if(items && items.length){
+      inner += `<div style="display:flex;flex-direction:column;gap:4px;">${
+        items.map(i=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">
+            <span style="font-size:20px;color:#64748B;">${escHTML(i.k)}</span>
+            <span style="font-size:20px;color:#1E293B;font-weight:600;text-align:right;">${escHTML(i.v)}</span>
+          </div>`).join('')
+      }</div>`;
+    }
+    return `
+      <div style="margin-bottom:24px;">
+        ${label ? `<div style="font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${color};margin-bottom:12px;">${escHTML(label)}</div>` : ''}
+        ${inner}
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="width:1024px;min-height:1280px;background:linear-gradient(160deg,#ffffff,#f0fdf4);border-radius:32px;box-shadow:0 0 0 1px rgba(255,255,255,0.95) inset;overflow:hidden;font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:#0F172A;display:flex;flex-direction:column;">
+      <!-- HERO -->
+      <div style="position:relative;padding:36px 40px 28px;background:radial-gradient(ellipse at 60% 30%,${color}33 0%,${color}11 50%,transparent 80%);border-bottom:1px solid rgba(0,0,0,0.04);">
+        <div style="font-size:16px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,0.45);margin-bottom:8px;">${escHTML(type)}</div>
+        <div style="font-size:44px;font-weight:700;color:#0F172A;line-height:1.15;margin-bottom:14px;">${escHTML(title)}</div>
+        ${statusText ? `
+          <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:100px;background:${color}1F;border:1px solid ${color}55;font-size:18px;font-weight:600;color:${color};">
+            <div style="width:10px;height:10px;border-radius:50%;background:${color};"></div>
+            ${escHTML(statusText)}
+          </div>` : ''}
+      </div>
+      <!-- BODY -->
+      <div style="padding:32px 40px;flex:1;">
+        ${sectionsHTML || `<div style="color:rgba(0,0,0,0.4);font-size:22px;">Aucune information.</div>`}
+      </div>
+      <!-- FOOTER -->
+      <div style="padding:20px 40px;border-top:1px solid rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;font-size:18px;color:rgba(0,0,0,0.4);">
+        <span>${lang}</span>
+        <span>Touchez pour fermer</span>
+      </div>
+    </div>`;
+}
+
+/* Render card to canvas. Returns Promise<canvas>. */
+async function drawRichCard(desc, lang){
+  const def = (typeof AR_CONTENT!=='undefined' && AR_CONTENT)
+    ? (AR_CONTENT[resolveARKeyLocal(desc)] || AR_CONTENT[desc])
+    : null;
+
+  const fallbackDef = {title:desc||'Info', color:'#22C55E', type:'info', sections:[]};
+  const cardDef = def || fallbackDef;
+  const html = buildCardHTML(cardDef, lang);
+
+  const W=1024, H=1280;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+    <foreignObject width="100%" height="100%">
+      <div xmlns="http://www.w3.org/1999/xhtml">${html}</div>
+    </foreignObject>
+  </svg>`;
+
+  const img = await svgToImage(svg);
+  const cv = document.createElement('canvas');
+  cv.width=W; cv.height=H;
+  const c = cv.getContext('2d');
+  /* White background fallback if SVG fails */
+  c.fillStyle='#ffffff'; c.fillRect(0,0,W,H);
+  if(img) c.drawImage(img,0,0,W,H);
+  return cv;
+}
+
+/* ══ AUDIO SYSTEM ═══════════════════════════════════════════════════════ */
+let _arAudio = null;
+function playARAudio(desc, lang){
+  stopARAudio();
+  const key = resolveARKeyLocal(desc).replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+  const src = `audio/scenes/${(lang||'FR').toLowerCase()}/${key}.mp3`;
+  _arAudio = new Audio(src);
+  _arAudio.volume = 0.9;
+  _arAudio.play().catch(err=>{
+    /* File doesn't exist or autoplay blocked — fail silently */
+    console.log('[AR audio]', key, err.message);
+  });
+}
+function stopARAudio(){
+  if(_arAudio){ try{ _arAudio.pause(); _arAudio.src=''; }catch(e){} _arAudio=null; }
+}
+
 
 /* ── Hotspot factory ── */
 function makeHotspot(hs){
@@ -557,37 +690,114 @@ function makeHotspot(hs){
   badge.addEventListener('click',doAction);
   badge.addEventListener('triggerdown',doAction);
   hit.appendChild(badge);
-  applyCanvasTexture(badge,drawBadge(hs.type,color));
+
+  /* AR hotspots → rich icon matching visitemanuelle. Nav hotspots → simple chevron */
+  let canvas;
+  if(isAR){
+    canvas = drawRichBadge(arDesc, 'ar');
+    /* Allow async SVG → image to refresh the texture once the image loads */
+    canvas._refreshFn = ()=>applyCanvasTexture(badge,canvas);
+  } else {
+    canvas = drawNavBadge(hs.type, color);
+  }
+  applyCanvasTexture(badge,canvas);
 
   return wrap;
 }
 
-/* ── AR panel — dual mode:
-   • Flat (non-VR): card DOM riche via ar-content.js openSimpleAR()
-   • VR immersif : 3D arpanel canvas-textured dans la scène (DOM invisible) ── */
+/* ── Simple chevron badge for nav hotspots (kept from works.html) ── */
+function drawNavBadge(type,color){
+  const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
+  const c=cv.getContext('2d'),cx=S/2,cy=S/2;
+  const g=c.createRadialGradient(cx,cy,24,cx,cy,S/2);
+  g.addColorStop(0,hexA(color,0.45));g.addColorStop(1,hexA(color,0));
+  c.fillStyle=g;c.fillRect(0,0,S,S);
+  c.beginPath();c.arc(cx,cy,76,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,0.80)';c.fill();
+  c.lineWidth=9;c.strokeStyle=color;c.stroke();
+  c.strokeStyle=color;c.fillStyle=color;c.lineWidth=17;c.lineCap='round';c.lineJoin='round';
+  if(type==='cross'){
+    chevron(c,cx,cy-17,28);chevron(c,cx,cy+17,28);
+  } else {
+    chevron(c,cx,cy,44);
+  }
+  return cv;
+}
+
+/* ── AR panel — dual mode (flat: DOM card / VR: 3D canvas card) + audio ── */
 function openAR(desc){
-  /* VR immersif → 3D canvas card */
+  /* Audio plays in BOTH modes when hotspot is clicked */
+  playARAudio(desc, window.currentLang || 'FR');
+
+  /* VR immersif → render 3D canvas card in the scene */
   if(document.body.classList.contains('in-vr')){
-    if(typeof getARContent==='function'){
-      const{title,body}=getARContent(desc);
-      const card=$('arpanel');
-      applyCanvasTexture(card,drawCard(title,body));
+    const card=$('arpanel');
+    drawRichCard(desc, window.currentLang || 'FR').then(cv=>{
+      applyCanvasTexture(card,cv);
       placeInFront(card,2.2);
       card.setAttribute('visible',true);
-    }
+      /* Also show the lang switcher near the card */
+      const sw=$('lang-switcher-3d');
+      if(sw){ placeInFront(sw,2.2); sw.object3D.position.y -= 0.85; sw.setAttribute('visible',true); }
+    });
+    /* Remember the active hotspot so lang switcher can re-render */
+    window._activeARDesc = desc;
     return;
   }
+
   /* Flat mode → DOM card via ar-content.js */
-  if(typeof openSimpleAR==='function'){
+  window._activeARDesc = desc;
+  if(typeof openSimpleAR === 'function'){
     openSimpleAR(desc);
   }
 }
 
-/* closeAR — ferme les deux: 3D arpanel + DOM card */
 function closeAR(){
+  stopARAudio();
   const arp=$('arpanel'); if(arp) arp.setAttribute('visible',false);
+  const sw=$('lang-switcher-3d'); if(sw) sw.setAttribute('visible',false);
   const card=document.getElementById('ar-card');
   if(card) card.classList.remove('open');
+  window._activeARDesc = null;
+}
+
+/* Called by the 3D lang switcher buttons */
+function setLangVR(lang){
+  window.currentLang = lang;
+  /* Update flat mode lang too if ar-content.js exposes setLang */
+  if(typeof setLang === 'function'){ try{ setLang(lang); }catch(e){} }
+  /* Re-render the card if one is open */
+  if(window._activeARDesc){
+    if(document.body.classList.contains('in-vr')){
+      const card=$('arpanel');
+      drawRichCard(window._activeARDesc, lang).then(cv=>applyCanvasTexture(card,cv));
+      /* Refresh lang switcher button highlights */
+      buildLangSwitcher3D(lang);
+    }
+    /* Replay audio in the new language */
+    playARAudio(window._activeARDesc, lang);
+  }
+}
+
+/* Update lang switcher 3D buttons to highlight current language */
+function buildLangSwitcher3D(activeLang){
+  ['FR','EN','AR'].forEach(L=>{
+    const btn = document.getElementById('lang-btn-'+L);
+    if(!btn) return;
+    const isActive = L === activeLang;
+    btn.setAttribute('material', `shader:flat; color:${isActive?'#22C55E':'#94A3B8'}; transparent:true; opacity:${isActive?0.92:0.85}; side:double`);
+  });
+}
+
+/* Wire up the 3D lang switcher buttons (called once on bootVR) */
+function bindLangSwitcher3D(){
+  ['FR','EN','AR'].forEach(L=>{
+    const btn = document.getElementById('lang-btn-'+L);
+    if(!btn) return;
+    const handler = ()=>setLangVR(L);
+    btn.addEventListener('click', handler);
+    btn.addEventListener('triggerdown', handler);
+  });
 }
 
 function placeInFront(el,dist){
@@ -743,6 +953,7 @@ async function bootVR(){
     sc.addEventListener('exit-vr', ()=>document.body.classList.remove('in-vr'));
   }
   attachSceneClicks();
+  bindLangSwitcher3D();
   try{
     const r=await fetch('images/manifest.json');
     if(!r.ok)throw new Error('manifest.json HTTP '+r.status);
@@ -761,7 +972,6 @@ async function bootVR(){
 
 <!-- ar-content.js NOT loaded — it expects #ar-card DOM which doesn't exist here.
      AR content is defined inline via AR_CONTENT below. -->
-<!-- ar-content.js fournit AR_CONTENT, openSimpleAR, et toute la logique des cards riches -->
 <script src="ar-content.js"></script>
 </body>
 </html>
