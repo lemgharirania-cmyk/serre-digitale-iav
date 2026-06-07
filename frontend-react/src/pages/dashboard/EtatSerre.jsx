@@ -8,11 +8,12 @@
 // ════════════════════════════════════════════════════════════════
 import { useState, useEffect } from 'react'
 import {
-  ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock,
+  ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
+import { useAccess } from '../../hooks/useAccess'
 import { POPUP_INFO } from '../../components/geoportail/SectionDonnees'
 
 // ── Constantes ────────────────────────────────────────────────
@@ -121,12 +122,14 @@ const T = {
 // ════════════════════════════════════════════════════════════════
 // COMPOSANT PRINCIPAL
 // ════════════════════════════════════════════════════════════════
-export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, refreshAll, theme, lang }) {
+export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, refreshAll, theme, lang, userRole }) {
   const isDark = theme === 'dark'
   const t      = T[lang] || T.FR
+  const { isSuperAdmin, allowedSerreId, canAccessSerre } = useAccess(userRole)
 
   // État local : serre sélectionnée (unique, contrôle toute la section)
-  const [idx, setIdx]               = useState(0)
+  const defaultIdx = allowedSerreId ? allowedSerreId - 1 : 0
+  const [idx, setIdx]               = useState(defaultIdx)
   const [thresholds, setThresholds] = useState([])
 
   const meta   = SERRES[idx]
@@ -197,7 +200,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:12 }}>
           {/* Sélecteur */}
           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <button onClick={() => setIdx(i => (i-1+5)%5)} style={navBtn}><ChevronLeft size={14}/></button>
+            <button onClick={() => { let ni=(idx-1+5)%5; while(!canAccessSerre(SERRES[ni].code)&&ni!==(allowedSerreId?allowedSerreId-1:0)){ni=(ni-1+5)%5} setIdx(ni) }} style={navBtn}><ChevronLeft size={14}/></button>
             <div style={{ display:'flex', gap:4 }}>
               {SERRES.map((s,i) => (
                 <button key={s.id} onClick={() => setIdx(i)} style={{
@@ -211,7 +214,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
                 </button>
               ))}
             </div>
-            <button onClick={() => setIdx(i => (i+1)%5)} style={navBtn}><ChevronRight size={14}/></button>
+            <button onClick={() => { let ni=(idx+1)%5; while(!canAccessSerre(SERRES[ni].code)&&ni!==(allowedSerreId?allowedSerreId-1:0)){ni=(ni+1)%5} setIdx(ni) }} style={navBtn}><ChevronRight size={14}/></button>
           </div>
           {/* Countdown + refresh */}
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
