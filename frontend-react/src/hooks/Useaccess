@@ -1,0 +1,32 @@
+// src/hooks/useAccess.js
+// ─────────────────────────────────────────────────────────────
+// Hook centralisé pour la gestion des droits d'accès par serre.
+//
+// Logique :
+//   userRole = 'ALL' | 'SUPERADMIN'  → accès total (supradmin)
+//   userRole = 'S01' … 'S05'         → accès restreint à cette serre
+//
+// Usage :
+//   const { isSuperAdmin, canAccessSerre, allowedSerreId } = useAccess()
+// ─────────────────────────────────────────────────────────────
+
+export function useAccess(userRole) {
+  const role = userRole || (() => {
+    try { return JSON.parse(localStorage.getItem('sdi_user') || '{}').role || 'ALL' }
+    catch { return 'ALL' }
+  })()
+
+  const isSuperAdmin  = role === 'ALL' || role === 'SUPERADMIN'
+  const allowedCode   = isSuperAdmin ? null : role   // null = tout, 'S01'…'S05' = restreint
+  const allowedSerreId = allowedCode
+    ? parseInt(allowedCode.replace('S', ''), 10)
+    : null  // 1…5 ou null
+
+  function canAccessSerre(serreCodeOrId) {
+    if (isSuperAdmin) return true
+    if (typeof serreCodeOrId === 'number') return serreCodeOrId === allowedSerreId
+    return serreCodeOrId === allowedCode
+  }
+
+  return { isSuperAdmin, allowedCode, allowedSerreId, canAccessSerre, role }
+}
