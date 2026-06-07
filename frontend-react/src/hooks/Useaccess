@@ -1,25 +1,29 @@
 // src/hooks/useAccess.js
 // ─────────────────────────────────────────────────────────────
-// Hook centralisé pour la gestion des droits d'accès par serre.
+// Logique d'accès basée sur le champ `unit` de la table utilisateurs
 //
-// Logique :
-//   userRole = 'ALL' | 'SUPERADMIN'  → accès total (supradmin)
-//   userRole = 'S01' … 'S05'         → accès restreint à cette serre
+// Table utilisateurs (Supabase) :
+//   unit = 'ALL'             → supradmin, accès total
+//   unit = 'S01' … 'S05'    → admin limité à cette serre
 //
-// Usage :
-//   const { isSuperAdmin, canAccessSerre, allowedSerreId } = useAccess()
+// Le backend doit renvoyer `unit` dans la réponse /api/auth/login
+// et le frontend le stocke dans localStorage sous sdi_user.unit
 // ─────────────────────────────────────────────────────────────
 
 export function useAccess(userRole) {
-  const role = userRole || (() => {
-    try { return JSON.parse(localStorage.getItem('sdi_user') || '{}').role || 'ALL' }
-    catch { return 'ALL' }
+  // Lire depuis le prop userRole OU directement depuis localStorage
+  const sdiUser = (() => {
+    try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') }
+    catch { return {} }
   })()
 
-  const isSuperAdmin  = role === 'ALL' || role === 'SUPERADMIN'
-  const allowedCode   = isSuperAdmin ? null : role   // null = tout, 'S01'…'S05' = restreint
+  // Priorité : prop userRole > sdi_user.unit > sdi_user.role > 'ALL'
+  const unit = userRole || sdiUser.unit || sdiUser.role || 'ALL'
+
+  const isSuperAdmin   = unit === 'ALL' || unit === 'SUPERADMIN'
+  const allowedCode    = isSuperAdmin ? null : unit          // null = tout, 'S01'…'S05' = restreint
   const allowedSerreId = allowedCode
-    ? parseInt(allowedCode.replace('S', ''), 10)
+    ? parseInt(allowedCode.replace('S0', '').replace('S', ''), 10) || null
     : null  // 1…5 ou null
 
   function canAccessSerre(serreCodeOrId) {
@@ -28,5 +32,5 @@ export function useAccess(userRole) {
     return serreCodeOrId === allowedCode
   }
 
-  return { isSuperAdmin, allowedCode, allowedSerreId, canAccessSerre, role }
+  return { isSuperAdmin, allowedCode, allowedSerreId, canAccessSerre, unit }
 }
