@@ -208,11 +208,15 @@ export default function Dashboard() {
 
   const countdownLabel = `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}`
 
+  // Rôle utilisateur — détermine l'accès aux serres
+  const sdiUser  = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
+  const userRole = sdiUser.role || 'ALL'   // 'ALL'|'SUPERADMIN' = tout; 'S01'–'S05' = serre unique
+
   const sharedProps = {
     liveData, stats, alertCount, meteo,
     countdown: countdownLabel,
     refreshAll: () => { fetchAll(); fetchMeteo() },
-    theme, lang,
+    theme, lang, userRole,
   }
 
   const hasCritical = !bannerOff && liveData.some(d => {
