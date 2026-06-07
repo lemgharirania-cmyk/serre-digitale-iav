@@ -96,6 +96,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 /* 2D overlay — hidden in VR immersif */
 #overlay{position:absolute;inset:0;pointer-events:none;z-index:10;transition:opacity .3s ease}
 body.in-vr #overlay{opacity:0;pointer-events:none!important}
+/* En VR immersif, le DOM disparaît; on cache la card pour éviter qu'elle reste "ouverte" virtuellement */
+body.in-vr .ar-overlay{display:none!important}
 #overlay *{pointer-events:none}
 #overlay button,#overlay .arrow,#overlay #cal,#overlay #cal button{pointer-events:auto}
 .zf{position:absolute;top:18px;left:18px;pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:16px;padding:12px 18px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#0F172A;opacity:0;transform:translateY(-8px);transition:all .4s ease}
@@ -103,21 +105,13 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 .zf b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
 .zf span{font-size:11px;color:#475569}
 .scene-ctr{position:absolute;top:18px;left:50%;transform:translateX(-50%);pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:100px;padding:6px 16px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#334155;font-size:12px;font-family:'DM Mono',monospace}
-.arrow{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;width:48px;height:48px;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);color:#0F172A;font-size:26px;line-height:1;box-shadow:0 8px 30px rgba(15,40,30,.12);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:350}
+.arrow{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;width:48px;height:48px;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);color:#0F172A;font-size:26px;line-height:1;box-shadow:0 8px 30px rgba(15,40,30,.12);display:flex;align-items:center;justify-content:center;transition:all .2s}
 .arrow:hover{background:rgba(34,197,94,.20);border-color:rgba(34,197,94,.5);color:#15803D}
 .arrow.L{left:18px}.arrow.R{right:18px}
 .arrow.off{opacity:0;pointer-events:none}
 #err{position:absolute;bottom:18px;left:18px;right:18px;pointer-events:none;background:rgba(254,226,226,.85);backdrop-filter:blur(12px);border:1px solid rgba(239,68,68,.5);color:#B91C1C;border-radius:12px;padding:12px 16px;font-size:13px;display:none}
 #cal{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);pointer-events:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(16px);border:1px solid rgba(6,182,212,.4);color:#0E7490;border-radius:12px;padding:10px 16px;font-size:12px;font-family:'DM Mono',monospace;display:none;gap:10px;align-items:center}
 #cal button{pointer-events:auto;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.5);color:#0E7490;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:inherit}
-
-/* Lang buttons — now handled by ar-content.css */
-
-/* Pill + nav hotspot animations */
-@keyframes hs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes hs-straw{0%,100%{transform:translateY(0);filter:drop-shadow(0 4px 12px rgba(244,100,100,.4))}50%{transform:translateY(-6px);filter:drop-shadow(0 8px 18px rgba(244,100,100,.25))}}
-@keyframes hs-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes nav-breathe{0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05)}50%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 14px rgba(255,255,255,.0)}}
 </style>
 </head>
 <body>
@@ -172,7 +166,10 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <a-assets timeout="60000"></a-assets>
     <a-sky id="sky" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
 
-
+    <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
+    <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
+      width="1.8" height="1.1"
+      material="shader:flat; transparent:true; side:double" billboard></a-plane>
 
     <a-entity id="rig" position="0 1.6 0">
       <a-entity id="hotspots"></a-entity>
@@ -204,7 +201,8 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     </div>
   </div>
 
-  <!-- AR Card — hors de #overlay pour éviter le pointer-events:none hérité -->
+  <!-- AR Card DOM — visible en flat mode, géré par ar-content.js (openSimpleAR/closeAR)
+       En VR immersif, le DOM disparaît et c'est le #arpanel 3D dans la scène qui prend le relais -->
   <div class="ar-overlay">
     <div class="ar-card" id="ar-card">
       <div class="ar-hero" id="ar-hero">
@@ -234,6 +232,15 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 </div>
 
 <script>
+/* ══ GLOBALS for ar-content.js ═══════════════════════════════════════ */
+window.AR_VIEWER   = 'visitevr';
+window.currentLang = 'FR';
+window.activeAR    = null;
+window.activeTab   = 0;
+window.iotData     = null;
+window.thresholds  = {};
+window.outsideTemp = null;
+
 /* ══ FULLSCREEN ══════════════════════════════════════════════════════ */
 function tryFullscreen(){
   const el=document.documentElement;
@@ -350,24 +357,18 @@ function preload(url){
 }
 
 function applyCanvasTexture(planeEl,canvas){
-  function set(){
-    const mesh=planeEl.getObject3D('mesh');
-    if(!mesh){setTimeout(set,60);return;}
+  const set=()=>{
+    const mesh=planeEl.getObject3D('mesh');if(!mesh)return;
     const tex=new THREE.CanvasTexture(canvas);
     if('colorSpace' in tex)tex.colorSpace=THREE.SRGBColorSpace;
     tex.anisotropy=8;tex.needsUpdate=true;
-    mesh.material.map=tex;
-    mesh.material.color.set('#ffffff');
-    mesh.material.transparent=true;
-    mesh.material.opacity=1;
-    mesh.material.needsUpdate=true;
-  }
+    mesh.material.map=tex;mesh.material.color.set('#ffffff');
+    mesh.material.transparent=true;mesh.material.needsUpdate=true;
+  };
   if(planeEl.hasLoaded)set();else planeEl.addEventListener('loaded',set,{once:true});
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CANVAS HELPERS
-═══════════════════════════════════════════════════════════════ */
+/* ── Canvas helpers ── */
 function hexA(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 
 function roundRect(c,x,y,w,h,r){
@@ -379,329 +380,244 @@ function chevron(c,x,y,s){
 }
 
 function wrapText(c,text,x,y,maxW,lh,maxLines){
-  const words=String(text).split(/\s+/);let line='',count=0,startY=y;
+  const words=String(text).split(/\s+/);let line='',count=0;
   for(const w of words){
     const test=line?line+' '+w:w;
-    if(c.measureText(test).width>maxW&&line){
-      c.fillText(line,x,y);y+=lh;line=w;count++;
-      if(maxLines&&count>=maxLines){c.fillText(line+'…',x,y);return y;}
-    } else line=test;
+    if(c.measureText(test).width>maxW&&line){c.fillText(line,x,y);y+=lh;line=w;count++;if(maxLines&&count>=maxLines)return;}
+    else line=test;
   }
   if(!maxLines||count<maxLines)c.fillText(line,x,y);
-  return y;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LUCIDE ICON PRELOADER
-   Fetches SVGs from CDN, tints them to a given color via
-   offscreen canvas + source-in compositing, returns ImageBitmap.
-═══════════════════════════════════════════════════════════════ */
-const _lucideCache={};
-const LUCIDE_BASE='https://unpkg.com/lucide-static@0.441.0/icons/';
-
-const LUCIDE_MAP={
-  plant:       'leaf',
-  system:      'cpu',
-  sensor:      'wifi',
-  fertigation: 'flask-conical',
-  fraise:      'strawberry',
-  courgette:   'leaf',
-  co2:         'wind',
-  brumisateur: 'droplets',
-  ventilation: 'wind',
-  'ventilation dehors':'wind',
-  'système de ventilation':'fan',
-  'système de refroidissement':'thermometer-snowflake',
-  'fenetre auto':'panel-top-open',
-  'rideaux auto':'blinds',
-  sensors:     'radio-tower',
-  fertigation2:'beaker',
-  monitoring:  'monitor-dot',
-  default:     'info',
-};
-
-async function fetchLucideIcon(name){
-  if(_lucideCache[name])return _lucideCache[name];
-  try{
-    const r=await fetch(LUCIDE_BASE+name+'.svg');
-    if(!r.ok)throw new Error('404');
-    const svg=await r.text();
-    const blob=new Blob([svg],{type:'image/svg+xml'});
-    const url=URL.createObjectURL(blob);
-    const img=await new Promise((res,rej)=>{
-      const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;
-    });
-    _lucideCache[name]=img;
-    return img;
-  }catch(e){
-    _lucideCache[name]=null;
-    return null;
+/* ── Badge hotspot ── */
+function drawBadge(type,color){
+  const S=256,cv=document.createElement('canvas');cv.width=cv.height=S;
+  const c=cv.getContext('2d'),cx=S/2,cy=S/2;
+  const g=c.createRadialGradient(cx,cy,24,cx,cy,S/2);
+  g.addColorStop(0,hexA(color,0.45));g.addColorStop(1,hexA(color,0));
+  c.fillStyle=g;c.fillRect(0,0,S,S);
+  c.beginPath();c.arc(cx,cy,76,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,0.80)';c.fill();
+  c.lineWidth=9;c.strokeStyle=color;c.stroke();
+  c.strokeStyle=color;c.fillStyle=color;c.lineWidth=17;c.lineCap='round';c.lineJoin='round';
+  if(type==='ar'){
+    c.beginPath();c.arc(cx,cy-34,11,0,Math.PI*2);c.fill();
+    c.beginPath();c.moveTo(cx,cy-4);c.lineTo(cx,cy+46);c.stroke();
+  }else if(type==='cross'){
+    chevron(c,cx,cy-17,28);chevron(c,cx,cy+17,28);
+  }else{
+    chevron(c,cx,cy,44);
   }
+  return cv;
 }
 
-/* Draw a tinted Lucide icon onto ctx at (x,y,size,size) */
-function drawIcon(ctx,img,x,y,size,color){
-  if(!img)return;
-  const off=document.createElement('canvas');off.width=size;off.height=size;
-  const oc=off.getContext('2d');
-  oc.drawImage(img,0,0,size,size);
-  oc.globalCompositeOperation='source-in';
-  oc.fillStyle=color;oc.fillRect(0,0,size,size);
-  ctx.drawImage(off,x,y,size,size);
-}
+/* ── AR card canvas — extrait le contenu depuis AR_CONTENT ── */
+function getARContent(desc){
+  /* Try AR_CONTENT first (from ar-content.js if loaded) */
+  if(typeof AR_CONTENT!=='undefined'&&AR_CONTENT){
+    const key=desc.toLowerCase().trim();
+    /* alias map */
+    const _al = {
 
-/* Preload all icons we need at boot */
-const ICON_NAMES=[
-  'leaf','cpu','wifi','flask-conical','wind','droplets','fan',
-  'thermometer-snowflake','panel-top-open','blinds','radio-tower','monitor-dot',
-  'info','dna','sprout','shield','layers','settings','droplet','zap',
-  'strawberry','wheat','filter','flame','lightbulb','flower-2',
-  'shield-alert','help-circle','building-2','beaker','waves','users',
-  'arrow-up-right','corner-up-left','home',
-];
+  'ventilation':'Système de ventilation',
 
-async function preloadIcons(){
-  await Promise.all(ICON_NAMES.map(n=>fetchLucideIcon(n)));
-}
+  'brumisateur':'brumisateur',
 
-function getIconForDef(def,key){
-  if(def&&def.type&&LUCIDE_MAP[def.type])return LUCIDE_MAP[def.type];
-  if(LUCIDE_MAP[key])return LUCIDE_MAP[key];
-  return LUCIDE_MAP.default;
-}
+  'co2':'co2',
+  'co₂':'co2',
 
-/* ═══════════════════════════════════════════════════════════════
-   ALIAS MAP — key normalisation
-═══════════════════════════════════════════════════════════════ */
-const AR_ALIAS={
-  'ventilation':              'ventilation',
-  'brumisateur':              'brumisateur',
-  'co2':                      'co2',
-  'co₂':                      'co2',
-  'sensors':                  'sensors',
-  'capteur':                  'sensors',
-  'capteurs':                 'sensors',
-  'fenetre auto':             'fenetre auto',
-  'fenetre':                  'fenetre auto',
-  'fenetres':                 'fenetre auto',
-  'fenêtres':                 'fenetre auto',
-  'fenêtre auto':             'fenetre auto',
-  'rideaux auto':             'rideaux auto',
-  'rideaux':                  'rideaux auto',
-  'rideau':                   'rideaux auto',
-  'système de ventilation':   'système de ventilation',
-  'systeme de ventilation':   'système de ventilation',
-  'système de refroidissement':'système de refroidissement',
-  'syst de refroidissement':  'système de refroidissement',
-  'syst de refroidissment':   'système de refroidissement',
-  'ventilation dehors':       'ventilation dehors',
-  'ventilation ext':          'ventilation dehors',
-  'ventilation extérieure':   'ventilation dehors',
-  'ventilation exterieure':   'ventilation dehors',
-  'fertigation':              'fertigation',
-  'station de fertigation':   'fertigation',
-  'adoucisseur':              'adoucisseur',
-  'audoucisseur':             'adoucisseur',
-  'fraise':                   'fraise',
-  'courgette':                'courgette',
-  'blé':                      'blé',
-  'ble':                      'blé',
-  'monitoring':               'monitoring',
-  'serre':                    'serre',
+  'sensors':'Capteurs IoT',
+  'capteur':'Capteurs Iot',
+  'capteurs':'Capteurs IoT',
+
+  'fenetre auto':'Fenêtres automatiques',
+  'fenetre':'Fenêtres automatique',
+  'fenetres':'Fenêtres automatique',
+  'fenêtres':'Fenêtres automatique',
+
+  'rideaux auto':'Rideaux automatiques',
+  'rideaux':'Rideaux automatiques',
+  'rideau':'Rideaux automatiques',
+
+  'système de ventilation':'Système de ventilation',
+
+  'système de refroidissement':'Système de refroidissement',
+  'syst de refroidissement':'Système de refroidissement',
+  'syst de refroidissment':'Système de refroidissement',
+
+  'ventilation dehors':'Système de ventilation - Extérieur',
+  'ventilation ext':'Système de ventilation - Extérieur',
+  'ventilation extérieure':'Système de ventilation - Extérieur',
+  'ventilation exterieure':'Système de ventilation - Extérieur',
+
+  'fertigation':'Station de fertigation',
+  'station de fertigation':'Station de fertigation',
+
+  'audoucisseur':'Adoucisseur',
+
+  'fraise':'Fraise',
+  'courgette':'Courgette',
+
+  'blé':'blé',
+
 };
-
-/* resolveARKey — local alias helper. getARDef provided by ar-content.js */
-function resolveARKey(desc){
-  const k=desc.toLowerCase().trim();
-  return AR_ALIAS[k]||k;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   BADGE HOTSPOT VISUALS — mirrors HS_VISUALS from visitemanuelle
-   Each entry: { style: CSS string, html: inner HTML string }
-═══════════════════════════════════════════════════════════════ */
-
-function buildPill(r,g,b){
-  return `width:46px;height:46px;border-radius:50%;background:rgba(${r},${g},${b},.06);backdrop-filter:blur(14px) saturate(130%);-webkit-backdrop-filter:blur(14px) saturate(130%);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 14px rgba(${r},${g},${b},.15),0 1px 0 rgba(255,255,255,.5) inset;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .22s;overflow:hidden`;
-}
-function buildAurora(c1,c2,c3){
-  return `<div style="position:absolute;width:64px;height:64px;border-radius:50%;background:radial-gradient(ellipse at 65% 35%,${c1} 0%,${c2} 42%,${c3||'transparent'} 70%);top:-9px;left:-9px;pointer-events:none;z-index:0;opacity:.55"></div><div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(160deg,rgba(255,255,255,.28) 0%,transparent 50%);pointer-events:none;z-index:0"></div>`;
-}
-
-const HS_VISUALS = {
-  'fraise':{style:buildPill(244,100,100)+';animation:hs-straw 3s ease-in-out infinite',html:buildAurora('rgba(255,200,200,.95)','rgba(255,140,180,.6)','rgba(255,200,120,.25)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(220,80,80,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"/><circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"/><path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"/></svg>`},
-  'co2':{style:buildPill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="3" cy="7" r="2.5"/><circle cx="12" cy="7" r="3.2"/><circle cx="21" cy="7" r="2.5"/><line x1="5.5" y1="7" x2="8.8" y2="7"/><line x1="15.2" y1="7" x2="18.5" y2="7"/></svg>`},
-  'brumisateur':{style:buildPill(45,212,191)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(167,243,208,.95)','rgba(94,234,212,.6)','rgba(186,230,253,.25)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(13,148,136,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="9" width="10" height="6" rx="2"/><path d="M12 12h3"/><path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"/><circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none"/><circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none"/></svg>`},
-  'ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/></svg>`},
-  'ventilation dehors':{style:buildPill(6,182,212)+';animation:hs-float 2.6s ease-in-out .3s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="4" width="12" height="16" rx="2"/><line x1="5" y1="8" x2="11" y2="8" opacity=".6"/><line x1="5" y1="11" x2="11" y2="11" opacity=".6"/><line x1="5" y1="14" x2="11" y2="14" opacity=".6"/><path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6"/></svg>`},
-  'système de ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"/></svg>`},
-  'système de refroidissement':{style:buildPill(59,130,246)+';animation:hs-float 3.2s ease-in-out .6s infinite',html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="30" height="26" viewBox="0 0 24 20" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="1" y="2" width="22" height="14" rx="2.5"/><line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"/><line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"/><line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"/></svg>`},
-  'rideaux auto':{style:buildPill(217,119,6)+';animation:hs-float 3.4s ease-in-out .1s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.85)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><line x1="2" y1="4" x2="22" y2="4"/><circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"/><path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"/><path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"/></svg>`},
-  'fenetre auto':{style:buildPill(6,182,212)+';animation:hs-float 3s ease-in-out .5s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" opacity=".35"/><line x1="2" y1="12" x2="22" y2="12" opacity=".35"/><path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"/></svg>`},
-  'sensors':{style:buildPill(109,40,217)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="7" width="18" height="12" rx="2"/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="30" viewBox="0 0 24 26" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="4" y="2" width="16" height="10" rx="2"/><text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK</text><line x1="8" y1="12" x2="8" y2="18"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="16" y1="12" x2="16" y2="18"/></svg>`},
-  'station de fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .1s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="5" width="7" height="10" rx="1.5"/><rect x="14" y="5" width="7" height="10" rx="1.5"/><path d="M10 10h4M12 7v6"/><path d="M6 15v4M18 15v4M10 19h4"/></svg>`},
-  'monitoring':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'chaudiere':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><path d="M9 5V3M15 5V3"/><path d="M7 19v2M17 19v2"/></svg>`},
-  'audoucisseur':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="10" rx="5" ry="7"/><path d="M7 14c0 3 2.5 5 5 5s5-2 5-5"/><path d="M9 7l3-2 3 2" opacity=".5"/></svg>`},
-  'unité génétique et amélioration des plantes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 1-2-2V3m6 11h10m0 0a2 2 0 0 0 2-2V7m-2 7v4a2 2 0 0 1-2 2H9m10-4H9m0 0v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"/><circle cx="12" cy="11" r="1.5" fill="rgba(109,40,217,.7)" stroke="none"/></svg>`},
-  'unité horticulture':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .1s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`},
-  'unité agronomie':{style:buildPill(245,158,11)+';animation:hs-float 3.1s ease-in-out .2s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22V11"/><path d="M12 11C12 11 6 9 6 4c0 0 4 0 6 4 2-4 6-4 6-4 0 5-6 7-6 7z"/><path d="M6 20h12"/></svg>`},
-  'unité hydroponie':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M8 14c0 2 2 4 4 4s4-2 4-4" opacity=".55"/></svg>`},
-  'unité protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/></svg>`},
-  'salle de lavage':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M4 12h16M4 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"/><path d="M6 12v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/><path d="M10 16v-4M14 16v-4"/></svg>`},
-  'salle technique de commandes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out .1s infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"/></svg>`},
-  'salle de réunion':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`},
-  'salle de préparation':{style:buildPill(234,179,8)+';animation:hs-float 3.1s ease-in-out .1s infinite',html:buildAurora('rgba(254,249,195,.95)','rgba(253,224,71,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(161,98,7,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>`},
-  'serre':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .2s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="9" rx="1"/><path d="M9 21v-6h6v6"/></svg>`},
-  'bloc protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" opacity=".7"/></svg>`},
-  'bloc gestion technique et administrative':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`},
-};
-
-/* Fallback for unknown keys */
-function getHSVisual(key){
-  if(HS_VISUALS[key]) return HS_VISUALS[key];
-  const def = getARDef(key);
-  const t = def&&def.type||'system';
-  const map = {
-    plant:[34,197,94,'rgba(187,247,208,.95)','rgba(110,231,183,.65)'],
-    sensor:[109,40,217,'rgba(237,233,254,.95)','rgba(196,181,253,.65)'],
-    system:[100,116,139,'rgba(229,231,235,.95)','rgba(156,163,175,.65)'],
-    fertigation:[14,165,233,'rgba(186,230,253,.95)','rgba(125,211,252,.65)'],
-  };
-  const [r,g,b,a1,a2] = map[t]||map.system;
-  const iconSVG = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-  return {style:buildPill(r,g,b)+';animation:hs-float 3s ease-in-out infinite', html:buildAurora(a1,a2)+iconSVG};
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   HOTSPOT FACTORY
-   Strategy: DOM pills projected onto screen (like visitemanuelle).
-   Click is a plain DOM onclick — zero A-Frame event system involved.
-   A rAF loop keeps positions synced every frame.
-═══════════════════════════════════════════════════════════════ */
-
-/* All active DOM pills for this scene — cleared on load() */
-let _activePills = [];
-let _rafRunning  = false;
-
-function startPillLoop(){
-  if(_rafRunning) return;
-  _rafRunning = true;
-  function tick(){
-    if(!_activePills.length){ _rafRunning=false; return; }
-    const sc = document.querySelector('a-scene');
-    if(sc && sc.camera && sc.renderer){
-      const canvas = sc.canvas;
-      const rect   = canvas.getBoundingClientRect();
-      _activePills.forEach(({el, wx, wy, wz})=>{
-        const v = new THREE.Vector3(wx, wy, wz).project(sc.camera);
-        if(v.z > 1){ el.style.display='none'; return; }
-        const x = (v.x * 0.5 + 0.5) * rect.width  + rect.left;
-        const y = (-v.y * 0.5 + 0.5) * rect.height + rect.top;
-        el.style.display = 'flex';
-        el.style.left    = (x - 23) + 'px';
-        el.style.top     = (y - 23) + 'px';
-      });
+    const k=al[key]||key;
+    const def=AR_CONTENT[k];
+    if(def){
+      /* Extract readable body from sections */
+      let body='';
+      if(def.sections&&def.sections.length){
+        const sec=def.sections[0];
+        if(sec.bullets&&sec.bullets.length)body=sec.bullets[0];
+        else if(sec.items&&sec.items.length)body=sec.items.map(i=>i.k+' : '+i.v).join(' · ');
+      }
+      return{title:def.title||desc,body:body||def.statusText||''};
     }
-    requestAnimationFrame(tick);
   }
-  requestAnimationFrame(tick);
+  /* Fallback: use desc directly */
+  return{title:desc,body:''};
 }
 
-function clearDOMPills(){
-  _activePills.forEach(({el})=>el.parentNode&&el.parentNode.removeChild(el));
-  _activePills = [];
-  _rafRunning  = false;
+function drawCard(title,body){
+  const W=1024,H=640,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const c=cv.getContext('2d');
+  const pad=46,r=44,x0=pad+54;
+
+  /* frosted panel */
+  c.shadowColor='rgba(15,23,42,0.28)';c.shadowBlur=55;
+  const g=c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(255,255,255,0.92)');g.addColorStop(1,'rgba(236,250,243,0.92)');
+  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);c.fillStyle=g;c.fill();c.shadowBlur=0;
+
+  /* border */
+  roundRect(c,pad,pad,W-2*pad,H-2*pad,r);
+  c.lineWidth=2.5;c.strokeStyle='rgba(255,255,255,0.95)';c.stroke();
+
+  /* green accent top bar */
+  const barG=c.createLinearGradient(x0,0,x0+200,0);
+  barG.addColorStop(0,'#22C55E');barG.addColorStop(1,'#06B6D4');
+  c.fillStyle=barG;c.fillRect(x0,pad+44,200,5);
+
+  /* title */
+  c.fillStyle='#15803D';c.textBaseline='alphabetic';
+  c.font='700 52px "DM Sans",system-ui,sans-serif';
+  wrapText(c,title||'Info',x0,pad+108,W-2*x0+2*pad,58,2);
+
+  /* body */
+  if(body){
+    c.fillStyle='#1E293B';c.font='400 32px "DM Sans",system-ui,sans-serif';
+    wrapText(c,body,x0,pad+190,W-2*x0+2*pad,44,6);
+  }
+
+  /* footer hint */
+  c.fillStyle='rgba(100,116,139,0.6)';c.font='500 24px "DM Sans",system-ui,sans-serif';
+  c.fillText('Touchez pour fermer',x0,H-pad-34);
+  return cv;
 }
 
+/* ── Hotspot factory ── */
 function makeHotspot(hs){
-  const isAR    = hs.type === 'ar';
-  const pitch   = hs.pitch + (isAR ? AR_PITCH_OFFSET : 0);
-  const pos3d   = yawPitchToXYZ(hs.yaw, pitch);
-  const arDesc  = isAR ? (hs.arDesc||hs.label||'') : '';
-  const navZone  = !isAR && hs.targetZoneId  != null ? String(hs.targetZoneId)  : '';
-  const navScene = !isAR && hs.targetSceneId != null ? String(hs.targetSceneId) : '';
+  const isAR=hs.type==='ar';
+  const pitch=hs.pitch+(isAR?AR_PITCH_OFFSET:0);
+  const pos=yawPitchToXYZ(hs.yaw,pitch);
 
-  /* ── DOM pill (visible, clickable) ── */
-  const vis = isAR ? getHSVisual(resolveARKey(arDesc)||arDesc)
-                   : getNavVisual(hs.type);
+  /* Closure — zero dataset dependency */
+  const arDesc  =isAR?(hs.arDesc||hs.label||''):'';
+  const navZone =!isAR&&hs.targetZoneId !=null?String(hs.targetZoneId) :'';
+  const navScene=!isAR&&hs.targetSceneId!=null?String(hs.targetSceneId):'';
+  const color   =isAR?'#F59E0B':(hs.type==='cross'?'#06B6D4':'#22C55E');
 
-  const pill = document.createElement('div');
-  pill.style.cssText = vis.style + ';position:fixed;z-index:300;pointer-events:all;cursor:pointer;display:flex;align-items:center;justify-content:center';
-  pill.innerHTML     = vis.html;
+  var _fired=false;
+  function doAction(){
+    if(_fired)return;_fired=true;setTimeout(()=>{_fired=false;},400);
+    if(isAR)openAR(arDesc);
+    else    goTo(navZone,navScene);
+  }
 
-  let _fired = false;
-  pill.addEventListener('click', e=>{
-    e.stopPropagation();
-    if(_fired) return; _fired=true; setTimeout(()=>{_fired=false;}, 500);
-    if(isAR) openAR(arDesc);
-    else     goTo(navZone, navScene);
-  });
-  pill.addEventListener('mouseenter', ()=>{ pill.style.transform='scale(1.14)'; });
-  pill.addEventListener('mouseleave', ()=>{ pill.style.transform=''; });
+  const wrap=document.createElement('a-entity');
+  wrap.setAttribute('position',pos.x+' '+pos.y+' '+pos.z);
+  wrap.setAttribute('billboard','');
 
-  const vrPhase = document.getElementById('vrPhase');
-  if(vrPhase) vrPhase.appendChild(pill);
+  const hit=document.createElement('a-circle');
+  hit.setAttribute('radius',0.36);
+  hit.setAttribute('material','shader:flat; color:#000; opacity:0.001; transparent:true; side:double; depthWrite:false');
+  hit.classList.add('clickable');
+  hit.addEventListener('click',doAction);
+  hit.addEventListener('triggerdown',doAction);
+  hit.addEventListener('mouseenter',()=>wrap.object3D.scale.set(1.15,1.15,1.15));
+  hit.addEventListener('mouseleave',()=>wrap.object3D.scale.set(1,1,1));
+  wrap.appendChild(hit);
 
-  /* world position: hotspot is in scene space, rig is at y=1.6 */
-  _activePills.push({ el:pill, wx:pos3d.x, wy:pos3d.y+1.6, wz:pos3d.z });
-  startPillLoop();
+  const badge=document.createElement('a-plane');
+  badge.setAttribute('width',0.64);badge.setAttribute('height',0.64);
+  badge.setAttribute('position','0 0 0.01');
+  badge.setAttribute('material','shader:flat; transparent:true; side:double; alphaTest:0.05; depthWrite:false');
+  badge.setAttribute('animation__pulse','property:scale; dir:alternate; loop:true; dur:1600; from:1 1 1; to:1.08 1.08 1');
+  badge.classList.add('clickable');
+  badge.addEventListener('click',doAction);
+  badge.addEventListener('triggerdown',doAction);
+  hit.appendChild(badge);
+  applyCanvasTexture(badge,drawBadge(hs.type,color));
 
-  /* ── Invisible A-Frame plane for VR controller laser ── */
-  const wrap = document.createElement('a-entity');
-  wrap.setAttribute('position', pos3d.x+' '+(pos3d.y+1.6)+' '+pos3d.z);
-
-  const aPlane = document.createElement('a-plane');
-  aPlane.setAttribute('width',  '0.6');
-  aPlane.setAttribute('height', '0.6');
-  aPlane.setAttribute('material','shader:flat;transparent:true;opacity:0.001;side:double;depthWrite:false');
-  aPlane.classList.add('clickable');
-  /* VR controller trigger */
-  aPlane.addEventListener('triggerdown', ()=>{
-    if(isAR) openAR(arDesc);
-    else     goTo(navZone, navScene);
-  });
-  wrap.appendChild(aPlane);
   return wrap;
 }
 
-/* Nav/cross hotspot visuals */
-function getNavVisual(type){
-  const isCross = type === 'cross';
-  const r = isCross ? 147 : 255, g = isCross ? 197 : 255, b = isCross ? 253 : 255;
-  const style = `width:52px;height:52px;border-radius:50%;background:rgba(${r},${g},${b},.13);border:1px solid rgba(${r},${g},${b},.38);box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(${r},${g},${b},.05);display:flex;align-items:center;justify-content:center;animation:nav-breathe 3.5s ease-in-out infinite`;
-  const color = isCross ? 'rgba(200,225,255,.95)' : 'rgba(255,255,255,.95)';
-  const html  = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-  return {style, html};
+/* ── AR panel — dual mode:
+   • Flat (non-VR): card DOM riche via ar-content.js openSimpleAR()
+   • VR immersif : 3D arpanel canvas-textured dans la scène (DOM invisible) ── */
+function openAR(desc){
+  /* VR immersif → 3D canvas card */
+  if(document.body.classList.contains('in-vr')){
+    if(typeof getARContent==='function'){
+      const{title,body}=getARContent(desc);
+      const card=$('arpanel');
+      applyCanvasTexture(card,drawCard(title,body));
+      placeInFront(card,2.2);
+      card.setAttribute('visible',true);
+    }
+    return;
+  }
+  /* Flat mode → DOM card via ar-content.js */
+  if(typeof openSimpleAR==='function'){
+    openSimpleAR(desc);
+  }
 }
 
-function attachSceneClicks(){
-  /* Nothing needed — all clicks handled by DOM pill onclick */
+/* closeAR — ferme les deux: 3D arpanel + DOM card */
+function closeAR(){
+  const arp=$('arpanel'); if(arp) arp.setAttribute('visible',false);
+  const card=document.getElementById('ar-card');
+  if(card) card.classList.remove('open');
+}
+
+function placeInFront(el,dist){
+  const cam=el.sceneEl&&el.sceneEl.camera;if(!cam)return;
+  const camPos=new THREE.Vector3(),camDir=new THREE.Vector3();
+  cam.getWorldPosition(camPos);cam.getWorldDirection(camDir);
+  el.object3D.position.copy(camPos).add(camDir.multiplyScalar(dist));
 }
 
 function refreshRaycasters(){
-  const scan=()=>document.querySelectorAll('[raycaster]').forEach(el=>{
-    const rc=el.components&&el.components.raycaster;if(rc)rc.refreshObjects();
-  });
-  setTimeout(scan,100); setTimeout(scan,400);
+  const scan=()=>document.querySelectorAll('[raycaster]').forEach(el=>{const rc=el.components&&el.components.raycaster;if(rc)rc.refreshObjects();});
+  setTimeout(scan,50);setTimeout(scan,250);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   AR CARD — delegated to ar-content.js (openSimpleAR / closeAR)
-═══════════════════════════════════════════════════════════════ */
-/* globals injected before ar-content.js loads */
-window.AR_VIEWER   = 'visitevr';
-window.currentLang = 'FR';
-window.activeAR    = null;
-window.activeTab   = 0;
-window.iotData     = null;
-window.thresholds  = {};
-window.outsideTemp = null;
-
-/* openAR → delegate to ar-content.js openSimpleAR */
-function openAR(desc){
-  if(typeof openSimpleAR === 'function') openSimpleAR(desc);
+/* Click delegation attached in bootVR after vrPhase is active */
+function attachSceneClicks(){
+  const sc=document.querySelector('a-scene');
+  if(!sc)return;
+  sc.addEventListener('click',e=>{
+    let el=e.target;
+    while(el&&el.tagName){
+      const d=el.dataset;
+      if(d){
+        if(d.action==='closeAR'){closeAR();return;}
+        if(d.hs==='ar'){openAR(d.arDesc||'');return;}
+        if(d.hs==='nav'){goTo(d.tz,d.ts);return;}
+      }
+      el=el.parentElement;
+    }
+  });
 }
 
 /* ── Scene loader ── */
@@ -712,7 +628,6 @@ async function load(zid,sid){
   try{await preload(scene.file);}catch(e){showErr('Image introuvable: '+scene.file);busy=false;return;}
   const host=$('hotspots');
   while(host.firstChild)host.removeChild(host.firstChild);
-  clearDOMPills();
   closeAR();
   const finish=()=>{
     try{
@@ -765,24 +680,60 @@ function showErr(msg){const e=$('err');e.textContent=msg;e.style.display='block'
 function nudgeOffset(d){YAW_OFFSET+=d;$('cal-val').textContent=YAW_OFFSET;if(curZone&&curScene)load(curZone,curScene,true);}
 function logOffset(){console.log('YAW_OFFSET =',YAW_OFFSET);alert('YAW_OFFSET = '+YAW_OFFSET);}
 
-
+/* ── Minimal AR_CONTENT — title + first bullet for each hotspot key.
+   Add/edit entries here as your content grows. ── */
+var AR_CONTENT = {
+  'fraise':      {title:'Fraises — Fragaria × ananassa',    sections:[{bullets:['Cultivées en gouttières surélevées en système hydroponique NFT. pH cible 5.8–6.2, EC 1.0–1.4 mS/cm, température 18–22 °C.']}]},
+  'courgette':   {title:'Courgette — Cucurbita pepo',        sections:[{bullets:['Plante rampante à croissance rapide. Pollinisation manuelle ou par insectes auxiliaires. Récolte à 15–20 cm.']}]},
+  'co2':         {title:'Injection CO₂',                     sections:[{bullets:['Enrichissement en CO₂ pour stimuler la photosynthèse. Objectif 800–1200 ppm en journée. Suspendu la nuit.']}]},
+  'brumisateur': {title:'Brumisateur Haute Pression',         sections:[{bullets:['Gouttelettes < 10 µm pour refroidissement adiabatique. Activé si T° > seuil max ou humidité < seuil min.']}]},
+  'ventilation': {title:'Ventilation Mécanique',              sections:[{bullets:['Renouvellement de lair, évacuation chaleur et humidité. Contrôle automatique par thermostat et hygrostat.']}]},
+  'ventilation dehors': {title:'Ventilation Extérieure',      sections:[{bullets:['Extracteur mural évacuant lair vicié. Synchronisé avec capteurs intérieurs pour régulation dynamique.']}]},
+  'système de ventilation': {title:'Système de Ventilation',  sections:[{bullets:['Ensemble extracteurs mécaniques, fenêtres automatiques et rideaux thermiques. Piloté par automate PLC.']}]},
+  'système de refroidissement': {title:'Système de Refroidissement', sections:[{bullets:['Maintien température dans la plage optimale. Activé automatiquement si T° dépasse le seuil maximal.']}]},
+  'fenetre auto': {title:'Fenêtres Automatiques',             sections:[{bullets:['Ventilation naturelle par effet cheminée. Ouverture si T° intérieure > seuil ET T° extérieure plus fraîche.']}]},
+  'rideaux auto': {title:'Rideaux Automatiques',              sections:[{bullets:['Isolation thermique nocturne et ombrage en journée. Déployés si T° extérieure entre 10 et 32 °C.']}]},
+  'fertigation':  {title:'Station de Fertigation',            sections:[{bullets:['Préparation et distribution de la solution nutritive. Ajustement pH et EC en continu selon les capteurs.']}]},
+  'station de fertigation': {title:'Station de Fertigation',  sections:[{bullets:['Cuves concentrés A et B, injection proportionnelle. pH cible 5.5–6.5, EC cible 1.0–2.2 mS/cm.']}]},
+  'sensors':      {title:'Capteurs IoT Environnementaux',    sections:[{bullets:['Réseau de capteurs T°, HR, VPD, pH, EC et niveau eau. Transmission toutes les 5 min vers Guardian Pro.']}]},
+  'audoucisseur': {title:'Adoucisseur Eau',               sections:[{bullets:['Réduction dureté par échange ionique. Prévient le colmatage des goutteurs et optimise les solutions.']}]},
+  'avocatier':    {title:'Avocatier — Persea americana',     sections:[{bullets:['Espèce en observation phytosanitaire. Études sur la résistance aux maladies fongiques et bactériennes.']}]},
+  'avocat':       {title:'Avocat — Persea americana',        sections:[{bullets:['Spécimen en observation. Cercosporose et pourriture phytophthoreenne des racines étudiées.']}]},
+  'cactus malade':{title:'Cactus — Spécimen en observation', sections:[{bullets:['Pourriture molle ou sèche du pivot. Isolé en zone quarantaine pour diagnostic et traitement.']}]},
+  'tomates malades':{title:'Tomates — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus ToMV et TYLCV. Inoculation contrôlée pour développer la lutte intégrée.']}]},
+  'tomate malades':{title:'Tomate — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus de la mosaïque. Diagnostic différentiel en cours.']}]},
+  'tomate malade': {title:'Tomate — Spécimen pathologique',  sections:[{bullets:['Symptômes de maladie fongique ou virale. Plant isolé pour étude en conditions contrôlées.']}]},
+  'ble malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Rouille brune, septoriose, oïdium, fusariose de lépi. Enjeu sécurité alimentaire.']}]},
+  'blé malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Puccinia triticina, Septoria tritici, Fusarium culmorum étudiés pour sélection variétale résistante.']}]},
+  'plante x':     {title:'Plante X — Spécimen non identifié',sections:[{bullets:['Identification taxonomique en cours. Présence de symptômes à caractériser pour diagnostic différentiel.']}]},
+  'monitoring':   {title:'Système de Monitoring AgroBioTech',sections:[{bullets:['Collecte temps réel de toutes les serres. Alertes automatiques, archivage historique, accès via géoportail.']}]},
+  'serre':        {title:'Complexe de Serres AgroBioTech',   sections:[{bullets:['5 unités spécialisées interconnectées. ~espace dédiés à la recherche et expérimentation agronomique.']}]},
+  'chaudière':    {title:'Chaudière',                         sections:[{bullets:['Production eau chaude pour chauffage serres. Maintien températures nocturnes au-dessus des seuils critiques.']}]},
+  'unité hydroponie':      {title:'Unité Hydroponie — S04',   sections:[{bullets:['Culture hors-sol NFT/DWC. Monitoring IoT pH, EC, T° et niveau solution en temps réel.']}]},
+  'unité horticulture':    {title:'Unité Horticulture — S02', sections:[{bullets:['Culture et expérimentation de plantes horticoles ornementales et maraîchères en serre contrôlée.']}]},
+  'unité agronomie':       {title:'Unité Agronomie — S03',    sections:[{bullets:['Expérimentation sur grandes cultures. Études fertilisation, irrigation et gestion des intrants.']}]},
+  'unité protection des plantes': {title:'Unité Protection des Plantes — S05', sections:[{bullets:['Étude maladies, ravageurs. Développement lutte biologique et intégrée contre les bioagresseurs.']}]},
+  'unité génétique et amélioration des plantes': {title:'Unité Génétique — S01', sections:[{bullets:['Amélioration génétique des plantes. Sélection variétale, croisements, résistance aux stress.']}]},
+  'salle de lavage':       {title:'Salle de Lavage',          sections:[{bullets:['Nettoyage et décontamination du matériel. Prévention de la contamination croisée entre unités.']}]},
+  'salle technique de commandes': {title:'Salle Technique de Commandes', sections:[{bullets:['Automates PLC, interface SCADA. Pilotage et supervision des équipements techniques des serres.']}]},
+  'salle de réunion':      {title:'Salle de Réunion',         sections:[{bullets:['Espace collaboratif pour réunions, formations et soutenances. Équipement audiovisuel disponible.']}]},
+  'salle de préparation':  {title:'Salle de Préparation',     sections:[{bullets:['Semis, greffage et multiplication végétative. Acclimatation des plants avant transplantation.']}]},
+  'salle de fertilisation et traitement deau': {title:'Salle Fertilisation & Eau', sections:[{bullets:['Traitement eau : osmose inverse, adoucissement. Préparation solutions fertilisantes concentrées.']}]},
+  'local technique déquipements': {title:'Local Technique',  sections:[{bullets:['Stockage et maintenance des équipements. Accès réservé au personnel technique qualifié.']}]},
+  'bloc gestion technique et administrative': {title:'Bloc Gestion Technique', sections:[{bullets:['Bureaux direction, salle de contrôle et locaux techniques. Gestion administrative du site.']}]},
+  'bloc protection des plantes': {title:'Bloc Protection des Plantes', sections:[{bullets:['Diagnostic phytosanitaire, lutte biologique. Conservation de collections de plantes malades.']}]},
+};
+/* Contrôle entries 1–15 */
+for(var _i=1;_i<=15;_i++){
+  AR_CONTENT['controle '+_i]={title:'Contrôle '+_i,sections:[{bullets:['Armoire de commande n°'+_i+' assurant la gestion automatisée des équipements. Protocole industriel.']}]};
+}
 
 async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
   if(!AFRAME.components['billboard']){
     AFRAME.registerComponent('billboard',{
-      init(){
-        this._camPos=new THREE.Vector3();
-        this._camQuat=new THREE.Quaternion();
-        this._m=new THREE.Matrix4();
-      },
-      tick(){
-        const cam=this.el.sceneEl.camera;if(!cam)return;
-        cam.getWorldPosition(this._camPos);
-        cam.getWorldQuaternion(this._camQuat);
-        /* Copy camera quaternion directly — panel faces camera exactly, never sideways */
-        this.el.object3D.quaternion.copy(this._camQuat);
-      }
+      init(){this._v=new THREE.Vector3();},
+      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);}
     });
   }
   /* Hook VR events + click delegation — vrPhase is now active so a-scene is in the DOM */
@@ -792,10 +743,6 @@ async function bootVR(){
     sc.addEventListener('exit-vr', ()=>document.body.classList.remove('in-vr'));
   }
   attachSceneClicks();
-
-  /* Preload Lucide icons in background — non-blocking */
-  preloadIcons().catch(()=>{});
-
   try{
     const r=await fetch('images/manifest.json');
     if(!r.ok)throw new Error('manifest.json HTTP '+r.status);
@@ -812,7 +759,9 @@ async function bootVR(){
 }
 </script>
 
-<!-- ar-content.js fournit AR_CONTENT, openSimpleAR, closeAR, renderARTab, setLang -->
+<!-- ar-content.js NOT loaded — it expects #ar-card DOM which doesn't exist here.
+     AR content is defined inline via AR_CONTENT below. -->
+<!-- ar-content.js fournit AR_CONTENT, openSimpleAR, et toute la logique des cards riches -->
 <script src="ar-content.js"></script>
 </body>
 </html>
