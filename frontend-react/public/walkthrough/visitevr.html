@@ -1246,54 +1246,6 @@ function showErr(msg){const e=$('err');e.textContent=msg;e.style.display='block'
 function nudgeOffset(d){YAW_OFFSET+=d;$('cal-val').textContent=YAW_OFFSET;if(curZone&&curScene)load(curZone,curScene,true);}
 function logOffset(){console.log('YAW_OFFSET =',YAW_OFFSET);alert('YAW_OFFSET = '+YAW_OFFSET);}
 
-/* ── Minimal AR_CONTENT — title + first bullet for each hotspot key.
-   Add/edit entries here as your content grows. ── */
-var AR_CONTENT = {
-  'fraise':      {title:'Fraises — Fragaria × ananassa',    sections:[{bullets:['Cultivées en gouttières surélevées en système hydroponique NFT. pH cible 5.8–6.2, EC 1.0–1.4 mS/cm, température 18–22 °C.']}]},
-  'courgette':   {title:'Courgette — Cucurbita pepo',        sections:[{bullets:['Plante rampante à croissance rapide. Pollinisation manuelle ou par insectes auxiliaires. Récolte à 15–20 cm.']}]},
-  'co2':         {title:'Injection CO₂',                     sections:[{bullets:['Enrichissement en CO₂ pour stimuler la photosynthèse. Objectif 800–1200 ppm en journée. Suspendu la nuit.']}]},
-  'brumisateur': {title:'Brumisateur Haute Pression',         sections:[{bullets:['Gouttelettes < 10 µm pour refroidissement adiabatique. Activé si T° > seuil max ou humidité < seuil min.']}]},
-  'ventilation': {title:'Ventilation Mécanique',              sections:[{bullets:['Renouvellement de lair, évacuation chaleur et humidité. Contrôle automatique par thermostat et hygrostat.']}]},
-  'ventilation dehors': {title:'Ventilation Extérieure',      sections:[{bullets:['Extracteur mural évacuant lair vicié. Synchronisé avec capteurs intérieurs pour régulation dynamique.']}]},
-  'système de ventilation': {title:'Système de Ventilation',  sections:[{bullets:['Ensemble extracteurs mécaniques, fenêtres automatiques et rideaux thermiques. Piloté par automate PLC.']}]},
-  'système de refroidissement': {title:'Système de Refroidissement', sections:[{bullets:['Maintien température dans la plage optimale. Activé automatiquement si T° dépasse le seuil maximal.']}]},
-  'fenetre auto': {title:'Fenêtres Automatiques',             sections:[{bullets:['Ventilation naturelle par effet cheminée. Ouverture si T° intérieure > seuil ET T° extérieure plus fraîche.']}]},
-  'rideaux auto': {title:'Rideaux Automatiques',              sections:[{bullets:['Isolation thermique nocturne et ombrage en journée. Déployés si T° extérieure entre 10 et 32 °C.']}]},
-  'fertigation':  {title:'Station de Fertigation',            sections:[{bullets:['Préparation et distribution de la solution nutritive. Ajustement pH et EC en continu selon les capteurs.']}]},
-  'station de fertigation': {title:'Station de Fertigation',  sections:[{bullets:['Cuves concentrés A et B, injection proportionnelle. pH cible 5.5–6.5, EC cible 1.0–2.2 mS/cm.']}]},
-  'sensors':      {title:'Capteurs IoT Environnementaux',    sections:[{bullets:['Réseau de capteurs T°, HR, VPD, pH, EC et niveau eau. Transmission toutes les 5 min vers Guardian Pro.']}]},
-  'audoucisseur': {title:'Adoucisseur Eau',               sections:[{bullets:['Réduction dureté par échange ionique. Prévient le colmatage des goutteurs et optimise les solutions.']}]},
-  'avocatier':    {title:'Avocatier — Persea americana',     sections:[{bullets:['Espèce en observation phytosanitaire. Études sur la résistance aux maladies fongiques et bactériennes.']}]},
-  'avocat':       {title:'Avocat — Persea americana',        sections:[{bullets:['Spécimen en observation. Cercosporose et pourriture phytophthoreenne des racines étudiées.']}]},
-  'cactus malade':{title:'Cactus — Spécimen en observation', sections:[{bullets:['Pourriture molle ou sèche du pivot. Isolé en zone quarantaine pour diagnostic et traitement.']}]},
-  'tomates malades':{title:'Tomates — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus ToMV et TYLCV. Inoculation contrôlée pour développer la lutte intégrée.']}]},
-  'tomate malades':{title:'Tomate — Étude phytopathologique', sections:[{bullets:['Mildiou, Botrytis, virus de la mosaïque. Diagnostic différentiel en cours.']}]},
-  'tomate malade': {title:'Tomate — Spécimen pathologique',  sections:[{bullets:['Symptômes de maladie fongique ou virale. Plant isolé pour étude en conditions contrôlées.']}]},
-  'ble malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Rouille brune, septoriose, oïdium, fusariose de lépi. Enjeu sécurité alimentaire.']}]},
-  'blé malade':   {title:'Blé — Étude phytopathologique',    sections:[{bullets:['Puccinia triticina, Septoria tritici, Fusarium culmorum étudiés pour sélection variétale résistante.']}]},
-  'plante x':     {title:'Plante X — Spécimen non identifié',sections:[{bullets:['Identification taxonomique en cours. Présence de symptômes à caractériser pour diagnostic différentiel.']}]},
-  'monitoring':   {title:'Système de Monitoring AgroBioTech',sections:[{bullets:['Collecte temps réel de toutes les serres. Alertes automatiques, archivage historique, accès via géoportail.']}]},
-  'serre':        {title:'Complexe de Serres AgroBioTech',   sections:[{bullets:['5 unités spécialisées interconnectées. ~espace dédiés à la recherche et expérimentation agronomique.']}]},
-  'chaudière':    {title:'Chaudière',                         sections:[{bullets:['Production eau chaude pour chauffage serres. Maintien températures nocturnes au-dessus des seuils critiques.']}]},
-  'unité hydroponie':      {title:'Unité Hydroponie — S04',   sections:[{bullets:['Culture hors-sol NFT/DWC. Monitoring IoT pH, EC, T° et niveau solution en temps réel.']}]},
-  'unité horticulture':    {title:'Unité Horticulture — S02', sections:[{bullets:['Culture et expérimentation de plantes horticoles ornementales et maraîchères en serre contrôlée.']}]},
-  'unité agronomie':       {title:'Unité Agronomie — S03',    sections:[{bullets:['Expérimentation sur grandes cultures. Études fertilisation, irrigation et gestion des intrants.']}]},
-  'unité protection des plantes': {title:'Unité Protection des Plantes — S05', sections:[{bullets:['Étude maladies, ravageurs. Développement lutte biologique et intégrée contre les bioagresseurs.']}]},
-  'unité génétique et amélioration des plantes': {title:'Unité Génétique — S01', sections:[{bullets:['Amélioration génétique des plantes. Sélection variétale, croisements, résistance aux stress.']}]},
-  'salle de lavage':       {title:'Salle de Lavage',          sections:[{bullets:['Nettoyage et décontamination du matériel. Prévention de la contamination croisée entre unités.']}]},
-  'salle technique de commandes': {title:'Salle Technique de Commandes', sections:[{bullets:['Automates PLC, interface SCADA. Pilotage et supervision des équipements techniques des serres.']}]},
-  'salle de réunion':      {title:'Salle de Réunion',         sections:[{bullets:['Espace collaboratif pour réunions, formations et soutenances. Équipement audiovisuel disponible.']}]},
-  'salle de préparation':  {title:'Salle de Préparation',     sections:[{bullets:['Semis, greffage et multiplication végétative. Acclimatation des plants avant transplantation.']}]},
-  'salle de fertilisation et traitement deau': {title:'Salle Fertilisation & Eau', sections:[{bullets:['Traitement eau : osmose inverse, adoucissement. Préparation solutions fertilisantes concentrées.']}]},
-  'local technique déquipements': {title:'Local Technique',  sections:[{bullets:['Stockage et maintenance des équipements. Accès réservé au personnel technique qualifié.']}]},
-  'bloc gestion technique et administrative': {title:'Bloc Gestion Technique', sections:[{bullets:['Bureaux direction, salle de contrôle et locaux techniques. Gestion administrative du site.']}]},
-  'bloc protection des plantes': {title:'Bloc Protection des Plantes', sections:[{bullets:['Diagnostic phytosanitaire, lutte biologique. Conservation de collections de plantes malades.']}]},
-};
-/* Contrôle entries 1–15 */
-for(var _i=1;_i<=15;_i++){
-  AR_CONTENT['controle '+_i]={title:'Contrôle '+_i,sections:[{bullets:['Armoire de commande n°'+_i+' assurant la gestion automatisée des équipements. Protocole industriel.']}]};
-}
-
 async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
   if(!AFRAME.components['billboard']){
@@ -1326,8 +1278,6 @@ async function bootVR(){
 }
 </script>
 
-<!-- ar-content.js NOT loaded — it expects #ar-card DOM which doesn't exist here.
-     AR content is defined inline via AR_CONTENT below. -->
 <!-- ar-content.js — provides AR_CONTENT object and openSimpleAR for flat mode -->
 <script src="ar-content.js"></script>
 </body>
