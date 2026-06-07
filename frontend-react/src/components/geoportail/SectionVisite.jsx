@@ -50,6 +50,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
   const [activeBloc,   setActiveBloc]  = useState(null)
   const [hovered,      setHovered]     = useState(null)
   const [globeKey,     setGlobeKey]    = useState(0)
+  const [globeEnded,   setGlobeEnded]  = useState(false)
   const [lineProgress, setLineProgress] = useState(0)
   const [particleTick, setParticleTick] = useState(0)    // drives particle animation
   const [vrSupported,  setVrSupported]  = useState(null) // null=checking, true, false
@@ -95,7 +96,24 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     vrReadySub:   lang === 'fr' ? 'Ouvrez ce site depuis votre casque — tous les viewers sont en VR immersif' : 'Open this site from your headset — all viewers support immersive VR',
     vrDesktop:    lang === 'fr' ? 'Expérience VR disponible' : 'VR experience available',
     vrDesktopSub: lang === 'fr' ? 'Visitez ce site depuis un Meta Quest pour une immersion 360° complète' : 'Visit this site from a Meta Quest headset for full 360° immersion',
+    globeEndTitle:  lang === 'fr' ? 'Survol terminé'                          : 'Flyover complete',
+    globeEndSub:    lang === 'fr' ? 'Que souhaitez-vous faire ensuite ?'       : 'What would you like to do next?',
+    replayLabel:    lang === 'fr' ? 'Rejouer le survol'                        : 'Replay flyover',
+    replayDesc:     lang === 'fr' ? 'Relancer le survol satellite du campus'   : 'Restart the campus satellite flyover',
+    fullTourLabel:  lang === 'fr' ? 'Visite complète'                          : 'Full campus tour',
+    fullTourDesc:   lang === 'fr' ? 'Explorer le campus complet en mode 360°'  : 'Explore the full campus in 360° mode',
+    bySpaceLabel:   lang === 'fr' ? 'Explorer par espace'                      : 'Explore by space',
+    bySpaceDesc:    lang === 'fr' ? 'Choisir une serre ou un local technique'  : 'Pick a greenhouse or technical space',
   }
+
+  /* ── Listen for globe flyover end ── */
+  useEffect(() => {
+    function onMessage(e) {
+      if (e.data === 'globeEnd') setGlobeEnded(true)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
 
   /* ── Listen to selectSerre event from SectionPlan2D ── */
   useEffect(() => {
@@ -160,6 +178,24 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
   function pickTour(mode)  { setActiveTour(mode.file);  scrollSmooth(tourViewerRef,  80) }
   function pickSerre(file) { setActiveSerre(file);       scrollSmooth(serreViewerRef, 80) }
   function pickBloc(file)  { setActiveBloc(file);        scrollSmooth(blocViewerRef,  80) }
+
+  function replayGlobe() {
+    setGlobeKey(k => k + 1)
+    setGlobeEnded(false)
+  }
+  function goToFullTour() {
+    setGlobeEnded(false)
+    setActiveNode('tours')
+    setLineProgress(50)
+    if (VISITE_MODES[0]) pickTour(VISITE_MODES[0])
+    scrollSmooth(toursRef, 80)
+  }
+  function goToSpaces() {
+    setGlobeEnded(false)
+    setActiveNode('salles')
+    setLineProgress(100)
+    scrollSmooth(sallesRef, 80)
+  }
 
   const nodeRefs     = { globe: globeRef, tours: toursRef, salles: sallesRef }
   function jumpTo(id){ scrollSmooth(nodeRefs[id]) }
@@ -460,6 +496,110 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
                 allowFullScreen
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
               />
+
+              {/* ── GLOBE END SCREEN ── */}
+              {globeEnded && (
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 10,
+                  background: isDark
+                    ? 'linear-gradient(160deg, rgba(5,12,26,0.93) 0%, rgba(11,23,40,0.97) 100%)'
+                    : 'linear-gradient(160deg, rgba(240,250,244,0.95) 0%, rgba(255,255,255,0.97) 100%)',
+                  backdropFilter: 'blur(12px)',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  gap: '0',
+                  borderRadius: '24px',
+                  animation: 'fadeInOverlay 0.55s cubic-bezier(0.4,0,0.2,1) forwards',
+                  padding: '2rem',
+                }}>
+
+                  {/* ── Completion badge ── */}
+                  <div style={{ animation: 'popIn 0.55s 0.15s cubic-bezier(0.34,1.56,0.64,1) both', marginBottom: '1.2rem' }}>
+                    <div style={{
+                      width: '64px', height: '64px', borderRadius: '50%',
+                      background: 'radial-gradient(circle at 35% 35%, rgba(139,92,246,0.9), rgba(139,92,246,0.5))',
+                      border: '2px solid rgba(139,92,246,0.6)',
+                      boxShadow: '0 0 0 10px rgba(139,92,246,0.12), 0 0 40px rgba(139,92,246,0.35)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ animation: 'checkDraw 0.5s 0.4s ease forwards', strokeDasharray: 32, strokeDashoffset: 32 }}>
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* ── Title ── */}
+                  <div style={{ textAlign: 'center', marginBottom: '2rem', animation: 'slideUpFade 0.5s 0.2s ease both' }}>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.28)',
+                      borderRadius: '100px', padding: '4px 16px', marginBottom: '10px',
+                    }}>
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Outfit',sans-serif" }}>
+                        {T.globeEndTitle}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: inkSub, fontFamily: "'Outfit',sans-serif" }}>
+                      {T.globeEndSub}
+                    </div>
+                  </div>
+
+                  {/* ── Three action cards ── */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px',
+                    width: '100%', maxWidth: '680px',
+                  }}>
+                    {[
+                      {
+                        color: '#8B5CF6',
+                        icon: (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/>
+                          </svg>
+                        ),
+                        labelFr: 'Rejouer',
+                        labelEn: 'Replay',
+                        descFr: 'Relancer le survol satellite',
+                        descEn: 'Restart satellite flyover',
+                        action: replayGlobe,
+                        delay: '0.28s',
+                      },
+                      {
+                        color: '#22C55E',
+                        icon: (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                          </svg>
+                        ),
+                        labelFr: 'Visite complète',
+                        labelEn: 'Full tour',
+                        descFr: 'Explorer le campus 360°',
+                        descEn: 'Explore campus in 360°',
+                        action: goToFullTour,
+                        delay: '0.36s',
+                      },
+                      {
+                        color: '#F59E0B',
+                        icon: (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                          </svg>
+                        ),
+                        labelFr: 'Par espace',
+                        labelEn: 'By space',
+                        descFr: 'Serre ou local technique',
+                        descEn: 'Greenhouse or tech room',
+                        action: goToSpaces,
+                        delay: '0.44s',
+                      },
+                    ].map((card, ci) => (
+                      <GlobeEndCard key={ci} card={card} lang={lang} ink={ink} inkSub={inkSub} isDark={isDark} glassBorder={glassBorder} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -532,6 +672,10 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
         @keyframes nodeBreath_salles{ 0%,100%{box-shadow:0 0 0 4px rgba(245,158,11,0.18),0 0 16px rgba(245,158,11,0.35)} 50%{box-shadow:0 0 0 9px rgba(245,158,11,0.07),0 0 28px rgba(245,158,11,0.18)} }
         @keyframes particleGlow    { 0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.6;transform:translate(-50%,-50%) scale(0.7)} }
         @keyframes popIn           { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+        @keyframes fadeInOverlay   { from{opacity:0} to{opacity:1} }
+        @keyframes slideUpFade     { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes checkDraw       { to{stroke-dashoffset:0} }
+        @keyframes cardSlideUp     { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
     </section>
   )
@@ -658,5 +802,95 @@ function EmptyViewer({ text, isDark, inkSub, glassBorder }) {
       </svg>
       {text}
     </div>
+  )
+}
+
+function GlobeEndCard({ card, lang, ink, inkSub, isDark, glassBorder }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <button
+      onClick={card.action}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        position: 'relative', overflow: 'hidden',
+        borderRadius: '18px',
+        padding: '1.2rem 1rem',
+        border: `1.5px solid ${hov ? `${card.color}50` : `${card.color}22`}`,
+        background: hov
+          ? `${card.color}18`
+          : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+        backdropFilter: 'blur(12px)',
+        cursor: 'pointer', textAlign: 'center',
+        transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+        transform: hov ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+        boxShadow: hov ? `0 12px 32px ${card.color}28, 0 0 0 1px ${card.color}20` : 'none',
+        animation: `cardSlideUp 0.45s ${card.delay} cubic-bezier(0.34,1.2,0.64,1) both`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px',
+      }}
+    >
+      {/* Glow blob */}
+      <div style={{
+        position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)',
+        width: '80px', height: '80px', borderRadius: '50%',
+        background: `${card.color}12`, pointerEvents: 'none',
+        transition: 'opacity 0.22s',
+        opacity: hov ? 1 : 0,
+      }} />
+
+      {/* Top accent line */}
+      <div style={{
+        position: 'absolute', top: 0, left: '20%', right: '20%', height: '2px',
+        background: `linear-gradient(90deg,transparent,${card.color},transparent)`,
+        borderRadius: '2px',
+        opacity: hov ? 1 : 0,
+        transition: 'opacity 0.22s',
+      }} />
+
+      {/* Icon */}
+      <div style={{
+        width: '46px', height: '46px', borderRadius: '14px', flexShrink: 0,
+        background: hov ? `${card.color}28` : `${card.color}15`,
+        border: `1.5px solid ${hov ? `${card.color}45` : `${card.color}22`}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: card.color,
+        boxShadow: hov ? `0 0 16px ${card.color}40` : 'none',
+        transition: 'all 0.22s',
+      }}>
+        {card.icon}
+      </div>
+
+      {/* Labels — always bilingual */}
+      <div>
+        <div style={{
+          fontSize: '13px', fontWeight: 800,
+          color: hov ? card.color : ink,
+          fontFamily: "'Outfit',sans-serif",
+          letterSpacing: '-0.01em',
+          lineHeight: 1.2,
+          transition: 'color 0.2s',
+          marginBottom: '2px',
+        }}>
+          {card.labelFr}
+        </div>
+        <div style={{
+          fontSize: '10px', fontWeight: 500,
+          color: hov ? `${card.color}bb` : inkSub,
+          fontFamily: "'Outfit',sans-serif",
+          letterSpacing: '0.02em',
+          transition: 'color 0.2s',
+          marginBottom: '6px',
+        }}>
+          {card.labelEn}
+        </div>
+        <div style={{
+          fontSize: '10px',
+          color: inkSub,
+          lineHeight: 1.5,
+        }}>
+          {lang === 'fr' ? card.descFr : card.descEn}
+        </div>
+      </div>
+    </button>
   )
 }
