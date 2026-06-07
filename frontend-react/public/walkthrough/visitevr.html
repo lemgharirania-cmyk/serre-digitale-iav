@@ -8,6 +8,7 @@
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<link rel="stylesheet" href="ar-content.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
 
@@ -110,35 +111,13 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 #cal{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);pointer-events:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(16px);border:1px solid rgba(6,182,212,.4);color:#0E7490;border-radius:12px;padding:10px 16px;font-size:12px;font-family:'DM Mono',monospace;display:none;gap:10px;align-items:center}
 #cal button{pointer-events:auto;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.5);color:#0E7490;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:inherit}
 
-/* AR overlay */
-@keyframes arSlideIn{from{opacity:0;transform:translateY(-50%) translateX(40px) scale(.97)}to{opacity:1;transform:translateY(-50%) translateX(0) scale(1)}}
+/* Lang buttons — now handled by ar-content.css */
+
+/* Pill + nav hotspot animations */
 @keyframes hs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes hs-straw{0%,100%{transform:translateY(0);filter:drop-shadow(0 4px 12px rgba(244,100,100,.4))}50%{transform:translateY(-6px);filter:drop-shadow(0 8px 18px rgba(244,100,100,.25))}}
 @keyframes hs-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
-@keyframes hero-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.06)}}
-
-/* Lang buttons */
-.lang-btn{padding:5px 12px;border-radius:100px;border:1px solid rgba(0,0,0,.15);background:transparent;font-size:11px;font-weight:600;cursor:pointer;color:rgba(0,0,0,.45);transition:all .2s;font-family:inherit}
-.lang-btn.active{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45);color:#15803d}
-.lang-btn[data-lang="AR"]{font-family:'Noto Sans Arabic',sans-serif}
-
-/* AR body sections */
-.ar-section-label{font-size:8px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.28);margin:14px 0 6px;padding:0 2px}
-.ar-section-label:first-child{margin-top:0}
-.ar-bullet{display:flex;gap:8px;margin-bottom:5px;font-size:12.5px;line-height:1.45;color:rgba(0,0,0,.72)}
-.ar-bullet::before{content:'•';color:rgba(34,197,94,.7);flex-shrink:0;margin-top:1px}
-.ar-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.045);font-size:12.5px}
-.ar-row:last-child{border-bottom:none}
-.ar-row-k{color:rgba(0,0,0,.45);font-weight:500}
-.ar-row-v{color:rgba(0,0,0,.78);font-weight:600;text-align:right}
-.ar-tag{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
-.ar-tag-green{background:rgba(34,197,94,.12);color:#15803d;border:1px solid rgba(34,197,94,.3)}
-.ar-tag-blue{background:rgba(6,182,212,.12);color:#0e7490;border:1px solid rgba(6,182,212,.3)}
-.ar-tag-amber{background:rgba(245,158,11,.12);color:#92400e;border:1px solid rgba(245,158,11,.3)}
-.ar-tag-red{background:rgba(239,68,68,.12);color:#991b1b;border:1px solid rgba(239,68,68,.3)}
-.ar-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:12px}
-.ar-status-dot{width:6px;height:6px;border-radius:50%;animation:dot-pulse 2.4s ease-in-out infinite}
+@keyframes nav-breathe{0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05)}50%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 14px rgba(255,255,255,.0)}}
 </style>
 </head>
 <body>
@@ -217,43 +196,6 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
     <button class="arrow L off" id="prev" onclick="stepScene(-1)">&#8249;</button>
     <button class="arrow R off" id="next" onclick="stepScene(1)">&#8250;</button>
     <div id="err"></div>
-    <!-- AR Card HTML overlay — same DOM approach as visitemanuelle -->
-    <div id="ar-overlay" onclick="closeAR()" style="display:none;position:fixed;inset:0;z-index:400;pointer-events:all">
-      <div id="ar-card" onclick="event.stopPropagation()" style="
-        position:absolute;right:20px;top:50%;transform:translateY(-50%);
-        width:320px;max-height:calc(100vh - 48px);
-        background:rgba(255,255,255,.88);
-        backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
-        border:1px solid rgba(255,255,255,.9);border-radius:24px;
-        box-shadow:0 8px 40px rgba(0,20,60,.13),0 1px 0 rgba(255,255,255,.95) inset;
-        display:flex;flex-direction:column;overflow:hidden;
-        animation:arSlideIn .38s cubic-bezier(.34,1.08,.64,1) forwards">
-        <div id="ar-hero" style="position:relative;height:130px;flex-shrink:0;overflow:hidden;display:flex;align-items:flex-end;padding-bottom:18px">
-          <div id="ar-hero-bg" style="position:absolute;inset:0;opacity:.7"></div>
-          <div id="ar-hero-anim" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"></div>
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-end;gap:12px;padding:0 16px;width:100%">
-            <div id="ar-hero-icon" style="width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:2px"></div>
-            <div style="flex:1;min-width:0">
-              <div id="ar-hero-label" style="font-size:8.5px;font-weight:500;text-transform:uppercase;letter-spacing:1.1px;color:rgba(255,255,255,.55);margin-bottom:3px"></div>
-              <div id="ar-hero-title" style="font-size:17px;font-weight:700;color:#fff;line-height:1.2;text-shadow:0 1px 8px rgba(0,0,0,.25)"></div>
-            </div>
-          </div>
-          <!-- Close button -->
-          <button onclick="closeAR()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.18);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:16px;z-index:10;backdrop-filter:blur(8px)">✕</button>
-        </div>
-        <div id="ar-body" style="flex:1;overflow-y:auto;padding:16px;min-height:0"></div>
-        <!-- Audio player row -->
-        <div id="ar-audio-row" style="display:none;padding:10px 16px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">
-          <audio id="ar-audio" controls style="width:100%;height:32px;border-radius:8px"></audio>
-        </div>
-        <!-- Lang switcher -->
-        <div style="padding:10px 16px;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:6px;flex-shrink:0">
-          <button class="lang-btn active" data-lang="FR" onclick="setLang('FR')">FR</button>
-          <button class="lang-btn" data-lang="EN" onclick="setLang('EN')">EN</button>
-          <button class="lang-btn" data-lang="AR" onclick="setLang('AR')">AR</button>
-        </div>
-      </div>
-    </div>
     <div id="cal">
       yaw offset: <b id="cal-val">0</b>°
       <button onclick="nudgeOffset(-5)">−5</button><button onclick="nudgeOffset(5)">+5</button>
@@ -261,6 +203,34 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
       <button onclick="logOffset()">copy</button>
     </div>
   </div>
+
+  <!-- AR Card — hors de #overlay pour éviter le pointer-events:none hérité -->
+  <div class="ar-overlay">
+    <div class="ar-card" id="ar-card">
+      <div class="ar-hero" id="ar-hero">
+        <div class="ar-hero-anim" id="ar-hero-anim"></div>
+        <div class="ar-hero-bg"  id="ar-hero-bg"></div>
+        <div class="ar-hero-content ar-stagger-1">
+          <div class="ar-hero-icon" id="ar-icon-wrap"></div>
+          <div class="ar-hero-text">
+            <div class="ar-hero-label" id="ar-category-label">DIGITAL TWIN</div>
+            <h3 id="ar-title">&#8212;</h3>
+            <div class="ar-state-pill unknown" id="ar-state-pill">
+              <div class="ar-state-pill-dot"></div>
+              <span id="ar-state-pill-text">&#8212;</span>
+            </div>
+          </div>
+        </div>
+        <button class="ar-close" onclick="closeAR()">&#10005;</button>
+      </div>
+      <div class="ar-tab-bar" id="ar-tab-bar" style="display:none"></div>
+      <div class="ar-reason-strip ar-stagger-2" id="ar-reason-strip" style="display:none">
+        <div class="ar-reason-text" id="ar-reason-text"></div>
+      </div>
+      <div class="ar-content ar-stagger-3" id="ar-content"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -540,15 +510,10 @@ const AR_ALIAS={
   'serre':                    'serre',
 };
 
+/* resolveARKey — local alias helper. getARDef provided by ar-content.js */
 function resolveARKey(desc){
   const k=desc.toLowerCase().trim();
   return AR_ALIAS[k]||k;
-}
-
-function getARDef(desc){
-  if(typeof AR_CONTENT==='undefined'||!AR_CONTENT)return null;
-  const k=resolveARKey(desc);
-  return AR_CONTENT[k]||AR_CONTENT[desc.toLowerCase().trim()]||null;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -723,98 +688,20 @@ function refreshRaycasters(){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   AR CARD — HTML DOM exactly like visitemanuelle
+   AR CARD — delegated to ar-content.js (openSimpleAR / closeAR)
 ═══════════════════════════════════════════════════════════════ */
-let _currentLang = 'FR';
-let _lastARDesc  = '';
+/* globals injected before ar-content.js loads */
+window.AR_VIEWER   = 'visitevr';
+window.currentLang = 'FR';
+window.activeAR    = null;
+window.activeTab   = 0;
+window.iotData     = null;
+window.thresholds  = {};
+window.outsideTemp = null;
 
-function setLang(lang){
-  _currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
-  if(_lastARDesc) renderARBody(_lastARDesc);
-}
-
+/* openAR → delegate to ar-content.js openSimpleAR */
 function openAR(desc){
-  _lastARDesc  = desc;
-  const overlay = document.getElementById('ar-overlay');
-  const card    = document.getElementById('ar-card');
-  if(!overlay||!card) return;
-
-  const def   = getARDef(desc);
-  const vis   = getHSVisual(resolveARKey(desc)||desc);
-  const color = (def&&def.color)||'#22c55e';
-
-  /* Hero */
-  const heroBg   = document.getElementById('ar-hero-bg');
-  const heroAnim  = document.getElementById('ar-hero-anim');
-  const heroIcon  = document.getElementById('ar-hero-icon');
-  const heroLabel = document.getElementById('ar-hero-label');
-  const heroTitle = document.getElementById('ar-hero-title');
-
-  if(heroBg)   heroBg.style.background   = `radial-gradient(ellipse at 50% 50%, ${color}44 0%, ${color}22 40%, transparent 70%)`;
-  if(heroIcon) heroIcon.innerHTML         = vis.html;
-  if(heroLabel) heroLabel.textContent     = def&&def.type ? def.type.toUpperCase() : 'SYSTÈME';
-  if(heroTitle) heroTitle.textContent     = (def&&def.title)||desc||'Information';
-
-  renderARBody(desc);
-  tryLoadAudio(desc);
-
-  overlay.style.display = 'block';
-  /* Animate card in */
-  if(card.style.animation) card.style.animation='none';
-  requestAnimationFrame(()=>{ card.style.animation=''; });
-}
-
-function renderARBody(desc){
-  const def  = getARDef(desc);
-  const body = document.getElementById('ar-body');
-  if(!body) return;
-  const color = (def&&def.color)||'#22c55e';
-  let html = '';
-
-  if(def&&def.statusText){
-    html += `<div class="ar-status-pill" style="background:${color}18;border:1px solid ${color}44;color:${color}">
-      <div class="ar-status-dot" style="background:${color}"></div>
-      ${def.statusText}
-    </div>`;
-  }
-
-  if(def&&def.sections&&def.sections.length){
-    def.sections.forEach(sec=>{
-      if(sec.label) html += `<div class="ar-section-label" style="color:${color}">${sec.label}</div>`;
-      if(sec.bullets) sec.bullets.forEach(b=>{ html += `<div class="ar-bullet">${b}</div>`; });
-      if(sec.items)   sec.items.forEach(item=>{
-        const tag = item.tag
-          ? `<span class="ar-tag ar-tag-${item.tag}">${item.v}</span>`
-          : `<span class="ar-row-v">${item.v}</span>`;
-        html += `<div class="ar-row"><span class="ar-row-k">${item.k}</span>${tag}</div>`;
-      });
-    });
-  } else {
-    html = `<div style="color:rgba(0,0,0,.4);font-size:13px;padding:12px 0">Aucune information disponible.</div>`;
-  }
-
-  body.innerHTML = html;
-}
-
-function tryLoadAudio(desc){
-  const audioEl  = document.getElementById('ar-audio');
-  const audioRow = document.getElementById('ar-audio-row');
-  if(!audioEl||!audioRow) return;
-  const key = (desc||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
-  const src = `audio/scenes/${_currentLang.toLowerCase()}/${key}.mp3`;
-  audioEl.src = src;
-  audioEl.load();
-  audioEl.oncanplaythrough = ()=>{ audioRow.style.display='block'; audioEl.play().catch(()=>{}); };
-  audioEl.onerror          = ()=>{ audioRow.style.display='none'; };
-}
-
-function closeAR(){
-  const overlay = document.getElementById('ar-overlay');
-  if(overlay) overlay.style.display = 'none';
-  const audioEl = document.getElementById('ar-audio');
-  if(audioEl){ audioEl.pause(); audioEl.src=''; }
-  _lastARDesc = '';
+  if(typeof openSimpleAR === 'function') openSimpleAR(desc);
 }
 
 /* ── Scene loader ── */
@@ -878,371 +765,7 @@ function showErr(msg){const e=$('err');e.textContent=msg;e.style.display='block'
 function nudgeOffset(d){YAW_OFFSET+=d;$('cal-val').textContent=YAW_OFFSET;if(curZone&&curScene)load(curZone,curScene,true);}
 function logOffset(){console.log('YAW_OFFSET =',YAW_OFFSET);alert('YAW_OFFSET = '+YAW_OFFSET);}
 
-/* ── AR_CONTENT — full rich version synced from ar-content.js ── */
-var AR_CONTENT = {
 
-  'fraise': {
-    title:'Fraises — Fragaria × ananassa', color:'#ef4444', type:'plant', statusText:'Culture active',
-    sections:[
-      {label:'IDENTIFICATION', items:[
-        {k:'Variété', v:'Fragaria × ananassa'},
-        {k:'Famille',  v:'Rosacées'},
-        {k:'Système',  v:'Hors-sol hydroponique', tag:'blue'},
-        {k:'Stade',    v:'À compléter'},
-      ]},
-      {label:'CONDITIONS OPTIMALES', items:[
-        {k:'Température', v:'18 – 22 °C'},
-        {k:'Humidité',    v:'60 – 75 %'},
-        {k:'pH solution', v:'5.8 – 6.2'},
-        {k:'EC solution', v:'1.0 – 1.4 mS/cm'},
-        {k:'Photopériode',v:'12 – 16 h'},
-      ]},
-      {label:'CULTURE', bullets:[
-        'Cultivée en gouttières surélevées pour optimiser la collecte de solution nutritive.',
-        'Substrat inerte (fibre de coco ou perlite) pour drainage et aération racinaire.',
-        'Irrigation programmée par cycles courts, pH et EC ajustés en continu.',
-      ]},
-    ],
-  },
-
-  'courgette': {
-    title:'Courgette — Cucurbita pepo', color:'#22c55e', type:'plant', statusText:'Culture active',
-    sections:[
-      {label:'IDENTIFICATION', items:[
-        {k:'Espèce',  v:'Cucurbita pepo'},
-        {k:'Famille', v:'Cucurbitacées'},
-        {k:'Système', v:'Sol ou substrat', tag:'green'},
-        {k:'Stade',   v:'À compléter'},
-      ]},
-      {label:'CONDITIONS OPTIMALES', items:[
-        {k:'Température jour', v:'22 – 28 °C'},
-        {k:'Température nuit', v:'15 – 18 °C'},
-        {k:'Humidité',         v:'60 – 70 %'},
-      ]},
-      {label:'CULTURE', bullets:[
-        'Plante rampante à croissance rapide requérant tuteurage ou palissage vertical.',
-        'Pollinisation nécessaire — assurée manuellement ou par insectes auxiliaires.',
-        'Récolte à stade immature (15–20 cm) pour meilleure qualité gustative.',
-      ]},
-    ],
-  },
-
-  'co2': {
-    title:'Injection CO₂', color:'#10b981', type:'system', statusText:'Injection active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "L'enrichissement en CO₂ stimule la photosynthèse et accélère la croissance végétale.",
-        "Objectif : maintenir une concentration entre 800 et 1200 ppm en journée.",
-        "Injection suspendue automatiquement la nuit ou lorsque la ventilation est ouverte.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Source',              v:'Bouteille CO₂ comprimé'},
-        {k:'Concentration cible', v:'800 – 1200 ppm'},
-        {k:'Déclenchement',       v:'Capteur VPD / minuterie'},
-        {k:'Sécurité',            v:'Coupure ventilation active'},
-      ]},
-    ],
-  },
-
-  'brumisateur': {
-    title:'Brumisateur Haute Pression', color:'#14b8a6', type:'system', statusText:'Brumisation active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Produit un brouillard de gouttelettes < 10 µm qui s'évaporent avant d'atteindre le sol.",
-        "Assure le refroidissement adiabatique de l'air ambiant et maintien de l'humidité.",
-        "Activé lorsque la température dépasse le seuil maximal ou l'humidité descend sous le seuil.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Pression',  v:'À compléter bar'},
-        {k:'Débit',     v:'À compléter L/h'},
-        {k:'Buse',      v:'Céramique haute pression'},
-        {k:'Contrôle',  v:'Automatique / seuil'},
-      ]},
-    ],
-  },
-
-  'ventilation': {
-    title:'Ventilation Mécanique', color:'#3b82f6', type:'system', statusText:'Ventilation active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Assure le renouvellement d'air et évacue la chaleur et l'excès d'humidité.",
-        "Maintient la concentration en CO₂ à un niveau optimal pour la photosynthèse.",
-        "Activée automatiquement selon les seuils de température et d'humidité.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Type',     v:'Extracteur axial'},
-        {k:'Débit',    v:'À compléter m³/h'},
-        {k:'Contrôle', v:'Thermostat + hygrostat'},
-        {k:'Vitesse',  v:'À compléter tr/min'},
-      ]},
-    ],
-  },
-
-  'ventilation dehors': {
-    title:'Ventilation Extérieure', color:'#06b6d4', type:'system', statusText:'Ventilation extérieure',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Extracteur mural assurant l'évacuation de l'air vicié vers l'extérieur.",
-        "Complémente la ventilation zénithale naturelle par les fenêtres automatiques.",
-        "Synchronisé avec les capteurs intérieurs pour une régulation dynamique.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Emplacement', v:'Mur pignon extérieur'},
-        {k:'Type',        v:'Extracteur centrifuge'},
-        {k:'Débit',       v:'À compléter m³/h'},
-        {k:'Contrôle',    v:'Automatique'},
-      ]},
-    ],
-  },
-
-  'système de ventilation': {
-    title:'Système de Ventilation Général', color:'#3b82f6', type:'system', statusText:'Actif',
-    sections:[
-      {label:'COMPOSANTS', bullets:[
-        "Ensemble des extracteurs mécaniques, fenêtres automatiques et écrans thermiques.",
-        "Régulation centralisée depuis la salle de contrôle via automates programmables.",
-        "Monitoring en temps réel des paramètres climatiques par les capteurs IoT.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Type',      v:'Hybride — mécanique + naturel'},
-        {k:'Contrôle',  v:'Automate PLC'},
-        {k:'Capteurs',  v:'T°, HR, VPD'},
-        {k:'Protocole', v:'Guardian Pro API'},
-      ]},
-    ],
-  },
-
-  'système de refroidissement': {
-    title:'Système de Refroidissement', color:'#3b82f6', type:'system', statusText:'Refroidissement actif',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Assure le maintien de la température dans la plage optimale pour les cultures.",
-        "Fonctionne conjointement avec la ventilation et le système de brumisation.",
-        "Activé automatiquement lorsque la température mesurée dépasse le seuil maximal.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Type',                v:'À compléter'},
-        {k:'Puissance',           v:'À compléter kW'},
-        {k:'Seuil déclenchement', v:'T° > max configuré'},
-        {k:'Contrôle',            v:'Automatique'},
-      ]},
-    ],
-  },
-
-  'rideaux auto': {
-    title:'Écrans Thermiques', color:'#fbbf24', type:'system', statusText:'Déployés',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Réduit les pertes thermiques nocturnes en formant une barrière isolante sous la toiture.",
-        "Assure un ombrage thermique en journée pour prévenir la surchauffe estivale.",
-        "Le déploiement est conditionné par la température extérieure pour éviter le confinement.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Matériau',            v:'À compléter'},
-        {k:'Transmission lumière',v:'À compléter'},
-        {k:'Plage déploiement',   v:'10 – 32 °C ext.'},
-        {k:'Contrôle',            v:'Automatique'},
-      ]},
-    ],
-  },
-
-  'fenetre auto': {
-    title:'Fenêtres Automatiques', color:'#22d3ee', type:'system', statusText:'Ouverture active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Ventilation naturelle par effet cheminée — l'air chaud s'échappe par les châssis zénithaux.",
-        "Ouverture conditionnée : T° intérieure > seuil max ET T° extérieure plus fraîche.",
-        "Extraction passive silencieuse, complémentaire à la ventilation mécanique.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Type',          v:'Châssis zénithaux'},
-        {k:'Déclenchement', v:'ΔT intérieur / extérieur'},
-        {k:'Ouverture',     v:'À compléter'},
-        {k:'Sécurité',      v:'À compléter'},
-      ]},
-    ],
-  },
-
-  'fertigation': {
-    title:'Station de Fertigation', color:'#0ea5e9', type:'fertigation', statusText:'Fertigation active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Prépare et distribue la solution nutritive aux cultures à intervalles programmés.",
-        "Ajuste dynamiquement pH et EC en fonction des mesures en temps réel.",
-        "Fertilisation précise en macro et micro-éléments selon le stade végétatif.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'Volume réservoir',  v:'À compléter L'},
-        {k:'pH cible',          v:'5.5 – 6.5'},
-        {k:'EC cible',          v:'1.0 – 2.2 mS/cm'},
-        {k:'Fréquence cycles',  v:'Programmable'},
-        {k:'Régulation',        v:'Automatique', tag:'blue'},
-      ]},
-    ],
-  },
-
-  'station de fertigation': {
-    title:'Station de Fertigation', color:'#0ea5e9', type:'fertigation', statusText:'Fertigation active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Cuves concentrés A et B avec injection proportionnelle par venturi ou pompe doseuse.",
-        "pH cible 5.5–6.5 maintenu par injection acide / base selon sondes en ligne.",
-        "EC cible 1.0–2.2 mS/cm selon la culture et le stade végétatif.",
-      ]},
-      {label:'PARAMÈTRES', items:[
-        {k:'pH cible',    v:'5.5 – 6.5'},
-        {k:'EC cible',    v:'1.0 – 2.2 mS/cm'},
-        {k:'Régulation',  v:'Automatique', tag:'blue'},
-      ]},
-    ],
-  },
-
-  'sensors': {
-    title:'Capteurs IoT Environnementaux', color:'#8b5cf6', type:'sensor', statusText:'Actif',
-    sections:[
-      {label:'CAPTEURS DÉPLOYÉS', items:[
-        {k:'Température ambiante', v:'°C'},
-        {k:'Humidité relative',    v:'%'},
-        {k:'VPD',                  v:'kPa'},
-        {k:'pH solution',          v:'—'},
-        {k:'Conductivité EC',      v:'mS/cm'},
-        {k:'Niveau eau',           v:'%'},
-      ]},
-      {label:'INFRASTRUCTURE', items:[
-        {k:'Réseau',      v:'Guardian Pro API'},
-        {k:'Fréquence',   v:'Toutes les 2 min'},
-        {k:'Alertes',     v:'Email automatique'},
-        {k:'Historique',  v:'Supabase / PostGIS'},
-      ]},
-    ],
-  },
-
-  'monitoring': {
-    title:'Système de Monitoring', color:'#6366f1', type:'system', statusText:'Supervision active',
-    sections:[
-      {label:'FONCTIONS', bullets:[
-        "Collecte en temps réel de toutes les serres via Guardian Pro API.",
-        "Alertes automatiques par email en cas de dépassement de seuil.",
-        "Archivage historique et visualisation via le géoportail AgroBioTech.",
-      ]},
-      {label:'ARCHITECTURE', items:[
-        {k:'Backend',     v:'FastAPI / Render'},
-        {k:'Base de données', v:'Supabase / PostGIS'},
-        {k:'Frontend',    v:'React + Leaflet'},
-        {k:'IoT API',     v:'Guardian Pro'},
-      ]},
-    ],
-  },
-
-  'unité génétique et amélioration des plantes': {
-    title:'Unité Génétique et Amélioration', color:'#10b981', type:'system', statusText:'Unité S01',
-    sections:[
-      {label:'MISSION', bullets:[
-        "Recherche sur l'amélioration génétique des plantes cultivées en conditions contrôlées.",
-        "Sélection variétale, croisements et évaluation de performances agronomiques.",
-        "Travaux sur la résistance aux maladies et l'adaptation aux stress climatiques.",
-      ]},
-      {label:'INFORMATIONS', items:[
-        {k:'Code serre', v:'S01', tag:'green'},
-        {k:'Surface',    v:'À compléter m²'},
-        {k:'Cultures',   v:'Espèces améliorées'},
-        {k:'Accès',      v:'Personnel autorisé'},
-      ]},
-    ],
-  },
-
-  'unité horticulture': {
-    title:'Unité Horticulture', color:'#22c55e', type:'system', statusText:'Unité S02',
-    sections:[
-      {label:'MISSION', bullets:[
-        "Culture et expérimentation de plantes horticoles ornementales et maraîchères.",
-        "Étude des techniques de production en conditions de serre contrôlée.",
-        "Formation pratique des étudiants aux méthodes horticoles modernes.",
-      ]},
-      {label:'INFORMATIONS', items:[
-        {k:'Code serre', v:'S02', tag:'green'},
-        {k:'Surface',    v:'À compléter m²'},
-        {k:'Cultures',   v:'Horticulture ornementale'},
-        {k:'Accès',      v:'Étudiants et personnel'},
-      ]},
-    ],
-  },
-
-  'unité agronomie': {
-    title:'Unité Agronomie', color:'#f59e0b', type:'system', statusText:'Unité S03',
-    sections:[
-      {label:'MISSION', bullets:[
-        "Expérimentation agronomique sur les grandes cultures et systèmes de production.",
-        "Études sur la fertilisation, l'irrigation et la gestion des intrants agricoles.",
-        "Évaluation de nouvelles variétés céréalières et légumineuses.",
-      ]},
-      {label:'INFORMATIONS', items:[
-        {k:'Code serre', v:'S03', tag:'amber'},
-        {k:'Surface',    v:'À compléter m²'},
-        {k:'Cultures',   v:'Grandes cultures'},
-        {k:'Accès',      v:'Étudiants et personnel'},
-      ]},
-    ],
-  },
-
-  'unité hydroponie': {
-    title:'Unité Hydroponie', color:'#06b6d4', type:'fertigation', statusText:'Unité S04',
-    sections:[
-      {label:'MISSION', bullets:[
-        "Culture hors-sol en systèmes NFT et DWC avec monitoring IoT en temps réel.",
-        "Suivi pH, EC, température et niveau de solution toutes les 2 minutes.",
-        "Pilotage via le géoportail AgroBioTech et alertes automatiques.",
-      ]},
-      {label:'INFORMATIONS', items:[
-        {k:'Code serre', v:'S04', tag:'blue'},
-        {k:'Système',    v:'NFT / DWC'},
-        {k:'IoT',        v:'Guardian Pro API'},
-        {k:'Accès',      v:'Étudiants et personnel'},
-      ]},
-    ],
-  },
-
-  'unité protection des plantes': {
-    title:'Unité Protection des Plantes', color:'#ef4444', type:'system', statusText:'Unité S05',
-    sections:[
-      {label:'MISSION', bullets:[
-        "Étude des maladies, ravageurs et bioagresseurs affectant les cultures.",
-        "Développement de méthodes de lutte biologique et intégrée.",
-        "Diagnostic phytosanitaire et élaboration de stratégies de protection.",
-      ]},
-      {label:'INFORMATIONS', items:[
-        {k:'Code serre', v:'S05', tag:'red'},
-        {k:'Surface',    v:'À compléter m²'},
-        {k:'Cultures',   v:'Spécimens pathologiques'},
-        {k:'Accès',      v:'Personnel autorisé'},
-      ]},
-    ],
-  },
-
-  'audoucisseur':  {title:'Adoucisseur d\u2019Eau', color:'#06b6d4', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Réduction de la dureté de l'eau par échange ionique.","Prévient le colmatage des goutteurs et optimise les solutions nutritives."]},{label:'PARAMÈTRES',items:[{k:'Type',v:'Échangeur ionique'},{k:'Débit',v:'À compléter m³/h'},{k:'Régénération',v:'Automatique / sel'}]}]},
-  'avocatier':     {title:'Avocatier — Persea americana', color:'#22c55e', type:'plant', statusText:'Observation', sections:[{label:'ÉTAT',bullets:["Espèce en observation phytosanitaire.","Études sur la résistance aux maladies fongiques et bactériennes."]}]},
-  'cactus malade': {title:'Cactus — Spécimen en observation', color:'#f59e0b', type:'plant', statusText:'Isolé', sections:[{label:'DIAGNOSTIC',bullets:["Pourriture molle ou sèche du pivot.","Isolé en zone quarantaine pour diagnostic et traitement."]}]},
-  'tomates malades':{title:'Tomates — Étude phytopathologique', color:'#ef4444', type:'plant', statusText:'Inoculées', sections:[{label:'PATHOGÈNES',bullets:["Mildiou, Botrytis, virus ToMV et TYLCV.","Inoculation contrôlée pour développer la lutte intégrée."]}]},
-  'tomate malades': {title:'Tomate — Étude phytopathologique', color:'#ef4444', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Mildiou, Botrytis, virus de la mosaïque.","Diagnostic différentiel en cours."]}]},
-  'tomate malade':  {title:'Tomate — Spécimen pathologique', color:'#ef4444', type:'plant', statusText:'Isolé', sections:[{label:'ÉTAT',bullets:["Symptômes de maladie fongique ou virale.","Plant isolé pour étude en conditions contrôlées."]}]},
-  'ble malade':     {title:'Blé — Étude phytopathologique', color:'#f59e0b', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Rouille brune, septoriose, oïdium, fusariose de l'épi.","Enjeu pour la sécurité alimentaire."]}]},
-  'blé malade':     {title:'Blé — Étude phytopathologique', color:'#f59e0b', type:'plant', statusText:'En étude', sections:[{label:'PATHOGÈNES',bullets:["Puccinia triticina, Septoria tritici, Fusarium culmorum.","Études pour sélection variétale résistante."]}]},
-  'plante x':       {title:'Plante X — Spécimen non identifié', color:'#94a3b8', type:'plant', statusText:'À identifier', sections:[{label:'ÉTAT',bullets:["Identification taxonomique en cours.","Présence de symptômes à caractériser pour diagnostic différentiel."]}]},
-  'serre':          {title:'Complexe de Serres AgroBioTech', color:'#22c55e', type:'system', statusText:'5 unités actives', sections:[{label:'PRÉSENTATION',bullets:["5 unités spécialisées interconnectées : Génétique, Horticulture, Agronomie, Hydroponie, Protection.","Chaque serre est équipée de capteurs IoT et d'un système de contrôle climatique automatisé."]},{label:'DONNÉES',items:[{k:'Surface totale',v:'À compléter m²'},{k:'Serres',v:'5 unités spécialisées'},{k:'IoT',v:'Guardian Pro API'},{k:'Gestion',v:'IAV Hassan II'}]}]},
-  'chaudière':      {title:'Chaudière', color:'#f97316', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Production d'eau chaude pour le chauffage des serres.","Maintien des températures nocturnes au-dessus des seuils critiques."]},{label:'PARAMÈTRES',items:[{k:'Type',v:'À compléter'},{k:'Puissance',v:'À compléter kW'},{k:'Combustible',v:'À compléter'}]}]},
-  'salle de lavage':{title:'Salle de Lavage', color:'#06b6d4', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Nettoyage et décontamination du matériel de culture.","Prévention de la contamination croisée entre les unités."]}]},
-  'salle technique de commandes':{title:'Salle Technique de Commandes', color:'#6366f1', type:'system', statusText:'Supervision active', sections:[{label:'FONCTIONS',bullets:["Automates PLC et interface SCADA pour pilotage des équipements.","Supervision et monitoring de toutes les serres en temps réel."]},{label:'SYSTÈMES',items:[{k:'Automate',v:'PLC industriel'},{k:'Interface',v:'SCADA'},{k:'Capteurs',v:'Guardian Pro API'}]}]},
-  'salle de réunion':{title:'Salle de Réunion', color:'#8b5cf6', type:'system', statusText:'Disponible', sections:[{label:'FONCTIONS',bullets:["Espace collaboratif pour réunions, formations et soutenances.","Équipement audiovisuel disponible."]}]},
-  'salle de préparation':{title:'Salle de Préparation', color:'#22c55e', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Semis, greffage et multiplication végétative.","Acclimatation des plants avant transplantation en serre."]}]},
-  'salle de fertilisation et traitement deau':{title:'Salle Fertilisation & Eau', color:'#0ea5e9', type:'fertigation', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Traitement de l'eau par osmose inverse et adoucissement.","Préparation des solutions fertilisantes concentrées."]},{label:'ÉQUIPEMENTS',items:[{k:'Osmoseur',v:'À compléter'},{k:'Adoucisseur',v:'Échangeur ionique'},{k:'Stockage',v:'Cuves concentrés A/B'}]}]},
-  'local technique déquipements':{title:'Local Technique', color:'#64748b', type:'system', statusText:'Accès restreint', sections:[{label:'FONCTIONS',bullets:["Stockage et maintenance des équipements.","Accès réservé au personnel technique qualifié."]}]},
-  'bloc gestion technique et administrative':{title:'Bloc Gestion Technique', color:'#6366f1', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Bureaux de direction, salle de contrôle et locaux techniques.","Gestion administrative et technique du site AgroBioTech."]}]},
-  'bloc protection des plantes':{title:'Bloc Protection des Plantes', color:'#ef4444', type:'system', statusText:'Actif', sections:[{label:'FONCTIONS',bullets:["Diagnostic phytosanitaire et lutte biologique.","Conservation de collections de plantes malades pour référence."]}]},
-};
-/* Contrôle entries 1–15 */
-for(var _i=1;_i<=15;_i++){
-  AR_CONTENT['controle '+_i]={title:'Contrôle '+_i, color:'#6366f1', type:'system', statusText:'Armoire '+_i, sections:[{label:'FONCTIONS',bullets:['Armoire de commande n°'+_i+' assurant la gestion automatisée des équipements.','Protocole de communication industriel intégré.']}]};
-}
 
 async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
@@ -1289,7 +812,7 @@ async function bootVR(){
 }
 </script>
 
-<!-- ar-content.js NOT loaded — it expects #ar-card DOM which doesn't exist here.
-     AR content is defined inline via AR_CONTENT below. -->
+<!-- ar-content.js fournit AR_CONTENT, openSimpleAR, closeAR, renderARTab, setLang -->
+<script src="ar-content.js"></script>
 </body>
 </html>

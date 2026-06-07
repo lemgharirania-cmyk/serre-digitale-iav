@@ -2121,14 +2121,15 @@ function load(zid, sid, instant) {
       const rawKey=desc.toLowerCase().trim();
 
 
-
 const _al = {
   'ventilation':'ventilation',
   'brumisateur':'brumisateur',
   'co2':'co2',
   'sensors':'sensors',
 
+  'fenetre':'fenetre auto',
   'fenetres':'fenetre auto',
+
   'rideaux':'rideaux auto',
 
   'système de chauffage':'chauffage',
@@ -2137,9 +2138,9 @@ const _al = {
   'blé':'blé'
 };
 
-
       const hsKey=_al[rawKey]||rawKey;
-
+console.log('rawKey =', rawKey);
+console.log('hsKey =', hsKey);
 
 
       const stateKey=hsGetState(hsKey);
@@ -2234,8 +2235,9 @@ const _al = {
 
 
 
-        clickHandlerFunc:function(){openSimpleAR(desc);}
-
+clickHandlerFunc:function(){
+  openSimpleAR(hsKey);
+}
 
 
       };
