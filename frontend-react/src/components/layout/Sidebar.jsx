@@ -16,14 +16,9 @@ const NAV_GROUPS = [
     labelFR: 'Monitoring', labelEN: 'Monitoring',
     items: [
       {
-        id: 'vue', labelFR: "Vue d'ensemble", labelEN: 'Overview',
+        id: 'etat', labelFR: 'Serre en direct', labelEN: 'Live greenhouse',
         icon: LayoutDashboard,
-        // navigue vers /dashboard PUIS scrolle en haut
-        action: 'home',
-      },
-      {
-        id: 'etat', labelFR: 'État serre', labelEN: 'GH Status',
-        icon: Server, action: 'anchor', anchor: 'etat',
+        action: 'home',  // scrolle en haut = bannière serre
       },
       {
         id: 'graphiques', labelFR: 'Graphiques', labelEN: 'Charts',
