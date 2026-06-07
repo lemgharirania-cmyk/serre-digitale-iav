@@ -38,7 +38,7 @@ const T = {
     dosages: "Dosages recommandés", dosagesSub: "Quantités à dissoudre dans les cuves mères",
     purewater: "Eau pure — aucun engrais nécessaire.",
     stocks: "Cuves mères", tankA: "Stock A", tankB: "Stock B", maxDil: "max",
-    kpiEc: "EC obtenue", kpiNeutral: "Neutralité", kpiCost: "Coût estimé",
+    kpiEc: "EC obtenue", kpiNeutral: "Neutralité", kpiCost: "Coût estimé", kpiCostMad: "Coût (MAD)",
     balanced: "Équilibrée", check: "À vérifier",
     exportZone: "Export", exportPdf: "Rapport PDF", exportCsv: "Export CSV",
     recipeName: "Nom de la recette", save: "Enregistrer", cancel: "Annuler",
@@ -66,7 +66,7 @@ const T = {
     dosages: "Recommended dosages", dosagesSub: "Amounts to dissolve in the stock tanks",
     purewater: "Pure water — no fertilizers needed.",
     stocks: "Stock tanks", tankA: "Stock A", tankB: "Stock B", maxDil: "max",
-    kpiEc: "Achieved EC", kpiNeutral: "Neutrality", kpiCost: "Estimated cost",
+    kpiEc: "Achieved EC", kpiNeutral: "Neutrality", kpiCost: "Est. cost (€)", kpiCostMad: "Est. cost (MAD)",
     balanced: "Balanced", check: "Check",
     exportZone: "Export", exportPdf: "PDF report", exportCsv: "CSV export",
     recipeName: "Recipe name", save: "Save", cancel: "Cancel",
@@ -78,6 +78,10 @@ const T = {
       na: "Na", so4: "S-SO₄", cl: "Cl", fe: "Fe", b: "B", cu: "Cu", zn: "Zn", mn: "Mn", mo: "Mo" },
   },
 };
+
+// Taux de conversion EUR → MAD (fixe · source : Bank Al-Maghrib moyenne 2024)
+const EUR_TO_MAD = 10.85;
+const fmt_mad = (eur: number, d = 2) => (eur * EUR_TO_MAD).toFixed(d);
 
 const TARGET_MACROS: Ion[] = ["no3", "nh4", "p", "k", "ca", "mg", "so4"];
 const TARGET_MICROS: Ion[] = ["fe", "b", "cu", "zn", "mn", "mo"];
@@ -148,8 +152,8 @@ export default function NSCalculateur({
 
   const exportCSV = () => {
     const rows = [
-      [t.dosages, t.colGot, "unit", "g/cuve", "€/m³", "stock"],
-      ...result.doses.map((d) => [d.name, fmt(d.dose, 2), d.unit, fmt(d.gramsPerTank, 0), fmt(d.costPerM3, 3), d.tank]),
+      [t.dosages, t.colGot, "unit", "g/cuve", "€/m³", "MAD/m³", "stock"],
+      ...result.doses.map((d) => [d.name, fmt(d.dose, 2), d.unit, fmt(d.gramsPerTank, 0), fmt(d.costPerM3, 3), fmt_mad(d.costPerM3, 2), d.tank]),
     ];
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
     const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
@@ -274,8 +278,16 @@ export default function NSCalculateur({
             </div>
             <div className="ns-kpi">
               <div className="ns-kpi-label"><Gauge size={14} /> {t.kpiCost}</div>
-              <div className="ns-kpi-val">{fmt(result.totalCostPerM3, 2)}</div>
-              <div className="ns-kpi-unit">€/m³</div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:6, flexWrap:"wrap" }}>
+                <span className="ns-kpi-val" style={{ fontSize:22 }}>{fmt(result.totalCostPerM3, 2)}</span>
+                <span style={{ fontSize:11, color:"var(--muted)", fontWeight:600 }}>€/m³</span>
+              </div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:5, marginTop:4 }}>
+                <span style={{ fontSize:18, fontWeight:800, color:"var(--amber)", letterSpacing:"-.02em" }}>
+                  {fmt_mad(result.totalCostPerM3, 2)}
+                </span>
+                <span style={{ fontSize:11, color:"var(--muted)", fontWeight:600 }}>MAD/m³</span>
+              </div>
             </div>
           </div>
 
@@ -366,7 +378,11 @@ export default function NSCalculateur({
                     </div>
                     <div className="ns-dose-formula">{d.formula ?? ""}</div>
                     <div className="ns-dose-qty">{mass(d.gramsPerTank)}</div>
-                    <div className="ns-dose-sub">{fmt(d.dose, 2)} {d.unit} · {fmt(d.costPerM3, 3)} €/m³</div>
+                    <div className="ns-dose-sub">{fmt(d.dose, 2)} {d.unit}</div>
+                    <div style={{ marginTop:3, display:"flex", gap:8, flexWrap:"wrap", fontSize:11 }}>
+                      <span style={{ color:"var(--muted)" }}>{fmt(d.costPerM3, 3)} <span style={{ fontWeight:700 }}>€/m³</span></span>
+                      <span style={{ color:"var(--amber)", fontWeight:700 }}>{fmt_mad(d.costPerM3, 2)} MAD/m³</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -495,7 +511,7 @@ function buildPrintableReport(name: string, r: CalcResult, t: typeof T["FR"], pH
   if (!w) { alert("Autorise les fenêtres pop-up pour générer le PDF."); return; }
   const rows = r.doses.map((d) =>
     `<tr><td>${d.name}${d.formula ? " <i>(" + d.formula + ")</i>" : ""}</td><td>${fmt(d.dose, 2)} ${d.unit}</td>` +
-    `<td>${mass(d.gramsPerTank)}</td><td>${d.tank}</td><td>${fmt(d.costPerM3, 3)}</td></tr>`).join("");
+    `<td>${mass(d.gramsPerTank)}</td><td>${d.tank}</td><td>${fmt(d.costPerM3, 3)}</td><td style="color:#C2740E;font-weight:700">${fmt_mad(d.costPerM3, 2)}</td></tr>`).join("");
   const comp = RESULT_IONS.map((i) =>
     `<tr><td>${t.L[i]}</td><td>${fmt(r.target[i], 2)}</td><td>${fmt(r.achieved[i], 2)}</td><td>${fmt(r.difference[i], 2)}</td></tr>`).join("");
   const pl = (label: string, s: CalcResult["precipSummary"]["A"], risks: string[]) =>
@@ -512,8 +528,8 @@ function buildPrintableReport(name: string, r: CalcResult, t: typeof T["FR"], pH
     tbody tr:nth-child(even){background:#F8FAFC}ul{font-size:13px;margin:4px 0;padding-left:18px}.note{font-size:11px;color:#64748B;margin-top:16px}
     @media print{body{padding:0}}</style></head><body>
     <h1>${t.title} — ${name}</h1><p class="sub">NS Calculator v1.2 · L. Incrocci · IAV Hassan II</p>
-    <div class="meta">${t.kpiEc}: <b>${fmt(r.ecAchieved, 2)} dS/m</b> &nbsp;|&nbsp; pH ${pH} &nbsp;|&nbsp; ${t.dilution} ${dil}× &nbsp;|&nbsp; ${t.tankVol} ${vol} L &nbsp;|&nbsp; ${t.kpiCost}: <b>${fmt(r.totalCostPerM3, 2)} €/m³</b></div>
-    <h2>${t.dosages}</h2><table><thead><tr><th>${t.dosages}</th><th>${t.colGot}</th><th>g/cuve</th><th>A/B</th><th>€/m³</th></tr></thead><tbody>${rows || `<tr><td colspan="5">${t.purewater}</td></tr>`}</tbody></table>
+    <div class="meta">${t.kpiEc}: <b>${fmt(r.ecAchieved, 2)} dS/m</b> &nbsp;|&nbsp; pH ${pH} &nbsp;|&nbsp; ${t.dilution} ${dil}× &nbsp;|&nbsp; ${t.tankVol} ${vol} L &nbsp;|&nbsp; ${t.kpiCost}: <b>${fmt(r.totalCostPerM3, 2)} €/m³</b> · <b style="color:#C2740E">${fmt_mad(r.totalCostPerM3, 2)} MAD/m³</b></div>
+    <h2>${t.dosages}</h2><table><thead><tr><th>${t.dosages}</th><th>${t.colGot}</th><th>g/cuve</th><th>A/B</th><th>€/m³</th><th>MAD/m³</th></tr></thead><tbody>${rows || `<tr><td colspan="6">${t.purewater}</td></tr>`}</tbody></table>
     <h2>${t.results}</h2><table><thead><tr><th>${t.ion}</th><th>${t.colTarget}</th><th>${t.colGot}</th><th>${t.colDiff}</th></tr></thead><tbody>${comp}</tbody></table>
     <h2>${t.precip}</h2><ul>${pl(t.tankA, r.precipSummary.A, rA)}${pl(t.tankB, r.precipSummary.B, rB)}</ul>
     <p class="note">${t.note}</p><script>window.onload=function(){window.print();}<\/script></body></html>`);
