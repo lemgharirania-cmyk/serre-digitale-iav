@@ -184,14 +184,12 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     setGlobeEnded(false)
   }
   function goToFullTour() {
-    setGlobeEnded(false)
     setActiveNode('tours')
     setLineProgress(50)
     if (VISITE_MODES[0]) pickTour(VISITE_MODES[0])
     scrollSmooth(toursRef, 80)
   }
   function goToSpaces() {
-    setGlobeEnded(false)
     setActiveNode('salles')
     setLineProgress(100)
     scrollSmooth(sallesRef, 80)
