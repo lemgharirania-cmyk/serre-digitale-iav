@@ -145,7 +145,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
 
   const T = {
     badge:    lang === 'fr' ? 'Coupe 2D · AgroBioTech IAV' : '2D Plan · AgroBioTech IAV',
-    title:    lang === 'fr' ? 'Plan interactif' : 'Interactive plan',
+    title:    lang === 'fr' ? 'Schéma interactif' : 'Interactive Floor plan',
     accent:   lang === 'fr' ? 'du complexe' : 'of the complex',
     hint:     lang === 'fr' ? 'Cliquez sur une zone pour afficher ses informations' : 'Click on a zone to display its information',
     tabInfo:  lang === 'fr' ? 'Informations' : 'Information',
@@ -193,7 +193,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
 
               {/* Plan image */}
               <img
-                src="/plan2d.png"
+                src="/plan2d.svg"
                 alt="Plan du complexe AgroBioTech IAV Hassan II"
                 style={{
                   width: '100%',
