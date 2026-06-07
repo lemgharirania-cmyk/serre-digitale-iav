@@ -103,7 +103,7 @@ body.in-vr #overlay{opacity:0;pointer-events:none!important}
 .zf b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
 .zf span{font-size:11px;color:#475569}
 .scene-ctr{position:absolute;top:18px;left:50%;transform:translateX(-50%);pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:100px;padding:6px 16px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#334155;font-size:12px;font-family:'DM Mono',monospace}
-.arrow{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;width:48px;height:48px;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);color:#0F172A;font-size:26px;line-height:1;box-shadow:0 8px 30px rgba(15,40,30,.12);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.arrow{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;width:48px;height:48px;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);color:#0F172A;font-size:26px;line-height:1;box-shadow:0 8px 30px rgba(15,40,30,.12);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:350}
 .arrow:hover{background:rgba(34,197,94,.20);border-color:rgba(34,197,94,.5);color:#15803D}
 .arrow.L{left:18px}.arrow.R{right:18px}
 .arrow.off{opacity:0;pointer-events:none}
@@ -641,8 +641,8 @@ function makeHotspot(hs){
   pill.addEventListener('mouseenter', ()=>{ pill.style.transform='scale(1.14)'; });
   pill.addEventListener('mouseleave', ()=>{ pill.style.transform=''; });
 
-  const overlay = document.getElementById('overlay');
-  if(overlay) overlay.appendChild(pill);
+  const vrPhase = document.getElementById('vrPhase');
+  if(vrPhase) vrPhase.appendChild(pill);
 
   /* world position: hotspot is in scene space, rig is at y=1.6 */
   _activePills.push({ el:pill, wx:pos3d.x, wy:pos3d.y+1.6, wz:pos3d.z });
