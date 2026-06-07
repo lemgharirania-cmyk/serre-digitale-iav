@@ -6,7 +6,7 @@ const NAV = [
   { id: 'projet',  icon: LayoutDashboard, labelFr: 'Notre Projet',    labelEn: 'Our Project' },
   { id: 'apropos', icon: Info,            labelFr: 'À Propos',         labelEn: 'About' },
   { id: 'campus',  icon: MapPin,          labelFr: 'AgroBioTech',      labelEn: 'AgroBioTech' },
-  { id: 'plan2d',  icon: Map,             labelFr: 'Plan 2D',          labelEn: '2D Plan' },
+  { id: 'plan2d',  icon: Map,             labelFr: 'Schéma 2D',          labelEn: '2D Floor Plan' },
   { id: 'visite',  icon: Scan,            labelFr: 'Visite Virtuelle', labelEn: 'Virtual Tour' },
   { id: 'donnees', icon: BarChart2,       labelFr: 'Données',          labelEn: 'Data' },
 ]
