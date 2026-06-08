@@ -58,8 +58,8 @@ async def update_profil(
 
     if data.photo_profil is not None:
         # Valider que c'est bien du base64 image (max ~500KB en base64 ≈ 680KB)
-        if len(data.photo_profil) > 700_000:
-            raise HTTPException(status_code=400, detail="Image trop volumineuse (max 500KB).")
+        if len(data.photo_profil) > 1_000_000:
+            raise HTTPException(status_code=400, detail="Image trop volumineuse (max 1KB).")
         if not data.photo_profil.startswith("data:image/"):
             raise HTTPException(status_code=400, detail="Format image invalide.")
         updates.append(f"photo_profil = ${i}")
