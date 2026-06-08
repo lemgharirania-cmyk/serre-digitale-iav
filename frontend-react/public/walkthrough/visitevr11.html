@@ -8,7 +8,6 @@
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="ar-content.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -97,20 +96,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 /* 2D overlay — hidden in VR immersif */
 #overlay{position:absolute;inset:0;pointer-events:none;z-index:10;transition:opacity .3s ease}
 body.in-vr #overlay{opacity:0;pointer-events:none!important}
-/* In VR the DOM card must stay rendered (for html2canvas capture) but invisible
-   in the mirrored view. WebXR doesn't composite DOM into the headset anyway. */
-body.in-vr .ar-overlay{opacity:0!important;pointer-events:none!important}
-/* During capture: kill blur/transparency that html2canvas can't render, show full height */
-.ar-card.vr-capture{
-  background:#ffffff!important;
-  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
-  max-height:none!important;height:auto!important;overflow:visible!important;
-  transform:none!important;opacity:1!important;
-  transition:none!important;
-}
-.ar-card.vr-capture *{
-  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
-}
+body.in-vr .ar-overlay{display:none!important}
 #overlay *{pointer-events:none}
 #overlay button,#overlay .arrow,#overlay #cal,#overlay #cal button{pointer-events:auto}
 .zf{position:absolute;top:18px;left:18px;pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:16px;padding:12px 18px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#0F172A;opacity:0;transform:translateY(-8px);transition:all .4s ease}
@@ -1027,7 +1013,24 @@ function drawCard(desc, lang){
   return cv;
 }
 
-/* (audio handled by playARAudioOnce below — reads def.audio from ar-content.js) */
+/* ══════════════════════════════════════════════════════════════════════
+   AUDIO — plays in both flat and VR modes on hotspot click
+   ══════════════════════════════════════════════════════════════════════ */
+let _arAudio = null;
+function playARAudio(desc, lang){
+  stopARAudio();
+  try{
+    const key = resolveARKey(desc).replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+    const src = `audio/scenes/${(lang||'FR').toLowerCase()}/${key}.mp3`;
+    _arAudio = new Audio(src);
+    _arAudio.volume = 0.9;
+    const p = _arAudio.play();
+    if(p && p.catch) p.catch(err=>console.log('[AR audio skip]', key, err.message));
+  }catch(err){ console.log('[AR audio err]', err); }
+}
+function stopARAudio(){
+  if(_arAudio){ try{ _arAudio.pause(); _arAudio.src=''; }catch(e){} _arAudio=null; }
+}
 
 
 /* ── Hotspot factory ── */
@@ -1045,7 +1048,7 @@ function makeHotspot(hs){
   var _fired=false;
   function doAction(){
     if(_fired)return;_fired=true;setTimeout(()=>{_fired=false;},400);
-    if(isAR)openAR(arDesc, pos);
+    if(isAR)openAR(arDesc);
     else    goTo(navZone,navScene);
   }
 
@@ -1077,156 +1080,69 @@ function makeHotspot(hs){
   return wrap;
 }
 
-/* ══ AR PANEL — captures the real rich DOM card → 3D texture (VR) ══════════ */
+/* ── AR panel (3D canvas card visible en VR + audio + lang switcher) ── */
 window._activeARDesc = null;
-window._activeAnchor = null;
 
-/* Resolve audio src from a def. Handles {FR,EN,AR} object and [fr,en,ar] array. */
-function audioSrcFor(def, lang){
-  if(!def || !def.audio) return null;
-  const a = def.audio;
-  if(Array.isArray(a)){
-    const idx = {FR:0,EN:1,AR:2}[lang];
-    return a[idx!=null?idx:0] || a[0] || null;
-  }
-  return a[lang] || a.FR || null;
-}
-
-/* Get the merged def (with .eq/.card/.audio) using ar-content.js's resolver */
-function defFor(desc){
-  if(typeof getARDef === 'function'){ try{ return getARDef(desc); }catch(e){} }
-  if(typeof AR_CONTENT !== 'undefined' && AR_CONTENT){
-    return AR_CONTENT[resolveARKey(desc)] || AR_CONTENT[desc] || null;
-  }
-  return null;
-}
-
-/* Audio — plays ONCE, no loop */
-let _arAudio = null;
-function playARAudioOnce(desc, lang){
-  stopARAudio();
-  const src = audioSrcFor(defFor(desc), lang);
-  if(!src){ console.log('[audio] none for', desc, lang); return; }
-  try{
-    _arAudio = new Audio(src);
-    _arAudio.volume = 1;
-    window._arAudioEl = _arAudio;
-    const p = _arAudio.play();
-    if(p && p.catch) p.catch(e=>console.log('[audio play]', src, e.message));
-  }catch(e){ console.log('[audio err]', e); }
-}
-function stopARAudio(){
-  if(_arAudio){ try{ _arAudio.pause(); _arAudio.src=''; }catch(e){} _arAudio=null; window._arAudioEl=null; }
-}
-
-function _nextFrame(){ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); }
-async function _waitFonts(){ try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){} }
-
-/* Capture the rich DOM #ar-card → canvas → apply to the 3D plane */
-async function renderCardToPlane(desc, anchorPos){
-  const dom = document.getElementById('ar-card');
-  const plane = $('arpanel');
-  if(!plane) return;
-
-  let canvas = null;
-  if(dom && typeof html2canvas === 'function'){
-    dom.classList.add('vr-capture');
-    await _waitFonts();
-    await _nextFrame();
-    try{
-      canvas = await html2canvas(dom, {
-        backgroundColor:'#ffffff',
-        scale:2, logging:false, useCORS:true, allowTaint:true,
-        windowWidth:360, width:320
-      });
-    }catch(e){ console.warn('[html2canvas] failed → fallback', e); }
-    dom.classList.remove('vr-capture');
-  }
-  /* Fallback to hand-drawn canvas if html2canvas unavailable/failed */
-  if(!canvas) canvas = drawCard(desc, window.currentLang || 'FR');
-
-  applyCanvasTexture(plane, canvas);
-
-  /* Size plane to match captured aspect ratio (keep width ~1.5 m) */
-  const W = 1.5, H = W * (canvas.height / canvas.width);
-  plane.setAttribute('width', W);
-  plane.setAttribute('height', H);
-
-  anchorNearHotspot(plane, anchorPos, 0);
-  plane.setAttribute('visible', true);
-}
-
-/* Place an element in the hotspot's direction at a comfortable reading distance */
-function anchorNearHotspot(el, pos, yOffset){
-  if(!el) return;
-  if(!pos){ placeInFront(el, 2.5); if(yOffset) el.object3D.position.y += yOffset; return; }
-  const v = new THREE.Vector3(pos.x, pos.y, pos.z);
-  const d = v.length() || 1;
-  v.multiplyScalar(2.6 / d);   /* fixed reading distance in the hotspot direction */
-  v.y += 1.6;                  /* rig height */
-  v.y += (yOffset || 0);
-  el.object3D.position.set(v.x, v.y, v.z);
-}
-
-function openAR(desc, anchorPos){
+function openAR(desc){
   window._activeARDesc = desc;
-  window._activeAnchor = anchorPos || null;
   const lang = window.currentLang || 'FR';
 
-  /* Always populate the real DOM card (this is the capture source AND the flat view) */
-  if(typeof openSimpleAR === 'function'){
-    try{ openSimpleAR(desc); }catch(e){ console.warn('[openSimpleAR]', e); }
+  /* Render rich card to 3D plane */
+  const card = $('arpanel');
+  if(card){
+    applyCanvasTexture(card, drawCard(desc, lang));
+    placeInFront(card, 2.2);
+    card.setAttribute('visible', true);
   }
 
-  /* Audio — once */
-  playARAudioOnce(desc, lang);
-
-  if(document.body.classList.contains('in-vr')){
-    /* VR: capture DOM → 3D plane + show lang switcher */
-    renderCardToPlane(desc, anchorPos);
-    const sw = $('lang-switcher-3d');
-    if(sw){
-      anchorNearHotspot(sw, anchorPos, -1.05);
-      sw.setAttribute('visible', true);
-      updateLangSwitcher3D(lang);
-    }
+  /* Show lang switcher near the card */
+  const sw = $('lang-switcher-3d');
+  if(sw){
+    placeInFront(sw, 2.2);
+    sw.object3D.position.y -= 0.95;
+    sw.setAttribute('visible', true);
+    updateLangSwitcher3D(lang);
   }
-  /* Flat mode: the DOM card (.ar-overlay) shows directly — nothing else needed */
+
+  /* Play audio in selected language */
+  playARAudio(desc, lang);
+
+  /* Also open the flat-mode DOM card if available (no-op in VR) */
+  if(!document.body.classList.contains('in-vr') && typeof openSimpleAR === 'function'){
+    try{ openSimpleAR(desc); }catch(e){ console.log('[openSimpleAR]', e); }
+  }
 }
 
 function closeAR(){
   stopARAudio();
   const arp = $('arpanel'); if(arp) arp.setAttribute('visible', false);
   const sw  = $('lang-switcher-3d'); if(sw) sw.setAttribute('visible', false);
-  const dom = document.getElementById('ar-card');
-  if(dom) dom.classList.remove('open');
+  const domCard = document.getElementById('ar-card');
+  if(domCard) domCard.classList.remove('open');
   window._activeARDesc = null;
-  window._activeAnchor = null;
 }
 
 function updateLangSwitcher3D(activeLang){
   ['FR','EN','AR'].forEach(L=>{
     const btn = document.getElementById('lang-btn-'+L);
     if(!btn) return;
-    const on = L === activeLang;
-    btn.setAttribute('material', `shader:flat; color:${on?'#22C55E':'#94A3B8'}; transparent:true; opacity:${on?0.95:0.80}; side:double`);
+    const isActive = L === activeLang;
+    btn.setAttribute('material', `shader:flat; color:${isActive?'#22C55E':'#94A3B8'}; transparent:true; opacity:${isActive?0.95:0.80}; side:double`);
   });
 }
 
 function setLangVR(lang){
   window.currentLang = lang;
-  /* Switch the DOM card language via ar-content.js (handles Arabic RTL) */
+  /* Update flat-mode DOM card lang if ar-content.js exposes setLang */
   if(typeof setLang === 'function' && setLang !== setLangVR){
-    try{ setLang(lang); }catch(e){ console.log('[setLang]', e); }
+    try{ setLang(lang); }catch(e){}
   }
+  /* Re-render the card and audio in the new language */
   if(window._activeARDesc){
-    /* Re-populate DOM in new lang, then re-capture for VR */
-    if(typeof openSimpleAR === 'function'){ try{ openSimpleAR(window._activeARDesc); }catch(e){} }
-    if(document.body.classList.contains('in-vr')){
-      renderCardToPlane(window._activeARDesc, window._activeAnchor);
-      updateLangSwitcher3D(lang);
-    }
-    playARAudioOnce(window._activeARDesc, lang);
+    const card = $('arpanel');
+    if(card) applyCanvasTexture(card, drawCard(window._activeARDesc, lang));
+    updateLangSwitcher3D(lang);
+    playARAudio(window._activeARDesc, lang);
   }
 }
 
@@ -1234,9 +1150,9 @@ function bindLangSwitcher3D(){
   ['FR','EN','AR'].forEach(L=>{
     const btn = document.getElementById('lang-btn-'+L);
     if(!btn) return;
-    const h = (e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); setLangVR(L); };
-    btn.addEventListener('click', h);
-    btn.addEventListener('triggerdown', h);
+    const handler = (e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); setLangVR(L); };
+    btn.addEventListener('click', handler);
+    btn.addEventListener('triggerdown', handler);
   });
 }
 
@@ -1256,7 +1172,7 @@ function refreshRaycasters(){
 function attachSceneClicks(){
   const sc=document.querySelector('a-scene');
   if(!sc)return;
-  const handle=(e)=>{
+  sc.addEventListener('click',e=>{
     let el=e.target;
     while(el&&el.tagName){
       const d=el.dataset;
@@ -1267,17 +1183,7 @@ function attachSceneClicks(){
       }
       el=el.parentElement;
     }
-  };
-  /* click = mouse/gaze, triggerdown = VR controller trigger */
-  sc.addEventListener('click', handle);
-  sc.addEventListener('triggerdown', handle);
-
-  /* Belt-and-suspenders: bind close directly on the AR panel for VR */
-  const arp=$('arpanel');
-  if(arp){
-    arp.addEventListener('click', closeAR);
-    arp.addEventListener('triggerdown', closeAR);
-  }
+  });
 }
 
 /* ── Scene loader ── */
@@ -1345,7 +1251,7 @@ async function bootVR(){
   if(!AFRAME.components['billboard']){
     AFRAME.registerComponent('billboard',{
       init(){this._v=new THREE.Vector3();},
-      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);this.el.object3D.rotateY(Math.PI);}
+      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);}
     });
   }
   /* Hook VR events + click delegation — vrPhase is now active so a-scene is in the DOM */
