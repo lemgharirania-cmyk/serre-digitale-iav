@@ -164,7 +164,7 @@ body.in-vr .ar-overlay{display:none!important}
     background="color:#EAF4EF">
 
     <a-assets timeout="60000"></a-assets>
-    <a-sky id="sky" class="clickable" data-action="closeAR" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
+    <a-sky id="sky" rotation="0 -90 0" material="shader:flat; npot:true"></a-sky>
 
     <!-- La fiche AR : plane canvas 3D dans la scène, billboardé, visible en VR immersif -->
     <a-plane id="arpanel" class="clickable" data-action="closeAR" visible="false"
@@ -1464,8 +1464,8 @@ async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
   if(!AFRAME.components['billboard']){
     AFRAME.registerComponent('billboard',{
-      init(){this._v=new THREE.Vector3();},
-      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);}
+      init(){this._q=new THREE.Quaternion();},
+      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldQuaternion(this._q);this.el.object3D.quaternion.copy(this._q);}
     });
   }
   /* Hook VR events + click delegation — vrPhase is now active so a-scene is in the DOM */
