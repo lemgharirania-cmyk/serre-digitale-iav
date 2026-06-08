@@ -8,6 +8,7 @@
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="ar-content.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -96,8 +97,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 /* 2D overlay — hidden in VR immersif */
 #overlay{position:absolute;inset:0;pointer-events:none;z-index:10;transition:opacity .3s ease}
 body.in-vr #overlay{opacity:0;pointer-events:none!important}
-/* In VR the card is the 3D plane, so hide the flat DOM card entirely */
-body.in-vr .ar-overlay{display:none!important}
+/* In VR the DOM card must stay rendered (for html2canvas capture) but invisible
+   in the mirrored view. WebXR doesn't composite DOM into the headset anyway. */
+body.in-vr .ar-overlay{opacity:0!important;pointer-events:none!important}
+/* During capture: kill blur/transparency that html2canvas can't render, show full height */
+.ar-card.vr-capture{
+  background:#ffffff!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  max-height:none!important;height:auto!important;overflow:visible!important;
+  transform:none!important;opacity:1!important;
+  transition:none!important;
+}
+.ar-card.vr-capture *{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
 #overlay *{pointer-events:none}
 #overlay button,#overlay .arrow,#overlay #cal,#overlay #cal button{pointer-events:auto}
 .zf{position:absolute;top:18px;left:18px;pointer-events:none;background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.85);border-radius:16px;padding:12px 18px;box-shadow:0 8px 30px rgba(15,40,30,.12);color:#0F172A;opacity:0;transform:translateY(-8px);transition:all .4s ease}
@@ -826,10 +839,9 @@ function drawBadge(type, color, arDesc){
   const c=cv.getContext('2d'), cx=S/2, cy=S/2;
 
   if(type==='ar'){
-    /* RICH AR badge */
-    const def = (typeof getARDef==='function') ? getARDef(arDesc) : null;
+    /* RICH AR badge — use icon library */
     const iconDef = getIconDef(arDesc||'');
-    const col = (def && def.color) || iconDef.color || color;
+    const col = iconDef.color || color;
 
     /* Aurora background */
     const grad = c.createRadialGradient(S*0.62,S*0.35,8,cx,cy,S*0.55);
@@ -840,7 +852,7 @@ function drawBadge(type, color, arDesc){
 
     /* White frosted pill */
     c.beginPath();c.arc(cx,cy,S*0.38,0,Math.PI*2);
-    c.fillStyle='rgba(255,255,255,0.92)';c.fill();
+    c.fillStyle='rgba(255,255,255,0.90)';c.fill();
     c.lineWidth=5;c.strokeStyle=hexA(col,0.55);c.stroke();
 
     /* Inner highlight */
@@ -848,29 +860,8 @@ function drawBadge(type, color, arDesc){
     hg.addColorStop(0,'rgba(255,255,255,0.55)');hg.addColorStop(1,'rgba(255,255,255,0)');
     c.beginPath();c.arc(S*0.42,S*0.40,S*0.20,0,Math.PI*2);c.fillStyle=hg;c.fill();
 
-    /* Immediate fallback: my hand-drawn ICON_LIB icon (guaranteed visible) */
+    /* Draw the icon */
     try{ iconDef.draw(c, S); }catch(err){ console.warn('[icon draw]', err); }
-
-    /* Async upgrade: render the OFFICIAL def.icon SVG from ar-content.js on top.
-       If it loads, it replaces with the exact matching icon. */
-    if(def && def.icon){
-      const svgStr = officialIconSVG(def.icon, col);
-      svgToImage(svgStr).then(img=>{
-        if(!img || !cv._refreshFn) return;
-        /* Repaint: clear icon zone (keep pill) and draw official icon centered */
-        const iconSize = S*0.46, ix=(S-iconSize)/2, iy=(S-iconSize)/2;
-        /* redraw pill area to erase fallback icon */
-        c.save();
-        c.beginPath();c.arc(cx,cy,S*0.355,0,Math.PI*2);c.clip();
-        c.fillStyle='rgba(255,255,255,0.92)';c.fillRect(0,0,S,S);
-        const hg2=c.createRadialGradient(S*0.42,S*0.40,1,S*0.42,S*0.40,S*0.20);
-        hg2.addColorStop(0,'rgba(255,255,255,0.55)');hg2.addColorStop(1,'rgba(255,255,255,0)');
-        c.fillStyle=hg2;c.fillRect(0,0,S,S);
-        c.drawImage(img, ix, iy, iconSize, iconSize);
-        c.restore();
-        cv._refreshFn();
-      });
-    }
     return cv;
   }
 
@@ -885,41 +876,6 @@ function drawBadge(type, color, arDesc){
   if(type==='cross'){ chevron(c,cx,cy-17,28);chevron(c,cx,cy+17,28); }
   else { chevron(c,cx,cy,44); }
   return cv;
-}
-
-/* Clean an ar-content.js icon SVG so it renders standalone (resolve currentColor) */
-function officialIconSVG(iconHTML, color){
-  let s = iconHTML;
-  /* Replace currentColor with the actual color */
-  s = s.replace(/currentColor/g, color);
-  /* Ensure stroke color present on the root svg if it used currentColor via style */
-  /* Force a clean viewBox-based svg with explicit stroke */
-  /* If no explicit stroke attr, add one */
-  if(!/stroke="/.test(s.slice(0,60))){
-    s = s.replace('<svg', `<svg stroke="${color}"`);
-  }
-  /* Add xmlns for standalone rendering */
-  if(!/xmlns=/.test(s)){
-    s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
-  }
-  /* Strip fixed width/height so it scales to our drawImage size */
-  s = s.replace(/width="\d+"/,'width="120"').replace(/height="\d+"/,'height="120"');
-  if(!/width=/.test(s)) s = s.replace('<svg','<svg width="120" height="120"');
-  return s;
-}
-
-/* SVG string → Image (async). Resolves null on failure. */
-function svgToImage(svgString){
-  return new Promise((resolve)=>{
-    try{
-      const blob = new Blob([svgString], {type:'image/svg+xml;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const img = new Image();
-      img.onload  = ()=>{ URL.revokeObjectURL(url); resolve(img); };
-      img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
-      img.src = url;
-    }catch(e){ resolve(null); }
-  });
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -937,231 +893,138 @@ function localized(obj, field, lang){
   return obj[field+'_'+lc] || obj[field] || '';
 }
 
-/* Pick localized text from {FR,EN,AR} object, [fr,en,ar] array, or plain string */
-function L(v, lang){
-  if(v==null) return '';
-  if(typeof v === 'string') return v;
-  if(Array.isArray(v)){ const i={FR:0,EN:1,AR:2}[lang]; return v[i!=null?i:0] || v[0] || ''; }
-  return v[lang] || v.FR || v.EN || '';
-}
-
-/* Comprehensive card renderer — reads def.eq (equipment), def.card (info), or def.sections (base).
-   Renders to canvas, deterministic, with FR/EN/AR + Arabic RTL. */
 function drawCard(desc, lang){
-  lang = lang || 'FR';
-  const rtl = (lang === 'AR');
-  const W=1024, H=1400;
+  const W=1024, H=1280;
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const c=cv.getContext('2d');
-  if(rtl){ try{ c.direction='rtl'; }catch(e){} }
+  const def = getARDefFor(desc) || {title:desc, color:'#22C55E', type:'info', statusText:'', sections:[]};
 
-  const def = (typeof getARDef==='function' ? getARDef(desc) : null) || getARDefFor(desc)
-            || {title:desc, color:'#22C55E', type:'info'};
-  const color = def.color || '#22C55E';
-  const title = def['title_'+lang.toLowerCase()] || def.title || desc || '';
-  const status = def['statusText_'+lang.toLowerCase()] || def.statusText || '';
-
-  /* layout helpers honoring RTL */
-  const PAD = 56;
-  const xStart = rtl ? (W-PAD) : PAD;
-  const alignStart = rtl ? 'right' : 'left';
-  const alignEnd   = rtl ? 'left'  : 'right';
-  const xEnd = rtl ? PAD : (W-PAD);
+  const color  = def.color || '#22C55E';
+  const title  = localized(def, 'title', lang) || desc;
+  const status = localized(def, 'statusText', lang) || '';
+  const type   = (def.type||'INFO').toUpperCase();
 
   /* Background */
-  const bg=c.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#FFFFFF'); bg.addColorStop(1,'#F3FBF6');
-  c.fillStyle=bg; c.fillRect(0,0,W,H);
+  c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
 
-  /* HERO */
-  const heroH=210;
-  const hg=c.createRadialGradient(W*0.6,70,20,W*0.5,90,720);
-  hg.addColorStop(0,hexA(color,0.32)); hg.addColorStop(0.5,hexA(color,0.10)); hg.addColorStop(1,'rgba(255,255,255,0)');
-  c.fillStyle=hg; c.fillRect(0,0,W,heroH);
+  /* Card surface with green/cyan accent gradient */
+  const gradTop = c.createLinearGradient(0,0,0,H);
+  gradTop.addColorStop(0,'#FFFFFF');
+  gradTop.addColorStop(1,'#F0FDF4');
+  c.fillStyle=gradTop;c.fillRect(0,0,W,H);
 
-  /* Category label */
-  const catMap = {plant:{FR:'CULTURE',EN:'CROP',AR:'محصول'}, equipment:{FR:'ÉQUIPEMENT',EN:'EQUIPMENT',AR:'معدات'},
-                  sensor:{FR:'CAPTEURS',EN:'SENSORS',AR:'مستشعرات'}, info:{FR:'INFORMATION',EN:'INFORMATION',AR:'معلومات'}};
-  const catTxt = L(catMap[def.type]||catMap.info, lang);
-  c.fillStyle='rgba(0,0,0,0.42)';
-  c.font='600 22px system-ui,-apple-system,sans-serif';
-  c.textAlign=alignStart; c.textBaseline='top';
-  c.fillText(catTxt, xStart, 38);
+  /* HERO — colored band */
+  const heroH = 220;
+  const heroGrad = c.createRadialGradient(W*0.65, 80, 20, W*0.5, 100, 700);
+  heroGrad.addColorStop(0, hexA(color,0.30));
+  heroGrad.addColorStop(0.5, hexA(color,0.10));
+  heroGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle=heroGrad;c.fillRect(0,0,W,heroH);
 
-  /* Title */
+  /* Hero label (category) */
+  c.fillStyle='rgba(0,0,0,0.45)';
+  c.font='600 22px system-ui, -apple-system, sans-serif';
+  c.textAlign='left';c.textBaseline='top';
+  c.fillText(type, 50, 40);
+
+  /* Hero title */
   c.fillStyle='#0F172A';
-  c.font='700 48px system-ui,-apple-system,sans-serif';
+  c.font='700 52px system-ui, -apple-system, sans-serif';
   c.textBaseline='alphabetic';
-  let y = drawWrapped(c, title, xStart, 120, W-2*PAD, 54, alignStart) + 8;
+  wrapText(c, title, 50, 130, W-100, 56, 2);
 
   /* Status pill */
   if(status){
-    c.font='600 22px system-ui,-apple-system,sans-serif';
+    c.font='600 22px system-ui, -apple-system, sans-serif';
     c.textBaseline='middle';
-    const tw=c.measureText(status).width;
-    const pillW=tw+58, pillH=46, py=160;
-    const px = rtl ? (W-PAD-pillW) : PAD;
-    roundRect(c, px, py, pillW, pillH, 23);
-    c.fillStyle=hexA(color,0.15); c.fill();
-    c.lineWidth=1.5; c.strokeStyle=hexA(color,0.5); c.stroke();
+    const padX=22, padY=12;
+    const tw = c.measureText(status).width;
+    const pillW = tw + padX*2 + 26;
+    const pillH = 44;
+    const py = 180;
+    roundRect(c, 50, py, pillW, pillH, 22);
+    c.fillStyle=hexA(color,0.15);c.fill();
+    c.lineWidth=1.5;c.strokeStyle=hexA(color,0.50);c.stroke();
     c.fillStyle=color;
-    const dotX = rtl ? (px+pillW-24) : (px+24);
-    c.beginPath();c.arc(dotX,py+pillH/2,7,0,Math.PI*2);c.fill();
-    c.textAlign=alignStart;
-    c.fillText(status, rtl ? (px+pillW-42) : (px+42), py+pillH/2);
-  }
-
-  y = heroH + 46;
-
-  /* ── Section header helper ── */
-  function header(txt){
-    if(y>H-120) return;
+    c.beginPath();c.arc(50+padX,py+pillH/2,7,0,Math.PI*2);c.fill();
     c.fillStyle=color;
-    c.font='700 20px system-ui,-apple-system,sans-serif';
-    c.textAlign=alignStart; c.textBaseline='alphabetic';
-    c.fillText((txt||'').toUpperCase(), xStart, y);
-    y += 38;
-  }
-  /* bullet/grid paragraph */
-  function para(txt){
-    if(y>H-120) return;
-    c.fillStyle=color;
-    const bx = rtl ? (W-PAD-6) : (PAD+6);
-    c.beginPath();c.arc(bx, y-8, 5, 0, Math.PI*2);c.fill();
-    c.fillStyle='#1E293B';
-    c.font='400 23px system-ui,-apple-system,sans-serif';
-    const tx = rtl ? (W-PAD-28) : (PAD+28);
-    const lines = drawWrapped(c, txt, tx, y, W-2*PAD-28, 31, alignStart, true);
-    y = lines + 12;
-  }
-  /* key/value row */
-  function kvRow(k,v){
-    if(y>H-120) return;
-    c.font='500 22px system-ui,-apple-system,sans-serif';
-    c.fillStyle='#64748B'; c.textAlign=alignStart; c.textBaseline='alphabetic';
-    c.fillText(k, xStart, y);
-    c.font='600 22px system-ui,-apple-system,sans-serif';
-    c.fillStyle='#0F172A'; c.textAlign=alignEnd;
-    c.fillText(v, xEnd, y);
-    c.strokeStyle='rgba(0,0,0,0.07)'; c.lineWidth=1;
-    c.beginPath();c.moveTo(PAD,y+13);c.lineTo(W-PAD,y+13);c.stroke();
-    y += 40;
-  }
-  /* chips row */
-  function chips(arr){
-    if(y>H-120) return;
-    c.font='600 19px system-ui,-apple-system,sans-serif';
-    let cx = rtl ? (W-PAD) : PAD;
-    arr.forEach(ch=>{
-      const t=L(ch,lang); if(!t) return;
-      const w=c.measureText(t).width+34;
-      const x = rtl ? (cx-w) : cx;
-      roundRect(c, x, y-22, w, 38, 19);
-      c.fillStyle=hexA(color,0.12); c.fill();
-      c.lineWidth=1; c.strokeStyle=hexA(color,0.4); c.stroke();
-      c.fillStyle=color; c.textAlign='center'; c.textBaseline='middle';
-      c.fillText(t, x+w/2, y-2);
-      cx = rtl ? (cx-w-12) : (cx+w+12);
-    });
-    y += 46;
+    c.fillText(status, 50+padX+18, py+pillH/2);
   }
 
-  let rendered=false;
+  /* BODY — sections */
+  let y = heroH + 40;
+  const sections = def.sections || [];
+  c.textAlign='left';
 
-  /* ── 1) EQUIPMENT (def.eq) ── */
-  if(def.eq){
-    const e=def.eq;
-    const Hwhat ={FR:'À QUOI ÇA SERT',EN:'WHAT IT DOES',AR:'الوظيفة'};
-    const Htrig ={FR:'DÉCLENCHEMENT',EN:'TRIGGER',AR:'التشغيل'};
-    const Hset  ={FR:'CARACTÉRISTIQUES',EN:'SPECIFICATIONS',AR:'المواصفات'};
-    const Lon   ={FR:'Activé',EN:'On',AR:'تشغيل'};
-    const Loff  ={FR:'Désactivé',EN:'Off',AR:'إيقاف'};
+  sections.forEach(sec=>{
+    if(y > H-100) return; /* overflow protection */
+    const label = localized(sec, 'label', lang);
+    const bullets = sec['bullets_'+(lang||'FR').toLowerCase()] || sec.bullets;
+    const items = sec['items_'+(lang||'FR').toLowerCase()] || sec.items;
 
-    if(e.what && e.what.length){ header(L(Hwhat,lang)); e.what.forEach(w=>para(L(w,lang))); y+=8; }
-    if(e.trigger){
-      header(L(Htrig,lang));
-      if(e.trigger.on)  kvRow(L(Lon,lang),  L(e.trigger.on,lang));
-      if(e.trigger.off) kvRow(L(Loff,lang), L(e.trigger.off,lang));
-      y+=8;
+    /* Section label */
+    if(label){
+      c.fillStyle=color;
+      c.font='700 18px system-ui, -apple-system, sans-serif';
+      c.textBaseline='alphabetic';
+      c.fillText(label.toUpperCase(), 50, y);
+      y += 36;
     }
-    if(e.set && e.set.length){
-      header(L(Hset,lang));
-      e.set.forEach(s=>kvRow(L(s.k,lang), L(s.v,lang)));
-      y+=8;
+
+    /* Bullets */
+    if(bullets && bullets.length){
+      c.fillStyle='#1E293B';
+      c.font='400 24px system-ui, -apple-system, sans-serif';
+      bullets.forEach(b=>{
+        if(y > H-100) return;
+        c.fillStyle=color;
+        c.beginPath();c.arc(60,y-8,5,0,Math.PI*2);c.fill();
+        c.fillStyle='#1E293B';
+        const lines = wrapText(c, b, 80, y, W-130, 32, 4);
+        y += 32 * (lines||1) + 8;
+      });
+      y += 10;
     }
-    rendered=true;
-  }
 
-  /* ── 2) INFO CARD (def.card.sections) ── */
-  if(!rendered && def.card && def.card.sections){
-    def.card.sections.forEach(sec=>{
-      if(y>H-120) return;
-      header(L(sec.title,lang));
-      const kind=sec.kind||'facts';
-      if(kind==='facts'){
-        (sec.items||[]).forEach(it=>kvRow(L(it.k,lang), L(it.v,lang)));
-      } else if(kind==='grid'){
-        (sec.items||[]).forEach(it=>para(L(it,lang)));
-      } else if(kind==='chips'){
-        chips(sec.items||[]);
-      }
-      if(sec.note) { para(L(sec.note,lang)); }
-      y+=8;
-    });
-    rendered=true;
-  }
+    /* Items (key: value rows) */
+    if(items && items.length){
+      items.forEach(it=>{
+        if(y > H-100) return;
+        c.fillStyle='#64748B';
+        c.font='500 22px system-ui, -apple-system, sans-serif';
+        c.textAlign='left';
+        c.fillText(it.k, 50, y);
 
-  /* ── 3) BASE SECTIONS (def.sections) ── */
-  if(!rendered && def.sections && def.sections.length){
-    def.sections.forEach(sec=>{
-      if(y>H-120) return;
-      if(sec.label) header(L(sec.label,lang));
-      if(sec.bullets) sec.bullets.forEach(b=>para(L(b,lang)));
-      if(sec.items) sec.items.forEach(it=>kvRow(L(it.k,lang), L(it.v,lang)));
-      y+=8;
-    });
-    rendered=true;
-  }
+        c.fillStyle='#0F172A';
+        c.font='600 22px system-ui, -apple-system, sans-serif';
+        c.textAlign='right';
+        c.fillText(it.v, W-50, y);
 
-  if(!rendered){
-    c.fillStyle='rgba(0,0,0,0.4)';
-    c.font='500 26px system-ui,-apple-system,sans-serif';
-    c.textAlign=alignStart;
-    c.fillText(L({FR:'Information à venir.',EN:'Information coming soon.',AR:'معلومات قادمة.'},lang), xStart, heroH+70);
+        /* underline */
+        c.strokeStyle='rgba(0,0,0,0.08)';c.lineWidth=1;
+        c.beginPath();c.moveTo(50,y+12);c.lineTo(W-50,y+12);c.stroke();
+        y += 38;
+      });
+      y += 10;
+    }
+    y += 20;
+  });
+
+  /* If no content, show a friendly message */
+  if(sections.length === 0){
+    c.fillStyle='rgba(0,0,0,0.40)';
+    c.font='500 26px system-ui, -apple-system, sans-serif';
+    c.textAlign='left';
+    c.fillText('Aucune information détaillée disponible.', 50, heroH+60);
   }
 
   /* FOOTER */
-  c.fillStyle='rgba(0,0,0,0.38)';
-  c.font='500 21px system-ui,-apple-system,sans-serif';
-  c.textAlign=alignStart; c.textBaseline='alphabetic';
-  const closeTxt={FR:'Touchez pour fermer',EN:'Tap to close',AR:'انقر للإغلاق'};
-  c.fillText(lang+'  ·  '+L(closeTxt,lang), xStart, H-46);
+  c.fillStyle='rgba(0,0,0,0.40)';
+  c.font='500 22px system-ui, -apple-system, sans-serif';
+  c.textAlign='left';c.textBaseline='alphabetic';
+  c.fillText((lang||'FR')+'  ·  Touchez pour fermer', 50, H-50);
 
   return cv;
-}
-
-/* Word-wrap + draw. Returns the y after the last line. align = 'left'|'right'. */
-function drawWrapped(c, text, x, y, maxW, lineH, align, isBody){
-  text = String(text||'');
-  c.textAlign = align||'left'; c.textBaseline='alphabetic';
-  const words = text.split(/\s+/);
-  let line=''; let cy=y; let count=0; const maxLines = isBody?6:2;
-  for(let i=0;i<words.length;i++){
-    const test = line ? line+' '+words[i] : words[i];
-    if(c.measureText(test).width > maxW && line){
-      c.fillText(line, x, cy); cy+=lineH; count++;
-      line=words[i];
-      if(count>=maxLines-1){
-        /* last line: append rest truncated */
-        let rest=words.slice(i).join(' ');
-        while(c.measureText(rest+'…').width>maxW && rest.length>1) rest=rest.slice(0,-1);
-        c.fillText(rest+(words.slice(i).join(' ').length>rest.length?'…':''), x, cy);
-        return cy;
-      }
-    } else { line=test; }
-  }
-  if(line){ c.fillText(line, x, cy); }
-  return cy;
 }
 
 /* (audio handled by playARAudioOnce below — reads def.audio from ar-content.js) */
@@ -1209,9 +1072,7 @@ function makeHotspot(hs){
   badge.addEventListener('click',doAction);
   badge.addEventListener('triggerdown',doAction);
   hit.appendChild(badge);
-  const badgeCanvas = drawBadge(hs.type,color,arDesc);
-  badgeCanvas._refreshFn = ()=>applyCanvasTexture(badge, badgeCanvas);
-  applyCanvasTexture(badge, badgeCanvas);
+  applyCanvasTexture(badge,drawBadge(hs.type,color,arDesc));
 
   return wrap;
 }
@@ -1258,16 +1119,35 @@ function stopARAudio(){
   if(_arAudio){ try{ _arAudio.pause(); _arAudio.src=''; }catch(e){} _arAudio=null; window._arAudioEl=null; }
 }
 
-/* Render the AR card to the 3D plane (deterministic canvas, reliable on Quest) */
-function renderCardToPlane(desc, anchorPos){
+function _nextFrame(){ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); }
+async function _waitFonts(){ try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){} }
+
+/* Capture the rich DOM #ar-card → canvas → apply to the 3D plane */
+async function renderCardToPlane(desc, anchorPos){
+  const dom = document.getElementById('ar-card');
   const plane = $('arpanel');
   if(!plane) return;
 
-  /* Deterministic canvas card — reads def.eq/.card/.sections, RTL aware. 100% reliable. */
-  const canvas = drawCard(desc, window.currentLang || 'FR');
+  let canvas = null;
+  if(dom && typeof html2canvas === 'function'){
+    dom.classList.add('vr-capture');
+    await _waitFonts();
+    await _nextFrame();
+    try{
+      canvas = await html2canvas(dom, {
+        backgroundColor:'#ffffff',
+        scale:2, logging:false, useCORS:true, allowTaint:true,
+        windowWidth:360, width:320
+      });
+    }catch(e){ console.warn('[html2canvas] failed → fallback', e); }
+    dom.classList.remove('vr-capture');
+  }
+  /* Fallback to hand-drawn canvas if html2canvas unavailable/failed */
+  if(!canvas) canvas = drawCard(desc, window.currentLang || 'FR');
+
   applyCanvasTexture(plane, canvas);
 
-  /* Size plane to match aspect ratio (keep width ~1.5 m) */
+  /* Size plane to match captured aspect ratio (keep width ~1.5 m) */
   const W = 1.5, H = W * (canvas.height / canvas.width);
   plane.setAttribute('width', W);
   plane.setAttribute('height', H);
@@ -1464,8 +1344,8 @@ async function bootVR(){
   /* Register A-Frame components now that A-Frame is active */
   if(!AFRAME.components['billboard']){
     AFRAME.registerComponent('billboard',{
-      init(){this._q=new THREE.Quaternion();},
-      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldQuaternion(this._q);this.el.object3D.quaternion.copy(this._q);}
+      init(){this._v=new THREE.Vector3();},
+      tick(){const cam=this.el.sceneEl.camera;if(!cam)return;cam.getWorldPosition(this._v);this.el.object3D.lookAt(this._v);this.el.object3D.rotateY(Math.PI);}
     });
   }
   /* Hook VR events + click delegation — vrPhase is now active so a-scene is in the DOM */
