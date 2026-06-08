@@ -1,0 +1,118 @@
+# routers/profil_router.py
+# Ajouter dans main.py : from routers.profil_router import router as profil_router
+#                        app.include_router(profil_router)
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+from database import get_db
+from auth import get_current_user, hash_password, verify_password
+
+router = APIRouter(prefix="/api/profil", tags=["Profil"])
+
+
+class ProfilUpdate(BaseModel):
+    nom:           Optional[str]  = None
+    photo_profil:  Optional[str]  = None   # base64 string
+    alertes_email: Optional[bool] = None
+
+
+class PasswordUpdate(BaseModel):
+    ancien_mdp:  str
+    nouveau_mdp: str
+
+
+# ── GET /api/profil/me ───────────────────────────────────────
+@router.get("/me")
+async def get_profil(user=Depends(get_current_user), db=Depends(get_db)):
+    """Retourne le profil complet de l'utilisateur connecté."""
+    row = await db.fetchrow("""
+        SELECT id, nom, email, role, unit, actif,
+               email_verifie, last_login, created_at,
+               photo_profil, alertes_email
+        FROM utilisateurs WHERE id = $1
+    """, user["id"])
+    if not row:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    return dict(row)
+
+
+# ── PUT /api/profil/me ───────────────────────────────────────
+@router.put("/me")
+async def update_profil(
+    data: ProfilUpdate,
+    user=Depends(get_current_user),
+    db=Depends(get_db)
+):
+    """Met à jour nom, photo de profil, ou préférences alertes."""
+    updates = []
+    params  = []
+    i = 1
+
+    if data.nom is not None:
+        if len(data.nom.strip()) < 2:
+            raise HTTPException(status_code=400, detail="Nom trop court.")
+        updates.append(f"nom = ${i}")
+        params.append(data.nom.strip())
+        i += 1
+
+    if data.photo_profil is not None:
+        # Valider que c'est bien du base64 image (max ~500KB en base64 ≈ 680KB)
+        if len(data.photo_profil) > 700_000:
+            raise HTTPException(status_code=400, detail="Image trop volumineuse (max 500KB).")
+        if not data.photo_profil.startswith("data:image/"):
+            raise HTTPException(status_code=400, detail="Format image invalide.")
+        updates.append(f"photo_profil = ${i}")
+        params.append(data.photo_profil)
+        i += 1
+
+    if data.alertes_email is not None:
+        updates.append(f"alertes_email = ${i}")
+        params.append(data.alertes_email)
+        i += 1
+
+    if not updates:
+        return {"message": "Aucune modification."}
+
+    params.append(user["id"])
+    await db.execute(
+        f"UPDATE utilisateurs SET {', '.join(updates)} WHERE id = ${i}",
+        *params
+    )
+    return {"message": "Profil mis à jour avec succès."}
+
+
+# ── PUT /api/profil/password ─────────────────────────────────
+@router.put("/password")
+async def change_password(
+    data: PasswordUpdate,
+    user=Depends(get_current_user),
+    db=Depends(get_db)
+):
+    """Change le mot de passe après vérification de l'ancien."""
+    full = await db.fetchrow(
+        "SELECT mot_de_passe FROM utilisateurs WHERE id = $1", user["id"]
+    )
+    if not verify_password(data.ancien_mdp, full["mot_de_passe"]):
+        raise HTTPException(status_code=400, detail="Ancien mot de passe incorrect.")
+    if len(data.nouveau_mdp) < 6:
+        raise HTTPException(status_code=400, detail="Minimum 6 caractères.")
+    if data.ancien_mdp == data.nouveau_mdp:
+        raise HTTPException(status_code=400, detail="Le nouveau mot de passe doit être différent.")
+
+    hashed = hash_password(data.nouveau_mdp)
+    await db.execute(
+        "UPDATE utilisateurs SET mot_de_passe = $1 WHERE id = $2",
+        hashed, user["id"]
+    )
+    return {"message": "Mot de passe modifié avec succès."}
+
+
+# ── DELETE /api/profil/photo ─────────────────────────────────
+@router.delete("/photo")
+async def delete_photo(user=Depends(get_current_user), db=Depends(get_db)):
+    """Supprime la photo de profil (retour aux initiales)."""
+    await db.execute(
+        "UPDATE utilisateurs SET photo_profil = NULL WHERE id = $1", user["id"]
+    )
+    return {"message": "Photo supprimée."}
