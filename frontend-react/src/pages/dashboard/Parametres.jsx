@@ -351,7 +351,7 @@ export default function Parametres({ theme, lang }) {
   function handlePhotoChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 500_000) { showToast('Image trop volumineuse (max 500KB).', 'error'); return }
+    if (file.size > 1_000_000) { showToast('Image trop volumineuse (max 1MB).', 'error'); return }
     const reader = new FileReader()
     reader.onload = async ev => {
       const b64 = ev.target.result
