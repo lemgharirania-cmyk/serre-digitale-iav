@@ -1,5 +1,5 @@
 // src/components/layout/Sidebar.jsx  (dashboard admin)
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Server, BarChart2, Bell, Sliders,
@@ -82,10 +82,24 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
   const activeBg = isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)'
   const green    = '#22C55E'
 
-  const user     = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
-  const userName = user.prenom || user.nom || 'Admin'
-  const userRole = user.role || 'ALL'
-  const initials = (user.prenom?.[0] || user.nom?.[0] || 'A').toUpperCase()
+  const [userState, setUserState] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} }
+  })
+
+  // Sync quand Parametres.jsx met à jour le profil
+  useEffect(() => {
+    function onUpdate() {
+      try { setUserState(JSON.parse(localStorage.getItem('sdi_user') || '{}')) } catch {}
+    }
+    window.addEventListener('sdi_profil_updated', onUpdate)
+    return () => window.removeEventListener('sdi_profil_updated', onUpdate)
+  }, [])
+
+  const user     = userState
+  const userName = user.nom || 'Admin'
+  const userRole = user.unit || user.role || 'ALL'
+  const initials = (user.nom?.[0] || 'A').toUpperCase()
+  const userPhoto = user.photo_profil || null
 
   const onDashboard = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
 
@@ -332,14 +346,22 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
           gap: 8,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: open ? 9 : 0, minWidth: 0 }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg,#22C55E,#059669)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 800, color: 'white',
-            }}>
-              {initials}
-            </div>
+            {userPhoto ? (
+              <img src={userPhoto} alt="profil" style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                objectFit: 'cover',
+                border: '2px solid rgba(34,197,94,0.4)',
+              }} />
+            ) : (
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg,#22C55E,#059669)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, fontWeight: 800, color: 'white',
+              }}>
+                {initials}
+              </div>
+            )}
             {open && (
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</div>
