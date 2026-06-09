@@ -46,6 +46,95 @@ const ACTIONNEURS = {
   fenetre:     { ouvre:25, ferme:23, vent_max:40 },
 }
 
+// ── Règles de contrôle interne (source : synthèse_automatisation_serres.pdf) ──
+// Chaque règle : { id, param, groupe, condFn(val,meteo)->bool, label, action, icon, couleur, deadband? }
+const CONTROL_RULES = [
+  // ── Température ────────────────────────────────────────
+  {
+    id:'cool_day', groupe:'temperature', param:'temperature',
+    label:{ FR:'Refroidissement (jour)', EN:'Cooling (day)' },
+    action:{ FR:'Ventilation + déshumidification', EN:'Ventilation + dehumidification' },
+    seuil:{ FR:'T > 25 °C (jour)', EN:'T > 25 °C (day)' },
+    condFn:(v, meteo)=> v != null && v > 25 && meteo?.is_day !== false,
+    couleur:'#EF4444', glyph:'🌡',
+  },
+  {
+    id:'cool_night', groupe:'temperature', param:'temperature',
+    label:{ FR:'Refroidissement (nuit)', EN:'Cooling (night)' },
+    action:{ FR:'Ventilation forcée', EN:'Forced ventilation' },
+    seuil:{ FR:'T > 20 °C (nuit)', EN:'T > 20 °C (night)' },
+    condFn:(v, meteo)=> v != null && v > 20 && meteo?.is_day === false,
+    couleur:'#F97316', glyph:'🌡',
+  },
+  {
+    id:'heat_day', groupe:'temperature', param:'temperature',
+    label:{ FR:'Chauffage (jour)', EN:'Heating (day)' },
+    action:{ FR:'Activation chauffage', EN:'Heating activation' },
+    seuil:{ FR:'T < 20 °C (jour)', EN:'T < 20 °C (day)' },
+    condFn:(v, meteo)=> v != null && v < 20 && meteo?.is_day !== false,
+    couleur:'#3B82F6', glyph:'🔥',
+  },
+  {
+    id:'heat_night', groupe:'temperature', param:'temperature',
+    label:{ FR:'Chauffage (nuit)', EN:'Heating (night)' },
+    action:{ FR:'Activation chauffage nuit', EN:'Night heating activation' },
+    seuil:{ FR:'T < 15 °C (nuit)', EN:'T < 15 °C (night)' },
+    condFn:(v, meteo)=> v != null && v < 15 && meteo?.is_day === false,
+    couleur:'#6366F1', glyph:'🔥',
+  },
+  // ── Humidité ───────────────────────────────────────────
+  {
+    id:'dehum', groupe:'humidite', param:'humidite',
+    label:{ FR:'Déshumidification', EN:'Dehumidification' },
+    action:{ FR:'Ventilation (verrou refr. actif)', EN:'Ventilation (cooling lock active)' },
+    seuil:{ FR:'HR > 80 % · deadband 5 %', EN:'RH > 80 % · deadband 5 %' },
+    condFn:(v)=> v != null && v > 80,
+    couleur:'#F59E0B', glyph:'💧',
+  },
+  {
+    id:'hum', groupe:'humidite', param:'humidite',
+    label:{ FR:'Humidification', EN:'Humidification' },
+    action:{ FR:'Brumisation / humidificateur', EN:'Misting / humidifier' },
+    seuil:{ FR:'HR < 60 % · deadband 5 %', EN:'RH < 60 % · deadband 5 %' },
+    condFn:(v)=> v != null && v < 60,
+    couleur:'#06B6D4', glyph:'💧',
+  },
+  // ── CO₂ ───────────────────────────────────────────────
+  {
+    id:'co2_up', groupe:'co2', param:'co2',
+    label:{ FR:'Injection CO₂', EN:'CO₂ injection' },
+    action:{ FR:'Injection CO₂ (fuzzy ctrl · verrous actifs)', EN:'CO₂ injection (fuzzy ctrl · locks active)' },
+    seuil:{ FR:'CO₂ < 1000 ppm · deadband 50 ppm', EN:'CO₂ < 1000 ppm · deadband 50 ppm' },
+    condFn:(v)=> v != null && v < 1000,
+    couleur:'#22C55E', glyph:'🌿',
+  },
+  {
+    id:'co2_down', groupe:'co2', param:'co2',
+    label:{ FR:'Ventilation CO₂', EN:'CO₂ ventilation' },
+    action:{ FR:'Ventilation pour purger le CO₂', EN:'Ventilation to purge CO₂' },
+    seuil:{ FR:'CO₂ > 500 ppm (nuit)', EN:'CO₂ > 500 ppm (night)' },
+    condFn:(v, meteo)=> v != null && v > 500 && meteo?.is_day === false,
+    couleur:'#8B5CF6', glyph:'💨',
+  },
+  // ── Ombrage ext (déjà dans ActionCards, rappel condensé) ─
+  {
+    id:'omb_ext_dep', groupe:'ombrage', param:'temperature',
+    label:{ FR:'Ombrage ext. → Déployer', EN:'Ext. shade → Deploy' },
+    action:{ FR:'Rideau extérieur fermé · 10h–17h30', EN:'Outer screen closed · 10h–17h30' },
+    seuil:{ FR:'T > 28 °C · ttes 10 min', EN:'T > 28 °C · every 10 min' },
+    condFn:(v)=> v != null && v > 28 && dansPlage(ACTIONNEURS.ombrage_ext.plage),
+    couleur:'#F59E0B', glyph:'☀',
+  },
+  {
+    id:'omb_int_dep', groupe:'ombrage', param:'temperature',
+    label:{ FR:'Ombrage int. → Déployer', EN:'Int. shade → Deploy' },
+    action:{ FR:'Écran intérieur fermé · 11h–18h30', EN:'Inner screen closed · 11h–18h30' },
+    seuil:{ FR:'T > 34 °C · ttes 10 min', EN:'T > 34 °C · every 10 min' },
+    condFn:(v)=> v != null && v > 34 && dansPlage(ACTIONNEURS.ombrage_int.plage),
+    couleur:'#FBBF24', glyph:'🪟',
+  },
+]
+
 // ── Helpers ───────────────────────────────────────────────────
 function paramStatus(value, key, seuil) {
   const opt = OPTIMAL[key]
@@ -100,6 +189,11 @@ const T = {
     ventL:'Vent', rayL:'Rayonnement', pluieL:'Pluie', oui:'Oui', non:'Non',
     leverL:'Lever', coucherL:'Coucher',
     etatGlobal:'État global', derniereMAJ:'Dernière mise à jour',
+    controle:'Logique de contrôle interne',
+    controleDesc:'Actions correctives déclenchées par les seuils mesurés',
+    grpTemp:'Température', grpHum:'Humidité', grpCO2:'CO₂', grpOmb:'Ombrage automatique',
+    actifNow:'DÉCLENCHÉ', inactif:'EN ATTENTE', naVal:'N/D',
+    deadband:'Deadband', repet:'Rép.',
   },
   EN:{
     env:'Indoor climate', irr:'Irrigation',
@@ -116,6 +210,11 @@ const T = {
     ventL:'Wind', rayL:'Radiation', pluieL:'Rain', oui:'Yes', non:'No',
     leverL:'Sunrise', coucherL:'Sunset',
     etatGlobal:'Global status', derniereMAJ:'Last update',
+    controle:'Internal control logic',
+    controleDesc:'Corrective actions triggered by measured thresholds',
+    grpTemp:'Temperature', grpHum:'Humidity', grpCO2:'CO₂', grpOmb:'Automatic shading',
+    actifNow:'TRIGGERED', inactif:'STANDBY', naVal:'N/A',
+    deadband:'Deadband', repet:'Rep.',
   },
 }
 
@@ -363,7 +462,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             <Scene
               isDark={isDark} serreColor={meta.color} meteo={meteo}
               ext={ext.etat} int={int.etat} fenetre={fen.etat}
-              serreIdx={idx}
+              serreIdx={idx} temp={temp}
             />
           </div>
 
@@ -404,6 +503,16 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           </div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          4. LOGIQUE DE CONTRÔLE INTERNE
+          Tableau seuils → actions correctives, wired to live env/irr
+      ══════════════════════════════════════════════════════════ */}
+      <ControlRulesPanel
+        env={env} irr={irr} meteo={meteo}
+        theme={theme} lang={lang} t={t} meta={meta}
+        border={border} ink={ink} ink3={ink3} ink4={ink4}
+      />
 
     </div>
   )
@@ -619,7 +728,7 @@ function ActionCard({ isDark, ink, ink3, ink4, border, titre, actif, on, off, cO
 // SCHÉMA SVG — enrichi avec ombrage/ventilation + plantes par serre
 // Base : schéma original conservé et enrichi
 // ════════════════════════════════════════════════════════════════
-function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx }) {
+function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp }) {
   const extDep = ext === 'deploye', intDep = int === 'deploye', ouvert = fenetre === 'ouvert'
   const TR  = '0.65s cubic-bezier(.4,0,.2,1)'
   const sol = Math.min(1, (meteo.solaire || 0) / 900)
@@ -785,10 +894,204 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx }) {
         <text x="53" y="232" textAnchor="middle" fontFamily="monospace" fontSize="8"
           fill={isDark?'#94A3B8':'#64748B'}>T° INT.</text>
         <text x="53" y="244" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700"
-          fill={serreColor}>— °C</text>
+          fill={serreColor}>{temp != null ? temp + ' °C' : '— °C'}</text>
       </g>
 
     </svg>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// PANNEAU LOGIQUE DE CONTRÔLE INTERNE
+// Affiche toutes les règles seuil→action, avec état live (déclenché/attente)
+// ════════════════════════════════════════════════════════════════
+const GROUPES_META = {
+  temperature: { key:'grpTemp', icon:'🌡' },
+  humidite:    { key:'grpHum',  icon:'💧' },
+  co2:         { key:'grpCO2',  icon:'🌿' },
+  ombrage:     { key:'grpOmb',  icon:'☀'  },
+}
+
+function ControlRulesPanel({ env, irr, meteo, theme, lang, t, meta, border, ink, ink3, ink4 }) {
+  const isDark = theme === 'dark'
+  const cardBg = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
+
+  // Regroupe les règles par groupe
+  const grouped = {}
+  CONTROL_RULES.forEach(r => {
+    if (!grouped[r.groupe]) grouped[r.groupe] = []
+    grouped[r.groupe].push(r)
+  })
+
+  // Récupère la valeur live pour un paramètre donné
+  const getValue = (param) => env[param] ?? irr?.[param] ?? null
+
+  return (
+    <div style={{
+      background: cardBg,
+      border: '1px solid ' + border,
+      borderRadius: 18,
+      overflow: 'hidden',
+      marginTop: 16,
+    }}>
+      {/* En-tête */}
+      <div style={{
+        padding: '16px 24px 12px',
+        borderBottom: '1px solid ' + border,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      }}>
+        <div>
+          <span style={{ fontSize: 13, fontWeight: 800, color: ink, letterSpacing: '-0.01em' }}>
+            {t.controle}
+          </span>
+          <div style={{ fontSize: 10, color: ink4, marginTop: 2 }}>{t.controleDesc}</div>
+        </div>
+        <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: meta.color,
+          background: meta.color + '12', border: '1px solid ' + meta.color + '25',
+          padding: '3px 10px', borderRadius: 20 }}>{meta.code}</span>
+      </div>
+
+      <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {Object.entries(grouped).map(([groupe, rules]) => {
+          const gm = GROUPES_META[groupe]
+          const label = t[gm?.key] || groupe
+          const triggered = rules.filter(r => r.condFn(getValue(r.param), meteo))
+          const allNa = rules.every(r => getValue(r.param) == null)
+
+          return (
+            <div key={groupe}>
+              {/* Header groupe */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+              }}>
+                <span style={{ fontSize: 14 }}>{gm?.icon}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.08em', color: ink3 }}>{label}</span>
+                {triggered.length > 0 && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 999,
+                    background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+                    color: '#EF4444', letterSpacing: '0.05em',
+                  }}>
+                    {triggered.length} {lang === 'FR' ? 'active' : 'active'}{triggered.length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {allNa && (
+                  <span style={{ fontSize: 9, color: ink4, fontStyle: 'italic' }}>{t.naVal}</span>
+                )}
+              </div>
+
+              {/* Règles du groupe */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
+                {rules.map(rule => {
+                  const val = getValue(rule.param)
+                  const isActive = rule.condFn(val, meteo)
+                  const isNa = val == null
+                  const c = isActive ? rule.couleur : (isNa ? '#64748B' : (isDark ? '#334155' : '#CBD5E1'))
+                  const bg = isActive
+                    ? rule.couleur + '14'
+                    : (isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)')
+                  const brd = isActive
+                    ? rule.couleur + '40'
+                    : (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)')
+
+                  return (
+                    <div key={rule.id} style={{
+                      background: bg,
+                      border: '1px solid ' + brd,
+                      borderLeft: isActive ? '3px solid ' + rule.couleur : '1px solid ' + brd,
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      transition: 'all 0.3s',
+                      position: 'relative',
+                    }}>
+                      {/* Badge état */}
+                      <div style={{
+                        position: 'absolute', top: 9, right: 10,
+                        display: 'flex', alignItems: 'center', gap: 4,
+                      }}>
+                        {isActive && (
+                          <span style={{
+                            width: 6, height: 6, borderRadius: '50%', background: rule.couleur,
+                            boxShadow: '0 0 6px ' + rule.couleur,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}/>
+                        )}
+                        <span style={{
+                          fontSize: 8, fontWeight: 700, letterSpacing: '0.07em',
+                          color: isActive ? rule.couleur : (isNa ? '#64748B' : ink4),
+                        }}>
+                          {isNa ? t.naVal : (isActive ? t.actifNow : t.inactif)}
+                        </span>
+                      </div>
+
+                      {/* Label */}
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: isActive ? rule.couleur : ink,
+                        marginBottom: 4, paddingRight: 60, lineHeight: 1.3 }}>
+                        {rule.label[lang] || rule.label.FR}
+                      </div>
+
+                      {/* Condition seuil */}
+                      <div style={{ fontSize: 10, color: ink3, fontFamily: 'monospace',
+                        marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ fontSize: 9, color: c }}>⟶</span>
+                        {rule.seuil[lang] || rule.seuil.FR}
+                      </div>
+
+                      {/* Action corrective */}
+                      <div style={{
+                        fontSize: 10.5, color: isActive ? rule.couleur : ink4,
+                        background: isActive ? rule.couleur + '0d' : 'transparent',
+                        border: isActive ? '1px solid ' + rule.couleur + '25' : 'none',
+                        borderRadius: 6, padding: isActive ? '4px 8px' : '0',
+                        fontWeight: isActive ? 600 : 400,
+                        transition: 'all 0.3s',
+                      }}>
+                        {isActive ? '⚡ ' : ''}{rule.action[lang] || rule.action.FR}
+                      </div>
+
+                      {/* Valeur live si disponible */}
+                      {val != null && (
+                        <div style={{ marginTop: 6, fontSize: 9, color: ink4, fontFamily: 'monospace' }}>
+                          {lang === 'FR' ? 'Valeur actuelle : ' : 'Current value: '}
+                          <span style={{ color: isActive ? rule.couleur : ink3, fontWeight: 700 }}>
+                            {val}
+                            {rule.param === 'temperature' ? ' °C'
+                             : rule.param === 'humidite' ? ' %'
+                             : rule.param === 'co2' ? ' ppm' : ''}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Légende deadband */}
+      <div style={{
+        padding: '10px 20px 14px', borderTop: '1px solid ' + border,
+        display: 'flex', gap: 20, flexWrap: 'wrap',
+      }}>
+        {[
+          { label: lang === 'FR' ? 'Deadband temp.' : 'Temp. deadband', val: '2 °C' },
+          { label: lang === 'FR' ? 'Deadband hum.' : 'Hum. deadband',  val: '5 %' },
+          { label: lang === 'FR' ? 'Deadband CO₂' : 'CO₂ deadband',   val: '50 ppm' },
+          { label: lang === 'FR' ? 'Répétition ombrage' : 'Shade repeat', val: '10 min' },
+        ].map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 10, color: ink4 }}>{item.label}</span>
+            <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700,
+              color: ink3, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+              padding: '1px 6px', borderRadius: 4 }}>{item.val}</span>
+          </div>
+        ))}
+        <style>{`@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }`}</style>
+      </div>
+    </div>
   )
 }
 
