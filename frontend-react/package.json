@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,6 +15,7 @@
   "dependencies": {
     "chart.js": "^4.5.1",
     "chartjs-plugin-zoom": "^2.2.0",
+    "framer-motion": "^11.3.0",
     "hammerjs": "^2.0.8",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.511.0",
@@ -19,7 +23,6 @@
     "react-dom": "^19.2.5",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.14.2"
-    "framer-motion": "^11.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
