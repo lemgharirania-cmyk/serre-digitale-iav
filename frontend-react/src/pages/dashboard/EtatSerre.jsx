@@ -934,121 +934,147 @@ function ActionCard({ isDark, ink, ink3, ink4, border, titre, actif, on, off, cO
 // ── Fan animé (ventilation / refroidissement / déshumidification) ──
 function FanSymbol({ cx, cy, r=14, active, color='#06B6D4', isDark }) {
   const bg = isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.1)'
+  // Draw everything centered at (0,0), then translate to (cx,cy).
+  // The spinning <g> rotates around (0,0) which is reliable in SVG.
   return (
-    <g>
-      <circle cx={cx} cy={cy} r={r+4} fill={active ? bg : 'transparent'}
-        stroke={active ? color+'55' : 'transparent'} strokeWidth="1"/>
-      <g style={{ transformBox:'fill-box', transformOrigin:`${cx}px ${cy}px`,
-        animation: active ? 'fanSpin 0.7s linear infinite' : 'none' }}>
-        {[0,90,180,270].map((deg,i) => {
-          const rad = deg * Math.PI/180
-          const bx = cx + Math.cos(rad)*r*0.45, by = cy + Math.sin(rad)*r*0.45
-          const ex = cx + Math.cos(rad+Math.PI/2)*r*0.85
-          const ey = cy + Math.sin(rad+Math.PI/2)*r*0.85
-          return <path key={i}
-            d={`M${cx},${cy} Q${bx},${by} ${ex},${ey}`}
-            fill={active ? color : (isDark?'#334155':'#CBD5E1')}
-            opacity={active ? 0.85 : 0.4}/>
+    <g transform={`translate(${cx},${cy})`}>
+      {/* Background glow ring */}
+      <circle cx="0" cy="0" r={r+4}
+        fill={active ? bg : 'transparent'}
+        stroke={active ? color+'55' : 'transparent'}
+        strokeWidth="1"/>
+
+      {/* Spinning blades group — rotates around (0,0) */}
+      <g style={{
+        transformOrigin: '0px 0px',
+        animation: active ? 'fanSpin 2.2s linear infinite' : 'none',
+      }}>
+        {[0, 90, 180, 270].map((deg, i) => {
+          const rad = deg * Math.PI / 180
+          // control point offset from center
+          const cpx = Math.cos(rad) * r * 0.5
+          const cpy = Math.sin(rad) * r * 0.5
+          // endpoint: 90° ahead, at radius r*0.82
+          const ex = Math.cos(rad + Math.PI / 2) * r * 0.82
+          const ey = Math.sin(rad + Math.PI / 2) * r * 0.82
+          return (
+            <path key={i}
+              d={`M0,0 Q${cpx},${cpy} ${ex},${ey}`}
+              fill={active ? color : (isDark ? '#334155' : '#CBD5E1')}
+              opacity={active ? 0.88 : 0.35}
+            />
+          )
         })}
-        <circle cx={cx} cy={cy} r="3.5" fill={active ? color : (isDark?'#475569':'#94A3B8')}/>
+        {/* Hub */}
+        <circle cx="0" cy="0" r="3"
+          fill={active ? color : (isDark ? '#475569' : '#94A3B8')}/>
       </g>
-      {active && (
-        <text x={cx} y={cy+r+14} textAnchor="middle" fontSize="7" fontFamily="monospace" fill={color} fontWeight="700">VENT.</text>
-      )}
+
+      {/* Outer ring (static) */}
+      <circle cx="0" cy="0" r={r+1}
+        fill="none"
+        stroke={active ? color + '30' : (isDark ? '#334155' : '#E2E8F0')}
+        strokeWidth="1.5"/>
+
+      {/* Label */}
+      <text x="0" y={r + 14} textAnchor="middle"
+        fontSize="7" fontFamily="monospace"
+        fill={active ? color : (isDark ? '#475569' : '#94A3B8')}
+        fontWeight={active ? '700' : '400'}>
+        VENT.
+      </text>
     </g>
   )
 }
 
 // ── Radiateur / chauffage ──
-function HeaterSymbol({ cx, cy, active, color='#EF4444', isDark }) {
+function HeaterSymbol({ cx, cy, active, color='#EF4444', isDark, scale=1 }) {
   const bg = isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'
   return (
-    <g>
-      <rect x={cx-14} y={cy-10} width="28" height="20" rx="4"
+    <g transform={`translate(${cx},${cy}) scale(${scale})`}>
+      <rect x="-14" y="-10" width="28" height="20" rx="4"
         fill={active ? bg : 'transparent'} stroke={active ? color+'44' : 'transparent'} strokeWidth="1"/>
       {[-8,-3,2,7].map((dx,i) => (
         <g key={i}>
-          <rect x={cx+dx-1.5} y={cy-8} width="3" height="16" rx="1.5"
+          <rect x={dx-1.5} y="-8" width="3" height="16" rx="1.5"
             fill={active ? color : (isDark?'#334155':'#CBD5E1')} opacity={active?0.9:0.35}/>
           {active && (
-            <path d={`M${cx+dx},${cy-9} q-3,-4 0,-8 q3,-4 0,-8`} fill="none"
+            <path d={`M${dx},-9 q-3,-4 0,-8 q3,-4 0,-8`} fill="none"
               stroke="#F97316" strokeWidth="1.2" opacity="0.7"
               style={{ animation:'flicker 1.2s ease-in-out infinite', animationDelay:`${i*0.15}s` }}/>
           )}
         </g>
       ))}
-      {active && (
-        <text x={cx} y={cy+20} textAnchor="middle" fontSize="7" fontFamily="monospace" fill={color} fontWeight="700">CHAUF.</text>
-      )}
+      <text x="0" y="20" textAnchor="middle" fontSize="7" fontFamily="monospace"
+        fill={active ? color : (isDark?'#475569':'#94A3B8')}
+        fontWeight={active?'700':'400'}>CHAUF.</text>
     </g>
   )
 }
 
-// ── Lampe / humidificateur ──
-function HumidifierSymbol({ cx, cy, active, color='#06B6D4', isDark }) {
+// ── Humidificateur ──
+function HumidifierSymbol({ cx, cy, active, color='#06B6D4', isDark, scale=1 }) {
   return (
-    <g>
-      {/* Corps */}
-      <ellipse cx={cx} cy={cy+2} rx="9" ry="7" fill={active ? color+'22' : 'transparent'}
+    <g transform={`translate(${cx},${cy}) scale(${scale})`}>
+      <ellipse cx="0" cy="2" rx="9" ry="7"
+        fill={active ? color+'22' : 'transparent'}
         stroke={active ? color+'55' : (isDark?'#334155':'#CBD5E1')} strokeWidth="1.2"/>
-      <rect x={cx-4} y={cy-1} width="8" height="8" rx="2"
+      <rect x="-4" y="-1" width="8" height="8" rx="2"
         fill={active ? color+'33' : (isDark?'#1e293b':'#e2e8f0')}/>
-      {/* Gouttelettes */}
       {active && [-7,-2,3].map((dx,i) => (
-        <g key={i} style={{ animation:`dropFall 1.4s ease-in infinite`, animationDelay:`${i*0.35}s` }}>
-          <ellipse cx={cx+dx} cy={cy-10-i*3} rx="2" ry="3.5" fill={color} opacity="0.75"/>
+        <g key={i} style={{ animation:'dropFall 1.4s ease-in infinite', animationDelay:`${i*0.35}s` }}>
+          <ellipse cx={dx} cy={-10-i*3} rx="2" ry="3.5" fill={color} opacity="0.75"/>
         </g>
       ))}
-      {!active && (
-        <ellipse cx={cx} cy={cy-7} rx="2" ry="3" fill={isDark?'#334155':'#CBD5E1'} opacity="0.4"/>
-      )}
-      {active && (
-        <text x={cx} y={cy+18} textAnchor="middle" fontSize="7" fontFamily="monospace" fill={color} fontWeight="700">HUM.</text>
-      )}
+      {!active && <ellipse cx="0" cy="-7" rx="2" ry="3" fill={isDark?'#334155':'#CBD5E1'} opacity="0.4"/>}
+      <text x="0" y="18" textAnchor="middle" fontSize="7" fontFamily="monospace"
+        fill={active ? color : (isDark?'#475569':'#94A3B8')}
+        fontWeight={active?'700':'400'}>HUM.</text>
     </g>
   )
 }
 
 // ── CO₂ injecteur ──
-function CO2Symbol({ cx, cy, active, color='#22C55E', isDark }) {
+function CO2Symbol({ cx, cy, active, color='#22C55E', isDark, scale=1 }) {
   return (
-    <g>
-      {/* Cylindre */}
-      <rect x={cx-7} y={cy-12} width="14" height="18" rx="3"
+    <g transform={`translate(${cx},${cy}) scale(${scale})`}>
+      <rect x="-7" y="-12" width="14" height="18" rx="3"
         fill={active ? color+'20' : (isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')}
         stroke={active ? color : (isDark?'#334155':'#CBD5E1')} strokeWidth={active?1.5:1}/>
-      <ellipse cx={cx} cy={cy-12} rx="7" ry="3" fill={active ? color+'30' : (isDark?'#1e293b':'#e2e8f0')}
+      <ellipse cx="0" cy="-12" rx="7" ry="3"
+        fill={active ? color+'30' : (isDark?'#1e293b':'#e2e8f0')}
         stroke={active ? color : (isDark?'#334155':'#CBD5E1')} strokeWidth="1"/>
-      {/* Tuyau + bulles */}
-      <line x1={cx} y1={cy+6} x2={cx} y2={cy+14} stroke={active?color:(isDark?'#334155':'#CBD5E1')} strokeWidth="2"/>
+      <line x1="0" y1="6" x2="0" y2="14"
+        stroke={active?color:(isDark?'#334155':'#CBD5E1')} strokeWidth="2"/>
       {active && [0,1,2].map(i => (
-        <circle key={i} cx={cx+(i-1)*5} cy={cy+20} r="2.5" fill={color} opacity="0.6"
-          style={{ animation:`bubbleRise 1.6s ease-out infinite`, animationDelay:`${i*0.4}s` }}/>
+        <circle key={i} cx={(i-1)*5} cy="20" r="2.5" fill={color} opacity="0.6"
+          style={{ animation:'bubbleRise 1.6s ease-out infinite', animationDelay:`${i*0.4}s` }}/>
       ))}
-      <text x={cx} y={cy+32} textAnchor="middle" fontSize="7" fontFamily="monospace"
-        fill={active?color:(isDark?'#475569':'#94A3B8')} fontWeight={active?"700":"400"}>CO₂</text>
+      <text x="0" y="30" textAnchor="middle" fontSize="7" fontFamily="monospace"
+        fill={active?color:(isDark?'#475569':'#94A3B8')}
+        fontWeight={active?'700':'400'}>CO₂</text>
     </g>
   )
 }
 
 // ── Déshumidificateur (évaporateur) ──
-function DehumSymbol({ cx, cy, active, color='#F59E0B', isDark }) {
+function DehumSymbol({ cx, cy, active, color='#F59E0B', isDark, scale=1 }) {
   return (
-    <g>
-      <rect x={cx-11} y={cy-9} width="22" height="18" rx="4"
+    <g transform={`translate(${cx},${cy}) scale(${scale})`}>
+      <rect x="-11" y="-9" width="22" height="18" rx="4"
         fill={active ? color+'18' : 'transparent'}
         stroke={active ? color : (isDark?'#334155':'#CBD5E1')} strokeWidth={active?1.5:1}/>
       {[-5,0,5].map((dx,i) => (
-        <line key={i} x1={cx+dx} y1={cy-7} x2={cx+dx} y2={cy+7}
+        <line key={i} x1={dx} y1="-7" x2={dx} y2="7"
           stroke={active ? color : (isDark?'#334155':'#CBD5E1')} strokeWidth="2"
           opacity={active?0.9:0.3} strokeLinecap="round"/>
       ))}
       {active && (
-        <>
-          <path d={`M${cx-11},${cy+9} q5,5 11,0 q5,-5 11,0`} fill="none" stroke={color} strokeWidth="1.2" opacity="0.6"/>
-          <text x={cx} y={cy+22} textAnchor="middle" fontSize="7" fontFamily="monospace" fill={color} fontWeight="700">DÉHUM.</text>
-        </>
+        <path d="M-11,9 q5,5 11,0 q5,-5 11,0" fill="none" stroke={color} strokeWidth="1.2" opacity="0.6"/>
       )}
+      <text x="0" y="22" textAnchor="middle" fontSize="7" fontFamily="monospace"
+        fill={active ? color : (isDark?'#475569':'#94A3B8')}
+        fontWeight={active?'700':'400'}>DÉHUM.</text>
     </g>
   )
 }
@@ -1225,29 +1251,29 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
       <circle cx={SAPEX_X} cy={SAPEX_Y} r="3.5" fill={cVerre}/>
 
       {/* ════════════════════════════════════════════
-          SYMBOLES ACTIONNEURS INTÉRIEURS ANIMÉS
-          Positionnés sur la rangée du bas de la serre
+          SYMBOLES ACTIONNEURS — rail haut intérieur
+          y ≈ SAPEX_Y+52 = juste sous le faîte, bien dans la serre
+          5 positions régulières entre SL+28 et SR-28
           ════════════════════════════════════════════ */}
-
-      {/* Ventilation (fan) — gauche intérieur */}
-      <FanSymbol cx={SL+32} cy={SBASE-38} active={ventOn || dehum || co2Vent}
-        color="#06B6D4" isDark={isDark}/>
-
-      {/* Chauffage — centre-gauche */}
-      <HeaterSymbol cx={SL+80} cy={SBASE-30} active={heatOn}
-        color="#EF4444" isDark={isDark}/>
-
-      {/* Déshumidificateur — centre */}
-      <DehumSymbol cx={SAPEX_X} cy={SBASE-30} active={dehum}
-        color="#F59E0B" isDark={isDark}/>
-
-      {/* Humidificateur — centre-droit */}
-      <HumidifierSymbol cx={SR-80} cy={SBASE-38} active={humOn}
-        color="#06B6D4" isDark={isDark}/>
-
-      {/* Injecteur CO₂ — droite intérieur */}
-      <CO2Symbol cx={SR-32} cy={SBASE-42} active={co2Inj}
-        color="#22C55E" isDark={isDark}/>
+      {(() => {
+        const railY  = SAPEX_Y + 52        // ~282 — sous le faîte, au-dessus des plantes
+        const margin = 28
+        const slots  = 5
+        const step   = (SR - SL - margin*2) / (slots - 1)
+        const xs = Array.from({ length: slots }, (_, i) => SL + margin + i * step)
+        // Fine horizontal rail line
+        return (
+          <>
+            <line x1={xs[0]-14} y1={railY+1} x2={xs[4]+14} y2={railY+1}
+              stroke={isDark?'#334155':'#CBD5E1'} strokeWidth="0.8" opacity="0.5"/>
+            <FanSymbol        cx={xs[0]} cy={railY} r={10}  active={ventOn || dehum || co2Vent} color="#06B6D4" isDark={isDark}/>
+            <HeaterSymbol     cx={xs[1]} cy={railY}          active={heatOn}  color="#EF4444" isDark={isDark} scale={0.8}/>
+            <DehumSymbol      cx={xs[2]} cy={railY}          active={dehum}   color="#F59E0B" isDark={isDark} scale={0.8}/>
+            <HumidifierSymbol cx={xs[3]} cy={railY}          active={humOn}   color="#06B6D4" isDark={isDark} scale={0.8}/>
+            <CO2Symbol        cx={xs[4]} cy={railY}          active={co2Inj}  color="#22C55E" isDark={isDark} scale={0.8}/>
+          </>
+        )
+      })()}
 
       {/* ── Badge T° intérieure (top-left) ── */}
       <g>
