@@ -1,6 +1,7 @@
 // src/components/geoportail/SectionProjet.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Leaf, Activity, Thermometer, Shield, X, Wifi, Droplets, Wind, Sun, FlaskConical, Waves, Gauge, Database, Bell, LayoutDashboard, Globe } from 'lucide-react'
+import { motion, useAnimationControls } from 'framer-motion'
 
 // ── Modal content per stat ────────────────────────────────────
 const MODALS = {
@@ -413,58 +414,235 @@ function StatBubble({ statKey, icon: Icon, value, label, color, darkMode, index,
   )
 }
 
-// ── Slogan card ───────────────────────────────────────────────
-function SloganCard({ lang, darkMode }) {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 300); return () => clearTimeout(t) }, [])
 
-  const quote = lang === 'fr'
-    ? '"Du capteur au numérique,\nchaque donnée raconte\nla vie de la plante."'
-    : '"From sensor to digital,\nevery data point tells\nthe story of a plant."'
-  const techLine = lang === 'fr'
-    ? 'Monitoring temps réel · IoT · Visualisation immersive'
-    : 'Real-time monitoring · IoT · Immersive visualization'
-  const footer = 'Serre Digitale Intelligente · IAV Hassan II · 2025'
+
+// ── SloganCard ────────────────────────────────────────────────
+const SLOGAN_CONTENT = {
+  fr: {
+    line1:  'Chaque plante raconte',
+    accent: 'son histoire.',
+    line2:  'Nous la rendons visible.',
+    pills:  ['IoT', 'Jumeau Numérique', 'VR'],
+    footer: 'Serre Digitale Intelligente · IAV Hassan II · AgroBioTech · 2025–2026',
+  },
+  en: {
+    line1:  'Every plant tells',
+    accent: 'its story.',
+    line2:  'We make it visible.',
+    pills:  ['IoT', 'Digital Twin', 'VR'],
+    footer: 'Smart Digital Greenhouse · IAV Hassan II · AgroBioTech · 2025–2026',
+  },
+}
+
+const SLOGAN_THEME = {
+  dark: {
+    cardBg:      'linear-gradient(160deg, #060d1a 0%, #07111f 50%, #050e1b 100%)',
+    cardBorder:  'rgba(34,197,94,0.14)',
+    cardShadow:  '0 0 0 1px rgba(34,197,94,0.06), 0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)',
+    titleColor:  '#f8fafc',
+    line2Color:  '#e2e8f0',
+    pillColor:   'rgba(148,163,184,0.85)',
+    footerColor: 'rgba(100,116,139,0.8)',
+    titleShadow: '0 0 40px rgba(34,197,94,0.18), 0 2px 40px rgba(0,0,0,0.4)',
+    badgeBg:     'rgba(34,197,94,0.10)',
+    badgeBorder: 'rgba(34,197,94,0.28)',
+    badgeShadow: '0 0 20px rgba(34,197,94,0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
+    badgeText:   '#4ade80',
+    radialFg:    'rgba(34,197,94,0.12)',
+    radialMid:   'rgba(34,197,94,0.05)',
+    dividerColor:'rgba(34,197,94,0.55)',
+    orbOpacity:  ['0.06','0.05','0.04'],
+    particleMax: 0.7,
+  },
+  light: {
+    cardBg:      'linear-gradient(160deg, #f0fff4 0%, #ffffff 50%, #f0fdf4 100%)',
+    cardBorder:  'rgba(34,197,94,0.22)',
+    cardShadow:  '0 4px 32px rgba(0,0,0,0.07), 0 1px 4px rgba(34,197,94,0.08)',
+    titleColor:  '#0f172a',
+    line2Color:  '#1e293b',
+    pillColor:   '#64748b',
+    footerColor: '#94a3b8',
+    titleShadow: '0 2px 20px rgba(34,197,94,0.10)',
+    badgeBg:     '#ecfdf5',
+    badgeBorder: 'rgba(34,197,94,0.30)',
+    badgeShadow: '0 0 12px rgba(34,197,94,0.06)',
+    badgeText:   '#16a34a',
+    radialFg:    'rgba(34,197,94,0.07)',
+    radialMid:   'rgba(34,197,94,0.03)',
+    dividerColor:'rgba(34,197,94,0.40)',
+    orbOpacity:  ['0.04','0.03','0.02'],
+    particleMax: 0.4,
+  },
+}
+
+function SloganParticle({ size, duration, delay, startX, driftRange, particleMax }) {
+  const controls = useAnimationControls()
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    isMounted.current = true
+    const animate = async () => {
+      while (isMounted.current) {
+        await controls.set({ y: '110vh', x: startX, opacity: 0 })
+        await controls.start({
+          y: '-10vh',
+          x: startX + (Math.random() * driftRange * 2 - driftRange),
+          opacity: [0, particleMax, particleMax, 0],
+          transition: { duration, ease: 'easeInOut', opacity: { times: [0, 0.15, 0.8, 1], duration } },
+        })
+      }
+    }
+    const timer = setTimeout(animate, delay)
+    return () => { isMounted.current = false; clearTimeout(timer) }
+  }, [controls, startX, duration, delay, driftRange, particleMax])
 
   return (
-    <div style={{
-      position: 'relative', overflow: 'hidden',
-      background: darkMode
-        ? 'linear-gradient(135deg, rgba(16,27,46,0.98), rgba(11,23,40,0.95))'
-        : 'linear-gradient(135deg, rgba(240,255,244,0.97), rgba(255,255,255,0.99))',
-      border: darkMode ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(34,197,94,0.18)',
-      borderRadius: '28px', padding: '40px 36px 32px',
-      boxShadow: darkMode ? '0 10px 40px rgba(0,0,0,0.3)' : '0 10px 40px rgba(0,0,0,0.06)',
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'scale(1)' : 'scale(0.97)',
-      transition: 'opacity 0.7s ease, transform 0.7s ease',
-      textAlign: 'center',
-    }}>
-      <div style={{ position: 'absolute', bottom: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(34,197,94,0.08)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: '-30px', left: '-30px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(34,197,94,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+    <motion.div animate={controls} style={{ x: startX, y: '110vh', opacity: 0 }}
+      className="pointer-events-none absolute" aria-hidden="true">
+      <div style={{
+        width: size, height: size, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(74,222,128,0.9) 0%, rgba(34,197,94,0.5) 40%, transparent 70%)',
+        filter: `blur(${size * 0.4}px)`,
+        boxShadow: `0 0 ${size * 1.2}px ${size * 0.5}px rgba(34,197,94,0.22)`,
+      }} />
+    </motion.div>
+  )
+}
 
-      {/* Plant icon */}
-      <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: darkMode ? 'rgba(34,197,94,0.12)' : '#ECFDF5', border: `1px solid ${darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: darkMode ? '0 0 20px rgba(34,197,94,0.15)' : '0 4px 16px rgba(34,197,94,0.12)' }}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path d="M12 22V12" stroke={darkMode ? '#4ADE80' : '#16A34A'} strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M12 12C12 12 7 10 5 6c4 0 7 2 7 6z" fill={darkMode ? '#4ADE80' : '#16A34A'} opacity="0.9"/>
-          <path d="M12 15C12 15 17 13 19 9c-4 0-7 2-7 6z" fill={darkMode ? '#22C55E' : '#22C55E'} opacity="0.7"/>
-          <path d="M12 18C12 18 8 16.5 7 13c3.5 0 5 2 5 5z" fill={darkMode ? '#4ADE80' : '#16A34A'} opacity="0.6"/>
-        </svg>
-      </div>
+function SloganCard({ lang = 'fr', darkMode = true }) {
+  const c = SLOGAN_CONTENT[lang] ?? SLOGAN_CONTENT.fr
+  const t = darkMode ? SLOGAN_THEME.dark : SLOGAN_THEME.light
 
-      {/* Badge */}
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: darkMode ? 'rgba(34,197,94,0.12)' : '#ECFDF5', border: `1px solid ${darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.2)'}`, borderRadius: '999px', padding: '5px 14px', fontSize: '11px', fontWeight: 700, color: darkMode ? '#4ADE80' : '#16A34A', letterSpacing: '0.08em', marginBottom: '24px' }}>
-        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: darkMode ? '#4ADE80' : '#16A34A', boxShadow: `0 0 8px ${darkMode ? '#4ADE80' : '#16A34A'}`, animation: 'sdiPulse 2s ease-in-out infinite', display: 'inline-block' }} />
-        LIVE DIGITAL TWIN
-      </div>
+  const particles = [
+    { size: 20, duration: 11, delay: 0,    startX: '-8vw', driftRange: 30 },
+    { size: 14, duration: 14, delay: 2500, startX: '8vw',  driftRange: 25 },
+    { size: 17, duration: 9,  delay: 5000, startX: '-2vw', driftRange: 20 },
+  ]
 
-      <div style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.4, letterSpacing: '-0.02em', color: darkMode ? '#F8FAFC' : '#111827', fontFamily: "'Space Grotesk','Outfit',sans-serif", marginBottom: '24px', whiteSpace: 'pre-line' }}>{quote}</div>
+  return (
+    <>
+      <style>{`
+        @keyframes sloganPing { 75%,100% { transform:scale(2); opacity:0; } }
+      `}</style>
 
-      <div style={{ height: '1px', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(34,197,94,0.15)', maxWidth: '320px', margin: '0 auto 18px' }} />
-      <div style={{ fontSize: '13px', color: darkMode ? '#94A3B8' : '#6B7280', marginBottom: '10px', fontWeight: 500 }}>{techLine}</div>
-      <div style={{ fontSize: '12px', color: darkMode ? '#64748B' : '#9CA3AF' }}>{footer}</div>
-    </div>
+      <motion.div
+        key={darkMode ? 'dark' : 'light'}
+        initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          position: 'relative', overflow: 'hidden', borderRadius: '28px',
+          border: `1px solid ${t.cardBorder}`,
+          background: t.cardBg, boxShadow: t.cardShadow,
+          padding: '4rem 2.5rem',
+        }}
+      >
+        {/* Radial glow */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: `radial-gradient(circle at 50% 55%, ${t.radialFg} 0%, ${t.radialMid} 30%, transparent 70%)`,
+        }} />
+
+        {/* Ambient orbs */}
+        {[
+          { style: { top: '-80px', left: '10%' },    size: '260px', i: 0 },
+          { style: { bottom: '-60px', right: '8%' }, size: '220px', i: 1 },
+          { style: { top: '30%', right: '-40px' },   size: '180px', i: 2 },
+        ].map(({ style, size, i }) => (
+          <div key={i} aria-hidden="true" style={{
+            position: 'absolute', borderRadius: '50%', pointerEvents: 'none',
+            width: size, height: size,
+            background: `radial-gradient(circle, rgba(34,197,94,${t.orbOpacity[i]}) 0%, transparent 70%)`,
+            filter: 'blur(80px)', ...style,
+          }} />
+        ))}
+
+        {/* Particles */}
+        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {particles.map((p, i) => (
+            <div key={i} style={{ position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', width: 0, height: 0 }}>
+              <SloganParticle {...p} particleMax={t.particleMax} />
+            </div>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', textAlign: 'center' }}>
+
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.94 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              borderRadius: '999px', padding: '6px 16px',
+              background: t.badgeBg, border: `1px solid ${t.badgeBorder}`,
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: t.badgeShadow,
+            }}
+          >
+            <span style={{ position: 'relative', display: 'flex', width: '7px', height: '7px' }}>
+              <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#22c55e', opacity: 0.75, animation: 'sloganPing 2s cubic-bezier(0,0,0.2,1) infinite' }} />
+              <span style={{ position: 'relative', width: '7px', height: '7px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80', display: 'inline-block' }} />
+            </span>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', color: t.badgeText, fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
+              LIVE DIGITAL TWIN
+            </span>
+          </motion.div>
+
+          {/* Title */}
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.75, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontFamily: "'Plus Jakarta Sans','Inter',sans-serif",
+              fontSize: 'clamp(2rem, 4.5vw, 3.4rem)',
+              fontWeight: 800, lineHeight: 1.12, letterSpacing: '-0.04em',
+              color: t.titleColor, textShadow: t.titleShadow, margin: 0,
+            }}
+          >
+            {c.line1}{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.35))',
+            }}>{c.accent}</span>
+            <br />
+            <span style={{ color: t.line2Color, fontWeight: 700 }}>{c.line2}</span>
+          </motion.h2>
+
+          {/* Pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}
+          >
+            {c.pills.map((pill, i) => (
+              <span key={pill} style={{ fontFamily: "'Plus Jakarta Sans','Inter',sans-serif", fontSize: '12px', fontWeight: 600, letterSpacing: '0.06em', color: t.pillColor, textTransform: 'uppercase' }}>
+                {pill}{i < c.pills.length - 1 && <span style={{ marginLeft: '12px', color: 'rgba(34,197,94,0.4)' }}>·</span>}
+              </span>
+            ))}
+          </motion.div>
+
+          {/* Divider */}
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: 'center', width: '100%', maxWidth: '280px' }}
+          >
+            <div style={{ height: '1px', background: `linear-gradient(90deg, transparent 0%, rgba(34,197,94,0.25) 20%, ${t.dividerColor} 50%, rgba(34,197,94,0.25) 80%, transparent 100%)` }} />
+          </motion.div>
+
+          {/* Footer */}
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
+            style={{ fontFamily: "'Plus Jakarta Sans','Inter',sans-serif", fontSize: '11px', fontWeight: 500, color: t.footerColor, letterSpacing: '0.06em', margin: 0 }}
+          >
+            {c.footer}
+          </motion.p>
+        </div>
+      </motion.div>
+    </>
   )
 }
 
@@ -587,8 +765,12 @@ export default function SectionProjet({ lang, stats, darkMode }) {
           </div>
         </div>
 
-        {/* Slogan */}
-        <SloganCard lang={lang} darkMode={darkMode} />
+        {/* Slogan — centered, max 760px */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: '760px' }}>
+            <SloganCard lang={lang} darkMode={darkMode} />
+          </div>
+        </div>
       </div>
 
       {openModal && (
