@@ -56,7 +56,7 @@ def convert_irr(raw: dict) -> dict:
 
 async def fetch_env(device_id: int, token: str) -> Optional[dict]:
     url     = f"{IOT_BASE_URL}/detailR"
-    headers = {"Authorization": token}
+    headers = {"x-litemall-token": token}
     params  = {"deviceId": device_id}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -91,7 +91,7 @@ async def fetch_env(device_id: int, token: str) -> Optional[dict]:
 
 async def fetch_irr(device_id: int, token: str) -> Optional[dict]:
     url     = f"{IOT_BASE_URL}/detail"
-    headers = {"Authorization": token}
+    headers = {"x-litemall-token": token}
     params  = {"deviceId": device_id}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
