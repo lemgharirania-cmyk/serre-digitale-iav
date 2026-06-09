@@ -113,21 +113,7 @@ async def comparer_serres(
         })
     return result
 
-# ─── Export CSV (no pandas needed) ──────────────────────────
-
-COLUMNS = [
-    ("capture_at",  "Date/Heure"),
-    ("type_api",    "Type"),
-    ("temperature", "Température (°C)"),
-    ("humidite",    "Humidité (%)"),
-    ("vpd",         "VPD (kPa)"),
-    ("co2",         "CO2 (PPM)"),
-    ("luminosite",  "Luminosité (lux)"),
-    ("ph",          "pH"),
-    ("ec",          "EC (mS/cm)"),
-    ("temp_eau",    "Temp. Eau (°C)"),
-    ("niveau_eau",  "Niveau Eau (m)"),
-]
+# ─── Export ─────────────────────────────────────────────────
 
 @router.get("/export/{serre_id}")
 async def export_data(
@@ -137,6 +123,8 @@ async def export_data(
     db=Depends(get_db),
     user=Depends(get_current_user)
 ):
+    import datetime as dt
+
     serre = await db.fetchrow("SELECT * FROM serres WHERE id=$1", serre_id)
     if not serre:
         raise HTTPException(status_code=404, detail="Serre introuvable")
@@ -155,81 +143,148 @@ async def export_data(
         raise HTTPException(status_code=404, detail="Aucune donnée disponible pour cette période.")
 
     nom_fichier = f"SDI_{serre['code']}_{heures}h"
-    col_labels  = [label for _, label in COLUMNS]
 
-    def row_to_list(r):
+    def fmt(v):
+        return "" if v is None else v
+
+    # ── Merge ENV + IRR rows by nearest timestamp (30s window) ──
+    env_rows = [dict(r) for r in rows if r["type_api"] == "ENV"]
+    irr_rows = [dict(r) for r in rows if r["type_api"] == "IRR"]
+
+    merged = []
+    used_irr = set()
+    for env in env_rows:
+        best_irr   = None
+        best_delta = dt.timedelta(seconds=30)
+        for idx, irr in enumerate(irr_rows):
+            if idx in used_irr:
+                continue
+            delta = abs(env["capture_at"] - irr["capture_at"])
+            if delta < best_delta:
+                best_delta = delta
+                best_irr   = (idx, irr)
+        row_m = {
+            "capture_at":  env["capture_at"],
+            "temperature": env.get("temperature"),
+            "humidite":    env.get("humidite"),
+            "vpd":         env.get("vpd"),
+            "co2":         env.get("co2"),
+            "luminosite":  env.get("luminosite"),
+            "ph": None, "ec": None, "temp_eau": None, "niveau_eau": None,
+        }
+        if best_irr:
+            used_irr.add(best_irr[0])
+            row_m["ph"]         = best_irr[1].get("ph")
+            row_m["ec"]         = best_irr[1].get("ec")
+            row_m["temp_eau"]   = best_irr[1].get("temp_eau")
+            row_m["niveau_eau"] = best_irr[1].get("niveau_eau")
+        merged.append(row_m)
+
+    for idx, irr in enumerate(irr_rows):
+        if idx not in used_irr:
+            merged.append({
+                "capture_at": irr["capture_at"],
+                "temperature": None, "humidite": None, "vpd": None,
+                "co2": None, "luminosite": None,
+                "ph": irr.get("ph"), "ec": irr.get("ec"),
+                "temp_eau": irr.get("temp_eau"), "niveau_eau": irr.get("niveau_eau"),
+            })
+
+    merged.sort(key=lambda r: r["capture_at"])
+
+    HEADERS = [
+        "Date/Heure",
+        "Température (°C)", "Humidité (%)", "VPD (kPa)", "CO2 (PPM)", "Luminosité (lux)",
+        "pH", "EC (mS/cm)", "Temp. Eau (°C)", "Niveau Eau (m)",
+    ]
+
+    def to_list(r):
         return [
             r["capture_at"].strftime("%Y-%m-%d %H:%M:%S") if r["capture_at"] else "",
-            r["type_api"] or "",
-            r["temperature"], r["humidite"], r["vpd"], r["co2"], r["luminosite"],
-            r["ph"], r["ec"], r["temp_eau"], r["niveau_eau"],
+            fmt(r["temperature"]), fmt(r["humidite"]), fmt(r["vpd"]),
+            fmt(r["co2"]),         fmt(r["luminosite"]),
+            fmt(r["ph"]),          fmt(r["ec"]),
+            fmt(r["temp_eau"]),    fmt(r["niveau_eau"]),
         ]
 
-    # ── CSV ──────────────────────────────────────────────────
+    # ── CSV ──
     if format == "csv":
-        buf = io.StringIO()
+        buf    = io.StringIO()
         writer = csv.writer(buf)
-        writer.writerow(col_labels)
-        for row in rows:
-            writer.writerow(row_to_list(dict(row)))
-        csv_bytes = buf.getvalue().encode("utf-8-sig")  # utf-8-sig = lisible Excel FR
+        writer.writerow(HEADERS)
+        for r in merged:
+            writer.writerow(to_list(r))
+        csv_bytes = buf.getvalue().encode("utf-8-sig")
         return StreamingResponse(
             io.BytesIO(csv_bytes),
             media_type="text/csv; charset=utf-8",
             headers={"Content-Disposition": f'attachment; filename="{nom_fichier}.csv"'}
         )
 
-    # ── EXCEL (openpyxl — vrai .xlsx compatible Excel moderne) ──
+    # ── EXCEL ──
     if format == "excel":
         import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.styles import Font, PatternFill, Alignment
         from openpyxl.utils import get_column_letter
 
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = f"{serre['code']} {heures}h"
 
-        # Styles
-        header_font    = Font(bold=True, color="FFFFFF", size=11)
-        header_fill    = PatternFill("solid", fgColor="1B4332")
-        header_align   = Alignment(horizontal="center", vertical="center")
-        alt_fill       = PatternFill("solid", fgColor="F0FDF4")
-        center_align   = Alignment(horizontal="center")
-        thin_border    = Border(
-            bottom=Side(style="thin", color="D1D5DB")
-        )
+        center   = Alignment(horizontal="center", vertical="center")
+        alt_fill = PatternFill("solid", fgColor="F9FAFB")
 
-        # Header row
-        ws.append(col_labels)
-        for col_idx, cell in enumerate(ws[1], 1):
-            cell.font      = header_font
-            cell.fill      = header_fill
-            cell.alignment = header_align
-        ws.row_dimensions[1].height = 22
+        # Row 1 — Group labels
+        ws.append(["", "Environnement", "", "", "", "", "Irrigation", "", "", ""])
+        ws.merge_cells("B1:F1")
+        ws.merge_cells("G1:J1")
+        ws.row_dimensions[1].height = 18
+        for col in range(1, 11):
+            c = ws.cell(row=1, column=col)
+            c.alignment = center
+            if col == 1:
+                c.fill = PatternFill("solid", fgColor="F3F4F6")
+            elif col <= 6:
+                c.fill = PatternFill("solid", fgColor="D1FAE5")
+                c.font = Font(bold=True, color="065F46", size=10)
+            else:
+                c.fill = PatternFill("solid", fgColor="DBEAFE")
+                c.font = Font(bold=True, color="1E40AF", size=10)
+
+        # Row 2 — Column headers
+        ws.append(HEADERS)
+        ws.row_dimensions[2].height = 22
+        for col, c in enumerate(ws[2], 1):
+            c.alignment = center
+            if col == 1:
+                c.font = Font(bold=True, color="FFFFFF", size=11)
+                c.fill = PatternFill("solid", fgColor="374151")
+            elif col <= 6:
+                c.font = Font(bold=True, color="FFFFFF", size=11)
+                c.fill = PatternFill("solid", fgColor="1B4332")
+            else:
+                c.font = Font(bold=True, color="FFFFFF", size=11)
+                c.fill = PatternFill("solid", fgColor="1E3A5F")
+
+        ws.freeze_panes = "A3"
 
         # Data rows
-        for ri, row in enumerate(rows):
-            ws.append(row_to_list(dict(row)))
-            if ri % 2 == 1:
-                for cell in ws[ri + 2]:
-                    cell.fill      = alt_fill
-                    cell.alignment = center_align
-            else:
-                for cell in ws[ri + 2]:
-                    cell.alignment = center_align
+        for ri, r in enumerate(merged):
+            ws.append(to_list(r))
+            rn = ri + 3
+            for col in range(1, 11):
+                c = ws.cell(row=rn, column=col)
+                c.alignment = center
+                if ri % 2 == 1:
+                    c.fill = alt_fill
 
-        # Auto column width
-        for col_idx, col_cells in enumerate(ws.columns, 1):
-            max_len = max((len(str(c.value or "")) for c in col_cells), default=10)
-            ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 4, 30)
-
-        # Freeze header row
-        ws.freeze_panes = "A2"
+        # Column widths
+        for i, w in enumerate([18,14,12,10,10,14,8,12,14,13], 1):
+            ws.column_dimensions[get_column_letter(i)].width = w
 
         buf = io.BytesIO()
         wb.save(buf)
         buf.seek(0)
-
         return StreamingResponse(
             buf,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
