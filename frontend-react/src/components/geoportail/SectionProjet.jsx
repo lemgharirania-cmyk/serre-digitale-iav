@@ -1,7 +1,7 @@
 // src/components/geoportail/SectionProjet.jsx
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Leaf, Activity, Thermometer, Shield, X, Wifi, Droplets, Wind, Sun, FlaskConical, Waves, Gauge, Database, Bell, LayoutDashboard, Globe } from 'lucide-react'
-import { motion, useAnimationControls } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 // ── Modal content per stat ────────────────────────────────────
 const MODALS = {
@@ -475,49 +475,63 @@ const SLOGAN_THEME = {
   },
 }
 
-function SloganParticle({ size, duration, delay, startX, driftRange, particleMax }) {
-  const controls = useAnimationControls()
-  const isMounted = useRef(true)
-
-  useEffect(() => {
-    isMounted.current = true
-    const animate = async () => {
-      while (isMounted.current) {
-        await controls.set({ y: '110vh', x: startX, opacity: 0 })
-        await controls.start({
-          y: '-10vh',
-          x: startX + (Math.random() * driftRange * 2 - driftRange),
-          opacity: [0, particleMax, particleMax, 0],
-          transition: { duration, ease: 'easeInOut', opacity: { times: [0, 0.15, 0.8, 1], duration } },
-        })
-      }
-    }
-    const timer = setTimeout(animate, delay)
-    return () => { isMounted.current = false; clearTimeout(timer) }
-  }, [controls, startX, duration, delay, driftRange, particleMax])
-
+// Pure CSS particles — no JS loop, no Framer Motion, GPU-only via transform+opacity
+// Each particle uses a unique @keyframes name to allow different drift paths
+function SloganParticles({ darkMode }) {
+  const max = darkMode ? 0.7 : 0.4
+  const particles = [
+    { id: 'p1', size: 20, duration: 11, delay: 0,   left: 'calc(50% - 8vw)', blur: 8  },
+    { id: 'p2', size: 14, duration: 14, delay: -4,  left: 'calc(50% + 8vw)', blur: 6  },
+    { id: 'p3', size: 17, duration: 9,  delay: -6,  left: 'calc(50% - 2vw)', blur: 7  },
+  ]
   return (
-    <motion.div animate={controls} style={{ x: startX, y: '110vh', opacity: 0 }}
-      className="pointer-events-none absolute" aria-hidden="true">
-      <div style={{
-        width: size, height: size, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(74,222,128,0.9) 0%, rgba(34,197,94,0.5) 40%, transparent 70%)',
-        filter: `blur(${size * 0.4}px)`,
-        boxShadow: `0 0 ${size * 1.2}px ${size * 0.5}px rgba(34,197,94,0.22)`,
-      }} />
-    </motion.div>
+    <>
+      <style>{`
+        @keyframes particleRise1 {
+          0%   { transform: translateY(110%) translateX(0px);   opacity: 0; }
+          10%  { opacity: ${max}; }
+          80%  { opacity: ${max}; }
+          100% { transform: translateY(-110%) translateX(18px); opacity: 0; }
+        }
+        @keyframes particleRise2 {
+          0%   { transform: translateY(110%) translateX(0px);    opacity: 0; }
+          10%  { opacity: ${max}; }
+          80%  { opacity: ${max}; }
+          100% { transform: translateY(-110%) translateX(-14px); opacity: 0; }
+        }
+        @keyframes particleRise3 {
+          0%   { transform: translateY(110%) translateX(0px);   opacity: 0; }
+          10%  { opacity: ${max}; }
+          80%  { opacity: ${max}; }
+          100% { transform: translateY(-110%) translateX(10px); opacity: 0; }
+        }
+      `}</style>
+      {particles.map(({ id, size, duration, delay, left, blur }, idx) => (
+        <div
+          key={id}
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left,
+            bottom: 0,
+            width: size,
+            height: size,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(74,222,128,0.9) 0%, rgba(34,197,94,0.5) 40%, transparent 70%)',
+            filter: `blur(${blur}px)`,
+            boxShadow: `0 0 ${size * 1.2}px ${size * 0.5}px rgba(34,197,94,0.22)`,
+            animation: `particleRise${idx + 1} ${duration}s ${delay}s ease-in-out infinite`,
+            willChange: 'transform, opacity',
+          }}
+        />
+      ))}
+    </>
   )
 }
 
 function SloganCard({ lang = 'fr', darkMode = true }) {
   const c = SLOGAN_CONTENT[lang] ?? SLOGAN_CONTENT.fr
   const t = darkMode ? SLOGAN_THEME.dark : SLOGAN_THEME.light
-
-  const particles = [
-    { size: 20, duration: 11, delay: 0,    startX: '-8vw', driftRange: 30 },
-    { size: 14, duration: 14, delay: 2500, startX: '8vw',  driftRange: 25 },
-    { size: 17, duration: 9,  delay: 5000, startX: '-2vw', driftRange: 20 },
-  ]
 
   return (
     <>
@@ -556,13 +570,9 @@ function SloganCard({ lang = 'fr', darkMode = true }) {
           }} />
         ))}
 
-        {/* Particles */}
+        {/* Particles — pure CSS, no JS loop */}
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          {particles.map((p, i) => (
-            <div key={i} style={{ position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', width: 0, height: 0 }}>
-              <SloganParticle {...p} particleMax={t.particleMax} />
-            </div>
-          ))}
+          <SloganParticles darkMode={darkMode} />
         </div>
 
         {/* Content */}
@@ -765,12 +775,8 @@ export default function SectionProjet({ lang, stats, darkMode }) {
           </div>
         </div>
 
-        {/* Slogan — centered, max 760px */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: '100%', maxWidth: '760px' }}>
-            <SloganCard lang={lang} darkMode={darkMode} />
-          </div>
-        </div>
+        {/* Slogan — full width */}
+        <SloganCard lang={lang} darkMode={darkMode} />
       </div>
 
       {openModal && (
