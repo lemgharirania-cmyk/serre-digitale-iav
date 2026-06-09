@@ -185,10 +185,10 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
         </div>
 
         {/* ── Main layout ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2rem', alignItems: 'stretch' }}>
 
           {/* ── Image + clickable zones ── */}
-          <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', overflow: 'hidden', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', overflow: 'hidden', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', width: '100%' }}>
 
               {/* Plan image */}
@@ -242,9 +242,8 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
             overflow: 'hidden',
             boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)',
             transition: 'border-color 0.3s',
-            minHeight: '340px',
-            position: 'sticky',
-            top: '100px',
+            display: 'flex',
+            flexDirection: 'column',
           }}>
 
             {/* No selection */}
