@@ -1,9 +1,9 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar'
 import { iotAPI } from '../api/client'
-import { X, AlertTriangle, Beaker as BeakerIcon, ChevronDown as ChevronDownIcon } from 'lucide-react'
+import { X, AlertTriangle } from 'lucide-react'
 
 import Overview      from './dashboard/Overview'
 import EtatSerre     from './dashboard/EtatSerre'
@@ -34,8 +34,8 @@ function AlertBanner({ liveData, theme, lang, onDismiss }) {
 
   const names = critical.map(d => d.nom_fr?.split('&')[0].trim() || d.code).join(', ')
   const msg = lang === 'FR'
-    ? `Alerte critique dans ${critical.length} serre${critical.length > 1 ? 's' : ''} — ${names}.`
-    : `Critical alert in ${critical.length} greenhouse${critical.length > 1 ? 's' : ''} — ${names}.`
+    ? 'Alerte critique dans ' + critical.length + ' serre' + (critical.length > 1 ? 's' : '') + ' \u2014 ' + names + '.'
+    : 'Critical alert in ' + critical.length + ' greenhouse' + (critical.length > 1 ? 's' : '') + ' \u2014 ' + names + '.'
 
   return (
     <div style={{
@@ -63,79 +63,31 @@ function AlertBanner({ liveData, theme, lang, onDismiss }) {
   )
 }
 
-/* ── Accordion NSCalculateur ── */
-function NSCalculateurAccordion({ theme, lang }) {
-  const [open, setOpen] = useState(false)
-  const isDark = theme === 'dark'
-  const label  = lang === 'FR' ? 'Calculateur de solution nutritive' : 'Nutrient solution calculator'
-  const subLbl = lang === 'FR'
-    ? 'Calculer la composition de la solution nutritive de fertigation'
-    : 'Calculate the fertigation nutrient solution composition'
-  const cardBg = isDark ? 'rgba(16,27,46,0.85)' : '#FFFFFF'
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
-  const ink    = isDark ? '#F1F5F9' : '#0F172A'
-  const ink3   = isDark ? '#94A3B8' : '#64748B'
-
-  return (
-    <div style={{ background: cardBg, border: '1px solid ' + border, borderRadius: 18, overflow: 'hidden' }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', padding: '20px 24px',
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-            background: isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.08)',
-            border: '1px solid rgba(6,182,212,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#06B6D4',
-          }}>
-            <BeakerIcon size={18} />
-          </div>
-          <div style={{ textAlign: 'left', minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: ink, letterSpacing: '-0.01em' }}>{label}</div>
-            <div style={{ fontSize: 12, color: ink3, marginTop: 3 }}>{subLbl}</div>
-          </div>
-        </div>
-        <ChevronDownIcon
-          size={18}
-          style={{
-            flexShrink: 0, color: ink3,
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s',
-            marginLeft: 12,
-          }}
-        />
-      </button>
-      {open && (
-        <div style={{ borderTop: '1px solid ' + border, padding: '0 4px 4px' }}>
-          <NSCalculateur theme={theme} lang={lang} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ── Page scrollable principale ── */
+/* ── Page scrollable principale (sans NSCalculateur ni Paramètres) ── */
 function ScrollHome(props) {
   const sec = { scrollMarginTop: 24, marginBottom: 48 }
   return (
     <>
       {/* Bannière + ambiance intérieure + schéma : tout dans EtatSerre */}
-      <section id="etat"         style={sec}><EtatSerre   {...props} /></section>
-      <section id="graphiques"   style={sec}><Graphiques  {...props} /></section>
-      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
-      <section id="calculateur"  style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
-      <section id="export"       style={sec}><Export      {...props} /></section>
+      <section id="etat"       style={sec}><EtatSerre  {...props} /></section>
+      <section id="graphiques" style={sec}><Graphiques {...props} /></section>
+      <section id="seuils"     style={sec}><Seuils     {...props} /></section>
+      <section id="export"     style={sec}><Export     {...props} /></section>
     </>
   )
 }
 
+/* ── Contenu de la route principale : 3 vues exclusives ── */
+function HomeView({ view, sharedProps, theme, lang }) {
+  if (view === 'calculateur') {
+    // Vue plein écran, ouverte directement — accessible uniquement via la sidebar
+    return <NSCalculateur theme={theme} lang={lang} />
+  }
+  if (view === 'parametres') {
+    return <Parametres theme={theme} lang={lang} />
+  }
+  return <ScrollHome {...sharedProps} />
+}
 
 /* ── Dashboard principal ── */
 export default function Dashboard() {
@@ -147,8 +99,15 @@ export default function Dashboard() {
   const [bannerOff,  setBannerOff]  = useState(false)
   const [sidebarW,   setSidebarW]   = useState(240) // synced with sidebar collapse
 
+  // Vue active de la route principale : 'scroll' | 'calculateur' | 'parametres'
+  const [view, setView] = useState('scroll')
+
   const [theme, setTheme] = useState(() => localStorage.getItem('sdi_theme') || 'light')
   const [lang,  setLang]  = useState(() => localStorage.getItem('sdi_lang')  || 'FR')
+
+  const location = useLocation()
+  const navigate = useNavigate()
+  const onDashboard = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
 
   useEffect(() => {
     document.body.dataset.theme = theme
@@ -206,7 +165,30 @@ export default function Dashboard() {
     return () => clearInterval(m)
   }, [])
 
-  const countdownLabel = `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}`
+  /* ── Navigation centrale pilotée par la sidebar ──
+     target = { view: 'scroll'|'calculateur'|'parametres', anchor?: 'etat'|'graphiques'|'seuils'|'export' }
+     Fonctionne depuis n'importe où : vue scrollable, vue calculateur,
+     vue paramètres, ou même la route /dashboard/alertes. */
+  function goTo(target) {
+    const needRoute = !onDashboard
+    if (needRoute) navigate('/dashboard')
+    setView(target.view)
+
+    // Le scroll s'exécute APRÈS le changement de vue / de route
+    // (délai plus long si on revient d'une autre route, le temps du mount)
+    const delay = needRoute ? 350 : 80
+    setTimeout(() => {
+      const main = document.querySelector('.admin-main')
+      if (target.view === 'scroll' && target.anchor && target.anchor !== 'etat') {
+        document.getElementById(target.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        // vue calculateur / paramètres / retour en haut : reset scroll
+        main?.scrollTo({ top: 0, behavior: target.view === 'scroll' ? 'smooth' : 'auto' })
+      }
+    }, delay)
+  }
+
+  const countdownLabel = Math.floor(countdown / 60) + ':' + String(countdown % 60).padStart(2, '0')
 
   // Rôle utilisateur — détermine l'accès aux serres
   const sdiUser  = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
@@ -252,6 +234,8 @@ export default function Dashboard() {
         theme={theme} setTheme={setTheme}
         lang={lang}   setLang={setLang}
         onWidthChange={setSidebarW}
+        currentView={view}
+        onViewNav={goTo}
       />
 
       {/* Spacer that matches fixed sidebar width */}
@@ -273,9 +257,10 @@ export default function Dashboard() {
           <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
           <Route path="/seuils"      element={<Seuils     {...sharedProps} />} />
           <Route path="/export"      element={<Export     {...sharedProps} />} />
+          {/* Routes conservées en fallback (liens directs / anciens favoris) */}
           <Route path="/parametres"  element={<Parametres theme={theme} lang={lang} />} />
           <Route path="/calculateur" element={<NSCalculateur theme={theme} lang={lang} />} />
-          <Route path="*"            element={<ScrollHome {...sharedProps} />} />
+          <Route path="*"            element={<HomeView view={view} sharedProps={sharedProps} theme={theme} lang={lang} />} />
         </Routes>
       </main>
     </div>
