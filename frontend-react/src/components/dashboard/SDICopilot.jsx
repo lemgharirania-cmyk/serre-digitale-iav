@@ -249,17 +249,6 @@ export default function SDICopilot({ isDark = false, lang = 'FR' }) {
     ]
     setMessages(newMessages)
 
-    const token = getToken()
-    if (!token) {
-      setMessages(prev => [...prev, {
-        role: 'error',
-        content: 'Session expirée. Veuillez vous reconnecter.',
-        timestamp: Date.now(),
-      }])
-      setIsLoading(false)
-      return
-    }
-
     // Historique pour l'API (sans les messages d'erreur)
     const apiMessages = newMessages
       .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -267,15 +256,15 @@ export default function SDICopilot({ isDark = false, lang = 'FR' }) {
       .slice(-10) // max 10 tours d'historique
 
     try {
-      const response = await fetch(`${API_BASE}/api/copilot/chat`, {
+      const response = await fetch(`${API_BASE}/api/copilot/public`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           messages: apiMessages,
           lang: lang.toLowerCase(),
+          live_snapshot: [],
         }),
         signal: abortRef.current?.signal,
       })
