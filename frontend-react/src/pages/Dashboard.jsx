@@ -210,7 +210,7 @@ export default function Dashboard() {
 
   // Rôle utilisateur — détermine l'accès aux serres
   const sdiUser  = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
-  const userRole = sdiUser.role || 'ALL'   // 'ALL'|'SUPERADMIN' = tout; 'S01'–'S05' = serre unique
+  const userRole = sdiUser.unit || sdiUser.role || 'ALL'  // unit='ALL'/'S01'…'S05' ; fallback sur role
 
   const sharedProps = {
     liveData, stats, alertCount, meteo,
