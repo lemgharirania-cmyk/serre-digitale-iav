@@ -92,9 +92,14 @@ export default function Seuils({ theme, lang, userRole }) {
   const labels = lang === 'EN' ? LABELS_EN : LABELS_FR
 
   const { isSuperAdmin, allowedCode, allowedSerreId, canAccessSerre } = useAccess(userRole)
+  // Email de l'utilisateur connecté — pré-rempli dans les champs email vides
+  const userEmail = (() => {
+    try { return JSON.parse(localStorage.getItem('sdi_user') || '{}').email || '' }
+    catch { return '' }
+  })()
 
   // Si l'utilisateur a une serre assignée, on démarre dessus
-  const defaultId = allowedSerreId || 1
+  const defaultId = allowedSerreId || 1  // supradmin: allowedSerreId=null → defaults to 1 (can switch freely)
   const [serreId, setSerreId] = useState(defaultId)
   const [seuils,  setSeuils]  = useState([])
   const [loading, setLoading] = useState(true)
@@ -129,7 +134,7 @@ export default function Seuils({ theme, lang, userRole }) {
     ;(data || []).forEach(s => {
       init[s.capteur + '_min']   = s.valeur_min ?? ''
       init[s.capteur + '_max']   = s.valeur_max ?? ''
-      init[s.capteur + '_email'] = s.email_alerte ?? ''
+      init[s.capteur + '_email'] = s.email_alerte || userEmail  // pré-rempli avec l'email de l'admin si vide
       init[s.capteur + '_actif'] = s.actif ?? true
     })
     setForm(init)
@@ -466,7 +471,7 @@ export default function Seuils({ theme, lang, userRole }) {
                       <td style={{ padding:'12px 16px', borderBottom:'1px solid ' + border }}>
                         <input type="email" value={form[s.capteur + '_email']}
                           onChange={e => update(s.capteur + '_email', e.target.value)}
-                          placeholder="email@..."
+                          placeholder={userEmail || "email@..."}
                           style={{ ...inputStyle, width:190, padding:'6px 10px',
                             color:isDark?'#94A3B8':'#64748B' }}
                           onFocus={e => { e.target.style.borderColor='#22C55E'; e.target.style.boxShadow='0 0 0 2px rgba(34,197,94,0.15)'; e.target.style.color=isDark?'#F1F5F9':'#0F172A' }}
