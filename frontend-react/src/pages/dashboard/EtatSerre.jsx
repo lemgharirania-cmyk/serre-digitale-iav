@@ -509,7 +509,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
                   <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#06B6D4' }}>&gt; {pi.cooling_nuit.seuil}°C</b>
                   <br/>
                   <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.cooling_jour.deadband}°C</b>
-                  <span style={{ marginLeft:6, fontSize:9, color:ink4, fontStyle:'italic' }}>{lang==='FR'?pi.ventilation.mode:pi.ventilation.mode}</span>
+                  <span style={{ marginLeft:6, fontSize:9, color:ink4, fontStyle:'italic' }}>{lang==='FR'?pi.mode:pi.mode}</span>
                 </div>
               </div>
             )
