@@ -89,6 +89,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     blocLabel:    lang === 'fr' ? 'Bloc technique'      : 'Technical Block',
     launch:       lang === 'fr' ? 'Lancer'              : 'Launch',
     full:         lang === 'fr' ? 'Plein écran'         : 'Fullscreen',
+    exitFull:     lang === 'fr' ? 'Quitter le plein écran' : 'Exit fullscreen',
     live:         lang === 'fr' ? 'Visite 360°'         : '360° Tour',
     selectTour:   lang === 'fr' ? 'Sélectionnez un mode ci-dessus'       : 'Select a mode above',
     selectSalle:  lang === 'fr' ? 'Sélectionnez un espace pour commencer' : 'Select a space to begin',
@@ -768,25 +769,105 @@ function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, liveLa
 }
 
 function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported }) {
+  const containerRef = useRef(null)
+  const [isFS, setIsFS] = useState(false)
+
+  /* ── track fullscreen state (Échap / programmatic exit) ── */
+  useEffect(() => {
+    function onFSChange() {
+      setIsFS(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', onFSChange)
+    return () => document.removeEventListener('fullscreenchange', onFSChange)
+  }, [])
+
+  function toggleFullscreen() {
+    if (!isFS) {
+      containerRef.current?.requestFullscreen?.()
+    } else {
+      document.exitFullscreen?.()
+    }
+  }
+
   return (
-    <div style={{ borderRadius: '24px', overflow: 'hidden', border: `1px solid ${glassBorder}`, boxShadow: isDark ? `0 32px 80px rgba(0,0,0,0.55),0 0 0 1px ${viewer.color}12` : '0 16px 48px rgba(0,0,0,0.09)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: isDark ? 'rgba(7,17,31,0.95)' : 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${glassBorder}` }}>
+    <div
+      ref={containerRef}
+      style={{
+        borderRadius: isFS ? '0' : '24px',
+        overflow: 'hidden',
+        border: isFS ? 'none' : `1px solid ${glassBorder}`,
+        boxShadow: isFS ? 'none' : (isDark ? `0 32px 80px rgba(0,0,0,0.55),0 0 0 1px ${viewer.color}12` : '0 16px 48px rgba(0,0,0,0.09)'),
+        /* fullscreen: fill the screen, override browser default white bg */
+        ...(isFS ? { background: '#000', display: 'flex', flexDirection: 'column' } : {}),
+      }}
+    >
+      {/* ── Title bar ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 16px',
+        background: isDark ? 'rgba(7,17,31,0.95)' : 'rgba(255,255,255,0.97)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: `1px solid ${glassBorder}`,
+        flexShrink: 0,
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ display: 'flex', gap: '5px' }}>
             {['#EF4444','#F59E0B','#22C55E'].map(c => <div key={c} style={{ width: '8px', height: '8px', borderRadius: '50%', background: c, opacity: 0.55 }} />)}
           </div>
           <div style={{ width: '1px', height: '14px', background: glassBorder }} />
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 7px rgba(34,197,94,0.9)', display: 'inline-block', animation: 'vPulse 2s infinite' }} />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: ink, fontFamily: "'Outfit',sans-serif" }}>{viewer.title}</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: isFS ? '#F1F5F9' : ink, fontFamily: "'Outfit',sans-serif" }}>{viewer.title}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '10px', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.22)', borderRadius: '100px', padding: '2px 10px', letterSpacing: '0.08em', fontFamily: "'Outfit',sans-serif" }}>{T.live}</span>
-        
+
+          {/* ── Fullscreen toggle button ── */}
+          <button
+            onClick={toggleFullscreen}
+            title={isFS ? (T.exitFull ?? 'Quitter le plein écran') : (T.full ?? 'Plein écran')}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '30px', height: '30px', borderRadius: '8px',
+              background: isFS ? 'rgba(255,255,255,0.1)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+              border: `1px solid ${isFS ? 'rgba(255,255,255,0.18)' : glassBorder}`,
+              cursor: 'pointer', flexShrink: 0, transition: 'all 0.18s',
+              color: isFS ? '#F1F5F9' : ink,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = isFS ? 'rgba(255,255,255,0.18)' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.09)') }}
+            onMouseLeave={e => { e.currentTarget.style.background = isFS ? 'rgba(255,255,255,0.1)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') }}
+          >
+            {isFS ? (
+              /* compress icon — exit fullscreen */
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+                <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+              </svg>
+            ) : (
+              /* expand icon — enter fullscreen */
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+              </svg>
+            )}
+          </button>
         </div>
       </div>
-      <div style={{ height: '2px', background: `linear-gradient(90deg,transparent,${viewer.color},transparent)` }} />
-      <div style={{ position: 'relative', paddingBottom: '48%', background: isDark ? '#07111F' : '#F0FAF4' }}>
-        <iframe key={viewer.file} src={viewer.file} allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
+
+      {/* ── Color accent line ── */}
+      <div style={{ height: '2px', background: `linear-gradient(90deg,transparent,${viewer.color},transparent)`, flexShrink: 0 }} />
+
+      {/* ── iframe wrapper ── */}
+      <div style={
+        isFS
+          ? { flex: 1, position: 'relative', background: '#000' }
+          : { position: 'relative', paddingBottom: '48%', background: isDark ? '#07111F' : '#F0FAF4' }
+      }>
+        <iframe
+          key={viewer.file}
+          src={viewer.file}
+          allowFullScreen
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+        />
       </div>
     </div>
   )
