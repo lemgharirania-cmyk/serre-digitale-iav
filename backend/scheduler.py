@@ -20,8 +20,6 @@ async def collect_and_store():
             # ── ENV ──────────────────────────────────────────
             try:
                 env = await fetch_env(serre["env_device_id"], serre["env_token"])
-                # FIX: vérifier qu'au moins une valeur est non-nulle avant d'insérer
-                # (l'API Pro-Leaf retourne {"msg":"No current data"} → toutes les valeurs sont None)
                 env_valide = env and any(
                     env.get(k) is not None
                     for k in ["temperature", "humidite", "vpd", "co2", "luminosite"]
@@ -43,7 +41,7 @@ async def collect_and_store():
                         if val is not None:
                             await check_threshold(db, serre, capteur, val)
                 else:
-                    print(f"[Scheduler] ⚠️ ENV serre {serre['code']} — pas de données valides (device hors ligne?)")
+                    print(f"[Scheduler] ⚠️ ENV serre {serre['code']} — pas de données valides")
             except Exception as e:
                 print(f"[Scheduler] ❌ ENV serre {serre['id']}: {e}")
 
@@ -52,21 +50,31 @@ async def collect_and_store():
                 irr = await fetch_irr(serre["irr_device_id"], serre["irr_token"])
                 if irr:
                     raw = irr.pop("raw", {})
-                    # FIX: supprimé ON CONFLICT DO NOTHING — chaque collecte doit être sauvegardée
-                    await db.execute("""
-                        INSERT INTO mesures_iot
-                            (serre_id, type_api, ph, ec, temp_eau, niveau_eau, raw_data)
-                        VALUES ($1, 'IRR', $2, $3, $4, $5, $6)
-                    """, serre["id"],
-                        irr.get("ph"), irr.get("ec"),
-                        irr.get("temp_eau"), irr.get("niveau_eau"),
-                        json.dumps(raw)
-                    )
-                    print(f"[Scheduler] ✅ IRR serre {serre['code']} sauvegardée")
-                    for capteur in ["ph", "ec", "niveau_eau"]:
-                        val = irr.get(capteur)
-                        if val is not None:
-                            await check_threshold(db, serre, capteur, val)
+
+                    # Séparer les capteurs chimiques (ph/ec/temp_eau) du niveau d'eau
+                    # niveau_eau peut être valide même quand les autres sont à -9999
+                    ph        = irr.get("ph")
+                    ec        = irr.get("ec")
+                    temp_eau  = irr.get("temp_eau")
+                    niveau    = irr.get("niveau_eau")
+
+                    chimiques_valides = any(v is not None for v in [ph, ec, temp_eau])
+                    niveau_valide     = niveau is not None
+
+                    if chimiques_valides or niveau_valide:
+                        await db.execute("""
+                            INSERT INTO mesures_iot
+                                (serre_id, type_api, ph, ec, temp_eau, niveau_eau, raw_data)
+                            VALUES ($1, 'IRR', $2, $3, $4, $5, $6)
+                        """, serre["id"], ph, ec, temp_eau, niveau, json.dumps(raw))
+                        print(f"[Scheduler] ✅ IRR serre {serre['code']} sauvegardée"
+                              + ("" if chimiques_valides else " (niveau_eau seulement)"))
+
+                        for capteur, val in [("ph", ph), ("ec", ec), ("niveau_eau", niveau)]:
+                            if val is not None:
+                                await check_threshold(db, serre, capteur, val)
+                    else:
+                        print(f"[Scheduler] ⚠️ IRR serre {serre['code']} — aucune donnée valide")
             except Exception as e:
                 print(f"[Scheduler] ❌ IRR serre {serre['id']}: {e}")
 
@@ -102,7 +110,6 @@ async def check_threshold(db, serre: dict, capteur: str, valeur):
             msg_en = f"{capteur} too high: {valeur} (max: {vmax})"
 
         if alerte:
-            # Anti-spam : pas d'alerte si une alerte existe déjà dans les 10 dernières minutes
             recent = await db.fetchrow("""
                 SELECT id FROM alertes
                 WHERE serre_id = $1 AND capteur = $2
@@ -136,7 +143,6 @@ async def start_scheduler():
         try:
             await collect_and_store()
 
-            # Nettoyage toutes les 24h (720 cycles × 2 min)
             if cycle % 720 == 0 and cycle > 0:
                 try:
                     pool = await get_pool()

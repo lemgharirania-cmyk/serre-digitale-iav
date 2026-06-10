@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/iot", tags=["IoT"])
 async def get_last_values(db, serre_id: int) -> dict:
     """Récupère les dernières valeurs ENV et IRR depuis la base de données."""
 
-    # Dernière mesure ENV
+    # Dernière mesure ENV avec au moins une valeur
     env_row = await db.fetchrow("""
         SELECT temperature, humidite, vpd, co2, luminosite, capture_at
         FROM mesures_iot
@@ -20,12 +20,21 @@ async def get_last_values(db, serre_id: int) -> dict:
         LIMIT 1
     """, serre_id)
 
-    # Dernière mesure IRR
+    # Dernière mesure IRR avec ph ou ec valides (capteurs chimiques)
     irr_row = await db.fetchrow("""
         SELECT ph, ec, temp_eau, niveau_eau, capture_at
         FROM mesures_iot
         WHERE serre_id = $1 AND type_api = 'IRR'
-          AND (ph IS NOT NULL OR ec IS NOT NULL OR temp_eau IS NOT NULL OR niveau_eau IS NOT NULL)
+          AND (ph IS NOT NULL OR ec IS NOT NULL)
+        ORDER BY capture_at DESC
+        LIMIT 1
+    """, serre_id)
+
+    # Niveau d'eau séparé — peut être valide même sans ph/ec
+    niveau_row = await db.fetchrow("""
+        SELECT niveau_eau FROM mesures_iot
+        WHERE serre_id = $1 AND type_api = 'IRR'
+          AND niveau_eau IS NOT NULL
         ORDER BY capture_at DESC
         LIMIT 1
     """, serre_id)
@@ -41,12 +50,13 @@ async def get_last_values(db, serre_id: int) -> dict:
         }
 
     irr = None
-    if irr_row:
+    if irr_row or niveau_row:
         irr = {
-            "ph":          irr_row["ph"],
-            "ec":          irr_row["ec"],
-            "temp_eau":    irr_row["temp_eau"],
-            "niveau_eau":  irr_row["niveau_eau"],
+            "ph":         irr_row["ph"]       if irr_row else None,
+            "ec":         irr_row["ec"]       if irr_row else None,
+            "temp_eau":   irr_row["temp_eau"] if irr_row else None,
+            "niveau_eau": (irr_row["niveau_eau"] if irr_row and irr_row["niveau_eau"] is not None
+                           else (niveau_row["niveau_eau"] if niveau_row else None)),
         }
 
     return {"env": env, "irr": irr}
