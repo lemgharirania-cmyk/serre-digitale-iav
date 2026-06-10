@@ -13,6 +13,7 @@ import Seuils        from './dashboard/Seuils'
 import Export        from './dashboard/Export'
 import Parametres    from './dashboard/Parametres'
 import NSCalculateur from './dashboard/NSCalculateur'
+import SDICopilot    from '../components/dashboard/SDICopilot'
 
 const METEO_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416' +
@@ -68,11 +69,19 @@ function ScrollHome(props) {
   const sec = { scrollMarginTop: 24, marginBottom: 48 }
   return (
     <>
+<<<<<<< Updated upstream
       {/* Bannière + ambiance intérieure + schéma : tout dans EtatSerre */}
       <section id="etat"       style={sec}><EtatSerre  {...props} /></section>
       <section id="graphiques" style={sec}><Graphiques {...props} /></section>
       <section id="seuils"     style={sec}><Seuils     {...props} /></section>
       <section id="export"     style={sec}><Export     {...props} /></section>
+=======
+      <section id="etat"         style={sec}><EtatSerre   {...props} /></section>
+      <section id="graphiques"   style={sec}><Graphiques  {...props} /></section>
+      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
+      <section id="calculateur"  style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
+      <section id="export"       style={sec}><Export      {...props} /></section>
+>>>>>>> Stashed changes
     </>
   )
 }
@@ -97,7 +106,7 @@ export default function Dashboard() {
   const [countdown,  setCountdown]  = useState(120)
   const [meteo,      setMeteo]      = useState({})
   const [bannerOff,  setBannerOff]  = useState(false)
-  const [sidebarW,   setSidebarW]   = useState(240) // synced with sidebar collapse
+  const [sidebarW,   setSidebarW]   = useState(240)
 
   // Vue active de la route principale : 'scroll' | 'calculateur' | 'parametres'
   const [view, setView] = useState('scroll')
@@ -190,9 +199,8 @@ export default function Dashboard() {
 
   const countdownLabel = Math.floor(countdown / 60) + ':' + String(countdown % 60).padStart(2, '0')
 
-  // Rôle utilisateur — détermine l'accès aux serres
   const sdiUser  = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
-  const userRole = sdiUser.unit || sdiUser.role || 'ALL'  // unit='ALL'/'S01'…'S05' ; fallback sur role
+  const userRole = sdiUser.unit || sdiUser.role || 'ALL'
 
   const sharedProps = {
     liveData, stats, alertCount, meteo,
@@ -238,7 +246,6 @@ export default function Dashboard() {
         onViewNav={goTo}
       />
 
-      {/* Spacer that matches fixed sidebar width */}
       <div id="sidebar-spacer" style={{ width: sidebarW, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
 
       <main
@@ -263,6 +270,9 @@ export default function Dashboard() {
           <Route path="*"            element={<HomeView view={view} sharedProps={sharedProps} theme={theme} lang={lang} />} />
         </Routes>
       </main>
+
+      {/* ── SDI Copilot — widget flottant IA (dashboard privé) ── */}
+      <SDICopilot isDark={theme === 'dark'} lang={lang} />
     </div>
   )
 }

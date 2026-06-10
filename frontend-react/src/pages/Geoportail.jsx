@@ -11,6 +11,7 @@ import SectionPlan2D    from '../components/geoportail/SectionPlan2D'
 import SectionDonnees   from '../components/geoportail/SectionDonnees'
 import SectionVisite    from "../components/geoportail/SectionVisite"
 import FooterGeoportail from '../components/geoportail/FooterGeoportail'
+import SDICopilotPublic from '../components/geoportail/SDICopilotPublic'
 
 export default function Geoportail() {
   const [lang,          setLang]          = useState('fr')
@@ -39,7 +40,6 @@ export default function Geoportail() {
     return () => clearInterval(timer)
   }, [])
 
-  // Track active section on scroll
   useEffect(() => {
     const ids = ['projet','apropos','campus','plan2d','visite','donnees']
     const observer = new IntersectionObserver(entries => {
@@ -57,26 +57,22 @@ export default function Geoportail() {
   const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
   const sidebarWidth   = sidebarOpen ? 240 : 64
   const bgColor        = darkMode ? '#07111F' : '#F4F7F5'
-  const HEADER_H       = 72   // px — matches Header height
+  const HEADER_H       = 72
 
   return (
     <div style={{ fontFamily: "'Outfit','Inter',sans-serif", background: bgColor, minHeight: '100vh', transition: 'background 0.4s ease' }}>
 
-      {/* Header — fixed, FULL width, zIndex 500 (highest) */}
       <Header
         lang={lang} setLang={setLang}
         darkMode={darkMode} setDarkMode={setDarkMode}
-        // no sidebarWidth prop needed anymore
       />
 
-      {/* Sidebar — fixed, starts BELOW header, zIndex 400 */}
       <Sidebar
         open={sidebarOpen} setOpen={setSidebarOpen}
         active={activeSection}
         lang={lang} darkMode={darkMode}
       />
 
-      {/* Main content — offset by sidebar width + header height */}
       <main style={{
         marginLeft: `${sidebarWidth}px`,
         marginTop:  `${HEADER_H}px`,
@@ -95,6 +91,13 @@ export default function Geoportail() {
         />
         <FooterGeoportail lang={lang} darkMode={darkMode} />
       </main>
+
+      {/* ── SDI Copilot public — apparaît après SectionDonnees, sans JWT ── */}
+      <SDICopilotPublic
+        isDark={darkMode}
+        lang={lang.toUpperCase()}
+        liveData={liveData}
+      />
 
       <style>{`
         * { box-sizing: border-box; }
