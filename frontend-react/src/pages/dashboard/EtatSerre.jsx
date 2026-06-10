@@ -1077,12 +1077,12 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
   for (let h=lever; h<=coucher+0.001; h+=(coucher-lever)/40)
     arc += `${arc?'L':'M'} ${xOf(h).toFixed(1)} ${yArc(h).toFixed(1)} `
 
-  const jour = hNow >= lever && hNow <= coucher
-  const aX = xOf(hNow), aY = jour ? yArc(hNow) : horizon+16
+  const estJour = hNow >= lever && hNow <= coucher
+  const aX = xOf(hNow), aY = estJour ? yArc(hNow) : horizon+16
 
   const cVerre  = isDark ? '#5b86ad' : '#94a3b8'
   const cVerreF = isDark ? 'rgba(127,182,232,0.10)' : 'rgba(148,197,232,0.18)'
-  const cSkyTop = jour ? (isDark?'#16324f':'#dbeafe') : (isDark?'#0c1b2e':'#475569')
+  const cSkyTop = estJour ? (isDark?'#16324f':'#dbeafe') : (isDark?'#0c1b2e':'#475569')
   const cSkyBot = isDark ? '#0a1626' : '#eff6ff'
   const cAxis   = isDark ? '#3b5775' : '#cbd5e1'
   const cSol    = isDark ? '#2a4055' : '#cbd5e1'
