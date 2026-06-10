@@ -34,10 +34,38 @@ const ENV_KEYS = ['temperature','humidite','vpd','co2']
 const IRR_KEYS = ['ph','ec','temp_eau','niveau_eau']
 
 const OPTIMAL = {
-  temperature:{ min:18, max:28 }, humidite:{ min:60, max:80 },
-  vpd:{ min:0.8, max:1.5 },      co2:{ min:400, max:1200 },
+  temperature:{ min:20, max:25 }, humidite:{ min:60, max:80 },
+  vpd:{ min:0.8, max:1.5 },      co2:{ min:500, max:1000 },
   ph:{ min:5.5, max:7.0 },       ec:{ min:1.5, max:3.5 },
   temp_eau:{ min:18, max:22 },   niveau_eau:{ min:0.6, max:1.0 },
+}
+
+// Seuils internes issus du contrôleur Pro-Leaf (synthèse PDF)
+const PARAMS_INTERNES = {
+  ventilation: {
+    cooling_jour:  { seuil:25, deadband:2 },   // Ouvre ventil. si T > 25°C (jour)
+    cooling_nuit:  { seuil:20, deadband:2 },   // Ouvre ventil. si T > 20°C (nuit)
+    mode: 'Cooling & Dehumidify Lock',
+  },
+  chauffage: {
+    heating_jour:  { seuil:20, deadband:2 },   // Chauffe si T < 20°C (jour)
+    heating_nuit:  { seuil:15, deadband:2 },   // Chauffe si T < 15°C (nuit)
+  },
+  deshumidification: {
+    jour: { seuil:80, deadband:5 },            // Déshumid. si H > 80%
+    nuit: { seuil:80, deadband:5 },
+  },
+  humidification: {
+    jour: { seuil:60, deadband:5 },            // Humidif. si H < 60%
+    nuit: { seuil:60, deadband:5 },
+  },
+  co2: {
+    up:   { seuil:1000, deadband:50 },         // Injection CO₂ si < 1000 ppm (jour)
+    down: { seuil:500,  deadband:50 },         // Purge CO₂ si > 500 ppm (nuit)
+    mode_fuzzy: true,
+    lock_cooling: true,
+    lock_dehumidify: true,
+  },
 }
 
 const ACTIONNEURS = {
@@ -74,6 +102,27 @@ function dansPlage(plage) {
   const n = new Date(); const h = n.getHours() + n.getMinutes()/60
   return h >= plage[0] && h <= plage[1]
 }
+function isJour(sunrise, sunset) {
+  const now = new Date(); const h = now.getHours() + now.getMinutes()/60
+  const lev = parseH(sunrise) ?? 6.5
+  const cou = parseH(sunset)  ?? 19.5
+  return h >= lev && h <= cou
+}
+function equipEtats(temp, humid, co2Val, jour) {
+  const pi = PARAMS_INTERNES
+  const cooling  = jour ? pi.ventilation.cooling_jour : pi.ventilation.cooling_nuit
+  const heating  = jour ? pi.chauffage.heating_jour   : pi.chauffage.heating_nuit
+  const deshumid = jour ? pi.deshumidification.jour   : pi.deshumidification.nuit
+  const humidif  = jour ? pi.humidification.jour      : pi.humidification.nuit
+  return {
+    ventilateur: temp  != null ? (temp  > cooling.seuil               ? 'actif' : temp  > cooling.seuil  - cooling.deadband  ? 'neutre' : 'inactif') : 'na',
+    chauffage:   temp  != null ? (temp  < heating.seuil               ? 'actif' : temp  < heating.seuil  + heating.deadband  ? 'neutre' : 'inactif') : 'na',
+    brumisateur: humid != null ? (humid < humidif.seuil               ? 'actif' : humid < humidif.seuil  + humidif.deadband  ? 'neutre' : 'inactif') : 'na',
+    deshumid:    humid != null ? (humid > deshumid.seuil              ? 'actif' : humid > deshumid.seuil - deshumid.deadband ? 'neutre' : 'inactif') : 'na',
+    co2inj:      (co2Val != null && jour)  ? (co2Val < pi.co2.up.seuil   - pi.co2.up.deadband   ? 'actif' : co2Val < pi.co2.up.seuil   ? 'neutre' : 'inactif') : 'na',
+    co2purge:    (co2Val != null && !jour) ? (co2Val > pi.co2.down.seuil + pi.co2.down.deadband ? 'actif' : co2Val > pi.co2.down.seuil ? 'neutre' : 'inactif') : 'na',
+  }
+}
 const parseH = (iso) => {
   if (!iso) return null
   const t = String(iso).split('T')[1]; if (!t) return null
@@ -100,6 +149,11 @@ const T = {
     ventL:'Vent', rayL:'Rayonnement', pluieL:'Pluie', oui:'Oui', non:'Non',
     leverL:'Lever', coucherL:'Coucher',
     etatGlobal:'État global', derniereMAJ:'Dernière mise à jour',
+    equipTitre:'Équipements internes', jour:'Jour', nuit:'Nuit',
+    ventTitre:'Ventilation', chauffTitre:'Chauffage', brumTitre:'Brumisateur', deshumTitre:'Déshumidification', co2Titre:'CO₂',
+    actifL:'Actif', inactifL:'Inactif', transitionL:'Transition', naLabel:'N/D',
+    deadband:'Deadband', seuilJour:'Seuil jour', seuilNuit:'Seuil nuit',
+    fuzzy:'Fuzzy Control actif', lockCool:'Lock Cooling', lockDeshumid:'Lock Déshumid.',
   },
   EN:{
     env:'Indoor climate', irr:'Irrigation',
@@ -116,6 +170,11 @@ const T = {
     ventL:'Wind', rayL:'Radiation', pluieL:'Rain', oui:'Yes', non:'No',
     leverL:'Sunrise', coucherL:'Sunset',
     etatGlobal:'Global status', derniereMAJ:'Last update',
+    equipTitre:'Internal equipment', jour:'Day', nuit:'Night',
+    ventTitre:'Ventilation', chauffTitre:'Heating', brumTitre:'Humidifier', deshumTitre:'Dehumidification', co2Titre:'CO₂',
+    actifL:'Active', inactifL:'Inactive', transitionL:'Transition', naLabel:'N/A',
+    deadband:'Deadband', seuilJour:'Day threshold', seuilNuit:'Night threshold',
+    fuzzy:'Fuzzy Control active', lockCool:'Cooling Lock', lockDeshumid:'Dehumid. Lock',
   },
 }
 
@@ -147,9 +206,11 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
     return () => { alive = false }
   }, [meta.id])
 
-  const ext = ecranEtat(temp, ACTIONNEURS.ombrage_ext)
-  const int = ecranEtat(temp, ACTIONNEURS.ombrage_int)
-  const fen = fenetreEtat(temp, meteo.vent, meteo.pluie, ACTIONNEURS.fenetre)
+  const ext   = ecranEtat(temp, ACTIONNEURS.ombrage_ext)
+  const int   = ecranEtat(temp, ACTIONNEURS.ombrage_int)
+  const fen   = fenetreEtat(temp, meteo.vent, meteo.pluie, ACTIONNEURS.fenetre)
+  const jour  = isJour(meteo.sunrise, meteo.sunset)
+  const equip = equipEtats(temp, env.humidite, env.co2, jour)
   const getSeuil = (key) => thresholds.find(s => s.capteur === key) || null
 
   // Couleurs
@@ -363,7 +424,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             <Scene
               isDark={isDark} serreColor={meta.color} meteo={meteo}
               ext={ext.etat} int={int.etat} fenetre={fen.etat}
-              serreIdx={idx}
+              serreIdx={idx} temp={temp} equip={equip} jour={jour}
             />
           </div>
 
@@ -404,6 +465,382 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           </div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          4. ÉQUIPEMENTS INTERNES — ventilation, chauffage, brumisateur, CO₂
+      ══════════════════════════════════════════════════════════ */}
+      <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, padding:'20px 24px', marginTop:16 }}>
+        {/* Titre */}
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+          <span style={{ width:32, height:32, borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center',
+            background: meta.color+'18', color: meta.color, flexShrink:0, fontSize:16 }}>⚙</span>
+          <div>
+            <div style={{ fontSize:14, fontWeight:800, color:ink, letterSpacing:'-0.01em' }}>{t.equipTitre}</div>
+            <div style={{ fontSize:11, color:ink3, marginTop:1 }}>
+              {jour ? '🌤 ' + t.jour : '🌙 ' + t.nuit} · {lang==='FR'?'Intervalles Pro-Leaf (synthèse contrôleur)':'Pro-Leaf intervals (controller summary)'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(185px,1fr))', gap:10 }}>
+
+          {/* ── Ventilation ── */}
+          {(() => {
+            const e = equip.ventilateur
+            const c = e==='actif' ? '#06B6D4' : e==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
+            const pi = PARAMS_INTERNES.ventilation
+            return (
+              <div style={{ borderRadius:12, padding:'12px 14px',
+                border:'1px solid ' + (e==='actif' ? '#06B6D420' : border),
+                background: e==='actif' ? (isDark?'rgba(6,182,212,0.07)':'rgba(6,182,212,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                    <span style={{ fontSize:16 }}>🌀</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.ventTitre}</span>
+                  </div>
+                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
+                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
+                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#06B6D4' }}>&gt; {pi.cooling_jour.seuil}°C</b>
+                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
+                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#06B6D4' }}>&gt; {pi.cooling_nuit.seuil}°C</b>
+                  <br/>
+                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.cooling_jour.deadband}°C</b>
+                  <span style={{ marginLeft:6, fontSize:9, color:ink4, fontStyle:'italic' }}>{lang==='FR'?pi.ventilation.mode:pi.ventilation.mode}</span>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Chauffage ── */}
+          {(() => {
+            const e = equip.chauffage
+            const c = e==='actif' ? '#F59E0B' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
+            const pi = PARAMS_INTERNES.chauffage
+            return (
+              <div style={{ borderRadius:12, padding:'12px 14px',
+                border:'1px solid ' + (e==='actif' ? '#F59E0B20' : border),
+                background: e==='actif' ? (isDark?'rgba(245,158,11,0.07)':'rgba(245,158,11,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                    <span style={{ fontSize:16 }}>🔥</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.chauffTitre}</span>
+                  </div>
+                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
+                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
+                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#F59E0B' }}>&lt; {pi.heating_jour.seuil}°C</b>
+                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
+                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#F59E0B' }}>&lt; {pi.heating_nuit.seuil}°C</b>
+                  <br/>
+                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.heating_jour.deadband}°C</b>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Brumisateur / Humidification ── */}
+          {(() => {
+            const e = equip.brumisateur
+            const c = e==='actif' ? '#8B5CF6' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
+            const pi = PARAMS_INTERNES.humidification
+            return (
+              <div style={{ borderRadius:12, padding:'12px 14px',
+                border:'1px solid ' + (e==='actif' ? '#8B5CF620' : border),
+                background: e==='actif' ? (isDark?'rgba(139,92,246,0.07)':'rgba(139,92,246,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                    <span style={{ fontSize:16 }}>💧</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.brumTitre}</span>
+                  </div>
+                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
+                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
+                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#8B5CF6' }}>&lt; {pi.jour.seuil}%</b>
+                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
+                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#8B5CF6' }}>&lt; {pi.nuit.seuil}%</b>
+                  <br/>
+                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.jour.deadband}%</b>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Déshumidification ── */}
+          {(() => {
+            const e = equip.deshumid
+            const c = e==='actif' ? '#3B82F6' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
+            const pi = PARAMS_INTERNES.deshumidification
+            return (
+              <div style={{ borderRadius:12, padding:'12px 14px',
+                border:'1px solid ' + (e==='actif' ? '#3B82F620' : border),
+                background: e==='actif' ? (isDark?'rgba(59,130,246,0.07)':'rgba(59,130,246,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                    <span style={{ fontSize:16 }}>🌬</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.deshumTitre}</span>
+                  </div>
+                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
+                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
+                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#3B82F6' }}>&gt; {pi.jour.seuil}%</b>
+                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
+                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#3B82F6' }}>&gt; {pi.nuit.seuil}%</b>
+                  <br/>
+                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.jour.deadband}%</b>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── CO₂ ── */}
+          {(() => {
+            const actif = equip.co2inj === 'actif' || equip.co2purge === 'actif'
+            const neutre = equip.co2inj === 'neutre' || equip.co2purge === 'neutre'
+            const e = actif ? 'actif' : neutre ? 'neutre' : 'inactif'
+            const c = actif ? '#22C55E' : neutre ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
+            const pi = PARAMS_INTERNES.co2
+            return (
+              <div style={{ borderRadius:12, padding:'12px 14px',
+                border:'1px solid ' + (actif ? '#22C55E20' : border),
+                background: actif ? (isDark?'rgba(34,197,94,0.07)':'rgba(34,197,94,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                    <span style={{ fontSize:16 }}>🌿</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.co2Titre}</span>
+                  </div>
+                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
+                    {equip.co2inj==='actif'?'↑ Injection':equip.co2purge==='actif'?'↓ Purge':e==='neutre'?t.transitionL:t.inactifL}
+                  </span>
+                </div>
+                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
+                  <span style={{ color:ink4 }}>↑ {t.jour}:</span> <b style={{ color:'#22C55E' }}>&lt; {pi.up.seuil} ppm</b>
+                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
+                  <span style={{ color:ink4 }}>↓ {t.nuit}:</span> <b style={{ color:'#22C55E' }}>&gt; {pi.down.seuil} ppm</b>
+                  <br/>
+                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.up.deadband} ppm</b>
+                  <span style={{ marginLeft:6, fontSize:9, color:'#22C55E', fontWeight:600 }}>{pi.mode_fuzzy ? t.fuzzy : ''}</span>
+                </div>
+              </div>
+            )
+          })()}
+
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          5. PANNEAU SEUILS — comment fonctionnent les alertes
+      ══════════════════════════════════════════════════════════ */}
+      {thresholds.length > 0 && (
+        <div style={{
+          background: cardBg, border: '1px solid ' + border, borderRadius: 18,
+          padding: '20px 24px', marginTop: 16,
+        }}>
+          {/* Titre */}
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+            <span style={{ width:32, height:32, borderRadius:9, display:'flex', alignItems:'center',
+              justifyContent:'center', background: meta.color+'18', color: meta.color, flexShrink:0 }}>
+              <AlertTriangle size={16}/>
+            </span>
+            <div>
+              <div style={{ fontSize:14, fontWeight:800, color:ink, letterSpacing:'-0.01em' }}>
+                {lang==='FR' ? 'Seuils d\'alerte actifs' : 'Active alert thresholds'}
+              </div>
+              <div style={{ fontSize:11, color:ink3, marginTop:1 }}>
+                {lang==='FR'
+                  ? 'Paramétrage actuel pour ' + meta.code + ' — déclenchement des alertes automatiques'
+                  : 'Current configuration for ' + meta.code + ' — automatic alert triggers'}
+              </div>
+            </div>
+            <span style={{ marginLeft:'auto', fontSize:10, fontWeight:700, padding:'3px 10px',
+              borderRadius:20, background: meta.color+'12', border:'1px solid ' + meta.color+'25',
+              color: meta.color }}>
+              {thresholds.filter(s => s.actif !== false).length} {lang==='FR'?'actifs':'active'}
+            </span>
+          </div>
+
+          {/* Grille des seuils */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
+            {[...ENV_KEYS, ...IRR_KEYS].map(key => {
+              const seuil   = getSeuil(key)
+              const Icon    = PARAM_ICONS[key]
+              const valLive = key in env ? env[key] : (key in irr ? irr[key] : null)
+              const opt     = OPTIMAL[key]
+              if (!seuil) return null
+
+              const actif   = seuil.actif !== false
+              const dMin    = opt ? opt.min * 0.5 : 0
+              const dMax    = opt ? opt.max * 1.5 : 100
+              const pos     = (v) => Math.min(96, Math.max(2, ((v - dMin) / (dMax - dMin)) * 100))
+
+              const valStatus = valLive != null
+                ? (seuil.valeur_min != null && valLive < seuil.valeur_min ? 'bas'
+                  : seuil.valeur_max != null && valLive > seuil.valeur_max ? 'haut'
+                  : 'ok')
+                : null
+
+              const statusColor = valStatus === 'ok' ? '#22C55E'
+                                : valStatus === null ? ink4
+                                : '#EF4444'
+
+              // Labels des capteurs (raccourcis)
+              const LABELS = {
+                temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂',
+                ph:'pH', ec:'EC', temp_eau:'T° eau', niveau_eau:'Niveau eau',
+              }
+              const LABELS_EN = {
+                temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂',
+                ph:'pH', ec:'EC', temp_eau:'Water temp', niveau_eau:'Water level',
+              }
+              const UNITS = {
+                temperature:'°C', humidite:'%', vpd:'kPa', co2:'ppm',
+                ph:'', ec:'mS/cm', temp_eau:'°C', niveau_eau:'m',
+              }
+              const label = lang==='FR' ? LABELS[key] : LABELS_EN[key]
+              const unit  = UNITS[key] || ''
+
+              return (
+                <div key={key} style={{
+                  borderRadius: 12, padding: '12px 14px',
+                  border: '1px solid ' + (actif
+                    ? (valStatus === null ? border : statusColor + '35')
+                    : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)')),
+                  background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.018)',
+                  opacity: actif ? 1 : 0.5,
+                }}>
+                  {/* En-tête capteur */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                      {Icon && <Icon size={13} color={actif ? meta.color : ink4}/>}
+                      <span style={{ fontSize:11, fontWeight:700, color: actif ? ink : ink4 }}>{label}</span>
+                    </div>
+                    <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:99,
+                      background: actif ? statusColor+'18' : (isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)'),
+                      color: actif ? statusColor : ink4,
+                      border: '1px solid ' + (actif ? statusColor+'30' : 'transparent') }}>
+                      {!actif
+                        ? (lang==='FR' ? 'Inactif' : 'Inactive')
+                        : valStatus === null ? '—'
+                        : valStatus === 'ok' ? (lang==='FR' ? '✓ Normal' : '✓ Normal')
+                        : valStatus === 'bas' ? (lang==='FR' ? '↓ Trop bas' : '↓ Too low')
+                        : (lang==='FR' ? '↑ Trop haut' : '↑ Too high')
+                      }
+                    </span>
+                  </div>
+
+                  {/* Mini barre visuelle : zone opt + seuils + valeur live */}
+                  {opt && (
+                    <div style={{ marginBottom:8 }}>
+                      <div style={{ height:6, background: isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)',
+                        borderRadius:3, position:'relative', overflow:'visible' }}>
+                        {/* Zone optimale */}
+                        <div style={{ position:'absolute', top:0, height:'100%', borderRadius:3,
+                          left: pos(opt.min)+'%',
+                          width: (pos(opt.max)-pos(opt.min))+'%',
+                          background: meta.color+'40' }}/>
+                        {/* Seuil min (trait rouge pointillé) */}
+                        {seuil.valeur_min != null && (
+                          <div style={{ position:'absolute', top:-3, height:12,
+                            left: pos(seuil.valeur_min)+'%',
+                            borderLeft:'2px dashed #EF4444', zIndex:2 }}/>
+                        )}
+                        {/* Seuil max (trait rouge pointillé) */}
+                        {seuil.valeur_max != null && (
+                          <div style={{ position:'absolute', top:-3, height:12,
+                            left: pos(seuil.valeur_max)+'%',
+                            borderLeft:'2px dashed #EF4444', zIndex:2 }}/>
+                        )}
+                        {/* Valeur live (point coloré) */}
+                        {valLive != null && (
+                          <div style={{ position:'absolute', top:'50%', zIndex:3,
+                            transform:'translate(-50%,-50%)',
+                            left: pos(valLive)+'%',
+                            width:9, height:9, borderRadius:'50%',
+                            background: statusColor,
+                            boxShadow:'0 0 5px ' + statusColor,
+                            border:'2px solid ' + (isDark?'rgba(16,27,46,1)':'white') }}/>
+                        )}
+                      </div>
+                      {/* Légende sous la barre */}
+                      <div style={{ display:'flex', justifyContent:'space-between', marginTop:5,
+                        fontSize:9, fontFamily:'monospace', color:ink4, flexWrap:'wrap', gap:2 }}>
+                        <span style={{ color: meta.color+'cc' }}>
+                          Opt: {opt.min}–{opt.max}{unit}
+                        </span>
+                        <span style={{ color:'#EF4444cc' }}>
+                          {lang==='FR'?'Seuil':'Thresh'}: {seuil.valeur_min??'—'}–{seuil.valeur_max??'—'}{unit}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Explication en texte : comment le seuil fonctionne */}
+                  <div style={{ fontSize:10, color:ink3, lineHeight:1.55, borderTop:'1px solid ' + border,
+                    paddingTop:7, marginTop:2 }}>
+                    {seuil.valeur_min != null && seuil.valeur_max != null ? (
+                      <>
+                        {lang==='FR'
+                          ? <>Alerte si <span style={{ color:'#EF4444', fontWeight:700 }}>&lt; {seuil.valeur_min}{unit}</span> ou <span style={{ color:'#EF4444', fontWeight:700 }}>&gt; {seuil.valeur_max}{unit}</span></>
+                          : <>Alert if <span style={{ color:'#EF4444', fontWeight:700 }}>&lt; {seuil.valeur_min}{unit}</span> or <span style={{ color:'#EF4444', fontWeight:700 }}>&gt; {seuil.valeur_max}{unit}</span></>
+                        }
+                      </>
+                    ) : seuil.valeur_min != null ? (
+                      <>
+                        {lang==='FR'
+                          ? <>Alerte si <span style={{ color:'#EF4444', fontWeight:700 }}>&lt; {seuil.valeur_min}{unit}</span></>
+                          : <>Alert if <span style={{ color:'#EF4444', fontWeight:700 }}>&lt; {seuil.valeur_min}{unit}</span></>
+                        }
+                      </>
+                    ) : seuil.valeur_max != null ? (
+                      <>
+                        {lang==='FR'
+                          ? <>Alerte si <span style={{ color:'#EF4444', fontWeight:700 }}>&gt; {seuil.valeur_max}{unit}</span></>
+                          : <>Alert if <span style={{ color:'#EF4444', fontWeight:700 }}>&gt; {seuil.valeur_max}{unit}</span></>
+                        }
+                      </>
+                    ) : (
+                      <span style={{ color:ink4 }}>{lang==='FR'?'Aucune limite configurée':'No limit configured'}</span>
+                    )}
+                    {valLive != null && (
+                      <span style={{ display:'inline-block', marginLeft:8, color:statusColor, fontWeight:700,
+                        fontFamily:'monospace' }}>
+                        ({lang==='FR'?'actuel':'current'}: {valLive}{unit})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            }).filter(Boolean)}
+          </div>
+
+          {/* Note de bas */}
+          <div style={{ marginTop:14, padding:'10px 14px', borderRadius:10,
+            background: isDark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.02)',
+            border:'1px solid ' + border,
+            display:'flex', alignItems:'flex-start', gap:8 }}>
+            <Info size={12} color={ink4} style={{ flexShrink:0, marginTop:1 }}/>
+            <div style={{ fontSize:10.5, color:ink4, lineHeight:1.6 }}>
+              {lang==='FR'
+                ? <>Les seuils sont configurés par les responsables du complexe via l'interface d'administration. Une alerte est enregistrée dès que la valeur mesurée franchit la limite. La zone <span style={{ color:meta.color, fontWeight:700 }}>verte</span> sur chaque barre représente la plage optimale pour cette culture.</>
+                : <>Thresholds are configured by complex managers via the admin interface. An alert is logged as soon as a measured value crosses a limit. The <span style={{ color:meta.color, fontWeight:700 }}>colored</span> zone on each bar represents the optimal range for this crop.</>
+              }
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
@@ -619,7 +1056,7 @@ function ActionCard({ isDark, ink, ink3, ink4, border, titre, actif, on, off, cO
 // SCHÉMA SVG — enrichi avec ombrage/ventilation + plantes par serre
 // Base : schéma original conservé et enrichi
 // ════════════════════════════════════════════════════════════════
-function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx }) {
+function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, equip, jour }) {
   const extDep = ext === 'deploye', intDep = int === 'deploye', ouvert = fenetre === 'ouvert'
   const TR  = '0.65s cubic-bezier(.4,0,.2,1)'
   const sol = Math.min(1, (meteo.solaire || 0) / 900)
@@ -777,6 +1214,74 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx }) {
       {/* Pivot fenêtre */}
       <circle cx="240" cy="214" r="3.5" fill={cVerre}/>
 
+      {/* ── Équipements internes — icônes SVG dans la serre ── */}
+      {/* Ventilateur — coin bas-gauche intérieur serre */}
+      {(() => {
+        const c = equip.ventilateur === 'actif' ? '#06B6D4' : equip.ventilateur === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
+        const spin = equip.ventilateur === 'actif'
+        return (
+          <g transform="translate(192,282)">
+            <circle cx="0" cy="0" r="9" fill={isDark?'rgba(6,182,212,0.12)':'rgba(6,182,212,0.08)'} stroke={c} strokeWidth="1.2"/>
+            {[0,90,180,270].map((a,i) => (
+              <path key={i} d={'M0,0 C' + (Math.cos((a+40)*Math.PI/180)*7) + ',' + (Math.sin((a+40)*Math.PI/180)*7) + ' ' + (Math.cos((a+70)*Math.PI/180)*7) + ',' + (Math.sin((a+70)*Math.PI/180)*7) + ' ' + (Math.cos((a+90)*Math.PI/180)*3.5) + ',' + (Math.sin((a+90)*Math.PI/180)*3.5)}
+                fill={c} opacity={spin ? 0.9 : 0.45}/>
+            ))}
+            <circle cx="0" cy="0" r="2" fill={c}/>
+            <text x="0" y="17" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">VENT.</text>
+          </g>
+        )
+      })()}
+
+      {/* Chauffage — coin bas-droit intérieur */}
+      {(() => {
+        const c = equip.chauffage === 'actif' ? '#F59E0B' : equip.chauffage === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
+        return (
+          <g transform="translate(295,282)">
+            <circle cx="0" cy="0" r="9" fill={isDark?'rgba(245,158,11,0.10)':'rgba(245,158,11,0.06)'} stroke={c} strokeWidth="1.2"/>
+            {[-4,0,4].map((dx,i) => (
+              <g key={i}>
+                <path d={'M' + dx + ',5 q' + (-3+i) + ',-5 ' + dx + ',-10'} fill="none" stroke={c} strokeWidth="1.4" strokeLinecap="round" opacity={equip.chauffage==='actif'?0.9:0.4}/>
+              </g>
+            ))}
+            <text x="0" y="17" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">CHAUF.</text>
+          </g>
+        )
+      })()}
+
+      {/* Brumisateur — centre-bas intérieur */}
+      {(() => {
+        const c = equip.brumisateur === 'actif' ? '#8B5CF6' : equip.brumisateur === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
+        return (
+          <g transform="translate(240,285)">
+            <rect x="-8" y="-6" width="16" height="10" rx="3" fill={isDark?'rgba(139,92,246,0.12)':'rgba(139,92,246,0.07)'} stroke={c} strokeWidth="1.2"/>
+            <line x1="0" y1="-6" x2="0" y2="-10" stroke={c} strokeWidth="1.2"/>
+            <circle cx="0" cy="-11" r="1.5" fill={c} opacity="0.7"/>
+            {equip.brumisateur === 'actif' && [-5,0,5].map((dx,i) => (
+              <g key={i}>
+                <circle cx={dx} cy={-15-i*3} r="1.2" fill={c} opacity="0.5"/>
+                <circle cx={dx+2} cy={-18-i*2} r="0.9" fill={c} opacity="0.35"/>
+              </g>
+            ))}
+            <text x="0" y="14" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">BRUM.</text>
+          </g>
+        )
+      })()}
+
+      {/* CO₂ — badge flottant haut-droite intérieur */}
+      {(() => {
+        const actif = equip.co2inj === 'actif' || equip.co2purge === 'actif'
+        const neutre = equip.co2inj === 'neutre' || equip.co2purge === 'neutre'
+        const c = actif ? '#22C55E' : neutre ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
+        const label = equip.co2inj === 'actif' ? 'CO₂↑' : equip.co2purge === 'actif' ? 'CO₂↓' : 'CO₂'
+        return (
+          <g transform="translate(295,228)">
+            <rect x="-12" y="-8" width="24" height="14" rx="4"
+              fill={isDark?'rgba(34,197,94,0.10)':'rgba(34,197,94,0.07)'} stroke={c} strokeWidth="1.2"/>
+            <text x="0" y="1.5" textAnchor="middle" fontSize="6.5" fontFamily="monospace" fontWeight="700" fill={c}>{label}</text>
+          </g>
+        )
+      })()}
+
       {/* Indicateur T° intérieure */}
       <g>
         <rect x="18" y="220" width="70" height="30" rx="7"
@@ -785,7 +1290,7 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx }) {
         <text x="53" y="232" textAnchor="middle" fontFamily="monospace" fontSize="8"
           fill={isDark?'#94A3B8':'#64748B'}>T° INT.</text>
         <text x="53" y="244" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700"
-          fill={serreColor}>— °C</text>
+          fill={serreColor}>{temp != null ? temp + ' °C' : '— °C'}</text>
       </g>
 
     </svg>
