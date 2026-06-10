@@ -1,16 +1,24 @@
 // src/components/layout/Sidebar.jsx  (dashboard admin)
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Server, BarChart2, Bell, Sliders,
+  LayoutDashboard, BarChart2, Bell, Sliders,
   Download, Settings, Beaker,
   ChevronLeft, ChevronRight, Sun, Moon,
   ArrowLeft, LogOut, Languages,
 } from 'lucide-react'
 
-// ── Toutes les sections scroll dans la ScrollHome ──────────────────────────
-// "Vue d'ensemble" est la page principale — les ancres #xxx scrollent dedans
-// Les routes /alertes /parametres sont des pages séparées
+// ── Architecture de navigation ─────────────────────────────────────────────
+// action 'anchor' : scrolle vers une section de la vue scrollable (EtatSerre,
+//                   Graphiques, Seuils, Export). Si on est sur une autre vue
+//                   (calculateur/paramètres) ou une autre route, on revient
+//                   d'abord à la vue scrollable puis on scrolle.
+// action 'view'   : bascule vers une vue plein écran NON scrollable depuis la
+//                   page (NS Calculateur, Paramètres) — accessible uniquement
+//                   par clic ici.
+// action 'route'  : page séparée avec sa propre route (/dashboard/alertes).
+// Ordre demandé : Seuils/Export (Configuration) AVANT Solution nutritive
+// (Outils), Solution nutritive en avant-dernière position, Paramètres en dernier.
 const NAV_GROUPS = [
   {
     labelFR: 'Monitoring', labelEN: 'Monitoring',
@@ -18,7 +26,7 @@ const NAV_GROUPS = [
       {
         id: 'etat', labelFR: 'Serre en direct', labelEN: 'Live greenhouse',
         icon: LayoutDashboard,
-        action: 'home',  // scrolle en haut = bannière serre
+        action: 'anchor', anchor: 'etat',  // = haut de la vue scrollable
       },
       {
         id: 'graphiques', labelFR: 'Graphiques', labelEN: 'Charts',
@@ -31,15 +39,6 @@ const NAV_GROUPS = [
     ],
   },
   {
-    labelFR: 'Outils', labelEN: 'Tools',
-    items: [
-      {
-        id: 'calculateur', labelFR: 'Solution nutritive', labelEN: 'Nutrient Solution',
-        icon: Beaker, action: 'anchor', anchor: 'calculateur',
-      },
-    ],
-  },
-  {
     labelFR: 'Configuration', labelEN: 'Settings',
     items: [
       {
@@ -47,18 +46,36 @@ const NAV_GROUPS = [
         icon: Sliders, action: 'anchor', anchor: 'seuils',
       },
       {
-        id: 'export', labelFR: 'Export données', labelEN: 'Export data',
+        id: 'export', labelFR: 'Export donn\u00e9es', labelEN: 'Export data',
         icon: Download, action: 'anchor', anchor: 'export',
       },
+    ],
+  },
+  {
+    labelFR: 'Outils', labelEN: 'Tools',
+    items: [
       {
-        id: 'parametres', labelFR: 'Paramètres', labelEN: 'Settings',
-        icon: Settings, action: 'route', to: '/dashboard/parametres',
+        id: 'calculateur', labelFR: 'Solution nutritive', labelEN: 'Nutrient Solution',
+        icon: Beaker, action: 'view', view: 'calculateur',
+      },
+    ],
+  },
+  {
+    labelFR: 'Compte', labelEN: 'Account',
+    items: [
+      {
+        id: 'parametres', labelFR: 'Param\u00e8tres', labelEN: 'Settings',
+        icon: Settings, action: 'view', view: 'parametres',
       },
     ],
   },
 ]
 
-export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang, onWidthChange }) {
+export default function Sidebar({
+  alertCount = 0, theme, setTheme, lang, setLang, onWidthChange,
+  currentView = 'scroll',   // vue active dans Dashboard : 'scroll' | 'calculateur' | 'parametres'
+  onViewNav,                // callback Dashboard : goTo({ view, anchor })
+}) {
   const [open, setOpen] = useState(true)
   function toggleOpen() {
     setOpen(o => {
@@ -104,32 +121,39 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
   const onDashboard = location.pathname === '/dashboard' || location.pathname === '/dashboard/'
 
   function isActive(item) {
-    if (item.action === 'home') return onDashboard
     if (item.action === 'route') return location.pathname === item.to
-    return false // ancres : pas d'active visuel persistant
+    if (item.action === 'view')  return onDashboard && currentView === item.view
+    if (item.action === 'anchor' && item.anchor === 'etat') {
+      // "Serre en direct" = actif quand on est sur la vue scrollable
+      return onDashboard && currentView === 'scroll'
+    }
+    return false // autres ancres : pas d'active visuel persistant
   }
 
   function handleNav(item) {
-    if (item.action === 'home') {
-      if (onDashboard) {
-        // déjà sur /dashboard → scroll vers le haut
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        document.querySelector('.admin-main')?.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        navigate('/dashboard')
-      }
-    } else if (item.action === 'anchor') {
-      if (!onDashboard) {
-        // navigue vers /dashboard, puis scroll après mount
-        navigate('/dashboard')
-        setTimeout(() => {
-          document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }, 350)
-      } else {
-        document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    } else if (item.action === 'route') {
+    if (item.action === 'route') {
       navigate(item.to)
+      return
+    }
+    // 'anchor' et 'view' : délégué au Dashboard, qui gère le retour de route,
+    // le switch de vue ET le scroll différé (évite les bugs de timing)
+    if (typeof onViewNav === 'function') {
+      if (item.action === 'anchor') onViewNav({ view: 'scroll', anchor: item.anchor })
+      else                          onViewNav({ view: item.view })
+    } else {
+      // Fallback si le Dashboard ne fournit pas onViewNav (anciennes pages)
+      if (item.action === 'anchor') {
+        if (!onDashboard) {
+          navigate('/dashboard')
+          setTimeout(() => {
+            document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 350)
+        } else {
+          document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else {
+        navigate('/dashboard/' + item.view)
+      }
     }
   }
 
@@ -206,7 +230,7 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 800, color: ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>SDI Admin</div>
-              <div style={{ fontSize: 9, color: ink4, letterSpacing: '0.04em', lineHeight: 1 }}>AgroBioTech · IAV</div>
+              <div style={{ fontSize: 9, color: ink4, letterSpacing: '0.04em', lineHeight: 1 }}>AgroBioTech &middot; IAV</div>
             </div>
           </div>
         )}
@@ -314,12 +338,12 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
             onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = ink3 }}
           >
             {isDark ? <Sun size={14} style={{ flexShrink: 0 }} /> : <Moon size={14} style={{ flexShrink: 0 }} />}
-            {open && <span>{isDark ? (lang === 'EN' ? 'Jour' : 'Jour') : (lang === 'EN' ? 'Nuit' : 'Nuit')}</span>}
+            {open && <span>{isDark ? 'Jour' : 'Nuit'}</span>}
           </button>
 
           <button
             onClick={() => setLang(l => l === 'FR' ? 'EN' : 'FR')}
-            title={lang === 'FR' ? 'Switch to English' : 'Passer en français'}
+            title={lang === 'FR' ? 'Switch to English' : 'Passer en fran\u00e7ais'}
             style={{
               ...ctrlBtn,
               flex: 1,
@@ -372,7 +396,7 @@ export default function Sidebar({ alertCount = 0, theme, setTheme, lang, setLang
           {open && (
             <button
               onClick={handleLogout}
-              title={lang === 'EN' ? 'Sign out' : 'Se déconnecter'}
+              title={lang === 'EN' ? 'Sign out' : 'Se d\u00e9connecter'}
               style={{
                 width: 28, height: 28, borderRadius: 7, border: '1px solid ' + border,
                 background: 'none', cursor: 'pointer', flexShrink: 0,
