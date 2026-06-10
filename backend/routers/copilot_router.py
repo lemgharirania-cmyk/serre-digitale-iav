@@ -17,7 +17,7 @@ from auth import get_current_user
 router = APIRouter(prefix="/api/copilot", tags=["Copilot"])
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = "gemini-1.5-flash-8b"
+GEMINI_MODEL = "gemini-1.5-flash"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:streamGenerateContent"
 
 # ─── Schémas ────────────────────────────────────────────────
