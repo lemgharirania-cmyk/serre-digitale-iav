@@ -4,7 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { iotAPI, dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
 import Chart from 'chart.js/auto'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { Download, Layers } from 'lucide-react'
+
+// Register zoom plugin globally (once)
+Chart.register(zoomPlugin)
 
 const SERRES = [
   { id:1, code:'S01', nomFR:'Génétique & Amélioration', nomEN:'Genetics & Improvement',  color:'#22C55E' },
@@ -161,21 +165,42 @@ export default function Graphiques({ theme, lang, userRole }) {
   }
 
   // ── Zoom → auto-switch de période ────────────────────────
-  // Quand l'utilisateur dé-zoome et qu'on voit trop peu de points (ou trop),
-  // on passe automatiquement à la période supérieure/inférieure.
-  function onZoomComplete(ctx) {
-    const chart = ctx.chart
-    const { min, max } = chart.scales.x
-    const visiblePts = max - min + 1
-    // Trouver la période correspondant au nombre de points visibles
-    const current = heuresRef.current
-    const target = ZOOM_THRESHOLDS.find(z => visiblePts <= z.maxPts)
-    if (target && target.heures !== current) {
-      setHeures(target.heures)
-      // reset le zoom après changement de période
-      setTimeout(() => chart.resetZoom?.(), 50)
+  // Zoom IN  (molette haut, voir moins) → période plus courte : 30j→7j→3j→24h→6h
+  // Zoom OUT (molette bas,  voir plus)  → période plus longue : 6h→24h→3j→7j→30j
+  const prevRangeRef = useRef(null)
+  const PERIODES_VALS = [6, 24, 72, 168, 720]
+
+  const onZoomComplete = useCallback((ctx) => {
+    const chart   = ctx.chart
+    const scale   = chart.scales.x
+    if (!scale) return
+
+    const currentRange = scale.max - scale.min
+    const prev         = prevRangeRef.current
+
+    if (prev !== null) {
+      const zoomedIn  = currentRange < prev * 0.75   // range diminué → zoom IN
+      const zoomedOut = currentRange > prev * 1.33   // range augmenté → zoom OUT
+
+      if (zoomedIn || zoomedOut) {
+        const current = heuresRef.current
+        const idx     = PERIODES_VALS.indexOf(current)
+
+        let nextIdx = idx
+        if (zoomedIn  && idx > 0)                       nextIdx = idx - 1  // plus court
+        if (zoomedOut && idx < PERIODES_VALS.length - 1) nextIdx = idx + 1  // plus long
+
+        if (nextIdx !== idx) {
+          prevRangeRef.current = null
+          setHeures(PERIODES_VALS[nextIdx])
+          // reset le zoom visuel après rechargement
+          setTimeout(() => { chart.resetZoom?.() }, 80)
+          return
+        }
+      }
     }
-  }
+    prevRangeRef.current = currentRange
+  }, [])
 
   // ── options Chart.js communes ─────────────────────────────
   function makeOptions(isDark, onZoomCb) {
@@ -193,15 +218,15 @@ export default function Graphiques({ theme, lang, userRole }) {
           titleFont:{ family:'Manrope,system-ui', size:12, weight:'600' },
           bodyFont:{ family:'JetBrains Mono,monospace', size:12 },
         },
-        zoom: onZoomCb ? {
+        zoom: {
           zoom: {
-            wheel: { enabled: true },
-            pinch: { enabled: true },
-            mode: 'x',
-            onZoomComplete: onZoomCb,
+            wheel:  { enabled: true, speed: 0.15 },
+            pinch:  { enabled: true },
+            mode:   'x',
+            ...(onZoomCb ? { onZoomComplete: onZoomCb } : {}),
           },
           pan: { enabled: true, mode: 'x' },
-        } : undefined,
+        },
       },
       scales: {
         x: {
@@ -471,9 +496,18 @@ export default function Graphiques({ theme, lang, userRole }) {
           />
         </div>
 
-        {/* Légende zoom */}
-        <div style={{ fontSize:10, color:ink4, marginTop:8, textAlign:'center', fontFamily:'monospace' }}>
-          {t.zoomHint}
+        {/* Reset + légende zoom */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
+          <button onClick={() => histChart.current?.resetZoom?.()} style={{
+            fontSize:11, fontWeight:600, padding:'4px 10px', borderRadius:8,
+            border:'1px solid ' + border, background:isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)',
+            color:ink3, cursor:'pointer', fontFamily:'inherit',
+          }}>
+            ↺ {t.resetZoom}
+          </button>
+          <span style={{ fontSize:10, color:ink4, fontFamily:'monospace' }}>
+            {t.zoomHint}
+          </span>
         </div>
       </div>
 
