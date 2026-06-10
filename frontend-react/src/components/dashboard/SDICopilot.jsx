@@ -177,7 +177,7 @@ function TypingIndicator({ isDark }) {
 }
 
 // ── Composant principal ───────────────────────────────────
-export default function SDICopilot({ isDark = false, lang = 'FR' }) {
+export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState([])
@@ -264,7 +264,12 @@ export default function SDICopilot({ isDark = false, lang = 'FR' }) {
         body: JSON.stringify({
           messages: apiMessages,
           lang: lang.toLowerCase(),
-          live_snapshot: [],
+          live_snapshot: liveData.map(s => ({
+            code: s.code, nom: s.nom_fr,
+            temp: s.env?.temperature, hum: s.env?.humidite,
+            vpd: s.env?.vpd, co2: s.env?.co2,
+            ph: s.irr?.ph, ec: s.irr?.ec,
+          })),
         }),
         signal: abortRef.current?.signal,
       })
