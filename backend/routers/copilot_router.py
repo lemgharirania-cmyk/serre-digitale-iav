@@ -50,8 +50,8 @@ async def build_context(db) -> dict:
     serres_map  = {s["id"]: dict(s) for s in serres_rows}
 
     alertes_rows = await db.fetch("""
-        SELECT a.id, a.serre_id, a.capteur, a.valeur, a.seuil_depasse,
-               a.message, a.created_at, a.lue, s.code as serre_code, s.nom_fr
+        SELECT a.id, a.serre_id, a.capteur, a.valeur, a.seuil_min, a.seuil_max,
+               a.message_fr as message, a.created_at, a.lue, s.code as serre_code, s.nom_fr
         FROM alertes a JOIN serres s ON s.id = a.serre_id
         WHERE a.created_at > NOW() - INTERVAL '48 hours'
         ORDER BY a.created_at DESC LIMIT 20
