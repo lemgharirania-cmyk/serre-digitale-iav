@@ -199,19 +199,19 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
   const inkMuted = isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'
   const inputBg = isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9'
 
-  // Salutation initiale
+  // Salutation initiale — attendre que liveData soit disponible
   useEffect(() => {
-    if (isOpen && !hasGreeted) {
+    if (isOpen && !hasGreeted && liveData.length > 0) {
       const hour = new Date().getHours()
       const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bonjour' : 'Bonsoir'
       setMessages([{
         role: 'assistant',
-        content: `${greet} ! Je suis **SDI Copilot**, votre assistant intelligent pour le Géoportail AgroBioTech.\n\nJe peux analyser les données live de vos 5 serres, expliquer les alertes, et répondre à vos questions agronomiques. Que souhaitez-vous savoir ?`,
+        content: `${greet} ! Je suis **SDI Copilot**, votre assistant intelligent pour le Géoportail AgroBioTech.\n\nJe surveille actuellement **${liveData.length} serres actives** en temps réel. Que souhaitez-vous savoir ?`,
         timestamp: Date.now(),
       }])
       setHasGreeted(true)
     }
-  }, [isOpen, hasGreeted])
+  }, [isOpen, hasGreeted, liveData])
 
   // Scroll auto
   useEffect(() => {
@@ -549,8 +549,8 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
           />
         )}
 
-        {/* Questions rapides (si pas encore de message utilisateur) */}
-        {messages.length <= 1 && !isLoading && (
+        {/* Questions rapides — seulement si liveData est chargé */}
+        {messages.length <= 1 && !isLoading && liveData.length > 0 && (
           <div style={{ marginTop: 4 }}>
             <div style={{
               fontSize: 10, fontWeight: 600, color: inkMuted,
