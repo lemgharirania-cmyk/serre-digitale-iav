@@ -1,8 +1,13 @@
+// src/components/geoportail/SectionApropos.jsx
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const TEXTS = [
-  { titleFr:"Témoignage Chercheur", titleEn:"Researcher Testimonial", longText:true, textFr:`Témoignage d'un chercheur utilisateur du complexe de serres
+  {
+    titleFr: "Témoignage Chercheur",
+    titleEn: "Researcher Testimonial",
+    longText: true,
+    textFr: `Témoignage d'un chercheur utilisateur du complexe de serres
 
 Dans le cadre des activités de recherche menées au sein du complexe de serres, plusieurs chercheurs bénéficient quotidiennement des infrastructures mises à disposition pour leurs expérimentations. Parmi eux, David Alimamy Dumbuya, étudiant en Master Water and Sustainable Horticulture, mène actuellement des travaux portant sur l'impact de l'eau d'irrigation traitée magnétiquement sur la croissance et le développement des cultures, la qualité de l'eau ainsi que les réponses des plantes aux différents stress environnementaux.
 
@@ -10,7 +15,8 @@ Ses expérimentations sont réalisées sous serre sur plusieurs cultures maraîc
 
 Les installations de la serre jouent un rôle essentiel dans mes recherches en offrant un environnement contrôlé pour la conduite des expérimentations et le suivi de la croissance des plantes sous différents traitements et conditions de stress. Cette infrastructure permet une collecte de données précise et contribue à améliorer la fiabilité ainsi que la qualité des résultats obtenus.
 
-Ce témoignage illustre l'importance des infrastructures de recherche du complexe, qui offrent aux étudiants, chercheurs et partenaires scientifiques un environnement adapté à la conduite d'expériences rigoureuses et à la production de résultats fiables dans le domaine de l'horticulture durable.`, textEn:`Researcher Testimonial - Greenhouse Complex User
+Ce témoignage illustre l'importance des infrastructures de recherche du complexe, qui offrent aux étudiants, chercheurs et partenaires scientifiques un environnement adapté à la conduite d'expériences rigoureuses et à la production de résultats fiables dans le domaine de l'horticulture durable.`,
+    textEn: `Researcher Testimonial - Greenhouse Complex User
 
 As part of research activities conducted within the greenhouse complex, several researchers benefit daily from the infrastructure made available for their experiments. Among them, David Alimamy Dumbuya, a Master's student in Water and Sustainable Horticulture, is currently conducting research on the impact of magnetically treated irrigation water on crop growth and development, water quality, and plant responses to various environmental stresses.
 
@@ -18,13 +24,36 @@ His experiments are carried out in greenhouses on several vegetable crops, inclu
 
 The greenhouse facilities play an essential role in my research by providing a controlled environment for conducting experiments and monitoring plant growth under different treatments and stress conditions. This infrastructure enables precise data collection and contributes to improving the reliability and quality of the results obtained.
 
-This testimonial illustrates the importance of the complex's research infrastructure, which offers students, researchers, and scientific partners an environment suited to rigorous experimentation and the production of reliable results in the field of sustainable horticulture.` },
-  { titleFr:"Visite du Ministre - Mars 2026", titleEn:"Minister Visit - March 2026", longText:true, syncPhoto:2, textFr:`Le 17 mars 2026, lors de sa visite à l'Institut Agronomique et Vétérinaire Hassan II, Monsieur Ahmed El Bouari, ministre de l'Agriculture, de la Pêche maritime, du Développement rural et des Eaux et Forêts, a effectué une tournée des principales infrastructures pédagogiques et scientifiques récemment modernisées. Parmi les étapes marquantes figurait l'Agro-Biotech Greenhouse, la nouvelle serre expérimentale automatisée de l'Institut, qui incarne les ambitions de l'IAV Hassan II en matière d'innovation, de recherche appliquée et d'agriculture de précision.
+This testimonial illustrates the importance of the complex's research infrastructure, which offers students, researchers, and scientific partners an environment suited to rigorous experimentation and the production of reliable results in the field of sustainable horticulture.`,
+  },
+  {
+    titleFr: "Visite du Ministre - Mars 2026",
+    titleEn: "Minister Visit - March 2026",
+    longText: true,
+    syncPhoto: 2,
+    textFr: `Le 17 mars 2026, lors de sa visite à l'Institut Agronomique et Vétérinaire Hassan II, Monsieur Ahmed El Bouari, ministre de l'Agriculture, de la Pêche maritime, du Développement rural et des Eaux et Forêts, a effectué une tournée des principales infrastructures pédagogiques et scientifiques récemment modernisées. Parmi les étapes marquantes figurait l'Agro-Biotech Greenhouse, la nouvelle serre expérimentale automatisée de l'Institut, qui incarne les ambitions de l'IAV Hassan II en matière d'innovation, de recherche appliquée et d'agriculture de précision.
 
-Réalisée avec une enveloppe budgétaire de 13 millions de dirhams, cette infrastructure constitue une plateforme expérimentale de référence dédiée à l'étude et au développement de systèmes de production agricole innovants. Composée de cinq compartiments indépendants offrant des conditions environnementales contrôlées, elle permet de conduire des essais scientifiques dans des contextes variés tout en assurant un suivi précis des paramètres climatiques et agronomiques. L'Agro-Biotech Greenhouse offre aux chercheurs, enseignants et étudiants un cadre privilégié pour concevoir des solutions répondant aux enjeux de durabilité et d'adaptation aux changements climatiques.`, textEn:`On March 17, 2026, during his visit to the Institut Agronomique et Veterinaire Hassan II, Mr. Ahmed El Bouari, Minister of Agriculture, Maritime Fisheries, Rural Development and Water and Forests, toured the main recently modernized educational and scientific infrastructure. Among the highlights was the Agro-Biotech Greenhouse, the Institute's new automated experimental greenhouse, which embodies IAV Hassan II's ambitions in innovation, applied research and precision agriculture.
+Réalisée avec une enveloppe budgétaire de 13 millions de dirhams, cette infrastructure constitue une plateforme expérimentale de référence dédiée à l'étude et au développement de systèmes de production agricole innovants. Composée de cinq compartiments indépendants offrant des conditions environnementales contrôlées, elle permet de conduire des essais scientifiques dans des contextes variés tout en assurant un suivi précis des paramètres climatiques et agronomiques. L'Agro-Biotech Greenhouse offre aux chercheurs, enseignants et étudiants un cadre privilégié pour concevoir des solutions répondant aux enjeux de durabilité et d'adaptation aux changements climatiques.`,
+    textEn: `On March 17, 2026, during his visit to the Institut Agronomique et Veterinaire Hassan II, Mr. Ahmed El Bouari, Minister of Agriculture, Maritime Fisheries, Rural Development and Water and Forests, toured the main recently modernized educational and scientific infrastructure. Among the highlights was the Agro-Biotech Greenhouse, the Institute's new automated experimental greenhouse, which embodies IAV Hassan II's ambitions in innovation, applied research and precision agriculture.
 
-Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.` },
-  { titleFr:"À venir — Slide 3", titleEn:"Coming Soon — Slide 3", textFr:"Contenu à ajouter prochainement.", textEn:"Content to be added soon." },
+Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.`,
+  },
+  {
+    titleFr: "Inauguration officielle du complexe AgroBioTech",
+    titleEn: "Official inauguration of the AgroBioTech complex",
+    longText: true,
+    syncPhoto: 1,
+    textFr: `Le 20 février 2025, le complexe de serres AgroBioTech de l'IAV Hassan II a été officiellement inauguré en présence de hauts responsables du ministère de l'Agriculture et de la direction de l'Institut.
+
+Parmi les temps forts figurait la Serre Agro-Biotech, la nouvelle serre expérimentale automatisée de l'Institut, qui incarne les ambitions de l'IAV Hassan II en matière d'innovation, de recherche appliquée et d'agriculture de précision.
+
+Construite avec un budget de 13 millions de dirhams, cette plateforme haute technologie est dédiée à l'étude et au développement de systèmes de production agricole innovants. Comprenant cinq compartiments indépendants à conditions environnementales contrôlées, elle permet de mener des essais scientifiques dans des contextes variés tout en assurant un suivi précis des paramètres climatiques et agronomiques. La Serre Agro-Biotech offre aux chercheurs, enseignants et étudiants un cadre privilégié pour concevoir des solutions aux défis de la durabilité et de l'adaptation au changement climatique.`,
+    textEn: `On February 20, 2025, the AgroBioTech greenhouse complex at IAV Hassan II was officially inaugurated in the presence of senior officials from the Ministry of Agriculture and the Institute's leadership.
+
+Among the highlights was the Agro-Biotech Greenhouse, the Institute's new automated experimental greenhouse, which embodies IAV Hassan II's ambitions in innovation, applied research and precision agriculture.
+
+Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.`,
+  },
   { titleFr:"À venir — Slide 4", titleEn:"Coming Soon — Slide 4", textFr:"Contenu à ajouter prochainement.", textEn:"Content to be added soon." },
   { titleFr:"À venir — Slide 5", titleEn:"Coming Soon — Slide 5", textFr:"Contenu à ajouter prochainement.", textEn:"Content to be added soon." },
 ]
@@ -36,8 +65,8 @@ const PHOTOS = [
 ]
 
 export default function SectionApropos({ lang, darkMode }) {
-  const [txtIdx, setTxtIdx] = useState(0)
-  const [imgIdx, setImgIdx] = useState(0)
+  const [txtIdx,   setTxtIdx]   = useState(0)
+  const [imgIdx,   setImgIdx]   = useState(0)
   const [expanded, setExpanded] = useState(false)
 
   const cardBg     = darkMode ? 'rgba(16,27,46,0.8)' : '#FFFFFF'
@@ -58,8 +87,8 @@ export default function SectionApropos({ lang, darkMode }) {
     setExpanded(false)
   }, [txtIdx])
 
-  const item  = TEXTS[txtIdx]
-  const photo = PHOTOS[imgIdx]
+  const item   = TEXTS[txtIdx]
+  const photo  = PHOTOS[imgIdx]
   const isLong = !!(item && item.longText)
 
   const sectionLabel = lang === 'fr' ? 'À Propos · Faits & Témoignages' : 'About · Facts & Testimonials'
@@ -68,6 +97,7 @@ export default function SectionApropos({ lang, darkMode }) {
     <section id="apropos" style={{ padding: '5rem 3rem', scrollMarginTop: '64px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
+        {/* Badge */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '100px', padding: '6px 18px', marginBottom: '1rem' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E' }} />
@@ -75,7 +105,8 @@ export default function SectionApropos({ lang, darkMode }) {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'stretch' }}>
+        {/* ── FIX: className="apropos-grid" → CSS stacks to 1 col on mobile ── */}
+        <div className="apropos-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'stretch' }}>
 
           {/* Left — text carousel */}
           <div style={{ background: cardBg, border: '1px solid ' + cardBorder, borderRadius: '24px', padding: '2rem', position: 'relative', display: 'flex', flexDirection: 'column', backdropFilter: 'blur(16px)', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)' }}>
@@ -107,16 +138,19 @@ export default function SectionApropos({ lang, darkMode }) {
               )}
             </div>
 
+            {/* Progress bar */}
             <div style={{ height: '2px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '1px', margin: '1.5rem 0 1rem', overflow: 'hidden' }}>
               <div style={{ height: '100%', background: '#22C55E', borderRadius: '1px', width: ((txtIdx + 1) / TEXTS.length * 100) + '%', transition: 'width 0.4s ease' }} />
             </div>
 
+            {/* Dots */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '0.5rem' }}>
               {TEXTS.map((_, i) => (
                 <div key={i} onClick={() => { setTxtIdx(i); setExpanded(false) }} style={{ width: txtIdx === i ? '20px' : '6px', height: '6px', borderRadius: '3px', background: txtIdx === i ? '#22C55E' : mutedColor, cursor: 'pointer', transition: 'all 0.3s' }} />
               ))}
             </div>
 
+            {/* Prev / Next arrows */}
             <button onClick={() => { setTxtIdx(i => (i - 1 + TEXTS.length) % TEXTS.length); setExpanded(false) }} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: '1px solid ' + cardBorder, color: mutedColor, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronLeft size={14} />
             </button>
@@ -127,7 +161,8 @@ export default function SectionApropos({ lang, darkMode }) {
 
           {/* Right — photo carousel */}
           <div style={{ background: cardBg, border: '1px solid ' + cardBorder, borderRadius: '24px', overflow: 'hidden', position: 'relative', backdropFilter: 'blur(16px)', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ position: 'relative', width: '100%', aspectRatio: photo.ratio, overflow: 'hidden' }}>
+            {/* ── FIX: className="apropos-photo" constrains height on mobile ── */}
+            <div className="apropos-photo" style={{ position: 'relative', width: '100%', aspectRatio: photo.ratio, overflow: 'hidden' }}>
               {PHOTOS.map((p, i) => (
                 <img key={i} src={p.src} alt={lang === 'fr' ? p.labelFr : p.labelEn} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: i === imgIdx ? 1 : 0, transition: 'opacity 0.6s ease' }} />
               ))}
@@ -141,6 +176,8 @@ export default function SectionApropos({ lang, darkMode }) {
                 <ChevronRight size={15} />
               </button>
             </div>
+
+            {/* Caption bar */}
             <div style={{ padding: '14px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: '1px solid ' + cardBorder, background: darkMode ? 'rgba(7,17,31,0.6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
               <span style={{ fontSize: '12px', color: textSecond, fontStyle: 'italic', lineHeight: 1.4, flex: 1 }}>
                 {lang === 'fr' ? photo.labelFr : photo.labelEn}
