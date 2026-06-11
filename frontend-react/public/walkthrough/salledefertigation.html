@@ -3458,6 +3458,83 @@ function stepScene(d){
 })();
 </script>
   <script src="ar-content.js"></script>
+  <script>
+  window.addEventListener('message', function(e) {
+    if (e.data === 'enterPanorama') enterPanorama()
+    if (e.data === 'exitPanorama')  exitPanorama()
+  })
+
+  function enterPanorama() {
+    // 1. Pannellum : redimensionne le viewer pour remplir tout l'écran
+    //    Pannellum expose son instance soit via pannellumViewer (variable globale)
+    //    soit via l'API window.viewer — on essaie les deux
+    resizePannellum()
+
+    // 2. Cache tout ce qui n'est pas le viewer (hotspots toolbar, titres, etc.)
+    hideUI()
+
+    // 3. Force le fond en noir pour éviter le flash blanc
+    document.documentElement.style.background = '#000'
+    document.body.style.background = '#000'
+    document.body.style.overflow   = 'hidden'
+  }
+
+  function exitPanorama() {
+    showUI()
+    document.documentElement.style.background = ''
+    document.body.style.background = ''
+    document.body.style.overflow   = ''
+    resizePannellum()
+  }
+
+  function resizePannellum() {
+    // Pannellum v2 API — resize() recalcule la taille du canvas
+    setTimeout(function() {
+      // Cas 1 : instance exposée comme variable globale "viewer"
+      if (window.viewer && typeof window.viewer.resize === 'function') {
+        window.viewer.resize()
+        return
+      }
+      // Cas 2 : instance exposée comme "pannellumViewer"
+      if (window.pannellumViewer && typeof window.pannellumViewer.resize === 'function') {
+        window.pannellumViewer.resize()
+        return
+      }
+      // Cas 3 : instance dans un div #panorama (API pannellum.viewer)
+      if (window.pannellum && window.pannellum.viewer) {
+        window.pannellum.viewer.resize()
+        return
+      }
+      // Cas 4 : déclenchement manuel via resize event du navigateur
+      window.dispatchEvent(new Event('resize'))
+    }, 80)
+  }
+
+  function hideUI() {
+    // Pannellum génère un div .pnlm-container — on cache tout sauf lui
+    var toHide = document.querySelectorAll(
+      '.pnlm-controls-container, .pnlm-load-button, ' +
+      '.pnlm-title-box, .pnlm-author-box, ' +
+      'header, footer, nav, .toolbar, .sidebar, ' +
+      '[data-ui="true"], .ui-overlay'
+    )
+    toHide.forEach(function(el) {
+      el.setAttribute('data-pano-hidden', 'true')
+      el.style.opacity = '0'
+      el.style.pointerEvents = 'none'
+      el.style.transition = 'opacity 0.25s ease'
+    })
+  }
+
+  function showUI() {
+    var hidden = document.querySelectorAll('[data-pano-hidden="true"]')
+    hidden.forEach(function(el) {
+      el.removeAttribute('data-pano-hidden')
+      el.style.opacity = ''
+      el.style.pointerEvents = ''
+    })
+  }
+</script>
 </body>
 
 
