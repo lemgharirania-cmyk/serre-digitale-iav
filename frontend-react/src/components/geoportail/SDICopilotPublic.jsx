@@ -65,7 +65,7 @@ function formatMessage(text) {
 function Message({ msg, isDark }) {
   const isUser  = msg.role === 'user'
   const isError = msg.role === 'error'
-  const ink     = isDark ? 'rgba(255,255,255,0.85)' : '#111827'
+  const ink      = isDark ? 'rgba(255,255,255,0.85)' : '#111827'
   const inkMuted = isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'
 
   const bubbleBg = isUser
@@ -135,14 +135,14 @@ function TypingIndicator({ isDark }) {
 }
 
 export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData = [], bottomOffset = 24 }) {
-  const [isOpen,     setIsOpen]     = useState(false)
-  const [isMin,      setIsMin]      = useState(false)
-  const [messages,   setMessages]   = useState([])
-  const [input,      setInput]      = useState('')
-  const [isLoading,  setIsLoading]  = useState(false)
-  const [greeted,    setGreeted]    = useState(false)
-  const [unread,     setUnread]     = useState(0)
-  const [streaming,  setStreaming]  = useState('')
+  const [isOpen,    setIsOpen]    = useState(false)
+  const [isMin,     setIsMin]     = useState(false)
+  const [messages,  setMessages]  = useState([])
+  const [input,     setInput]     = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [greeted,   setGreeted]   = useState(false)
+  const [unread,    setUnread]    = useState(0)
+  const [streaming, setStreaming] = useState('')
 
   const endRef   = useRef(null)
   const inputRef = useRef(null)
@@ -154,7 +154,6 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   const inkMuted    = isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'
   const inputBg     = isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9'
 
-  // Greeting
   useEffect(() => {
     if (isOpen && !greeted) {
       const h = new Date().getHours()
@@ -182,7 +181,6 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
     const newMessages = [...messages, { role:'user', content:userMsg, timestamp:Date.now() }]
     setMessages(newMessages)
 
-    // Préparer un résumé compact des données live à envoyer
     const liveSnapshot = liveData.map(s => ({
       code: s.code, nom: s.nom_fr,
       temp: s.env?.temperature, hum: s.env?.humidite,
@@ -242,13 +240,14 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   }, [input, isLoading, messages, lang, liveData])
 
   const handleKeyDown = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
-
   const quickQs = QUICK_QUESTIONS[lang] || QUICK_QUESTIONS.FR
 
   // ── Bouton flottant fermé ─────────────────────────────
+  // ── FIX: was bottom:24 hardcoded — now uses bottomOffset so it clears BottomNav on mobile
   if (!isOpen) return (
-    <div style={{ position:'fixed', bottom:24, right:24, zIndex:1000 }}>
-      <button onClick={() => { setIsOpen(true); setIsMin(false); setUnread(0) }}
+    <div style={{ position:'fixed', bottom:bottomOffset, right:24, zIndex:1000 }}>
+      <button
+        onClick={() => { setIsOpen(true); setIsMin(false); setUnread(0) }}
         title="SDI Copilot — Assistant IA"
         style={{
           width:56, height:56, borderRadius:'50%',
@@ -263,10 +262,14 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
       >
         <BotIcon />
         {unread > 0 && (
-          <div style={{ position:'absolute', top:-2, right:-2, width:18, height:18, borderRadius:'50%',
-            background:'#EF4444', color:'#fff', fontSize:10, fontWeight:700,
+          <div style={{
+            position:'absolute', top:-2, right:-2,
+            width:18, height:18, borderRadius:'50%',
+            background:'#EF4444', color:'#fff',
+            fontSize:10, fontWeight:700,
             display:'flex', alignItems:'center', justifyContent:'center',
-            border:`2px solid ${isDark ? '#07111F' : '#fff'}` }}>
+            border:`2px solid ${isDark ? '#07111F' : '#fff'}`,
+          }}>
             {unread}
           </div>
         )}
