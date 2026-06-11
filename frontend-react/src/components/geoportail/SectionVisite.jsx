@@ -546,7 +546,8 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
                   </div>
 
                   {/* ── Three action cards ── */}
-                  <div style={{
+
+                  <div className="visite-end-grid" style={{
                     display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px',
                     width: '100%', maxWidth: '680px',
                   }}>
@@ -632,7 +633,8 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
           <SectionHeader title={T.sallesTitle} sub={T.sallesSub} color="#F59E0B" ink={ink} inkSub={inkSub} />
 
           <GroupLabel label={T.serresLabel} count={SERRES.length} gradient="linear-gradient(90deg,#22C55E,#06B6D4)" ink={ink} inkSub={inkSub} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px', marginBottom: '14px' }}>
+        
+          <div className="visite-serres-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px', marginBottom: '14px' }}>
             {SERRES.map(s => (
               <SpaceCard key={s.file} item={s} active={activeSerre === s.file} isHov={hovered === s.file}
                 lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder} liveLabel={T.live}
@@ -647,7 +649,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
           </div>
 
           <GroupLabel label={T.blocLabel} count={BLOC_TECHNIQUE.length} gradient="linear-gradient(90deg,#F59E0B,#EF4444)" ink={ink} inkSub={inkSub} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '10px', marginBottom: '14px' }}>
+          <div className="visite-bloc-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '10px', marginBottom: '14px' }}>
             {BLOC_TECHNIQUE.map(s => (
               <SpaceCard key={s.file} item={s} active={activeBloc === s.file} isHov={hovered === s.file}
                 lang={lang} ink={ink} isDark={isDark} glassBorder={glassBorder} liveLabel={T.live}
@@ -770,27 +772,29 @@ function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, liveLa
 
 function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported }) {
   const containerRef = useRef(null)
-  const iframeRef    = useRef(null)   // ← NOUVEAU : ref sur l'iframe
+  const iframeRef    = useRef(null)
   const [isFS, setIsFS] = useState(false)
 
   /* ── track fullscreen state (Échap / programmatic exit) ── */
-  useEffect(() => {
+ useEffect(() => {
     function onFSChange() {
       const entering = !!document.fullscreenElement
       setIsFS(entering)
-
-      // ── NOUVEAU : notifie l'iframe du changement de mode ──
-      // Les fichiers /walkthrough/*.html écoutent ce message
-      // et peuvent activer/désactiver leur mode panorama
       try {
         iframeRef.current?.contentWindow?.postMessage(
-          entering ? 'enterPanorama' : 'exitPanorama',
-          '*'
+          entering ? 'enterPanorama' : 'exitPanorama', '*'
         )
       } catch (_) {}
     }
+    function onIframeExit(e) {
+      if (e.data === 'iframeExitedFullscreen') setIsFS(false)
+    }
     document.addEventListener('fullscreenchange', onFSChange)
-    return () => document.removeEventListener('fullscreenchange', onFSChange)
+    window.addEventListener('message', onIframeExit)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFSChange)
+      window.removeEventListener('message', onIframeExit)
+    }
   }, [])
 
   function toggleFullscreen() {
@@ -872,7 +876,7 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
           : { position: 'relative', paddingBottom: '48%', background: isDark ? '#07111F' : '#F0FAF4' }
       }>
         {/* ← NOUVEAU : ref={iframeRef} ajouté */}
-        <iframe
+       <iframe
           ref={iframeRef}
           key={viewer.file}
           src={viewer.file}
