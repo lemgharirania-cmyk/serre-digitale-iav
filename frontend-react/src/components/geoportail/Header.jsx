@@ -26,6 +26,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
 
   const T = {
     fr: {
+      // ── FIX: simpler 2-word title for mobile — "Serre Digitale" fits cleanly
       title:      'Serre Digitale Intelligente',
       titleShort: 'Serre Digitale',
       sub:        'IAV Hassan II · AgroBioTech',
@@ -41,7 +42,8 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
     },
   }[lang]
 
-  // On mobile: shorter title, no tech tagline
+  // Mobile: show short title with last word in green
+  // "Serre Digitale" → first="Serre" last="Digitale"
   const displayTitle = isMobile ? T.titleShort : T.title
   const titleWords   = displayTitle.split(' ')
   const titleFirst   = titleWords.slice(0, -1).join(' ')
@@ -49,68 +51,70 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
 
   return (
     <header style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 500,
-      height: '72px',
+      position: 'fixed', top: 0, left: 0, right: 0,
+      zIndex: 500, height: '72px',
       background: bg,
-      backdropFilter: 'blur(24px)',
-      WebkitBackdropFilter: 'blur(24px)',
+      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       borderBottom: `1px solid ${borderColor}`,
       boxShadow: shadow,
-      display: 'flex',
-      alignItems: 'center',
-      padding: isMobile ? '0 16px' : '0 32px',
-      gap: isMobile ? '12px' : '28px',
+      display: 'flex', alignItems: 'center',
+      padding: isMobile ? '0 14px' : '0 32px',
+      gap: isMobile ? '10px' : '28px',
       transition: 'background 0.35s ease, box-shadow 0.35s ease',
+      overflow: 'hidden',   // ← prevent any child from overflowing
     }}>
 
       {/* Logo + Title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '16px', flexShrink: 0 }}>
-        <div
-          style={{
-            width: isMobile ? '38px' : '46px',
-            height: isMobile ? '38px' : '46px',
-            borderRadius: '14px',
-            flexShrink: 0,
-            overflow: 'hidden',
-            // ── FIX: white background so the IAV logo is visible in dark mode ──
-            background: 'white',
-            boxShadow: darkMode
-              ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
-              : '0 4px 12px rgba(0,0,0,0.12)',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'scale(1.06)'
-            e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.35), 0 6px 16px rgba(0,0,0,0.3)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = darkMode
-              ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
-              : '0 4px 12px rgba(0,0,0,0.12)'
-          }}
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        gap: isMobile ? '9px' : '16px',
+        flexShrink: 0,
+        minWidth: 0,        // ← allow truncation if needed
+      }}>
+        {/* Logo container */}
+        <div style={{
+          width: isMobile ? '36px' : '46px',
+          height: isMobile ? '36px' : '46px',
+          borderRadius: '12px',
+          flexShrink: 0,
+          overflow: 'hidden',
+          // ── no background — logo adapts to dark/light mode naturally ──
+          background: 'transparent',
+          boxShadow: darkMode
+            ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
+            : '0 4px 12px rgba(0,0,0,0.12)',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          cursor: 'pointer',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.35), 0 6px 16px rgba(0,0,0,0.3)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = darkMode ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0,0,0,0.12)' }}
         >
-          {/* ── FIX: was /sdi_logo.png (doesn't exist) → /iav_logo.png ── */}
+          {/* ── FIX: was /sdi_logo.png → /iav_logo.png ── */}
           <img
             src="/iav_logo.png"
             alt="IAV Hassan II"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              // ── invert logo on dark mode so it stays visible without white bg ──
+              filter: darkMode ? 'brightness(0) invert(1)' : 'none',
+              transition: 'filter 0.3s ease',
+            }}
           />
         </div>
 
-        <div>
+        {/* Title text */}
+        <div style={{ minWidth: 0 }}>
           <div style={{
             fontFamily: "'Space Grotesk','Outfit',sans-serif",
-            fontSize: isMobile ? '14px' : '17px',
+            // ── FIX: smaller font on mobile so title doesn't get clipped ──
+            fontSize: isMobile ? '13px' : '17px',
             fontWeight: 800,
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
             color: darkMode ? '#F8FAFC' : '#0F172A',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}>
             {titleFirst}{' '}
             <span style={{
@@ -122,7 +126,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             </span>
           </div>
 
-          {/* Subtitle — hidden on mobile to save space */}
+          {/* Subtitle — desktop only */}
           {!isMobile && (
             <div style={{
               fontFamily: "'Inter',sans-serif",
@@ -137,7 +141,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
         </div>
       </div>
 
-      {/* Tech tagline — only on desktop */}
+      {/* Tech tagline — desktop only */}
       {!isMobile && (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
@@ -146,20 +150,8 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
             border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
           }}>
-            <span style={{
-              width: '6px', height: '6px', borderRadius: '50%',
-              background: '#22C55E',
-              animation: 'hdrPulse 2s ease-in-out infinite',
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontFamily: "'Inter',sans-serif",
-              fontSize: '11px',
-              fontWeight: 500,
-              color: darkMode ? '#64748B' : '#94A3B8',
-              letterSpacing: '0.04em',
-              whiteSpace: 'nowrap',
-            }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E', animation: 'hdrPulse 2s ease-in-out infinite', flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Inter',sans-serif", fontSize: '11px', fontWeight: 500, color: darkMode ? '#64748B' : '#94A3B8', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
               {T.tech}
             </span>
           </div>
@@ -170,13 +162,13 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
       {isMobile && <div style={{ flex: 1 }} />}
 
       {/* Controls — right side */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flexShrink: 0 }}>
 
         {/* Lang switcher */}
         <button
           onClick={() => setLang(l => l === 'fr' ? 'en' : 'fr')}
           style={{
-            padding: isMobile ? '6px 10px' : '7px 14px',
+            padding: isMobile ? '5px 9px' : '7px 14px',
             borderRadius: '20px',
             background: btnBg,
             border: `1px solid ${btnBorder}`,
@@ -189,26 +181,18 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
-            e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'
-            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = btnBg
-            e.currentTarget.style.boxShadow = 'none'
-            e.currentTarget.style.borderColor = btnBorder
-          }}
+          onMouseEnter={e => { e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = btnBg; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = btnBorder }}
         >
           {lang === 'fr' ? 'EN' : 'FR'}
         </button>
 
-        {/* Dark/Light toggle */}
+        {/* Dark/Light toggle — icon only on mobile */}
         <button
           onClick={() => setDarkMode(d => !d)}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            padding: isMobile ? '6px 10px' : '7px 14px',
+            padding: isMobile ? '5px 9px' : '7px 14px',
             borderRadius: '20px',
             background: btnBg,
             border: `1px solid ${btnBorder}`,
@@ -220,16 +204,8 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
-            e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'
-            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = btnBg
-            e.currentTarget.style.boxShadow = 'none'
-            e.currentTarget.style.borderColor = btnBorder
-          }}
+          onMouseEnter={e => { e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = btnBg; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = btnBorder }}
         >
           {darkMode
             ? <><Sun size={14} strokeWidth={2} />{!isMobile && <span>{T.day}</span>}</>
