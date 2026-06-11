@@ -55,16 +55,7 @@ export default function SectionCampus({ lang, darkMode }) {
       badge:  'Campus AgroBioTech · IAV Hassan II',
       title:  'Un campus de recherche',
       accent: 'connecté',
-      text:   `Le Campus AgroBioTech de l'Institut Agronomique et Vétérinaire Hassan II constitue une infrastructure scientifique de référence dédiée à l'innovation agricole, à la recherche appliquée et au développement des technologies de demain. Conçu comme un écosystème intégré de laboratoires, de plateformes expérimentales et d'unités spécialisées, le complexe rassemble des compétences multidisciplinaires dans les domaines de l'agronomie, de l'horticulture, de la génétique et amélioration des plantes, de la protection phytosanitaire ainsi que des systèmes de production innovants tels que l'hydroponie.
-
-Dans un contexte marqué par les défis du changement climatique, de la raréfaction des ressources naturelles et de la nécessité d'assurer une sécurité alimentaire durable, AgroBioTech s'inscrit pleinement dans la dynamique de modernisation de l'agriculture marocaine. Le campus contribue à l'émergence d'une agriculture intelligente fondée sur la valorisation des données, l'expérimentation scientifique, l'agriculture de précision et l'intégration des technologies numériques au sein des processus de recherche et de production.
-
-Porté par l'expertise historique de l'IAV Hassan II, acteur majeur de la recherche agronomique et de la formation des cadres agricoles au Maroc depuis plus de cinquante ans, le complexe AgroBioTech ambitionne de renforcer les liens entre recherche, enseignement supérieur, secteur productif et innovation technologique. Cette vision se traduit par le développement de partenariats stratégiques avec des institutions nationales et internationales, des organismes de recherche, des entreprises technologiques et des acteurs du monde agricole.
-
-Chaque unité du campus poursuit des objectifs scientifiques spécifiques tout en contribuant à une démarche collective visant l'amélioration de la productivité agricole, la préservation des ressources naturelles, le développement de variétés plus résilientes et l'optimisation des systèmes de culture. Grâce à cette approche collaborative, AgroBioTech constitue un véritable laboratoire vivant où sont conçues, testées et transférées les solutions innovantes destinées à accompagner la transition écologique et numérique de l'agriculture marocaine.
-
-À long terme, le campus aspire à devenir une plateforme de référence à l'échelle nationale et régionale pour la recherche agronomique avancée, la démonstration de technologies innovantes et la formation des futures générations d'experts capables de relever les défis d'une agriculture durable, connectée et résiliente.
-`,
+      text:   `Le Campus AgroBioTech de l'Institut Agronomique et Vétérinaire Hassan II constitue une infrastructure scientifique de référence dédiée à l'innovation agricole, à la recherche appliquée et au développement des technologies de demain. Situé à Rabat, ce complexe unique en son genre regroupe cinq serres de recherche spécialisées, un bloc technique intégré et une plateforme numérique de monitoring en temps réel. Il incarne la vision de l'IAV Hassan II pour une agriculture marocaine moderne, durable et connectée, en liant la rigueur académique aux défis concrets du terrain.`,
       loc:    'AgroBioTech · IAV Hassan II',
       coords: 'Rabat, Maroc · 33.9787°N 6.8641°W',
     },
@@ -93,11 +84,22 @@ Chaque unité du campus poursuit des objectifs scientifiques spécifiques tout e
           </h2>
         </div>
 
-        {/* 40/60 grid — map smaller, text wider */}
-        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: '2.5rem', alignItems: 'start' }}>
+        {/* ── FIX: className="campus-grid" enables CSS media queries ── */}
+        <div className="campus-grid" style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: '2.5rem', alignItems: 'start' }}>
 
-          {/* Left — map */}
-          <div style={{ borderRadius: '24px', overflow: 'hidden', border: `1px solid ${cardBorder}`, position: 'relative', height: '460px', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.1)', flexShrink: 0 }}>
+          {/* Left — map — ── FIX: className="campus-map" controls height on mobile/tablet ── */}
+          <div
+            className="campus-map"
+            style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
+              border: `1px solid ${cardBorder}`,
+              position: 'relative',
+              height: '460px',
+              boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.1)',
+              flexShrink: 0,
+            }}
+          >
             <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,0.75))', padding: '1rem 1.2rem', pointerEvents: 'none' }}>
               <div style={{ color: 'white', fontSize: '14px', fontWeight: 700 }}>{T.loc}</div>
@@ -107,7 +109,8 @@ Chaque unité du campus poursuit des objectifs scientifiques spécifiques tout e
 
           {/* Right — text (wider) */}
           <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px', padding: '2.5rem', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <p style={{ fontSize: '15px', color: textSecond, lineHeight: 2, marginBottom: '1rem',
+            <p style={{
+              fontSize: '15px', color: textSecond, lineHeight: 2, marginBottom: '1rem',
               overflow: expanded ? 'visible' : 'hidden',
               display: expanded ? 'block' : '-webkit-box',
               WebkitLineClamp: expanded ? 'unset' : 4,
@@ -138,6 +141,7 @@ Chaque unité du campus poursuit des objectifs scientifiques spécifiques tout e
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>
