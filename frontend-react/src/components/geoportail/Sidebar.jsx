@@ -25,7 +25,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
     ? 'linear-gradient(90deg, transparent, rgba(34,197,94,0.35), transparent)'
     : 'transparent'
 
-  // Admin button — light green bg matching screenshot
+  // Admin button — always light green bg matching screenshot
   const adminBg     = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.07)'
   const adminBorder = darkMode ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.2)'
   const adminColor  = darkMode ? '#4ADE80' : '#16A34A'
@@ -47,9 +47,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
         className="geo-sidebar"
         style={{
           position: 'fixed',
-          top: '72px',
-          left: 0,
-          bottom: 0,
+          top: '72px', left: 0, bottom: 0,
           zIndex: 400,
           width: open ? '240px' : '64px',
           background: bg,
@@ -57,8 +55,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           backdropFilter: 'blur(20px)',
           transition: 'width 0.3s ease',
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'flex', flexDirection: 'column',
           boxShadow: darkMode
             ? '4px 0 32px rgba(0,0,0,0.4), 1px 0 0 rgba(34,197,94,0.05)'
             : '4px 0 24px rgba(0,0,0,0.06)',
@@ -69,8 +66,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
 
         {/* Toggle button */}
         <div style={{
-          display: 'flex',
-          justifyContent: open ? 'flex-end' : 'center',
+          display: 'flex', justifyContent: open ? 'flex-end' : 'center',
           padding: open ? '14px 12px 8px' : '14px 0 8px',
           flexShrink: 0,
         }}>
@@ -91,27 +87,27 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           </button>
         </div>
 
-        {/* Nav items */}
+        {/* ── Nav — flex column, spacer pushes admin to bottom ── */}
         <nav style={{
           flex: 1,
           overflowY: 'auto', overflowX: 'hidden',
           padding: '4px 8px',
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'flex', flexDirection: 'column',
           scrollbarWidth: 'none', msOverflowStyle: 'none',
         }}>
+
           {/* Section label */}
           {open && (
             <div style={{
               fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em',
               textTransform: 'uppercase', color: textMuted,
-              padding: '6px 8px 8px', marginBottom: '4px',
+              padding: '6px 8px 8px', marginBottom: '4px', flexShrink: 0,
             }}>
               Navigation
             </div>
           )}
 
-          {/* Nav buttons — with generous spacing like the screenshot */}
+          {/* Nav items — same tight spacing as old version */}
           {NAV.map(item => {
             const Icon     = item.icon
             const isActive = active === item.id
@@ -127,11 +123,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   justifyContent: open ? 'flex-start' : 'center',
                   gap: 10,
                   width: '100%',
-                  height: 42,
+                  height: 40,
                   padding: open ? '0 10px' : '0',
                   borderRadius: 10,
                   border: 'none',
-                  marginBottom: '6px',   // ← more spacing between items
+                  marginBottom: '4px',
                   cursor: 'pointer',
                   background: isActive ? activeBg : 'transparent',
                   color: isActive ? '#22C55E' : textNormal,
@@ -144,6 +140,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   boxSizing: 'border-box',
                   borderLeft: open ? ('2px solid ' + (isActive ? '#22C55E' : 'transparent')) : 'none',
                   textAlign: 'left',
+                  flexShrink: 0,
                 }}
                 onMouseEnter={e => {
                   if (!isActive) {
@@ -168,13 +165,13 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             )
           })}
 
-          {/* Spacer — pushes admin to the bottom */}
+          {/* Spacer — pushes admin to the very bottom */}
           <div style={{ flex: 1 }} />
 
           {/* Divider */}
           <div style={{ height: '1px', background: border, margin: '8px 4px', flexShrink: 0 }} />
 
-          {/* Espace Admin — light green, pinned to bottom */}
+          {/* Espace Admin — pinned to bottom, light green bg */}
           <Link
             to="/login"
             style={{
@@ -183,14 +180,14 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               justifyContent: open ? 'flex-start' : 'center',
               gap: 10,
               width: '100%',
-              height: 42,
+              height: 40,
               padding: open ? '0 10px' : '0',
               borderRadius: 10,
               border: `1px solid ${adminBorder}`,
               marginBottom: '8px',
               cursor: 'pointer',
-              background: adminBg,          // ← light green background
-              color: adminColor,            // ← green text
+              background: adminBg,
+              color: adminColor,
               fontSize: 13,
               fontWeight: 600,
               fontFamily: "'Outfit',sans-serif",
@@ -203,12 +200,14 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = darkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.12)'
+              e.currentTarget.style.borderColor = darkMode ? 'rgba(34,197,94,0.35)' : 'rgba(34,197,94,0.4)'
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = adminBg
+              e.currentTarget.style.borderColor = adminBorder
             }}
           >
-            <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+            <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0, color: adminColor }} />
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
           </Link>
         </nav>
