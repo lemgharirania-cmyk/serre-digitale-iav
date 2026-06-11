@@ -134,7 +134,7 @@ function TypingIndicator({ isDark }) {
   )
 }
 
-export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData = [] }) {
+export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData = [], bottomOffset = 24 }) {
   const [isOpen,     setIsOpen]     = useState(false)
   const [isMin,      setIsMin]      = useState(false)
   const [messages,   setMessages]   = useState([])
@@ -277,7 +277,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   // ── Minimisé ──────────────────────────────────────────
   if (isMin) return (
     <div style={{
-      position:'fixed', bottom:24, right:24, zIndex:1000,
+      position:'fixed', bottom:bottomOffset, right:24, zIndex:1000,
       background:bg, border:`1px solid ${border}`, borderRadius:16,
       padding:'10px 16px', display:'flex', alignItems:'center', gap:10,
       boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.12)',
@@ -304,7 +304,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   // ── Fenêtre principale ────────────────────────────────
   return (
     <div style={{
-      position:'fixed', bottom:24, right:24, zIndex:1000,
+      position:'fixed', bottom:bottomOffset, right:24, zIndex:1000,
       width:380, height:560,
       background:bg, border:`1px solid ${border}`, borderRadius:20,
       boxShadow: isDark
