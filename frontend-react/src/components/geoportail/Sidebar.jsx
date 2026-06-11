@@ -195,23 +195,6 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
           </Link>
         </nav>
-
-        {/* Footer — only when expanded */}
-        {open && (
-          <div style={{
-            padding: '12px 16px',
-            borderTop: `1px solid ${border}`,
-            flexShrink: 0,
-          }}>
-            <div style={{ fontSize: '10px', color: textMuted, lineHeight: 1.6 }}>
-              <div style={{ fontWeight: 700, color: darkMode ? '#4ADE80' : '#16A34A', marginBottom: '2px' }}>
-                SDI · IAV Hassan II
-              </div>
-              <div>AgroBioTech · Géoportail</div>
-              <div>PFE 2025–2026</div>
-            </div>
-          </div>
-        )}
       </aside>
     </>
   )
