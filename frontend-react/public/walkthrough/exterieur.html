@@ -1,0 +1,4376 @@
+<!DOCTYPE html>
+
+
+
+<html lang="fr">
+
+
+
+<head>
+
+
+
+<meta charset="UTF-8">
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<title>AgroBioTech — Extérieur</title>
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+
+
+<style>
+
+
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+
+
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;background:#000}
+
+
+
+
+
+
+
+/* ── PANNELLUM SLOTS ── */
+
+
+
+#pano-a,#pano-b{position:fixed;inset:0;width:100%;height:100%}
+
+
+
+#pano-a{opacity:1}
+
+
+
+#pano-b{opacity:0;pointer-events:none}
+
+
+
+
+
+
+
+/* Hide all Pannellum chrome */
+
+
+
+.pnlm-about-msg,.pnlm-panorama-info,.pnlm-controls-container,
+
+
+
+.pnlm-load-box,.pnlm-lbar,.pnlm-lbar-fill,.pnlm-load-button,
+
+
+
+.pnlm-loading,.pnlm-compass{display:none!important}
+
+
+
+.pnlm-hotspot-base{background:transparent!important;border:none!important;
+
+
+
+  width:auto!important;height:auto!important;overflow:visible!important}
+
+
+
+.pnlm-hotspot-base .pnlm-sprite{display:none!important}
+
+
+
+
+
+
+
+/* ── VIGNETTE ── */
+
+
+
+#vignette { display: none; }
+
+
+
+
+
+
+
+/* ── ATMOSPHERE ── */
+
+
+
+#atmo{position:fixed;inset:0;z-index:9;pointer-events:none;
+
+
+
+  background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.15) 100%)}
+
+
+
+
+
+
+
+/* ── NAV HOTSPOTS ── */
+
+
+
+.hs-nav{
+
+
+
+  width:58px;height:58px;border-radius:50%;cursor:pointer;
+
+
+
+  background:rgba(255,255,255,.13);
+
+
+
+  border:1px solid rgba(255,255,255,.38);
+
+
+
+  box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05);
+
+
+
+  display:flex;align-items:center;justify-content:center;
+
+
+
+  animation:nav-breathe 3.5s ease-in-out infinite;
+
+
+
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+
+
+
+.hs-cross{
+
+
+
+  width:58px;height:58px;border-radius:50%;cursor:pointer;
+
+
+
+  background:rgba(147,197,253,.13);
+
+
+
+  border:1px solid rgba(147,197,253,.4);
+
+
+
+  box-shadow:0 2px 20px rgba(30,80,200,.18),0 0 0 6px rgba(147,197,253,.06);
+
+
+
+  display:flex;align-items:center;justify-content:center;
+
+
+
+  animation:nav-breathe 3.5s ease-in-out infinite;
+
+
+
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+
+
+
+.hs-nav:hover{transform:scale(1.12);background:rgba(255,255,255,.22)}
+
+
+
+.hs-cross:hover{transform:scale(1.12);background:rgba(147,197,253,.24)}
+
+
+
+@keyframes nav-breathe{
+
+
+
+  0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 6px rgba(255,255,255,.05)}
+
+
+
+  50%{box-shadow:0 2px 20px rgba(0,0,0,.22),0 0 0 14px rgba(255,255,255,.0)}}
+
+
+
+
+
+
+
+/* ── SIDE NAV ARROWS ── */
+
+
+
+.arrow{position:fixed;top:50%;z-index:50;transform:translateY(-50%);
+
+
+
+  width:40px;height:40px;border-radius:50%;
+
+
+
+  background:rgba(255,255,255,.1);
+
+
+
+  border:1px solid rgba(255,255,255,.2);
+
+
+
+  cursor:pointer;color:rgba(255,255,255,.7);font-size:18px;
+
+
+
+  display:flex;align-items:center;justify-content:center;
+
+
+
+  transition:all .2s;backdrop-filter:blur(8px)}
+
+
+
+.arrow:hover{background:rgba(255,255,255,.2);color:white;border-color:rgba(255,255,255,.4)}
+
+
+
+.arrow.L{left:16px}.arrow.R{right:16px}
+
+
+
+.arrow.off{opacity:0;pointer-events:none}
+
+
+
+
+
+
+
+/* ── ZONE LABEL — bottom right glass pill ── */
+
+
+
+.zf{
+
+
+
+  position:fixed;bottom:28px;right:28px;z-index:50;
+
+
+
+  background:rgba(255,255,255,.12);
+
+
+
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+
+
+
+  border:1px solid rgba(255,255,255,.22);
+
+
+
+  border-radius:12px;padding:10px 16px;
+
+
+
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+
+
+
+  opacity:0;pointer-events:none;
+
+
+
+  transform:translateY(6px) scale(.97);
+
+
+
+  transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.2,.64,1)}
+
+
+
+.zf.show{opacity:1;transform:translateY(0) scale(1)}
+
+
+
+.zf-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+
+
+
+  color:rgba(255,255,255,.45);margin-bottom:3px}
+
+
+
+.zf-name{font-size:13px;font-weight:500;color:rgba(255,255,255,.9);letter-spacing:-.01em}
+
+
+
+.zf-unit{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;font-weight:300}
+
+
+
+
+
+
+
+/* ── SCENE COUNTER ── */
+
+
+
+.scene-ctr{
+
+
+
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;
+
+
+
+  background:rgba(255,255,255,.1);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+
+
+
+  border:1px solid rgba(255,255,255,.18);border-radius:999px;
+
+
+
+  padding:5px 14px;font-size:11px;font-weight:500;color:rgba(255,255,255,.55);
+
+
+
+  letter-spacing:.04em;opacity:0;transition:opacity .4s}
+
+
+
+.scene-ctr.show{opacity:1}
+
+
+
+
+
+
+
+/* ── TRANSITION FLASH — brief exposure on scene change ── */
+
+
+
+#flash{position:fixed;inset:0;z-index:200;pointer-events:none;
+
+
+
+  background:rgba(255,255,255,0);transition:background .08s ease}
+
+
+
+#flash.on{background:rgba(255,255,255,.04)}
+
+
+
+
+
+
+
+
+
+
+
+/* ── AR CARD ── */
+
+
+
+.ar-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:flex-end;padding:20px}
+
+
+
+.ar-card{width:320px;max-height:calc(100vh - 48px);background:rgba(255,255,255,.82);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:24px;box-shadow:0 8px 40px rgba(0,20,60,.13),0 1px 0 rgba(255,255,255,.95) inset;display:flex;flex-direction:column;overflow:hidden;pointer-events:all;transform:translateX(360px) scale(.96);opacity:0;transition:transform .38s cubic-bezier(.34,1.08,.64,1),opacity .28s ease}
+
+
+
+.ar-card.open{transform:translateX(0) scale(1);opacity:1}
+
+
+
+.ar-hero{position:relative;height:130px;flex-shrink:0;overflow:hidden;display:flex;align-items:flex-end;padding-bottom:18px}
+
+
+
+.ar-hero-bg{position:absolute;inset:0;opacity:.7}
+
+
+
+.ar-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.12));pointer-events:none}
+
+
+
+.ar-hero-anim{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+
+
+
+.ar-hero-content{position:relative;z-index:1;display:flex;align-items:flex-end;gap:12px;padding:0 16px;width:100%}
+
+
+
+.ar-hero-icon{width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,.8) inset;margin-bottom:2px}
+
+
+
+.ar-hero-text{flex:1;min-width:0}
+
+
+
+.ar-hero-label{font-size:8.5px;font-weight:500;text-transform:uppercase;letter-spacing:1.1px;color:rgba(255,255,255,.55);margin-bottom:3px}
+
+
+
+.ar-hero-text h3{font-size:16px;font-weight:700;color:#fff;line-height:1.15;margin:0 0 8px;text-shadow:0 1px 8px rgba(0,0,0,.22)}
+
+
+
+.ar-state-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:.3px;border:1.5px solid rgba(255,255,255,.4);backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+
+
+
+.ar-state-pill.on{background:rgba(34,197,94,.28);color:#fff}
+
+
+
+.ar-state-pill.off{background:rgba(0,0,0,.22);color:rgba(255,255,255,.8)}
+
+
+
+.ar-state-pill.unknown{background:rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+
+
+
+.ar-state-pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+
+
+.ar-state-pill.on .ar-state-pill-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+
+
+.ar-state-pill.off .ar-state-pill-dot{background:#f87171;box-shadow:0 0 6px #f87171}
+
+
+
+.ar-state-pill.unknown .ar-state-pill-dot{background:rgba(255,255,255,.4)}
+
+
+
+.ar-close{position:absolute;top:10px;right:10px;z-index:10;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.15);cursor:pointer;color:rgba(255,255,255,.85);font-size:11px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+
+
+
+.ar-close:hover{background:rgba(0,0,0,.3)}
+
+
+
+.ar-reason-strip{flex-shrink:0;padding:10px 16px;background:rgba(0,0,0,.025);border-bottom:1px solid rgba(0,0,0,.055)}
+
+
+
+.ar-reason-text{font-size:11px;color:rgba(0,0,0,.45);line-height:1.45;font-style:italic}
+
+
+
+.ar-content{flex:1;overflow-y:auto;padding:16px 16px 20px;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.07) transparent}
+
+
+
+.ar-content::-webkit-scrollbar{width:3px}
+
+
+
+.ar-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+
+
+
+.ar-section-title{font-family:'DM Mono',monospace;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:1.1px;color:var(--accent,#059669);margin:18px 0 8px;opacity:.75}
+
+
+
+.ar-section-title:first-child{margin-top:0}
+
+
+
+.ar-sensor-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.045)}
+
+
+
+.ar-sensor-row:last-child{border-bottom:none}
+
+
+
+.ar-sensor-label{font-size:11.5px;color:rgba(0,0,0,.42);flex:1}
+
+
+
+.ar-sensor-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:rgba(0,0,0,.78);min-width:52px;text-align:right}
+
+
+
+.ar-sensor-unit{font-size:10px;color:rgba(0,0,0,.3);min-width:30px}
+
+
+
+.ar-sensor-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+
+
+.ar-sensor-dot.ok{background:#22c55e}.ar-sensor-dot.warn{background:#f59e0b}.ar-sensor-dot.na{background:rgba(0,0,0,.15)}
+
+
+
+.ar-info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+
+
+
+.ar-info-row:last-child{border-bottom:none}
+
+
+
+.ar-info-label{font-size:12px;color:rgba(0,0,0,.4)}
+
+
+
+.ar-info-value{font-size:12px;color:rgba(0,0,0,.75);font-weight:500;text-align:right}
+
+
+
+.ar-badge{display:inline-block;padding:2px 9px;border-radius:7px;font-size:10.5px;font-weight:600;border:1px solid transparent}
+
+
+
+.ar-bullets{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+
+
+
+.ar-bullet{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:rgba(0,0,0,.52);line-height:1.6}
+
+
+
+.ar-bullet-dot{width:4px;height:4px;border-radius:50%;margin-top:7px;flex-shrink:0;background:var(--accent,#059669);opacity:.65}
+
+
+
+.ar-thresh-block{margin-bottom:4px}
+
+
+
+.ar-thresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+
+
+
+.ar-thresh-label{font-size:11.5px;color:rgba(0,0,0,.42)}
+
+
+
+.ar-thresh-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:rgba(0,0,0,.75)}
+
+
+
+.ar-thresh-unit{font-size:10px;color:rgba(0,0,0,.32)}
+
+
+
+.ar-thresh-bar-wrap{height:5px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden;margin-bottom:10px}
+
+
+
+.ar-thresh-bar{height:100%;border-radius:99px;transition:width .5s ease;min-width:3px}
+
+
+
+.ar-thresh-reason{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;font-size:11px;font-style:italic;margin-top:2px}
+
+
+
+.ar-thresh-reason.on{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);color:#15803d}
+
+
+
+.ar-thresh-reason.off{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.07);color:rgba(0,0,0,.42)}
+
+
+
+.ar-thresh-reason.unknown{background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.05);color:rgba(0,0,0,.3)}
+
+
+
+.ar-thresh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+
+
+.iot-loading{text-align:center;padding:22px;color:rgba(0,0,0,.28);font-size:11.5px}
+
+
+
+.iot-refresh{font-family:'DM Mono',monospace;font-size:9px;color:rgba(0,0,0,.22);text-align:right;margin-top:8px;cursor:pointer;transition:color .15s}
+
+
+
+.iot-refresh:hover{color:rgba(0,0,0,.5)}
+
+
+
+.video-wrap{border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:rgba(0,0,0,.04);margin-bottom:8px;border:1px solid rgba(0,0,0,.06)}
+
+
+
+.video-wrap iframe{width:100%;height:100%;border:none}
+
+
+
+.video-desc{font-size:11px;color:rgba(0,0,0,.38);line-height:1.55}
+
+
+
+@keyframes ar-fade-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+
+
+.ar-stagger-1{animation:ar-fade-up .28s ease .04s both}
+
+
+
+.ar-stagger-2{animation:ar-fade-up .28s ease .10s both}
+
+
+
+.ar-stagger-3{animation:ar-fade-up .28s ease .16s both}
+
+
+
+@keyframes hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+
+
+@keyframes hero-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+
+
+@keyframes hero-pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.08)}}
+
+
+
+@keyframes hero-bubble{0%{transform:translateY(30px);opacity:0}50%{opacity:.7}100%{transform:translateY(-10px);opacity:0}}
+
+
+
+body.ar-hidden .hs-ar-base{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
+
+
+
+body.ar-hidden .ar-overlay{pointer-events:none!important}
+
+
+
+body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity:0!important;pointer-events:none!important;transition:none!important}
+
+
+
+
+
+
+
+/* ── AR TOGGLE BUTTON ── */
+
+
+
+#ar-toggle{
+
+
+
+  position:fixed;bottom:28px;left:28px;z-index:500;
+
+
+
+  background:rgba(255,255,255,.12);
+
+
+
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+
+
+
+  border:1px solid rgba(255,255,255,.22);
+
+
+
+  border-radius:12px;padding:10px 16px;
+
+
+
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+
+
+
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+
+
+
+  font-family:inherit;font-size:11px;font-weight:500;
+
+
+
+  color:rgba(255,255,255,.7);letter-spacing:.04em;
+
+
+
+  transition:background .2s,border-color .2s,color .2s}
+
+
+
+#ar-toggle:hover{background:rgba(255,255,255,.18);color:white}
+
+
+
+#ar-toggle.ar-on{border-color:rgba(140,255,190,.35);color:rgba(140,255,190,.9)}
+
+
+
+#ar-toggle.ar-on:hover{background:rgba(140,255,190,.1)}
+
+
+
+#ar-toggle-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+
+
+
+  background:rgba(255,255,255,.3);transition:background .2s,box-shadow .2s}
+
+
+
+#ar-toggle.ar-on #ar-toggle-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+
+
+
+
+
+
+/* ── AR TOGGLE + HIDDEN ── */
+
+
+
+body.ar-hidden .hs-ar-base{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
+
+
+
+body.ar-hidden .ar-overlay{pointer-events:none!important}
+
+
+
+body.ar-hidden .ar-card{transform:translateX(360px) scale(.96)!important;opacity:0!important;pointer-events:none!important;transition:none!important}
+
+
+
+
+
+
+
+/* ── AR TOGGLE BUTTON ── */
+
+
+
+#ar-toggle{
+
+
+
+  position:fixed;bottom:28px;left:28px;z-index:500;
+
+
+
+  background:rgba(255,255,255,.12);
+
+
+
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+
+
+
+  border:1px solid rgba(255,255,255,.22);
+
+
+
+  border-radius:12px;padding:10px 16px;
+
+
+
+  box-shadow:0 4px 24px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.18);
+
+
+
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+
+
+
+  font-family:inherit;font-size:11px;font-weight:500;
+
+
+
+  color:rgba(255,255,255,.7);letter-spacing:.04em;
+
+
+
+  transition:background .2s,border-color .2s,color .2s}
+
+
+
+#ar-toggle:hover{background:rgba(255,255,255,.18);color:white}
+
+
+
+#ar-toggle.ar-on{border-color:rgba(140,255,190,.35);color:rgba(140,255,190,.9)}
+
+
+
+#ar-toggle.ar-on:hover{background:rgba(140,255,190,.1)}
+
+
+
+#ar-toggle-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+
+
+
+  background:rgba(255,255,255,.3);transition:background .2s,box-shadow .2s}
+
+
+
+#ar-toggle.ar-on #ar-toggle-dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+
+
+
+
+
+
+
+
+
+
+
+/* ── VR button override ── */
+
+
+
+.pnlm-vr-button {
+
+
+
+  display: flex !important;
+
+
+
+  position: fixed !important;
+
+
+
+  bottom: 16px !important;
+
+
+
+  right: 16px !important;
+
+
+
+  z-index: 9999 !important;
+
+
+
+  width: 44px !important;
+
+
+
+  height: 44px !important;
+
+
+
+  border-radius: 12px !important;
+
+
+
+  background: rgba(139,92,246,0.85) !important;
+
+
+
+  border: 1.5px solid rgba(139,92,246,0.5) !important;
+
+
+
+  box-shadow: 0 0 20px rgba(139,92,246,0.5), 0 4px 12px rgba(0,0,0,0.3) !important;
+
+
+
+  cursor: pointer !important;
+
+
+
+  align-items: center !important;
+
+
+
+  justify-content: center !important;
+
+
+
+  transition: all 0.2s !important;
+
+
+
+  backdrop-filter: blur(8px) !important;
+
+
+
+}
+
+
+
+.pnlm-vr-button:hover {
+
+
+
+  background: rgba(139,92,246,1) !important;
+
+
+
+  transform: scale(1.08) !important;
+
+
+
+  box-shadow: 0 0 32px rgba(139,92,246,0.8), 0 4px 16px rgba(0,0,0,0.4) !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* ════════════════════════════════════════
+
+
+
+   VR ENTRY BUTTON — Quest-compatible
+
+
+
+   ════════════════════════════════════════ */
+
+
+
+
+
+
+
+#vr-enter-btn {
+
+
+
+  position: fixed;
+
+
+
+  bottom: 24px;
+
+
+
+  right: 24px;
+
+
+
+  z-index: 99999;
+
+
+
+
+
+
+
+  /* Quest-friendly large tap target */
+
+
+
+  min-width: 160px;
+
+
+
+  height: 52px;
+
+
+
+  padding: 0 22px;
+
+
+
+  border-radius: 100px;
+
+
+
+
+
+
+
+  /* Glassmorphism pill */
+
+
+
+  background: rgba(255, 255, 255, 0.14);
+
+
+
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+
+
+
+  backdrop-filter: blur(20px) saturate(160%);
+
+
+
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+
+
+
+  box-shadow:
+
+
+
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+
+
+
+    0 8px 32px rgba(0, 0, 0, 0.35),
+
+
+
+    0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+
+
+
+
+
+  /* Text */
+
+
+
+  display: flex;
+
+
+
+  align-items: center;
+
+
+
+  justify-content: center;
+
+
+
+  gap: 9px;
+
+
+
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+
+
+
+  font-size: 13px;
+
+
+
+  font-weight: 700;
+
+
+
+  letter-spacing: 0.05em;
+
+
+
+  color: rgba(255, 255, 255, 0.92);
+
+
+
+  white-space: nowrap;
+
+
+
+  cursor: pointer;
+
+
+
+
+
+
+
+  /* Pulse animation to attract attention */
+
+
+
+  animation: vrBtnPulse 3s ease-in-out infinite;
+
+
+
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+
+
+}
+
+
+
+
+
+
+
+#vr-enter-btn:hover,
+
+
+
+#vr-enter-btn:focus {
+
+
+
+  background: rgba(139, 92, 246, 0.55);
+
+
+
+  border-color: rgba(139, 92, 246, 0.75);
+
+
+
+  box-shadow:
+
+
+
+    0 0 0 1px rgba(139,92,246,0.3) inset,
+
+
+
+    0 0 24px rgba(139, 92, 246, 0.55),
+
+
+
+    0 8px 32px rgba(0, 0, 0, 0.4);
+
+
+
+  transform: translateY(-2px) scale(1.03);
+
+
+
+  color: #fff;
+
+
+
+}
+
+
+
+
+
+
+
+#vr-enter-btn:active {
+
+
+
+  transform: scale(0.97);
+
+
+
+}
+
+
+
+
+
+
+
+/* Quest device — larger button */
+
+
+
+@media (hover: none) and (pointer: coarse) {
+
+
+
+  #vr-enter-btn {
+
+
+
+    min-width: 190px;
+
+
+
+    height: 60px;
+
+
+
+    font-size: 15px;
+
+
+
+    bottom: 32px;
+
+
+
+    right: 32px;
+
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+@keyframes vrBtnPulse {
+
+
+
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.35), 0 0 0 0 rgba(139,92,246,0); }
+
+
+
+  50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.35), 0 0 0 8px rgba(139,92,246,0.12); }
+
+
+
+}
+
+
+
+
+
+
+
+/* ── VR MODE — body.vr-mode ── */
+
+
+
+body.vr-mode #vr-enter-btn { display: none; }
+
+
+
+
+
+
+
+/* Hide heavy UI in VR mode */
+
+
+
+body.vr-mode #iot-hud,
+
+
+
+body.vr-mode #minimap,
+
+
+
+body.vr-mode #scene-title,
+
+
+
+body.vr-mode #ar-popup,
+
+
+
+body.vr-mode #info-panel,
+
+
+
+body.vr-mode .side-panel,
+
+
+
+body.vr-mode .top-bar,
+
+
+
+body.vr-mode #tour-controls,
+
+
+
+body.vr-mode #progress-bar {
+
+
+
+  display: none !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* Keep hotspots but make them larger for Quest controllers */
+
+
+
+body.vr-mode .hs-nav,
+
+
+
+body.vr-mode .hs-cross,
+
+
+
+body.vr-mode .hs-ar {
+
+
+
+  transform: scale(1.3) !important;
+
+
+
+  animation: none !important;  /* kill breathe animation — saves GPU */
+
+
+
+}
+
+
+
+
+
+
+
+/* Kill non-essential transitions in VR mode */
+
+
+
+body.vr-mode * {
+
+
+
+  transition: none !important;
+
+
+
+  animation-duration: 0s !important;
+
+
+
+}
+
+
+
+
+
+
+
+/* Re-allow the hotspot scale we just set */
+
+
+
+body.vr-mode .hs-nav,
+
+
+
+body.vr-mode .hs-cross {
+
+
+
+  transition: transform 0.15s !important;
+
+
+
+}
+
+
+
+
+
+
+
+
+/* ── VR BUTTON ── */
+#vr-enter-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  min-width: 160px;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.14);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: 'Outfit','Inter',system-ui,sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.92);
+  white-space: nowrap;
+  cursor: pointer;
+  animation: vrPulse 3s ease-in-out infinite;
+  transition: all 0.2s;
+}
+#vr-enter-btn:hover {
+  background: rgba(139,92,246,0.55);
+  border-color: rgba(139,92,246,0.75);
+  box-shadow: 0 0 24px rgba(139,92,246,0.55), 0 8px 32px rgba(0,0,0,0.4);
+  transform: translateY(-2px) scale(1.03);
+  color: #fff;
+}
+@keyframes vrPulse {
+  0%,100% { box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 0 rgba(139,92,246,0); }
+  50%      { box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 8px rgba(139,92,246,0.12); }
+}
+#vr-exit-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 99999;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  font-family: 'Outfit','Inter',system-ui;
+}
+</style>
+
+
+
+  <link rel="stylesheet" href="ar-content.css">
+</head>
+
+
+
+<body>
+
+
+
+
+
+
+
+<div id="pano-a"></div>
+
+
+
+<div id="pano-b"></div>
+
+
+
+<div id="vignette"></div>
+
+
+
+<div id="atmo"></div>
+
+
+
+<div id="flash"></div>
+
+
+
+<button id="ar-toggle" class="ar-on" onclick="toggleAR()">
+
+
+
+  <span id="ar-toggle-dot"></span>
+
+
+
+  <span id="ar-toggle-label">AR ON</span>
+
+
+
+</button>
+
+<div id="lang-switcher">
+  <button class="lang-pill active" data-lang="FR" onclick="setLang('FR')">FR</button>
+  <button class="lang-pill" data-lang="EN" onclick="setLang('EN')">EN</button>
+  <button class="lang-pill" data-lang="AR" onclick="setLang('AR')">AR</button>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<button class="arrow L off" id="prev" onclick="stepScene(-1)">‹</button>
+
+
+
+<button class="arrow R off" id="next" onclick="stepScene(1)">›</button>
+
+
+
+
+
+
+
+<div class="zf" id="zf">
+
+
+
+  <div class="zf-label">Zone active</div>
+
+
+
+  <div class="zf-name" id="zfn">—</div>
+
+
+
+  <div class="zf-unit" id="zfu"></div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="scene-ctr" id="scene-ctr">— / —</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// ── AR Identity ──
+window.AR_VIEWER   = 'exterieur';
+window.currentLang = 'FR';
+window.activeAR    = null;
+window.activeTab   = 0;
+
+
+
+
+
+const API = 'https://serre-digitale-iav.onrender.com';
+
+
+
+const IOT_ZONES = { hydroponie:'S04', horticulture:'S02', agronomie:'S03', genetique:'S01', 'unite-protection':'S05' };
+
+
+
+
+
+
+
+// ── AR SYSTEM ──
+
+
+
+let arEnabled = true;
+
+
+
+
+
+
+
+let iotData=null, thresholds={}, outsideTemp=null;
+
+
+
+let activeAR=null, activeTab=0;
+
+
+
+
+
+
+
+function applyARState(){
+
+
+
+  document.body.classList.toggle('ar-hidden', !arEnabled);
+
+
+
+  if(!arEnabled && typeof closeAR==='function') closeAR();
+
+
+
+}
+
+
+
+
+
+
+
+function toggleAR(){
+
+
+
+  arEnabled = !arEnabled;
+
+
+
+  const btn = document.getElementById('ar-toggle');
+
+
+
+  const lbl = document.getElementById('ar-toggle-label');
+
+
+
+  if(arEnabled){ btn.classList.add('ar-on'); lbl.textContent=typeof t==='function'?t('arOn'):'AR ON'; }
+
+
+
+  else { btn.classList.remove('ar-on'); lbl.textContent=typeof t==='function'?t('arOff'):'AR OFF'; }
+
+
+
+  applyARState();
+
+
+
+}
+
+
+
+
+
+
+
+
+function buildControleCard(num) {
+
+
+
+  return {
+
+
+
+    icon:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,.9)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="7" cy="10" r="1.5" fill="rgba(99,102,241,.6)" stroke="none"/><circle cx="12" cy="10" r="1.5" fill="rgba(99,102,241,.6)" stroke="none"/><circle cx="17" cy="10" r="1.5" fill="rgba(74,222,128,.8)" stroke="none"/></svg>`,
+
+
+
+    iconBg:'rgba(99,102,241,.18)', iconBorder:'rgba(165,180,252,.3)',
+
+
+
+    color:'#6366f1', statusText:'Système actif', type:'system',
+
+
+
+    heroGradient:`radial-gradient(ellipse at 50% 50%, rgba(99,102,241,.22) 0%, transparent 65%)`,
+
+
+
+    heroAnim:`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 370 120" fill="none">${[0,1,2,3,4].map(i=>`<rect x="${65+i*55}" y="${45+i*3}" width="${8+i%3}" height="${30-i*3}" rx="2" fill="rgba(165,180,252,.${2+i%3})" style="animation:hero-float ${1.8+i*.3}s ease-in-out ${i*.2}s infinite"/>`).join('')}</svg>`,
+
+
+
+    title:`Contrôle ${num}`,
+
+
+
+    tabs:['Info'],
+
+
+
+    sections:[
+
+
+
+      {label:'FONCTIONS',bullets:[
+
+
+
+        `Armoire de commande ${num} assurant la gestion automatisée d\'un ou plusieurs équipements.`,
+
+
+
+        'Reçoit les consignes de l\'automate principal via protocole industriel.',
+
+
+
+        'Incorpore des protections électriques et des relais de sécurité.',
+
+
+
+      ]},
+
+
+
+      {label:'INFORMATIONS',items:[
+
+
+
+        {k:'Indice',v:`Contrôle n°${num}`},
+
+
+
+        {k:'Type',v:'Armoire de commande'},
+
+
+
+        {k:'Équipements',v:'À COMPLÉTER'},
+
+
+
+        {k:'Protocole',v:'À COMPLÉTER'},
+
+
+
+      ]},
+
+
+
+    ],
+
+
+
+  };
+
+
+
+}
+
+
+
+
+
+
+
+function buildPill(r,g,b){
+
+
+
+  return `width:46px;height:46px;border-radius:50%;background:rgba(${r},${g},${b},.06);backdrop-filter:blur(14px) saturate(130%);-webkit-backdrop-filter:blur(14px) saturate(130%);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 14px rgba(${r},${g},${b},.15),0 1px 0 rgba(255,255,255,.5) inset;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .22s;overflow:hidden`;
+
+
+
+}
+
+
+
+
+
+
+
+function buildAurora(c1,c2,c3){
+
+
+
+  return `<div style="position:absolute;width:64px;height:64px;border-radius:50%;background:radial-gradient(ellipse at 65% 35%,${c1} 0%,${c2} 42%,${c3||'transparent'} 70%);top:-9px;left:-9px;pointer-events:none;z-index:0;opacity:.55"><\/div><div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(160deg,rgba(255,255,255,.28) 0%,transparent 50%);pointer-events:none;z-index:0"><\/div>`;
+
+
+
+}
+
+
+
+
+
+
+
+const HS_VISUALS = {
+
+
+
+  /* ── Climate ── */
+
+
+
+  'fraise':{style:buildPill(244,100,100)+';animation:hs-straw 3s ease-in-out infinite',html:buildAurora('rgba(255,200,200,.95)','rgba(255,140,180,.6)','rgba(255,200,120,.25)')+`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(220,80,80,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22C12 22 4 16 4 10a8 8 0 0 1 16 0c0 6-8 12-8 12z"\/><circle cx="9" cy="10" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><circle cx="13" cy="8.5" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><circle cx="15" cy="12" r="1" fill="rgba(220,80,80,.9)" stroke="none"\/><path d="M10 5C9 3 7 3 7.5 1.5M12 4V2M14 5C15 3 17 3 16.5 1.5" stroke-width="1.3"\/><\/svg>`},
+
+
+
+  'co2':{style:buildPill(16,185,129)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="34" height="22" viewBox="0 0 24 14" fill="none" stroke="rgba(5,150,105,.9)" stroke-width="1.4" stroke-linecap="round" style="position:relative;z-index:1"><circle cx="3" cy="7" r="2.5"\/><circle cx="12" cy="7" r="3.2"\/><circle cx="21" cy="7" r="2.5"\/><line x1="5.5" y1="7" x2="8.8" y2="7"\/><line x1="15.2" y1="7" x2="18.5" y2="7"\/><text x="1.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text><text x="9.8" y="9.2" font-size="4.5" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">C<\/text><text x="19.5" y="9" font-size="3.8" font-weight="700" fill="rgba(5,150,105,.9)" stroke="none" font-family="monospace">O<\/text><\/svg>`},
+
+
+
+  'brumisateur':{style:buildPill(45,212,191)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(167,243,208,.95)','rgba(94,234,212,.6)','rgba(186,230,253,.25)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(13,148,136,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="9" width="10" height="6" rx="2"\/><path d="M12 12h3"\/><path d="M17 8l1.5-2M17 12h1.5M17 16l1.5 2"\/><circle cx="20" cy="8" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><circle cx="21" cy="12" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><circle cx="20" cy="16" r="1" fill="rgba(13,148,136,.9)" stroke="none"\/><\/svg>`},
+
+
+
+  'ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"\/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/><\/svg>`},
+
+
+
+  'systeme de ventilation':{style:buildPill(59,130,246),html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;animation:hs-spin 4s linear infinite"><circle cx="12" cy="12" r="2"\/><path d="M12 10c0 0-.5-2.5 1-3.5s3 .5 2 2.5"\/><path d="M13.7 13c0 0 2 1 2 2.5s-1.5 2-2.5-.2"\/><path d="M10.3 13c0 0-2 1-2 2.5s1.5 2 2.5-.2"\/><\/svg>`},
+
+
+
+  'système de refroidissement':{style:buildPill(59,130,246)+';animation:hs-float 3.2s ease-in-out .6s infinite',html:buildAurora('rgba(219,234,254,.95)','rgba(147,197,253,.65)','rgba(196,181,253,.2)')+`<svg width="30" height="26" viewBox="0 0 24 20" fill="none" stroke="rgba(37,99,235,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="1" y="2" width="22" height="14" rx="2.5"\/><line x1="5" y1="5" x2="5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="8.5" y1="5" x2="8.5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="12" y1="5" x2="12" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="15.5" y1="5" x2="15.5" y2="13" stroke-width="1.3" opacity=".7"\/><line x1="19" y1="5" x2="19" y2="13" stroke-width="1.3" opacity=".7"\/><\/svg>`},
+
+
+
+  'fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="30" viewBox="0 0 24 26" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="4" y="2" width="16" height="10" rx="2"\/><text x="7.5" y="10" font-size="4" font-weight="700" fill="rgba(2,132,199,.9)" stroke="none" font-family="monospace">NPK<\/text><line x1="8" y1="12" x2="8" y2="18"\/><line x1="12" y1="12" x2="12" y2="18"\/><line x1="16" y1="12" x2="16" y2="18"\/><\/svg>`},
+
+
+
+  'sensors':{style:buildPill(109,40,217)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="7" width="18" height="12" rx="2"\/><line x1="6" y1="11" x2="6" y2="15" stroke-width="1.8"\/><line x1="9" y1="10" x2="9" y2="15" stroke-width="1.8"\/><line x1="12" y1="9" x2="12" y2="15" stroke-width="1.8"\/><line x1="15" y1="11" x2="15" y2="15" stroke-width="1.8"\/><line x1="18" y1="12" x2="18" y2="15" stroke-width="1.8"\/><circle cx="20" cy="8" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
+
+
+
+  'ventilation dehors':{style:buildPill(6,182,212)+';animation:hs-float 2.6s ease-in-out .3s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="4" width="12" height="16" rx="2"\/><line x1="5" y1="8" x2="11" y2="8" opacity=".6"\/><line x1="5" y1="11" x2="11" y2="11" opacity=".6"\/><line x1="5" y1="14" x2="11" y2="14" opacity=".6"\/><path d="M15 8l4 0M17 12l4 0M15 16l4 0" stroke-width="1.6"\/><\/svg>`},
+
+
+
+  'rideaux auto':{style:buildPill(217,119,6)+';animation:hs-float 3.4s ease-in-out .1s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.85)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><line x1="2" y1="4" x2="22" y2="4"\/><circle cx="5" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="10" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="15" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><circle cx="20" cy="4" r="1" fill="rgba(180,83,9,.85)" stroke="none"\/><path d="M4 5 Q5 10 4 15 Q3.5 18 5 21"\/><path d="M20 5 Q19 10 20 15 Q20.5 18 19 21"\/><\/svg>`},
+
+
+
+  'fenetre auto':{style:buildPill(6,182,212)+';animation:hs-float 3s ease-in-out .5s infinite',html:buildAurora('rgba(207,250,254,.95)','rgba(103,232,249,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(8,145,178,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="18" rx="2"\/><line x1="12" y1="3" x2="12" y2="21" opacity=".35"\/><line x1="2" y1="12" x2="22" y2="12" opacity=".35"\/><path d="M3 4 L8 4 Q6 7 6 11 L3 12Z" fill="rgba(103,232,249,.25)" stroke="none"\/><\/svg>`},
+
+
+
+  'audoucisseur':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><ellipse cx="12" cy="10" rx="5" ry="7"\/><path d="M7 14c0 3 2.5 5 5 5s5-2 5-5"\/><path d="M9 7l3-2 3 2" opacity=".5"\/><\/svg>`},
+
+
+
+  'chaudière':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .2s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="4" y="5" width="16" height="14" rx="2"\/><circle cx="9" cy="12" r="2"\/><circle cx="15" cy="12" r="2"\/><path d="M9 5V3M15 5V3"\/><path d="M7 19v2M17 19v2"\/><\/svg>`},
+
+
+
+  'monitoring':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"\/><path d="M8 21h8M12 17v4"\/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"\/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
+
+
+
+  'station de fertigation':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .1s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="3" y="5" width="7" height="10" rx="1.5"\/><rect x="14" y="5" width="7" height="10" rx="1.5"\/><path d="M10 10h4M12 7v6"\/><path d="M6 15v4M18 15v4M10 19h4"\/><\/svg>`},
+
+
+
+  /* ── Units ── */
+
+
+
+  'unité génétique et amélioration des plantes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 1-2-2V3m6 11h10m0 0a2 2 0 0 0 2-2V7m-2 7v4a2 2 0 0 1-2 2H9m10-4H9m0 0v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"\/><circle cx="12" cy="11" r="1.5" fill="rgba(109,40,217,.7)" stroke="none"\/><\/svg>`},
+
+
+
+  'unité horticulture':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .1s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"\/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"\/><\/svg>`},
+
+
+
+  'unité agronomie':{style:buildPill(245,158,11)+';animation:hs-float 3.1s ease-in-out .2s infinite',html:buildAurora('rgba(254,243,199,.95)','rgba(251,191,36,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(180,83,9,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22V11"\/><path d="M12 11C12 11 6 9 6 4c0 0 4 0 6 4 2-4 6-4 6-4 0 5-6 7-6 7z"\/><path d="M6 20h12"\/><\/svg>`},
+
+
+
+  'unité hydroponie':{style:buildPill(14,165,233)+';animation:hs-float 2.8s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"\/><path d="M8 14c0 2 2 4 4 4s4-2 4-4" opacity=".55"\/><\/svg>`},
+
+
+
+  'unité protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"\/><path d="M9 12l2 2 4-4" opacity=".7"\/><\/svg>`},
+
+
+
+  /* ── Infrastructure ── */
+
+
+
+  'serre':{style:buildPill(34,197,94)+';animation:hs-float 2.9s ease-in-out .2s infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M3 12L12 4l9 8"\/><rect x="5" y="12" width="14" height="9" rx="1"\/><path d="M9 21v-6h6v6"\/><\/svg>`},
+
+
+
+  'bloc gestion technique et administrative':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="3" y="3" width="18" height="18" rx="2"\/><path d="M3 9h18M9 21V9"\/><\/svg>`},
+
+
+
+  'bloc protection des plantes':{style:buildPill(239,68,68)+';animation:hs-float 3s ease-in-out .3s infinite',html:buildAurora('rgba(254,226,226,.95)','rgba(252,165,165,.65)','rgba(253,186,116,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(185,28,28,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"\/><path d="M9 12l2 2 4-4" opacity=".7"\/><\/svg>`},
+
+
+
+  'le truc exterieur':{style:buildPill(34,197,94)+';animation:hs-float 3.2s ease-in-out infinite',html:buildAurora('rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(22,163,74,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 14l-5-5-5 5"\/><path d="M12 9v13"\/><path d="M5 20a7 7 0 0 1 14 0"\/><\/svg>`},
+
+
+
+  /* ── Rooms ── */
+
+
+
+  'salle de lavage':{style:buildPill(14,165,233)+';animation:hs-float 3s ease-in-out infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(186,230,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M4 12h16M4 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2"\/><path d="M6 12v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"\/><path d="M10 16v-4M14 16v-4"\/><\/svg>`},
+
+
+
+  'salle technique de commandes':{style:buildPill(139,92,246)+';animation:hs-float 3s ease-in-out .1s infinite',html:buildAurora('rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(109,40,217,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><rect x="2" y="3" width="20" height="14" rx="2"\/><path d="M8 21h8M12 17v4"\/><polyline points="5 10 8 7 11 10 14 7 17 10" stroke-width="1.5"\/><circle cx="17" cy="9" r="1.5" fill="#4ade80" stroke="none"\/><\/svg>`},
+
+
+
+  "local technique d'équipements":{style:buildPill(107,114,128)+';animation:hs-float 3.2s ease-in-out .2s infinite',html:buildAurora('rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(75,85,99,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"\/><\/svg>`},
+
+
+
+  "salle de fertilisation et traitement d'eau":{style:buildPill(14,165,233)+';animation:hs-float 2.7s ease-in-out .3s infinite',html:buildAurora('rgba(186,230,253,.95)','rgba(125,211,252,.65)','rgba(167,243,208,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(2,132,199,.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"\/><line x1="9" y1="14" x2="15" y2="14"\/><line x1="12" y1="11" x2="12" y2="17"\/><\/svg>`},
+
+
+
+  'salle de réunion':{style:buildPill(99,102,241)+';animation:hs-float 3s ease-in-out .4s infinite',html:buildAurora('rgba(224,231,255,.95)','rgba(165,180,252,.65)','rgba(196,181,253,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(79,70,229,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"\/><circle cx="9" cy="7" r="4"\/><path d="M23 21v-2a4 4 0 0 0-3-3.87"\/><path d="M16 3.13a4 4 0 0 1 0 7.75"\/><\/svg>`},
+
+
+
+  'salle de préparation':{style:buildPill(234,179,8)+';animation:hs-float 3.1s ease-in-out .1s infinite',html:buildAurora('rgba(254,249,195,.95)','rgba(253,224,71,.6)','rgba(254,215,170,.2)')+`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(161,98,7,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"\/><rect x="9" y="3" width="6" height="4" rx="2"\/><path d="M9 12h6M9 16h4"\/><\/svg>`},
+
+
+
+};
+
+
+
+
+
+
+
+// ── Contrôle 1-15 rack icons ──
+
+
+
+(function(){
+
+
+
+  const s=buildPill(107,114,128)+';animation:hs-float 3s ease-in-out infinite';
+
+
+
+  const h=buildAurora('rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)')+
+
+
+
+    `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(75,85,99,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><rect x="2" y="2" width="20" height="8" rx="2"\/><rect x="2" y="14" width="20" height="8" rx="2"\/><line x1="6" y1="6" x2="6.01" y2="6" stroke-width="2"\/><line x1="6" y1="18" x2="6.01" y2="18" stroke-width="2"\/><\/svg>`;
+
+
+
+  for(let i=1;i<=15;i++) HS_VISUALS[`controle ${i}`]={style:s,html:h};
+
+
+
+})();
+
+
+
+
+
+
+
+const FALLBACK_ICONS = {
+
+
+
+  plant:(r,g,b)=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"\/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"\/><\/svg>`,
+
+
+
+  sensor:(r,g,b)=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" style="position:relative;z-index:1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"\/><\/svg>`,
+
+
+
+  system:(r,g,b)=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(${r},${g},${b},.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1"><circle cx="12" cy="12" r="3"\/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"\/><\/svg>`,
+
+
+
+};
+
+
+
+const FALLBACK_COLORS={plant:[45,142,80],sensor:[109,40,217],system:[100,116,139]};
+
+
+
+const FALLBACK_AURORA={
+
+
+
+  plant:['rgba(187,247,208,.95)','rgba(110,231,183,.65)','rgba(167,243,208,.2)'],
+
+
+
+  sensor:['rgba(237,233,254,.95)','rgba(196,181,253,.65)','rgba(219,234,254,.2)'],
+
+
+
+  system:['rgba(229,231,235,.95)','rgba(156,163,175,.65)','rgba(209,213,219,.2)'],
+
+
+
+};
+
+
+
+
+
+
+
+function getHSVisual(key){
+
+
+
+  if(HS_VISUALS[key]) return HS_VISUALS[key];
+
+
+
+  const def=getARDef(key);
+
+
+
+  const t=def?.type||'system';
+
+
+
+  const [r,g,b]=FALLBACK_COLORS[t]||FALLBACK_COLORS.system;
+
+
+
+  const ac=FALLBACK_AURORA[t]||FALLBACK_AURORA.system;
+
+
+
+  return {
+
+
+
+    style:buildPill(r,g,b)+';animation:hs-float 3s ease-in-out infinite',
+
+
+
+    html:buildAurora(ac[0],ac[1],ac[2])+(FALLBACK_ICONS[t]||FALLBACK_ICONS.system)(r,g,b)
+
+
+
+  };
+
+
+
+}
+
+
+
+
+
+
+
+async function fetchAllIoT(){
+
+
+
+  try{
+
+
+
+    const d = await fetch(`${API}/api/iot/live`).then(r=>r.json());
+
+
+
+    return d.serres||[];
+
+
+
+  }catch(e){ return []; }
+
+
+
+}
+
+
+
+
+
+
+
+function setIoTZone(zoneId){
+
+
+
+  const code = IOT_ZONES[zoneId];
+
+
+
+  if(!code){ iotData=null; updateIoTOverlay(); document.getElementById('iot-hud').style.opacity='0'; return; }
+
+
+
+  fetchAllIoT().then(serres=>{
+
+
+
+    iotData = serres.find(s=>s.code===code)||null;
+
+
+
+    document.getElementById('iot-hud').style.opacity=iotData?'1':'0';
+
+
+
+    if(iotData){ updateIoTOverlay(); updateHotspotDots(); }
+
+
+
+  });
+
+
+
+  fetchThresholds(code);
+
+
+
+}
+
+
+
+
+
+
+
+function updateIoTOverlay(){
+
+
+
+  if(!iotData){ return; }
+
+
+
+  const env=iotData.env||{}, irr=iotData.irr||{};
+
+
+
+  const set=(id,val,dec=1)=>{ const el=document.getElementById(id); if(el) el.textContent=val!=null?Number(val).toFixed(dec):'—'; };
+
+
+
+  set('iot-temp',env.temperature,1);
+
+
+
+  set('iot-hum',env.humidite,1);
+
+
+
+  set('iot-vpd',env.vpd,2);
+
+
+
+  set('iot-ph',irr.ph,2);
+
+
+
+  set('iot-ec',irr.ec,2);
+
+
+
+  set('iot-twater',irr.temp_eau,1);
+
+
+
+  set('iot-level',irr.niveau_eau,2);
+
+
+
+}
+
+
+
+
+
+
+
+async function fetchThresholds(serreId){
+
+
+
+  if(!serreId) return;
+
+
+
+  const idMap={S01:1,S02:2,S03:3,S04:4,S05:5};
+
+
+
+  const n=idMap[serreId];
+
+
+
+  if(!n) return;
+
+
+
+  try{
+
+
+
+    const r=await fetch(`${API}/api/dashboard/thresholds/${n}/public`);
+
+
+
+    if(!r.ok) throw new Error(r.status);
+
+
+
+    const data=await r.json();
+
+
+
+    thresholds={};
+
+
+
+    (data||[]).forEach(t=>{ if(t.actif!==false) thresholds[t.capteur]=t; });
+
+
+
+    window._thresholds=thresholds;
+
+
+
+  }catch(e){ console.warn('Thresholds: defaults',e.message); }
+
+
+
+}
+
+
+
+
+
+
+
+async function fetchOutsideTemp(){
+
+
+
+  try{
+
+
+
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416&current_weather=true');
+
+
+
+    const d=await r.json();
+
+
+
+    outsideTemp=d?.current_weather?.temperature??null;
+
+
+
+    window._outsideTemp=outsideTemp;
+
+
+
+  }catch(e){ outsideTemp=null; }
+
+
+
+}
+
+
+
+
+
+
+
+function getThresh(key){
+
+
+
+  const DEFAULTS={
+
+
+
+    temperature:{valeur_min:18,valeur_max:28},
+
+
+
+    humidite:{valeur_min:55,valeur_max:85},
+
+
+
+    vpd:{valeur_min:0.4,valeur_max:1.2},
+
+
+
+    ph:{valeur_min:5.5,valeur_max:6.5},
+
+
+
+    ec:{valeur_min:1.0,valeur_max:2.2},
+
+
+
+    niveau_eau:{valeur_min:0.3,valeur_max:1.5},
+
+
+
+  };
+
+
+
+  return thresholds[key]||DEFAULTS[key]||{valeur_min:null,valeur_max:null};
+
+
+
+}
+
+
+
+
+
+
+
+function hsGetState(key){
+
+
+
+  const env=iotData?.env||{};
+
+
+
+  const tT=getThresh('temperature');
+
+
+
+  const hT=getThresh('humidite');
+
+
+
+  const vT=getThresh('vpd');
+
+
+
+  switch(key){
+
+
+
+    case 'ventilation':
+
+
+
+    case 'ventilation dehors':
+
+
+
+      if(env.temperature==null) return null;
+
+
+
+      return (env.temperature>tT.valeur_max-2||(env.humidite!=null&&env.humidite>hT.valeur_max))?'on':'off';
+
+
+
+    case 'brumisateur':
+
+
+
+      if(env.temperature==null) return null;
+
+
+
+      return (env.temperature>tT.valeur_max||(env.humidite!=null&&env.humidite<hT.valeur_min))?'on':'off';
+
+
+
+    case 'co2':
+
+
+
+      if(env.vpd==null) return null;
+
+
+
+      return env.vpd>vT.valeur_min?'on':'off';
+
+
+
+    case 'système de refroidissement':
+
+
+
+      if(env.temperature==null) return null;
+
+
+
+      return env.temperature>tT.valeur_max?'on':'off';
+
+
+
+    case 'fenetre auto':
+
+
+
+      if(env.temperature==null||outsideTemp==null) return null;
+
+
+
+      return (env.temperature>tT.valeur_max&&outsideTemp<env.temperature-2)?'on':'off';
+
+
+
+    case 'rideaux auto':
+
+
+
+      if(outsideTemp==null) return null;
+
+
+
+      return (outsideTemp>10&&outsideTemp<32)?'on':'off';
+
+
+
+    default: return null;
+
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+function goTo(zid, sid) {
+
+
+
+  if(RESTRICT_ZONES && !RESTRICT_ZONES.includes(zid)) return;
+
+
+
+  if(curZone && curScene) navHistory.push({zoneId:curZone, sceneId:curScene});
+
+
+
+  if(navHistory.length>50) navHistory.shift();
+
+
+
+  closeAR();
+
+
+
+  load(zid, sid, false);
+
+
+
+}
+
+
+
+
+
+
+
+function load(zid, sid, instant) {
+
+
+
+  const zone  = zones[zid];
+
+
+
+  const scene = zone?.scenes.find(s=>s.id===sid);
+
+
+
+  if(!zone||!scene) return;
+
+
+
+  curZone=zid; curScene=sid;
+
+
+
+  const idx = zone.scenes.indexOf(scene);
+
+
+
+
+
+
+
+  // UI updates
+
+
+
+  document.getElementById('prev').className = 'arrow L'+(idx===0?' off':'');
+
+
+
+  document.getElementById('next').className = 'arrow R'+(idx===zone.scenes.length-1?' off':'');
+
+
+
+  document.getElementById('scene-ctr').textContent = `${idx+1} / ${zone.scenes.length}`;
+
+
+
+
+
+
+
+  // Zone label
+
+
+
+  if(zid!==lastZoneId) {
+
+
+
+    lastZoneId=zid;
+
+
+
+    document.getElementById('zfn').textContent = zone.label;
+
+
+
+    document.getElementById('zfu').textContent = zone.unit!=='—' ? `Unité ${zone.unit}` : '';
+
+
+
+    const zf=document.getElementById('zf');
+
+
+
+    zf.classList.remove('show');
+
+
+
+    requestAnimationFrame(()=>{ zf.classList.add('show'); });
+
+
+
+    clearTimeout(sceneT);
+
+
+
+    sceneT=setTimeout(()=>zf.classList.remove('show'), 3000);
+
+
+
+  }
+
+
+
+
+
+
+
+  // Build hotspots — filter AR
+
+
+
+  const shs=(hotspots[zid]?.[sid]||[]).slice();
+
+
+
+  const fwdNav=shs.find(h=>h.type==='nav'&&h.targetSceneId!==sid&&h.targetZoneId===zid);
+
+
+
+  const hasAnyBack=shs.some(h=>zones[h.targetZoneId]?.scenes.findIndex(s=>s.id===h.targetSceneId)===idx-1);
+
+
+
+  if(fwdNav&&idx>0&&!hasAnyBack){
+
+
+
+    const by=((fwdNav.yaw+180)+360)%360;
+
+
+
+    shs.push({type:'nav',pitch:fwdNav.pitch,yaw:by>180?by-360:by,
+
+
+
+      targetZoneId:zid,targetSceneId:zone.scenes[idx-1].id,auto:true});
+
+
+
+  }
+
+
+
+  const prev=navHistory.length>0?navHistory[navHistory.length-1]:null;
+
+
+
+  const hasAnyCross=shs.some(h=>h.type==='cross');
+
+
+
+  const hasForward=shs.some(h=>!h.auto&&h.targetSceneId!==sid);
+
+
+
+  if(prev&&!hasAnyCross&&!hasForward){
+
+
+
+    const pz=zones[prev.zoneId];
+
+
+
+    if(pz&&(!RESTRICT_ZONES||RESTRICT_ZONES.includes(prev.zoneId))){
+
+
+
+      const refYaw=fwdNav?.yaw??(shs[0]?.yaw??0);
+
+
+
+      const by=((refYaw+180)+360)%360;
+
+
+
+      shs.push({type:'cross',pitch:fwdNav?.pitch??-20,yaw:by>180?by-360:by,
+
+
+
+        targetZoneId:prev.zoneId,targetSceneId:prev.sceneId,auto:true});
+
+
+
+    }
+
+
+
+  }
+
+
+
+
+
+
+
+  const fst=shs.find(h=>!h.auto)||shs[0];
+
+
+
+  const sy=fst?.yaw??0;
+
+
+
+  const sp=fst?Math.min(fst.pitch+20,5):0;
+
+
+
+
+
+
+
+  const phs=shs.map(hs=>{
+
+
+
+    if(hs.type==='ar'){
+
+
+
+      const desc=hs.arDesc||hs.label||'';
+
+
+
+      const rawKey=desc.toLowerCase().trim();
+
+
+
+      const _AL={
+
+
+
+        'capteurs':'sensors','ventilation ext':'ventilation dehors',
+
+
+
+        'syst de refroidissement':'système de refroidissement',
+
+
+
+        'syst de refroidissment':'système de refroidissement',
+
+
+
+        'système de ventilation':'ventilation','systeme de ventilation':'ventilation',
+
+
+
+        'fenetre':'fenetre auto','fenetres':'fenetre auto',
+
+
+
+        'rideaux':'rideaux auto',
+
+
+
+        'avocat':'avocatier',
+
+
+
+        'tomate malades':'tomates malades','tomate malade':'tomates malades',
+
+
+
+        'blé malade':'ble malade','blé':'ble malade',
+
+
+
+        'audoucisseur':'audoucisseur',
+
+
+
+        'unité protection des plantes':'unité protection des plantes',
+
+
+
+      };
+
+
+
+      const key=_AL[rawKey]||rawKey;
+
+
+
+      const vis=getHSVisual(key);
+
+
+
+      const stateKey=hsGetState(key);
+
+
+
+      return {
+
+
+
+        pitch:hs.pitch, yaw:hs.yaw, type:'custom', cssClass:'hs-ar-base',
+
+
+
+        createTooltipFunc:function(div){
+
+
+
+          div.style.cssText='background:transparent;border:none;width:auto;height:auto';
+
+
+
+          const inner=document.createElement('div');
+
+
+
+          inner.style.cssText=vis.style+';position:relative';
+
+
+
+          inner.innerHTML=vis.html;
+
+
+
+          if(stateKey!==null){
+
+
+
+            const dot=document.createElement('div');
+
+
+
+            const dc=stateKey==='on'?'#22c55e':'#ef4444';
+
+
+
+            const gc=stateKey==='on'?'rgba(34,197,94,.6)':'rgba(239,68,68,.5)';
+
+
+
+            dot.setAttribute('data-state-dot',key);
+
+
+
+            dot.style.cssText=['position:absolute','bottom:4px','right:4px','width:7px','height:7px','border-radius:50%',`background:${dc}`,'border:1.5px solid rgba(255,255,255,.85)',`box-shadow:0 0 5px ${gc}`,'animation:dot-pulse 2.4s ease-in-out infinite'].join(';');
+
+
+
+            inner.appendChild(dot);
+
+
+
+          }
+
+
+
+          inner.addEventListener('mouseenter',()=>{ inner.style.transform='scale(1.12)'; });
+
+
+
+          inner.addEventListener('mouseleave',()=>{ inner.style.transform=''; });
+
+
+
+          div.appendChild(inner);
+
+
+
+          div.addEventListener('mousedown',e=>{e.stopPropagation();e.preventDefault();});
+
+
+
+          div.addEventListener('touchstart',e=>{e.stopPropagation();},{passive:false});
+
+
+
+        },
+
+
+
+        createTooltipArgs:{},
+
+
+
+        clickHandlerFunc:function(){ openSimpleAR(desc); }
+
+
+
+      };
+
+
+
+    }
+
+
+
+    const isX = hs.type==='cross';
+
+
+
+    const c = isX?'rgba(200,225,255,.9)':'rgba(255,255,255,.9)';
+
+
+
+    return {
+
+
+
+      pitch:hs.pitch, yaw:hs.yaw, type:'custom',
+
+
+
+      cssClass:isX?'hs-cross':'hs-nav',
+
+
+
+      createTooltipFunc:function(div){
+
+
+
+        div.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+
+
+
+          stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+
+
+          <line x1="12" y1="19" x2="12" y2="5"/>
+
+
+
+          <polyline points="5 12 12 5 19 12"/>
+
+
+
+        </svg>`;
+
+
+
+      },
+
+
+
+      createTooltipArgs:{},
+
+
+
+      clickHandlerFunc:function(){goTo(hs.targetZoneId,hs.targetSceneId);}
+
+
+
+    };
+
+
+
+  }).filter(Boolean);
+
+
+
+
+
+
+
+  // Dual-buffer crossfade
+
+
+
+  const nextSlot = instant?activeSlot:(activeSlot===0?1:0);
+
+
+
+  const nextId   = nextSlot===0?'pano-a':'pano-b';
+
+
+
+  const curId    = activeSlot===0?'pano-a':'pano-b';
+
+
+
+  const nextEl   = document.getElementById(nextId);
+
+
+
+  const curEl    = document.getElementById(curId);
+
+
+
+
+
+
+
+  if(window._fadeTimer){clearTimeout(window._fadeTimer);window._fadeTimer=null;}
+
+
+
+  if(viewers[nextSlot]){try{viewers[nextSlot].destroy();}catch(e){}viewers[nextSlot]=null;}
+
+
+
+  nextEl.innerHTML='';
+
+
+
+  nextEl.style.transition='none';
+
+
+
+  nextEl.style.opacity='0';
+
+
+
+  nextEl.style.pointerEvents='none';
+
+
+
+
+
+
+
+  // Brief flash on transition
+
+
+
+  if(!instant){
+
+
+
+    const fl=document.getElementById('flash');
+
+
+
+    fl.classList.add('on');
+
+
+
+    setTimeout(()=>fl.classList.remove('on'),80);
+
+
+
+  }
+
+
+
+
+
+
+
+  const v=pannellum.viewer(nextId,{
+
+
+
+    type:'equirectangular', panorama:scene.file,
+
+
+
+    autoLoad:true,
+
+
+
+          vr: true, autoRotate:0,
+
+
+
+    hfov:100, minHfov:60, maxHfov:120,
+
+
+
+    pitch:sp, yaw:sy, hotSpots:phs
+
+
+
+  });
+
+
+
+  viewers[nextSlot]=v;
+
+
+
+
+
+
+
+  v.on('load',()=>{
+
+
+
+    if(viewers[nextSlot]!==v) return;
+
+
+
+    if(!arEnabled) applyARState();
+
+
+
+
+
+
+
+    if(instant){
+
+
+
+      nextEl.style.transition='none';
+
+
+
+      nextEl.style.opacity='1';
+
+
+
+      nextEl.style.pointerEvents='all';
+
+
+
+      activeSlot=nextSlot;
+
+
+
+    } else {
+
+
+
+      requestAnimationFrame(()=>{
+
+
+
+        nextEl.style.transition='opacity .55s cubic-bezier(.4,0,.2,1)';
+
+
+
+        nextEl.style.opacity='1';
+
+
+
+        nextEl.style.pointerEvents='all';
+
+
+
+        curEl.style.transition='opacity .55s cubic-bezier(.4,0,.2,1)';
+
+
+
+        curEl.style.opacity='0';
+
+
+
+        curEl.style.pointerEvents='none';
+
+
+
+      });
+
+
+
+      const slotToClean=activeSlot;
+
+
+
+      activeSlot=nextSlot;
+
+
+
+      window._fadeTimer=setTimeout(()=>{
+
+
+
+        if(viewers[slotToClean]){try{viewers[slotToClean].destroy();}catch(e){}viewers[slotToClean]=null;}
+
+
+
+        document.getElementById(slotToClean===0?'pano-a':'pano-b').innerHTML='';
+
+
+
+        window._fadeTimer=null;
+
+
+
+      },600);
+
+
+
+    }
+
+
+
+
+
+
+
+    // Preload neighbours
+
+
+
+    [-1,1,2].forEach(d=>{
+
+
+
+      const sc=zone.scenes[idx+d];
+
+
+
+      if(sc&&!preloaded.has(sc.file)){preloaded.add(sc.file);new Image().src=sc.file;}
+
+
+
+    });
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+// ── NO CAMERA BREATHING — causes hotspot drift ──
+
+
+
+
+
+
+
+function stepScene(d){
+
+
+
+  const zone=zones[curZone];
+
+
+
+  const idx=zone?.scenes.findIndex(s=>s.id===curScene);
+
+
+
+  const next=zone?.scenes[idx+d];
+
+
+
+  if(next) goTo(curZone,next.id);
+
+
+
+}
+
+
+
+const START_ZONE     = 'exterieur';
+
+
+
+const RESTRICT_ZONES = ['exterieur'];
+
+
+
+
+
+
+
+let manifest, zones={}, hotspots={};
+
+
+
+let curZone, curScene;
+
+
+
+const preloaded = new Set();
+
+
+
+let lastZoneId=null, flashT, sceneT;
+
+
+
+const navHistory=[];
+
+
+
+let viewers=[null,null], activeSlot=0;
+
+window.addEventListener('load', async ()=>{
+
+
+
+  const r = await fetch('images/manifest.json');
+
+
+
+  manifest = await r.json();
+
+
+
+  manifest.zones.forEach(z=>zones[z.id]=z);
+
+
+
+  hotspots = manifest.hotspots||{};
+
+
+
+  const p = new URLSearchParams(location.search);
+
+
+
+  const z = p.get('zone')||START_ZONE;
+
+
+
+  const s = p.get('scene')||zones[z]?.scenes[0]?.id;
+
+
+
+  load(z, s, true);
+
+
+
+  fetchOutsideTemp(); setInterval(fetchOutsideTemp, 600000);
+
+
+
+
+
+
+
+  document.addEventListener('keydown', e=>{
+
+
+
+    if(e.code==='ArrowRight') stepScene(1);
+
+
+
+    if(e.code==='ArrowLeft')  stepScene(-1);
+
+
+
+    if(e.code==='Escape')     closeAR();
+
+
+
+  });
+
+
+
+  // Show scene counter after short delay
+
+
+
+  setTimeout(()=>document.getElementById('scene-ctr').classList.add('show'), 800);
+
+
+
+});
+
+
+
+
+</script>
+
+
+
+
+
+
+
+<div class="ar-overlay">
+
+
+
+  <div class="ar-card" id="ar-card">
+
+
+
+    <div class="ar-hero" id="ar-hero">
+
+
+
+      <div class="ar-hero-anim" id="ar-hero-anim"></div>
+
+
+
+      <div class="ar-hero-bg" id="ar-hero-bg"></div>
+
+
+
+      <div class="ar-hero-content ar-stagger-1">
+
+
+
+        <div class="ar-hero-icon" id="ar-icon-wrap"></div>
+
+
+
+        <div class="ar-hero-text">
+
+
+
+          <div class="ar-hero-label" id="ar-category-label">DIGITAL TWIN</div>
+
+
+
+          <h3 id="ar-title">&#8212;</h3>
+
+
+
+          <div class="ar-state-pill unknown" id="ar-state-pill">
+
+
+
+            <div class="ar-state-pill-dot"></div>
+
+
+
+            <span id="ar-state-pill-text">&#8212;</span>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <button class="ar-close" onclick="closeAR()">&#10005;</button>
+
+
+
+    </div>
+
+
+
+    <div class="ar-tab-bar" id="ar-tab-bar" style="display:none"></div>
+
+    <div class="ar-reason-strip ar-stagger-2" id="ar-reason-strip" style="display:none">
+
+
+
+      <div class="ar-reason-text" id="ar-reason-text"></div>
+
+
+
+    </div>
+
+
+
+    <div class="ar-content ar-stagger-3" id="ar-content"></div>
+
+
+
+  </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<script>
+
+
+
+/* ── Auto VR entry when URL contains ?vr=1 ── */
+
+
+
+(function () {
+
+
+
+  if (!/[?&]vr=1/.test(location.search)) return;
+
+
+
+
+
+
+
+  var MAX_WAIT = 4000;   // ms before giving up
+
+
+
+  var POLL_MS  = 150;    // check interval
+
+
+
+  var elapsed  = 0;
+
+
+
+  var entered  = false;
+
+
+
+
+
+
+
+  function tryEnterVR() {
+
+
+
+    if (entered) return;
+
+
+
+
+
+
+
+    /* Strategy 1 — click Pannellum's built-in VR button */
+
+
+
+    var btn = document.querySelector(
+
+
+
+      '.pnlm-vr-button, [class*="vr"], button[title*="VR"], button[title*="vr"]'
+
+
+
+    );
+
+
+
+    if (btn) {
+
+
+
+      btn.click();
+
+
+
+      entered = true;
+
+
+
+      return;
+
+
+
+    }
+
+
+
+
+
+
+
+    /* Strategy 2 — use WebXR API directly */
+
+
+
+    if (navigator.xr) {
+
+
+
+      navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+
+
+
+        if (!ok || entered) return;
+
+
+
+        navigator.xr.requestSession('immersive-vr').then(function (session) {
+
+
+
+          entered = true;
+
+
+
+          /* hand session to Pannellum if available */
+
+
+
+          if (window.pannellumViewer && window.pannellumViewer.enterVR) {
+
+
+
+            window.pannellumViewer.enterVR(session);
+
+
+
+          }
+
+
+
+        }).catch(function (e) { console.warn('[VR-AUTO] requestSession failed:', e); });
+
+
+
+      });
+
+
+
+      entered = true; /* prevent looping even if promise pending */
+
+
+
+      return;
+
+
+
+    }
+
+
+
+
+
+
+
+    /* Keep polling until MAX_WAIT */
+
+
+
+    elapsed += POLL_MS;
+
+
+
+    if (elapsed < MAX_WAIT) setTimeout(tryEnterVR, POLL_MS);
+
+
+
+    else console.warn('[VR-AUTO] Could not find VR entry point after', MAX_WAIT, 'ms');
+
+
+
+  }
+
+
+
+
+
+
+
+  /* Wait for page load, then start polling */
+
+
+
+  if (document.readyState === 'complete') {
+
+
+
+    setTimeout(tryEnterVR, 600);
+
+
+
+  } else {
+
+
+
+    window.addEventListener('load', function () { setTimeout(tryEnterVR, 600); });
+
+
+
+  }
+
+
+
+})();
+
+
+
+</script>
+
+
+
+
+
+
+
+<script>
+
+
+
+/* ════════════════════════════════════════
+
+
+
+   VR ENTRY LOGIC — Quest-compatible
+
+
+
+   No auto WebXR — requires user click
+
+
+
+   ════════════════════════════════════════ */
+
+
+
+(function () {
+
+
+
+
+
+
+
+  /* ── Device detection ── */
+
+
+
+  const isQuest  = /Oculus|Quest|VR/i.test(navigator.userAgent);
+
+
+
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent) || isQuest;
+
+
+
+
+
+
+
+  /* ── Patch Pannellum config for orientation support ── */
+
+
+
+  /* Override the viewer factory to inject Quest-friendly defaults */
+
+
+
+  const _origViewer = window.pannellum?.viewer;
+
+
+
+  if (_origViewer) {
+
+
+
+    window.pannellum.viewer = function(container, config) {
+
+
+
+      /* Inject defaults without overriding existing values */
+
+
+
+      config.showFullscreenCtrl       = config.showFullscreenCtrl       ?? true;
+
+
+
+      config.orientationOnByDefault   = config.orientationOnByDefault   ?? isMobile;
+
+
+
+      config.autoLoad                 = config.autoLoad                 ?? true;
+
+
+
+      config.touchPanSpeedCoeffFactor = config.touchPanSpeedCoeffFactor ?? 1;
+
+
+
+      return _origViewer.call(this, container, config);
+
+
+
+    };
+
+
+
+  }
+
+
+
+
+
+
+
+  /* ── VR entry on button click ── */
+
+
+
+  function enterVRMode() {
+
+
+
+    const btn = document.getElementById('vr-enter-btn');
+
+
+
+
+
+
+
+    /* 1. Fullscreen */
+
+
+
+    const el = document.documentElement;
+
+
+
+    const fsReq = el.requestFullscreen
+
+
+
+      || el.webkitRequestFullscreen
+
+
+
+      || el.mozRequestFullScreen
+
+
+
+      || el.msRequestFullscreen;
+
+
+
+
+
+
+
+    if (fsReq) {
+
+
+
+      fsReq.call(el).catch(err => {
+
+
+
+        console.warn('[VR] Fullscreen failed:', err);
+
+
+
+      });
+
+
+
+    }
+
+
+
+
+
+
+
+    /* 2. Screen orientation — landscape for Quest */
+
+
+
+    if (screen.orientation && screen.orientation.lock) {
+
+
+
+      screen.orientation.lock('landscape').catch(() => {});
+
+
+
+    }
+
+
+
+
+
+
+
+    /* 3. Enable Pannellum orientation if on mobile/Quest */
+
+
+
+    if (isMobile) {
+
+
+
+      /* Find all active Pannellum viewers and enable orientation */
+
+
+
+      ['pano-a', 'pano-b'].forEach(id => {
+
+
+
+        const el = document.getElementById(id);
+
+
+
+        if (!el) return;
+
+
+
+        const iframe = el.querySelector('iframe');
+
+
+
+        /* Pannellum exposes orientation toggle via its container events */
+
+
+
+      });
+
+
+
+      /* Trigger Pannellum's built-in orientation button if present */
+
+
+
+      const orientBtn = document.querySelector('.pnlm-orientation-button');
+
+
+
+      if (orientBtn) orientBtn.click();
+
+
+
+    }
+
+
+
+
+
+
+
+    /* 4. Add vr-mode class — hides heavy UI, enlarges hotspots */
+
+
+
+    document.body.classList.add('vr-mode');
+
+
+
+
+
+
+
+    /* 5. Lock pointer / prevent scroll */
+
+
+
+    document.body.style.overflow = 'hidden';
+
+
+
+
+
+
+
+    /* 6. Show exit button after 3s */
+
+
+
+    setTimeout(() => {
+
+
+
+      if (!document.getElementById('vr-exit-btn')) {
+
+
+
+        const exit = document.createElement('button');
+
+
+
+        exit.id = 'vr-exit-btn';
+
+
+
+        exit.innerHTML = '✕ Quitter VR';
+
+
+
+        Object.assign(exit.style, {
+
+
+
+          position: 'fixed', top: '16px', right: '16px', zIndex: '99999',
+
+
+
+          padding: '8px 18px', borderRadius: '100px',
+
+
+
+          background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.2)',
+
+
+
+          color: 'rgba(255,255,255,0.8)', fontSize: '12px', fontWeight: '600',
+
+
+
+          cursor: 'pointer', backdropFilter: 'blur(12px)',
+
+
+
+          fontFamily: "'Outfit','Inter',system-ui",
+
+
+
+        });
+
+
+
+        exit.onclick = exitVRMode;
+
+
+
+        document.body.appendChild(exit);
+
+
+
+      }
+
+
+
+    }, 3000);
+
+
+
+  }
+
+
+
+
+
+
+
+  function exitVRMode() {
+
+
+
+    document.body.classList.remove('vr-mode');
+
+
+
+    document.body.style.overflow = '';
+
+
+
+    const exit = document.getElementById('vr-exit-btn');
+
+
+
+    if (exit) exit.remove();
+
+
+
+    if (document.fullscreenElement && document.exitFullscreen) {
+
+
+
+      document.exitFullscreen().catch(() => {});
+
+
+
+    }
+
+
+
+  }
+
+
+
+
+
+
+
+  /* ── Exit VR on fullscreen change (user pressed Esc) ── */
+
+
+
+  document.addEventListener('fullscreenchange', () => {
+
+
+
+    if (!document.fullscreenElement) exitVRMode();
+
+
+
+  });
+
+
+
+
+
+
+
+  /* ── Wire the button ── */
+
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+
+
+    const btn = document.getElementById('vr-enter-btn');
+
+
+
+    if (btn) btn.addEventListener('click', enterVRMode);
+
+
+
+
+
+
+
+    /* On Quest — add a subtle label below the button */
+
+
+
+    if (isQuest) {
+
+
+
+      const label = document.createElement('div');
+
+
+
+      label.textContent = 'Optimisé Meta Quest';
+
+
+
+      Object.assign(label.style, {
+
+
+
+        position: 'fixed', bottom: '82px', right: '24px', zIndex: '99999',
+
+
+
+        fontSize: '10px', fontWeight: '600', letterSpacing: '0.1em',
+
+
+
+        textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)',
+
+
+
+        fontFamily: "'Outfit','Inter',system-ui",
+
+
+
+        pointerEvents: 'none',
+
+
+
+      });
+
+
+
+      document.body.appendChild(label);
+
+
+
+    }
+
+
+
+  });
+
+
+
+
+
+
+
+})();
+
+
+
+</script>
+
+
+
+
+
+
+
+
+<script>
+(function () {
+  var isQuest  = /Oculus|Quest/i.test(navigator.userAgent);
+  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent) || isQuest;
+
+  function enterVR() {
+    /* fullscreen only */
+    var el  = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen
+           || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (req) req.call(el).catch(function(){});
+
+    /* landscape on Quest */
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function(){});
+    }
+
+    /* gyro if mobile/Quest — only clicks Pannellum's own button */
+    if (isMobile) {
+      var ob = document.querySelector('.pnlm-orientation-button');
+      if (ob) ob.click();
+    }
+
+    /* hide VR button, show exit button */
+    var btn = document.getElementById('vr-enter-btn');
+    if (btn) btn.style.display = 'none';
+
+    var exit = document.getElementById('vr-exit-btn');
+    if (!exit) {
+      exit = document.createElement('button');
+      exit.id = 'vr-exit-btn';
+      exit.textContent = '✕ Quitter VR';
+      exit.onclick = exitVR;
+      document.body.appendChild(exit);
+    }
+  }
+
+  function exitVR() {
+    var btn = document.getElementById('vr-enter-btn');
+    if (btn) btn.style.display = '';
+    var exit = document.getElementById('vr-exit-btn');
+    if (exit) exit.remove();
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(function(){});
+    }
+  }
+
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement) exitVR();
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('vr-enter-btn');
+    if (btn) btn.addEventListener('click', enterVR);
+  });
+})();
+</script>
+  <script src="ar-content.js"></script>
+
+<script>
+  // ── Panorama / fullscreen bridge — triggered by parent React ViewerBox ──
+  window.addEventListener('message', function(e) {
+    if (e.data === 'enterPanorama') enterPanorama()
+    if (e.data === 'exitPanorama')  exitPanorama()
+  })
+
+  function enterPanorama() {
+    // Step 1: iframe requests its OWN fullscreen so the panorama truly fills the screen
+    // (The React wrapper already called requestFullscreen on the div, but that doesn't
+    //  propagate inside the iframe — we need the iframe's document to go fullscreen too)
+    var docEl = document.documentElement
+    var req = docEl.requestFullscreen
+           || docEl.webkitRequestFullscreen
+           || docEl.mozRequestFullScreen
+           || docEl.msRequestFullscreen
+    if (req) {
+      req.call(docEl).catch(function() {
+        // Fullscreen request may fail if not triggered by user gesture — 
+        // the parent already handled it, so just proceed with visual mode
+      })
+    }
+
+    // Step 2: Hide all UI overlays so only the panorama is visible
+    hideUI()
+
+    // Step 3: Black background, no scroll
+    document.documentElement.style.background = '#000'
+    document.body.style.background = '#000'
+    document.body.style.overflow   = 'hidden'
+
+    // Step 4: Resize Pannellum to fill the new viewport
+    resizePannellum()
+  }
+
+  function exitPanorama() {
+    showUI()
+    document.documentElement.style.background = ''
+    document.body.style.background = ''
+    document.body.style.overflow   = ''
+    resizePannellum()
+    // Exit iframe's own fullscreen if active
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(function() {})
+    }
+  }
+
+  function resizePannellum() {
+    setTimeout(function() {
+      // This codebase stores Pannellum instances in viewers[] with activeSlot pointer
+      if (window.viewers && window.viewers[window.activeSlot]) {
+        try { window.viewers[window.activeSlot].resize() } catch(e) {}
+        return
+      }
+      // Fallback: fire resize event — Pannellum listens to it
+      window.dispatchEvent(new Event('resize'))
+    }, 120)
+  }
+
+  // Listen for fullscreenchange inside the iframe to sync exit
+  document.addEventListener('fullscreenchange', function() {
+    if (!document.fullscreenElement) {
+      // User pressed Esc — notify parent to update its isFS state
+      try { window.parent.postMessage('iframeExitedFullscreen', '*') } catch(e) {}
+      showUI()
+    }
+  })
+
+  function hideUI() {
+    var selectors = [
+      // IoT HUD (serres only)
+      '#iot-hud',
+      // AR + lang controls
+      '#ar-toggle', '#lang-switcher',
+      // Zone label, scene counter, flash, atmo, vignette
+      '#zf', '#scene-ctr', '#flash', '#atmo', '#vignette',
+      // Navigation arrows
+      '.arrow',
+      // VR buttons
+      '#vr-enter-btn', '#vr-exit-btn',
+      // AR overlay card
+      '.ar-overlay',
+      // Any generic UI
+      'header', 'footer', 'nav', '.toolbar', '.sidebar',
+      '[data-ui="true"]', '.ui-overlay'
+    ]
+    document.querySelectorAll(selectors.join(', ')).forEach(function(el) {
+      el.setAttribute('data-pano-hidden', 'true')
+      el.style.transition = 'opacity 0.3s ease'
+      el.style.opacity = '0'
+      el.style.pointerEvents = 'none'
+    })
+  }
+
+  function showUI() {
+    document.querySelectorAll('[data-pano-hidden="true"]').forEach(function(el) {
+      el.removeAttribute('data-pano-hidden')
+      el.style.opacity = ''
+      el.style.pointerEvents = ''
+    })
+  }
+</script>
+</body>
+
+
+
+</html>
+
+
+
+</html>
