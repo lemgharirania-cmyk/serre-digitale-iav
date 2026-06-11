@@ -6,7 +6,7 @@ const NAV = [
   { id: 'projet',  icon: LayoutDashboard, labelFr: 'Notre Projet',    labelEn: 'Our Project' },
   { id: 'apropos', icon: Info,            labelFr: 'À Propos',         labelEn: 'About' },
   { id: 'campus',  icon: MapPin,          labelFr: 'AgroBioTech',      labelEn: 'AgroBioTech' },
-  { id: 'plan2d',  icon: Map,             labelFr: 'Schéma 2D',        labelEn: '2D Floor Plan' },
+  { id: 'plan2d',  icon: Map,             labelFr: 'Schéma 2D',          labelEn: '2D Floor Plan' },
   { id: 'visite',  icon: Scan,            labelFr: 'Visite Virtuelle', labelEn: 'Virtual Tour' },
   { id: 'donnees', icon: BarChart2,       labelFr: 'Données',          labelEn: 'Data' },
 ]
@@ -19,16 +19,13 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
   const border     = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.08)'
   const textMuted  = darkMode ? '#4B6A8A' : '#94A3B8'
   const textNormal = darkMode ? '#8BA8C4' : '#475569'
+  const activeText = '#22C55E'
   const activeBg   = darkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.07)'
   const hoverBg    = darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
-  const topAccent  = darkMode
+
+  const topAccent = darkMode
     ? 'linear-gradient(90deg, transparent, rgba(34,197,94,0.35), transparent)'
     : 'transparent'
-
-  // Admin button — always light green bg matching screenshot
-  const adminBg     = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.07)'
-  const adminBorder = darkMode ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.2)'
-  const adminColor  = darkMode ? '#4ADE80' : '#16A34A'
 
   function scrollTo(id) {
     const el = document.getElementById(id)
@@ -37,6 +34,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
 
   return (
     <>
+      {/* Hide sidebar completely on mobile — BottomNav takes over */}
       <style>{`
         @media (max-width: 768px) {
           .geo-sidebar { display: none !important; }
@@ -47,7 +45,9 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
         className="geo-sidebar"
         style={{
           position: 'fixed',
-          top: '72px', left: 0, bottom: 0,
+          top: '72px',
+          left: 0,
+          bottom: 0,
           zIndex: 400,
           width: open ? '240px' : '64px',
           background: bg,
@@ -87,29 +87,23 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           </button>
         </div>
 
-        {/* ── Nav — space-between fills the full height evenly ── */}
+        {/* Nav items */}
         <nav style={{
-          flex: 1,
-          overflowY: 'auto', overflowX: 'hidden',
+          flex: 1, overflowY: 'auto', overflowX: 'hidden',
           padding: '4px 8px',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-between',
           scrollbarWidth: 'none', msOverflowStyle: 'none',
         }}>
-
-          {/* Top group: label + nav items */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {/* Section label */}
           {open && (
             <div style={{
               fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em',
               textTransform: 'uppercase', color: textMuted,
-              padding: '6px 8px 8px', marginBottom: '4px', flexShrink: 0,
+              padding: '6px 8px 8px', marginBottom: '4px',
             }}>
-              Navigation
+              {lang === 'fr' ? 'Navigation' : 'Navigation'}
             </div>
           )}
 
-          {/* Nav items */}
           {NAV.map(item => {
             const Icon     = item.icon
             const isActive = active === item.id
@@ -129,7 +123,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   padding: open ? '0 10px' : '0',
                   borderRadius: 10,
                   border: 'none',
-                  marginBottom: '0',
+                  marginBottom: '2px',
                   cursor: 'pointer',
                   background: isActive ? activeBg : 'transparent',
                   color: isActive ? '#22C55E' : textNormal,
@@ -142,7 +136,6 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   boxSizing: 'border-box',
                   borderLeft: open ? ('2px solid ' + (isActive ? '#22C55E' : 'transparent')) : 'none',
                   textAlign: 'left',
-                  flexShrink: 0,
                 }}
                 onMouseEnter={e => {
                   if (!isActive) {
@@ -166,13 +159,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               </button>
             )
           })}
-          </div>{/* end top group */}
 
-          {/* Bottom group: divider + admin */}
-          <div>
-          <div style={{ height: '1px', background: border, margin: '8px 4px', flexShrink: 0 }} />
+          {/* Divider */}
+          <div style={{ height: '1px', background: border, margin: '10px 4px', flexShrink: 0 }} />
 
-          {/* Espace Admin — pinned to bottom, light green bg */}
+          {/* Admin link — light green bg */}
           <Link
             to="/login"
             style={{
@@ -184,11 +175,10 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               height: 40,
               padding: open ? '0 10px' : '0',
               borderRadius: 10,
-              border: `1px solid ${adminBorder}`,
-              marginBottom: '8px',
+              border: `1px solid ${darkMode ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.2)'}`,
               cursor: 'pointer',
-              background: adminBg,
-              color: adminColor,
+              background: darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.07)',
+              color: darkMode ? '#4ADE80' : '#16A34A',
               fontSize: 13,
               fontWeight: 600,
               fontFamily: "'Outfit',sans-serif",
@@ -197,22 +187,16 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               overflow: 'hidden',
               boxSizing: 'border-box',
               textDecoration: 'none',
-              flexShrink: 0,
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = darkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.12)'
-              e.currentTarget.style.borderColor = darkMode ? 'rgba(34,197,94,0.35)' : 'rgba(34,197,94,0.4)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = adminBg
-              e.currentTarget.style.borderColor = adminBorder
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = darkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.12)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.07)' }}
           >
-            <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0, color: adminColor }} />
+            <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0, color: darkMode ? '#4ADE80' : '#16A34A' }} />
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
           </Link>
-          </div>{/* end bottom group */}
         </nav>
+
+
       </aside>
     </>
   )
