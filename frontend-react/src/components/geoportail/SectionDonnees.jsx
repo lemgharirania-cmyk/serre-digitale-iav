@@ -492,7 +492,7 @@ export default function SectionDonnees({ lang, liveData, countdown, onRefresh, d
         {/* ENV cards */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: mutedColor, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>{T.env}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+       <div className="donnees-env-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
             {['temperature','humidite','vpd','co2'].map(key => (
               <ParamCard key={key} paramKey={key} value={env[key]} serreCode={meta.code} lang={lang} darkMode={darkMode} serreColor={meta.color} />
             ))}
@@ -503,7 +503,7 @@ export default function SectionDonnees({ lang, liveData, countdown, onRefresh, d
         <div>
           <div style={{ fontSize: '12px', fontWeight: 700, color: mutedColor, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>{T.irr}</div>
           {serre.irr ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+      <div className="donnees-irr-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
               {['ph','ec','temp_eau','niveau_eau'].map(key => (
                 <ParamCard key={key} paramKey={key} value={irr[key]} serreCode={meta.code} lang={lang} darkMode={darkMode} serreColor={meta.color} />
               ))}
