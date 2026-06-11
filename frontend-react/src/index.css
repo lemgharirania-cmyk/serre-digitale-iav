@@ -673,6 +673,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     gap: 10px !important;
   }
 
+
+  /* SectionDonnees popup — prevent overflow on mobile edges */
+  #donnees [style*="position: absolute"] {
+    max-width: calc(100vw - 32px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    right: auto !important;
+  }
+
+  /* SectionDonnees card font — smaller on mobile */
+  .donnees-env-grid > div,
+  .donnees-irr-grid > div {
+    min-width: 0 !important;
+  }
   /* Footer */
   .footer-grid {
     grid-template-columns: 1fr !important;
