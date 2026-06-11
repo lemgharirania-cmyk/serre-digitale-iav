@@ -2273,3 +2273,60 @@ body.vr-mode .hs-cross {
 .arc-err{color:rgba(15,23,42,.32);font-size:11px;text-align:center;padding:12px}
 #ar-card[dir="rtl"] .arc-sel{background-position:10px center;padding:7px 10px 7px 28px}
 #ar-card[dir="rtl"] .arc-inp{text-align:left}
+
+/* ══════════════════════════════════════════════════════════════════
+   FULLSCREEN FIX — Chrome/Firefox fullscreen stacking context bug.
+   When the iframe is fullscreened natively, backdrop-filter on
+   .ar-card creates a new stacking context that breaks position:fixed.
+   Strip the backdrop-filter and force correct positioning.
+══════════════════════════════════════════════════════════════════ */
+:-webkit-full-screen .ar-overlay,
+:fullscreen .ar-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px;
+}
+:-webkit-full-screen .ar-card,
+:fullscreen .ar-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(15, 28, 50, 0.96) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #F1F5F9 !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+  pointer-events: all !important;
+}
+:-webkit-full-screen .ar-card.open,
+:fullscreen .ar-card.open {
+  transform: translateX(0) scale(1) !important;
+  opacity: 1 !important;
+}
+/* Keep text readable in dark fullscreen card */
+:-webkit-full-screen .ar-hero-label,
+:fullscreen .ar-hero-label { color: rgba(255,255,255,0.6) !important; }
+:-webkit-full-screen #ar-title,
+:fullscreen #ar-title { color: #fff !important; }
+:-webkit-full-screen .ar-bullet,
+:fullscreen .ar-bullet,
+:-webkit-full-screen .info-value,
+:fullscreen .info-value { color: rgba(255,255,255,0.82) !important; }
+:-webkit-full-screen .info-label,
+:fullscreen .info-label { color: rgba(255,255,255,0.42) !important; }
+/* Lang switcher in fullscreen */
+:-webkit-full-screen #lang-switcher,
+:fullscreen #lang-switcher {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
+/* AR toggle in fullscreen */
+:-webkit-full-screen #ar-toggle-wrap,
+:fullscreen #ar-toggle-wrap {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}

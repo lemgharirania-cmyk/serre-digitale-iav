@@ -176,19 +176,18 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
     setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), delay)
   }
 
-  // Pending scroll requests — executed after React commits (useLayoutEffect)
+  // Pending scroll requests — executed after React commits (useEffect without deps)
   const pendingScrollRef = useRef(null)
 
   useEffect(() => {
     if (!pendingScrollRef.current) return
     const { ref, delay } = pendingScrollRef.current
     pendingScrollRef.current = null
-    // Wait for DOM paint, then scroll
     const id = setTimeout(() => {
       ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, delay)
     return () => clearTimeout(id)
-  })  // runs after every render — picks up the queued scroll on the render right after setState
+  })
 
   function pickTour(mode)  { setActiveTour(mode.file);  pendingScrollRef.current = { ref: tourViewerRef,  delay: 60 } }
   function pickSerre(file) { setActiveSerre(file);       pendingScrollRef.current = { ref: serreViewerRef, delay: 60 } }
@@ -846,14 +845,11 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
       }
 
       // Desktop: fullscreen the iframe directly so Pannellum hotspots get pointer events
-      // (fullscreening the container div puts a React-managed div on top of the iframe
-      // in fullscreen stacking context, which swallows clicks)
       const iframe = iframeRef.current
       if (iframe) {
         const req = iframe.requestFullscreen || iframe.webkitRequestFullscreen || iframe.mozRequestFullScreen
         if (req) {
           req.call(iframe).catch(() => {
-            // fallback: fullscreen the container
             const c = containerRef.current
             if (c) { const r = c.requestFullscreen || c.webkitRequestFullscreen; if (r) r.call(c).catch(() => {}) }
           })

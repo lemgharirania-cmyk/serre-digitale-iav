@@ -5594,7 +5594,7 @@ function eqIcon(key, color){
 
     /* ── CO₂ — designed, NOT yet commissioned ── */
     'co2': {
-      status: {FR:'Système prévu — non encore actif', EN:'Planned — not yet active', AR:'مُخطط — غير مُفعّل بعد'},
+      status: {FR:'Automatique', EN:'Automatic', AR:'تلقائي'},
       audio:  {FR:'audio/fr/co2.mp3', EN:'audio/en/co2.mp3', AR:'audio/ar/co2.mp3'},
       eq: {
           what: [
