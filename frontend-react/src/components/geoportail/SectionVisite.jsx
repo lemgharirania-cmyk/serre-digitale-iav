@@ -770,12 +770,24 @@ function SpaceCard({ item, active, isHov, lang, ink, isDark, glassBorder, liveLa
 
 function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported }) {
   const containerRef = useRef(null)
+  const iframeRef    = useRef(null)   // ← NOUVEAU : ref sur l'iframe
   const [isFS, setIsFS] = useState(false)
 
   /* ── track fullscreen state (Échap / programmatic exit) ── */
   useEffect(() => {
     function onFSChange() {
-      setIsFS(!!document.fullscreenElement)
+      const entering = !!document.fullscreenElement
+      setIsFS(entering)
+
+      // ── NOUVEAU : notifie l'iframe du changement de mode ──
+      // Les fichiers /walkthrough/*.html écoutent ce message
+      // et peuvent activer/désactiver leur mode panorama
+      try {
+        iframeRef.current?.contentWindow?.postMessage(
+          entering ? 'enterPanorama' : 'exitPanorama',
+          '*'
+        )
+      } catch (_) {}
     }
     document.addEventListener('fullscreenchange', onFSChange)
     return () => document.removeEventListener('fullscreenchange', onFSChange)
@@ -797,7 +809,6 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
         overflow: 'hidden',
         border: isFS ? 'none' : `1px solid ${glassBorder}`,
         boxShadow: isFS ? 'none' : (isDark ? `0 32px 80px rgba(0,0,0,0.55),0 0 0 1px ${viewer.color}12` : '0 16px 48px rgba(0,0,0,0.09)'),
-        /* fullscreen: fill the screen, override browser default white bg */
         ...(isFS ? { background: '#000', display: 'flex', flexDirection: 'column' } : {}),
       }}
     >
@@ -837,13 +848,11 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
             onMouseLeave={e => { e.currentTarget.style.background = isFS ? 'rgba(255,255,255,0.1)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') }}
           >
             {isFS ? (
-              /* compress icon — exit fullscreen */
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
                 <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
               </svg>
             ) : (
-              /* expand icon — enter fullscreen */
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
                 <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
@@ -862,7 +871,9 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
           ? { flex: 1, position: 'relative', background: '#000' }
           : { position: 'relative', paddingBottom: '48%', background: isDark ? '#07111F' : '#F0FAF4' }
       }>
+        {/* ← NOUVEAU : ref={iframeRef} ajouté */}
         <iframe
+          ref={iframeRef}
           key={viewer.file}
           src={viewer.file}
           allowFullScreen
@@ -872,7 +883,6 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
     </div>
   )
 }
-
 function EmptyViewer({ text, isDark, inkSub, glassBorder }) {
   return (
     <div style={{ borderRadius: '20px', border: `1px dashed ${glassBorder}`, background: isDark ? 'rgba(11,23,40,0.35)' : 'rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px', color: inkSub, fontSize: '13px', fontFamily: "'Outfit',sans-serif", gap: '8px' }}>
