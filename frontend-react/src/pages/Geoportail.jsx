@@ -126,6 +126,7 @@ export default function Geoportail() {
         isDark={darkMode}
         lang={lang.toUpperCase()}
         liveData={liveData}
+        bottomOffset={isMobile ? 86 : 24}
       />
 
       <style>{`
