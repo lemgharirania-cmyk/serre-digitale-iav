@@ -51,7 +51,7 @@ async def build_context(db) -> dict:
 
     alertes_rows = await db.fetch("""
         SELECT a.id, a.serre_id, a.capteur, a.valeur, a.seuil_min, a.seuil_max,
-               a.message_fr as message, a.created_at, a.lue, s.code as serre_code, s.nom_fr
+               a.message_fr as message, a.created_at, a.lu, s.code as serre_code, s.nom_fr
         FROM alertes a JOIN serres s ON s.id = a.serre_id
         WHERE a.created_at > NOW() - INTERVAL '48 hours'
         ORDER BY a.created_at DESC LIMIT 20
@@ -94,7 +94,7 @@ async def build_context(db) -> dict:
                     **live_by_serre.get(s["id"], {"env": None, "irr": None})} for s in serres_rows],
         "alertes_48h": [{"serre": a["serre_code"], "capteur": a["capteur"],
                          "valeur": float(a["valeur"]) if a["valeur"] else None,
-                         "message": a["message"], "heure": str(a["created_at"]), "lue": a["lue"]}
+                         "message": a["message"], "heure": str(a["created_at"]), "lu": a["lu"]}
                         for a in alertes_rows],
         "seuils": [{"serre": s["code"], "capteur": s["capteur"],
                     "min": float(s["valeur_min"]) if s["valeur_min"] else None,
