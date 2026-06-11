@@ -33,9 +33,12 @@ const QUICK_QUESTIONS = {
 
 // ── Icônes SVG inline (pas de dépendance externe) ────────
 const BotIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/>
-    <path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {/* Pousse végétale stylisée — symbole Terra */}
+    <path d="M12 22V11"/>
+    <path d="M12 11C12 7.5 9 6 7 6.5C7 9 8.5 11 12 11Z" fill="currentColor" fillOpacity="0.15"/>
+    <path d="M12 11C12 6.5 15 4.5 17.5 5.5C17.5 9 15.5 11 12 11Z" fill="currentColor" fillOpacity="0.2"/>
+    <path d="M8 22h8"/>
   </svg>
 )
 const SendIcon = () => (
@@ -206,7 +209,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
       const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bonjour' : 'Bonsoir'
       setMessages([{
         role: 'assistant',
-        content: `${greet} ! Je suis **SDI Copilot**, votre assistant intelligent pour le Géoportail AgroBioTech.\n\nJe surveille actuellement **${liveData.length} serres actives** en temps réel. Que souhaitez-vous savoir ?`,
+        content: `${greet} ! Je suis **Terra** 🌱 — votre assistant intelligent pour le Géoportail AgroBioTech.\n\nJe surveille actuellement **${liveData.length} serres actives** en temps réel. Que souhaitez-vous savoir ?`,
         timestamp: Date.now(),
       }])
       setHasGreeted(true)
@@ -376,7 +379,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
       }}>
         <button
           onClick={handleOpen}
-          title="SDI Copilot — Assistant IA"
+          title="Terra — Assistant IA"
           style={{
             width: 56, height: 56,
             borderRadius: '50%',
@@ -425,7 +428,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
         }}
           className="copilot-tooltip"
         >
-          SDI Copilot
+          Terra
         </div>
       </div>
     )
@@ -451,7 +454,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
           <BotIcon />
         </div>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: ink }}>SDI Copilot</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: ink }}>Terra</div>
           <div style={{ fontSize: 10, color: inkMuted }}>
             {isLoading ? 'En cours...' : 'Cliquer pour continuer'}
           </div>
@@ -509,7 +512,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
             fontSize: 14, fontWeight: 700, color: ink,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            SDI Copilot
+            Terra
             <span style={{
               fontSize: 9, fontWeight: 600, padding: '2px 6px',
               borderRadius: 4, background: 'rgba(34,197,94,0.15)',
@@ -650,7 +653,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
         <div style={{
           fontSize: 10, color: inkMuted, textAlign: 'center', marginTop: 6,
         }}>
-          Données live IAV · Groq AI · Accès admin
+          Terra · Données live IAV · Accès admin
         </div>
       </div>
     </div>
