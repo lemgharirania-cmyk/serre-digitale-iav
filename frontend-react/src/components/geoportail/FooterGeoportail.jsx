@@ -17,7 +17,9 @@ export default function FooterGeoportail({ lang, darkMode }) {
       transition: 'background 0.4s ease',
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{
+
+        {/* ── FIX: className="footer-grid" → CSS stacks to 1 col on mobile ── */}
+        <div className="footer-grid" style={{
           display: 'grid', gridTemplateColumns: '1fr auto 1fr',
           gap: '2rem', alignItems: 'center', marginBottom: '2rem',
         }}>
