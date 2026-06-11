@@ -6,7 +6,7 @@ const NAV = [
   { id: 'projet',  icon: LayoutDashboard, labelFr: 'Notre Projet',    labelEn: 'Our Project' },
   { id: 'apropos', icon: Info,            labelFr: 'À Propos',         labelEn: 'About' },
   { id: 'campus',  icon: MapPin,          labelFr: 'AgroBioTech',      labelEn: 'AgroBioTech' },
-  { id: 'plan2d',  icon: Map,             labelFr: 'Schéma 2D',          labelEn: '2D Floor Plan' },
+  { id: 'plan2d',  icon: Map,             labelFr: 'Schéma 2D',        labelEn: '2D Floor Plan' },
   { id: 'visite',  icon: Scan,            labelFr: 'Visite Virtuelle', labelEn: 'Virtual Tour' },
   { id: 'donnees', icon: BarChart2,       labelFr: 'Données',          labelEn: 'Data' },
 ]
@@ -19,13 +19,16 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
   const border     = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.08)'
   const textMuted  = darkMode ? '#4B6A8A' : '#94A3B8'
   const textNormal = darkMode ? '#8BA8C4' : '#475569'
-  const activeText = '#22C55E'
   const activeBg   = darkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.07)'
   const hoverBg    = darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
-
-  const topAccent = darkMode
+  const topAccent  = darkMode
     ? 'linear-gradient(90deg, transparent, rgba(34,197,94,0.35), transparent)'
     : 'transparent'
+
+  // Admin button — light green bg matching screenshot
+  const adminBg     = darkMode ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.07)'
+  const adminBorder = darkMode ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.2)'
+  const adminColor  = darkMode ? '#4ADE80' : '#16A34A'
 
   function scrollTo(id) {
     const el = document.getElementById(id)
@@ -34,7 +37,6 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
 
   return (
     <>
-      {/* Hide sidebar completely on mobile — BottomNav takes over */}
       <style>{`
         @media (max-width: 768px) {
           .geo-sidebar { display: none !important; }
@@ -55,7 +57,8 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           backdropFilter: 'blur(20px)',
           transition: 'width 0.3s ease',
           overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
+          display: 'flex',
+          flexDirection: 'column',
           boxShadow: darkMode
             ? '4px 0 32px rgba(0,0,0,0.4), 1px 0 0 rgba(34,197,94,0.05)'
             : '4px 0 24px rgba(0,0,0,0.06)',
@@ -66,7 +69,8 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
 
         {/* Toggle button */}
         <div style={{
-          display: 'flex', justifyContent: open ? 'flex-end' : 'center',
+          display: 'flex',
+          justifyContent: open ? 'flex-end' : 'center',
           padding: open ? '14px 12px 8px' : '14px 0 8px',
           flexShrink: 0,
         }}>
@@ -89,8 +93,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
 
         {/* Nav items */}
         <nav style={{
-          flex: 1, overflowY: 'auto', overflowX: 'hidden',
+          flex: 1,
+          overflowY: 'auto', overflowX: 'hidden',
           padding: '4px 8px',
+          display: 'flex',
+          flexDirection: 'column',
           scrollbarWidth: 'none', msOverflowStyle: 'none',
         }}>
           {/* Section label */}
@@ -100,10 +107,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               textTransform: 'uppercase', color: textMuted,
               padding: '6px 8px 8px', marginBottom: '4px',
             }}>
-              {lang === 'fr' ? 'Navigation' : 'Navigation'}
+              Navigation
             </div>
           )}
 
+          {/* Nav buttons — with generous spacing like the screenshot */}
           {NAV.map(item => {
             const Icon     = item.icon
             const isActive = active === item.id
@@ -119,11 +127,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   justifyContent: open ? 'flex-start' : 'center',
                   gap: 10,
                   width: '100%',
-                  height: 40,
+                  height: 42,
                   padding: open ? '0 10px' : '0',
                   borderRadius: 10,
                   border: 'none',
-                  marginBottom: '2px',
+                  marginBottom: '6px',   // ← more spacing between items
                   cursor: 'pointer',
                   background: isActive ? activeBg : 'transparent',
                   color: isActive ? '#22C55E' : textNormal,
@@ -160,10 +168,13 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             )
           })}
 
-          {/* Divider */}
-          <div style={{ height: '1px', background: border, margin: '10px 4px', flexShrink: 0 }} />
+          {/* Spacer — pushes admin to the bottom */}
+          <div style={{ flex: 1 }} />
 
-          {/* Admin link */}
+          {/* Divider */}
+          <div style={{ height: '1px', background: border, margin: '8px 4px', flexShrink: 0 }} />
+
+          {/* Espace Admin — light green, pinned to bottom */}
           <Link
             to="/login"
             style={{
@@ -172,24 +183,30 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               justifyContent: open ? 'flex-start' : 'center',
               gap: 10,
               width: '100%',
-              height: 40,
+              height: 42,
               padding: open ? '0 10px' : '0',
               borderRadius: 10,
-              border: 'none',
+              border: `1px solid ${adminBorder}`,
+              marginBottom: '8px',
               cursor: 'pointer',
-              background: 'transparent',
-              color: textMuted,
+              background: adminBg,          // ← light green background
+              color: adminColor,            // ← green text
               fontSize: 13,
-              fontWeight: 500,
+              fontWeight: 600,
               fontFamily: "'Outfit',sans-serif",
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               boxSizing: 'border-box',
               textDecoration: 'none',
+              flexShrink: 0,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.color = darkMode ? '#CBD5E1' : '#0F172A' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = textMuted }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = darkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.12)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = adminBg
+            }}
           >
             <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0 }} />
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
