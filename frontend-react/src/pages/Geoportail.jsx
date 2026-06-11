@@ -4,14 +4,14 @@ import { iotAPI } from '../api/client'
 
 import Header           from '../components/geoportail/Header'
 import Sidebar          from '../components/geoportail/Sidebar'
+import BottomNav        from '../components/geoportail/BottomNav'
 import SectionProjet    from '../components/geoportail/SectionProjet'
 import SectionApropos   from '../components/geoportail/SectionApropos'
 import SectionCampus    from '../components/geoportail/SectionCampus'
 import SectionPlan2D    from '../components/geoportail/SectionPlan2D'
 import SectionDonnees   from '../components/geoportail/SectionDonnees'
-import SectionVisite    from "../components/geoportail/SectionVisite"
+import SectionVisite    from '../components/geoportail/SectionVisite'
 import FooterGeoportail from '../components/geoportail/FooterGeoportail'
-import SDICopilotPublic from '../components/geoportail/SDICopilotPublic'
 
 export default function Geoportail() {
   const [lang,          setLang]          = useState('fr')
@@ -21,7 +21,23 @@ export default function Geoportail() {
   const [stats,         setStats]         = useState({})
   const [countdown,     setCountdown]     = useState(120)
   const [activeSection, setActiveSection] = useState('projet')
+  const [isMobile,      setIsMobile]      = useState(false)
 
+  // ── Detect mobile breakpoint ──────────────────────────────
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e) => {
+      setIsMobile(e.matches)
+      // Auto-collapse sidebar on small screens
+      if (e.matches) setSidebarOpen(false)
+    }
+    setIsMobile(mq.matches)
+    if (mq.matches) setSidebarOpen(false)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  // ── IoT data ──────────────────────────────────────────────
   async function fetchAll() {
     try {
       const [live, st] = await Promise.all([iotAPI.getLive(), iotAPI.getStats()])
@@ -40,6 +56,7 @@ export default function Geoportail() {
     return () => clearInterval(timer)
   }, [])
 
+  // ── Track active section on scroll ───────────────────────
   useEffect(() => {
     const ids = ['projet','apropos','campus','plan2d','visite','donnees']
     const observer = new IntersectionObserver(entries => {
@@ -55,29 +72,36 @@ export default function Geoportail() {
   }, [])
 
   const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
-  const sidebarWidth   = sidebarOpen ? 240 : 64
+  // On mobile: no sidebar margin. On desktop: normal sidebar offset.
+  const sidebarWidth   = isMobile ? 0 : (sidebarOpen ? 240 : 64)
   const bgColor        = darkMode ? '#07111F' : '#F4F7F5'
   const HEADER_H       = 72
 
   return (
     <div style={{ fontFamily: "'Outfit','Inter',sans-serif", background: bgColor, minHeight: '100vh', transition: 'background 0.4s ease' }}>
 
+      {/* Header — fixed, FULL width, zIndex 500 */}
       <Header
         lang={lang} setLang={setLang}
         darkMode={darkMode} setDarkMode={setDarkMode}
+        isMobile={isMobile}
       />
 
+      {/* Sidebar — hidden on mobile (CSS handles it) */}
       <Sidebar
         open={sidebarOpen} setOpen={setSidebarOpen}
         active={activeSection}
         lang={lang} darkMode={darkMode}
       />
 
+      {/* Main content */}
       <main style={{
         marginLeft: `${sidebarWidth}px`,
         marginTop:  `${HEADER_H}px`,
         transition: 'margin-left 0.3s ease',
         minHeight:  `calc(100vh - ${HEADER_H}px)`,
+        // On mobile: leave room for the bottom nav (62px) + safe area
+        paddingBottom: isMobile ? '70px' : 0,
       }}>
         <SectionProjet  lang={lang} stats={stats}       darkMode={darkMode} />
         <SectionApropos lang={lang}                     darkMode={darkMode} />
@@ -92,11 +116,11 @@ export default function Geoportail() {
         <FooterGeoportail lang={lang} darkMode={darkMode} />
       </main>
 
-      {/* ── SDI Copilot public — apparaît après SectionDonnees, sans JWT ── */}
-      <SDICopilotPublic
-        isDark={darkMode}
-        lang={lang.toUpperCase()}
-        liveData={liveData}
+      {/* Bottom nav — visible only on mobile via CSS (≤768px) */}
+      <BottomNav
+        active={activeSection}
+        lang={lang}
+        darkMode={darkMode}
       />
 
       <style>{`
