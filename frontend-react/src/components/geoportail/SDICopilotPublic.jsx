@@ -28,9 +28,12 @@ const QUICK_QUESTIONS = {
 }
 
 const BotIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/>
-    <path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {/* Pousse végétale stylisée — symbole Terra */}
+    <path d="M12 22V11"/>
+    <path d="M12 11C12 7.5 9 6 7 6.5C7 9 8.5 11 12 11Z" fill="currentColor" fillOpacity="0.15"/>
+    <path d="M12 11C12 6.5 15 4.5 17.5 5.5C17.5 9 15.5 11 12 11Z" fill="currentColor" fillOpacity="0.2"/>
+    <path d="M8 22h8"/>
   </svg>
 )
 const SendIcon = () => (
@@ -65,7 +68,7 @@ function formatMessage(text) {
 function Message({ msg, isDark }) {
   const isUser  = msg.role === 'user'
   const isError = msg.role === 'error'
-  const ink      = isDark ? 'rgba(255,255,255,0.85)' : '#111827'
+  const ink     = isDark ? 'rgba(255,255,255,0.85)' : '#111827'
   const inkMuted = isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'
 
   const bubbleBg = isUser
@@ -134,15 +137,15 @@ function TypingIndicator({ isDark }) {
   )
 }
 
-export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData = [], bottomOffset = 24 }) {
-  const [isOpen,    setIsOpen]    = useState(false)
-  const [isMin,     setIsMin]     = useState(false)
-  const [messages,  setMessages]  = useState([])
-  const [input,     setInput]     = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [greeted,   setGreeted]   = useState(false)
-  const [unread,    setUnread]    = useState(0)
-  const [streaming, setStreaming] = useState('')
+export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData = [] }) {
+  const [isOpen,     setIsOpen]     = useState(false)
+  const [isMin,      setIsMin]      = useState(false)
+  const [messages,   setMessages]   = useState([])
+  const [input,      setInput]      = useState('')
+  const [isLoading,  setIsLoading]  = useState(false)
+  const [greeted,    setGreeted]    = useState(false)
+  const [unread,     setUnread]     = useState(0)
+  const [streaming,  setStreaming]  = useState('')
 
   const endRef   = useRef(null)
   const inputRef = useRef(null)
@@ -154,13 +157,14 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   const inkMuted    = isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'
   const inputBg     = isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9'
 
+  // Greeting
   useEffect(() => {
     if (isOpen && !greeted) {
       const h = new Date().getHours()
       const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bonjour' : 'Bonsoir'
       setMessages([{
         role: 'assistant',
-        content: `${greet} ! Je suis **SDI Copilot**, l'assistant du Géoportail AgroBioTech.\n\nJe peux vous informer sur les 5 serres du campus IAV Hassan II et leurs données en temps réel. Que souhaitez-vous savoir ?`,
+        content: `${greet} ! Je suis **Terra** 🌱 — l'assistant du Géoportail AgroBioTech.\n\nJe peux vous informer sur les 5 serres du campus IAV Hassan II et leurs données en temps réel. Que souhaitez-vous savoir ?`,
         timestamp: Date.now(),
       }])
       setGreeted(true)
@@ -181,6 +185,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
     const newMessages = [...messages, { role:'user', content:userMsg, timestamp:Date.now() }]
     setMessages(newMessages)
 
+    // Préparer un résumé compact des données live à envoyer
     const liveSnapshot = liveData.map(s => ({
       code: s.code, nom: s.nom_fr,
       temp: s.env?.temperature, hum: s.env?.humidite,
@@ -240,15 +245,14 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   }, [input, isLoading, messages, lang, liveData])
 
   const handleKeyDown = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
+
   const quickQs = QUICK_QUESTIONS[lang] || QUICK_QUESTIONS.FR
 
   // ── Bouton flottant fermé ─────────────────────────────
-  // ── FIX: was bottom:24 hardcoded — now uses bottomOffset so it clears BottomNav on mobile
   if (!isOpen) return (
-    <div style={{ position:'fixed', bottom:bottomOffset, right:24, zIndex:1000 }}>
-      <button
-        onClick={() => { setIsOpen(true); setIsMin(false); setUnread(0) }}
-        title="SDI Copilot — Assistant IA"
+    <div style={{ position:'fixed', bottom:24, right:24, zIndex:1000 }}>
+      <button onClick={() => { setIsOpen(true); setIsMin(false); setUnread(0) }}
+        title="Terra — Assistant IA"
         style={{
           width:56, height:56, borderRadius:'50%',
           background:'linear-gradient(135deg,#22C55E,#16A34A)',
@@ -262,14 +266,10 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
       >
         <BotIcon />
         {unread > 0 && (
-          <div style={{
-            position:'absolute', top:-2, right:-2,
-            width:18, height:18, borderRadius:'50%',
-            background:'#EF4444', color:'#fff',
-            fontSize:10, fontWeight:700,
+          <div style={{ position:'absolute', top:-2, right:-2, width:18, height:18, borderRadius:'50%',
+            background:'#EF4444', color:'#fff', fontSize:10, fontWeight:700,
             display:'flex', alignItems:'center', justifyContent:'center',
-            border:`2px solid ${isDark ? '#07111F' : '#fff'}`,
-          }}>
+            border:`2px solid ${isDark ? '#07111F' : '#fff'}` }}>
             {unread}
           </div>
         )}
@@ -280,7 +280,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   // ── Minimisé ──────────────────────────────────────────
   if (isMin) return (
     <div style={{
-      position:'fixed', bottom:bottomOffset, right:24, zIndex:1000,
+      position:'fixed', bottom:24, right:24, zIndex:1000,
       background:bg, border:`1px solid ${border}`, borderRadius:16,
       padding:'10px 16px', display:'flex', alignItems:'center', gap:10,
       boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.12)',
@@ -292,7 +292,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
         <BotIcon />
       </div>
       <div>
-        <div style={{ fontSize:12, fontWeight:600, color:ink }}>SDI Copilot</div>
+        <div style={{ fontSize:12, fontWeight:600, color:ink }}>Terra</div>
         <div style={{ fontSize:10, color:inkMuted }}>{isLoading ? 'En cours...' : 'Reprendre'}</div>
       </div>
       {unread > 0 && (
@@ -307,7 +307,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
   // ── Fenêtre principale ────────────────────────────────
   return (
     <div style={{
-      position:'fixed', bottom:bottomOffset, right:24, zIndex:1000,
+      position:'fixed', bottom:24, right:24, zIndex:1000,
       width:380, height:560,
       background:bg, border:`1px solid ${border}`, borderRadius:20,
       boxShadow: isDark
@@ -333,7 +333,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
         </div>
         <div style={{ flex:1 }}>
           <div style={{ fontSize:14, fontWeight:700, color:ink, display:'flex', alignItems:'center', gap:6 }}>
-            SDI Copilot
+            Terra
             <span style={{ fontSize:9, fontWeight:600, padding:'2px 6px', borderRadius:4,
               background:'rgba(34,197,94,0.15)', color:'#22C55E',
               letterSpacing:'0.05em', textTransform:'uppercase' }}>PUBLIC</span>
@@ -403,7 +403,7 @@ export default function SDICopilotPublic({ isDark = true, lang = 'FR', liveData 
           }}><SendIcon /></button>
         </div>
         <div style={{ fontSize:10, color:inkMuted, textAlign:'center', marginTop:6 }}>
-          Données live IAV · Gemini AI · Accès public
+          Terra · Données live IAV · Accès public
         </div>
       </div>
     </div>
