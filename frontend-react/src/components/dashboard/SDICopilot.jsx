@@ -253,23 +253,30 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
     const apiMessages = newMessages
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }))
-      .slice(-10) // max 10 tours d'historique
+      .slice(-10)
+
+    // Token JWT — le dashboard est une zone protégée
+    const token = localStorage.getItem('sdi_token')
+    if (!token) {
+      setMessages(prev => [...prev, {
+        role: 'error',
+        content: 'Session expirée. Veuillez vous reconnecter.',
+        timestamp: Date.now(),
+      }])
+      setIsLoading(false)
+      return
+    }
 
     try {
-      const response = await fetch(`${API_BASE}/api/copilot/public`, {
+      const response = await fetch(`${API_BASE}/api/copilot/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           messages: apiMessages,
           lang: lang.toLowerCase(),
-          live_snapshot: liveData.map(s => ({
-            code: s.code, nom: s.nom_fr,
-            temp: s.env?.temperature, hum: s.env?.humidite,
-            vpd: s.env?.vpd, co2: s.env?.co2,
-            ph: s.irr?.ph, ec: s.irr?.ec,
-          })),
         }),
         signal: abortRef.current?.signal,
       })
@@ -643,7 +650,7 @@ export default function SDICopilot({ isDark = false, lang = 'FR', liveData = [] 
         <div style={{
           fontSize: 10, color: inkMuted, textAlign: 'center', marginTop: 6,
         }}>
-          Données live IAV · Claude AI
+          Données live IAV · Groq AI · Accès admin
         </div>
       </div>
     </div>
