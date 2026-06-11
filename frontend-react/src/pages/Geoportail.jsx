@@ -2,20 +2,21 @@
 import { useState, useEffect } from 'react'
 import { iotAPI } from '../api/client'
 
-import Header           from '../components/geoportail/Header'
-import Sidebar          from '../components/geoportail/Sidebar'
-import BottomNav        from '../components/geoportail/BottomNav'
-import SectionProjet    from '../components/geoportail/SectionProjet'
-import SectionApropos   from '../components/geoportail/SectionApropos'
-import SectionCampus    from '../components/geoportail/SectionCampus'
-import SectionPlan2D    from '../components/geoportail/SectionPlan2D'
-import SectionDonnees   from '../components/geoportail/SectionDonnees'
-import SectionVisite    from '../components/geoportail/SectionVisite'
-import FooterGeoportail from '../components/geoportail/FooterGeoportail'
+import Header              from '../components/geoportail/Header'
+import Sidebar             from '../components/geoportail/Sidebar'
+import BottomNav           from '../components/geoportail/BottomNav'
+import SectionProjet       from '../components/geoportail/SectionProjet'
+import SectionApropos      from '../components/geoportail/SectionApropos'
+import SectionCampus       from '../components/geoportail/SectionCampus'
+import SectionPlan2D       from '../components/geoportail/SectionPlan2D'
+import SectionDonnees      from '../components/geoportail/SectionDonnees'
+import SectionVisite       from '../components/geoportail/SectionVisite'
+import FooterGeoportail    from '../components/geoportail/FooterGeoportail'
+import SDICopilotPublic    from '../components/geoportail/SDICopilotPublic'
 
 export default function Geoportail() {
   const [lang,          setLang]          = useState('fr')
-  const [darkMode,      setDarkMode]      = useState(true)
+  const [darkMode,      setDarkMode]      = useState(false)
   const [sidebarOpen,   setSidebarOpen]   = useState(true)
   const [liveData,      setLiveData]      = useState([])
   const [stats,         setStats]         = useState({})
@@ -28,7 +29,6 @@ export default function Geoportail() {
     const mq = window.matchMedia('(max-width: 768px)')
     const handler = (e) => {
       setIsMobile(e.matches)
-      // Auto-collapse sidebar on small screens
       if (e.matches) setSidebarOpen(false)
     }
     setIsMobile(mq.matches)
@@ -72,7 +72,6 @@ export default function Geoportail() {
   }, [])
 
   const countdownLabel = `${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}`
-  // On mobile: no sidebar margin. On desktop: normal sidebar offset.
   const sidebarWidth   = isMobile ? 0 : (sidebarOpen ? 240 : 64)
   const bgColor        = darkMode ? '#07111F' : '#F4F7F5'
   const HEADER_H       = 72
@@ -80,14 +79,14 @@ export default function Geoportail() {
   return (
     <div style={{ fontFamily: "'Outfit','Inter',sans-serif", background: bgColor, minHeight: '100vh', transition: 'background 0.4s ease' }}>
 
-      {/* Header — fixed, FULL width, zIndex 500 */}
+      {/* Header — fixed, full width */}
       <Header
         lang={lang} setLang={setLang}
         darkMode={darkMode} setDarkMode={setDarkMode}
         isMobile={isMobile}
       />
 
-      {/* Sidebar — hidden on mobile (CSS handles it) */}
+      {/* Sidebar — hidden on mobile via CSS */}
       <Sidebar
         open={sidebarOpen} setOpen={setSidebarOpen}
         active={activeSection}
@@ -100,7 +99,6 @@ export default function Geoportail() {
         marginTop:  `${HEADER_H}px`,
         transition: 'margin-left 0.3s ease',
         minHeight:  `calc(100vh - ${HEADER_H}px)`,
-        // On mobile: leave room for the bottom nav (62px) + safe area
         paddingBottom: isMobile ? '70px' : 0,
       }}>
         <SectionProjet  lang={lang} stats={stats}       darkMode={darkMode} />
@@ -116,11 +114,18 @@ export default function Geoportail() {
         <FooterGeoportail lang={lang} darkMode={darkMode} />
       </main>
 
-      {/* Bottom nav — visible only on mobile via CSS (≤768px) */}
+      {/* Bottom nav — mobile only via CSS */}
       <BottomNav
         active={activeSection}
         lang={lang}
         darkMode={darkMode}
+      />
+
+      {/* SDI Copilot — floating assistant with live IoT data */}
+      <SDICopilotPublic
+        isDark={darkMode}
+        lang={lang.toUpperCase()}
+        liveData={liveData}
       />
 
       <style>{`
