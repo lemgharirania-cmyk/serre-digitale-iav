@@ -582,7 +582,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .panel  { animation: fadeInUp 0.40s ease both; }
 
 /* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — Dashboard admin
 ══════════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -594,57 +594,68 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .admin-main  { padding: 16px; }
   .kpi-row     { grid-template-columns: repeat(2, 1fr); }
   .over-row    { grid-template-columns: repeat(2, 1fr); }
-   
 }
-/* ═══════════════════════════════════════════════════════════════
-   GÉOPORTAIL — RESPONSIVE MOBILE / TABLET
-   À coller à la fin de src/index.css (ou importer dans Geoportail.jsx)
-   Breakpoints : ≤768px = mobile, 769–1024px = tablet
-═══════════════════════════════════════════════════════════════ */
 
-/* ── Section paddings ─────────────────────────────────────────
-   Toutes les sections du géoportail utilisent des paddings fixes
-   (5rem 3rem, 6rem 3rem…). On les ramène à mobile-first ici.
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — Géoportail mobile / tablet
+   Breakpoints : ≤768px = mobile, 769–1024px = tablet
+══════════════════════════════════════════════════════════════ */
+
+/* ── Classes utilitaires géoportail ──────────────────────────
+   À ajouter dans SectionPlan2D.jsx  : className="plan2d-grid"
+   À ajouter dans SectionCampus.jsx  : className="campus-grid" sur le div grille
+                                        className="campus-map"  sur le div map
+   → Remplace les sélecteurs [style*=] fragiles
 */
+.geo-bottom-nav { display: none; }
+
+/* ── Mobile ≤768px ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Section containers */
+
+  /* Cacher la sidebar, afficher la bottom nav */
+  .geo-sidebar    { display: none !important; }
+  .geo-bottom-nav { display: flex !important; }
+
+  /* Paddings des sections */
   #projet,
   #apropos,
   #campus,
   #plan2d,
   #visite,
   #donnees {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    padding-top: 3.5rem !important;
+    padding-left:   1rem !important;
+    padding-right:  1rem !important;
+    padding-top:    3.5rem !important;
     padding-bottom: 3rem !important;
   }
 
-  /* ── SectionPlan2D : passe en 1 colonne ── */
-  #plan2d > div > div[style*="grid-template-columns: 1fr 360px"] {
+  /* Scroll margin : compense la bottom nav */
+  #projet, #apropos, #campus,
+  #plan2d, #visite, #donnees {
+    scroll-margin-top: 80px !important;
+  }
+
+  /* SectionPlan2D — 1 colonne */
+  .plan2d-grid {
     grid-template-columns: 1fr !important;
   }
 
-  /* ── SectionCampus : carte + texte en colonne ── */
-  #campus > div > div[style*="grid-template-columns: 420px"] {
-    grid-template-columns: 1fr !important;
-  }
-  #campus > div > div > div[style*="height: 460px"] {
-    height: 220px !important;
-  }
+  /* SectionCampus — 1 colonne, map compacte */
+  .campus-grid { grid-template-columns: 1fr !important; }
+  .campus-map  { height: 220px !important; }
 
-  /* ── SectionVisite : 3 cards en colonne ── */
+  /* SectionVisite — cards en colonne */
   #visite div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
 
-  /* ── SectionDonnees : grille capteurs ── */
+  /* SectionDonnees — 2 colonnes sur mobile */
   #donnees div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  /* ── FooterGeoportail : 1 colonne ── */
+  /* Footer — 1 colonne centré */
   footer > div > div[style*="grid-template-columns: 1fr auto 1fr"] {
     grid-template-columns: 1fr !important;
     text-align: center !important;
@@ -654,28 +665,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   }
 }
 
+/* ── Extra small ≤480px ────────────────────────────────────── */
 @media (max-width: 480px) {
-  /* Extra small phones */
   #projet,
   #apropos,
   #campus,
   #plan2d,
   #visite,
   #donnees {
-    padding-left: 0.75rem !important;
+    padding-left:  0.75rem !important;
     padding-right: 0.75rem !important;
-    padding-top: 2.5rem !important;
+    padding-top:   2.5rem !important;
   }
 
-  /* SectionDonnees : 1 colonne sur très petit */
+  /* SectionDonnees — 1 colonne sur très petit écran */
   #donnees div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* ── Tablet (769–1024px) ──────────────────────────────────────
-   Sidebar visible mais réduite, padding intermédiaire
-*/
+/* ── Tablet 769–1024px ─────────────────────────────────────── */
 @media (min-width: 769px) and (max-width: 1024px) {
   #projet,
   #apropos,
@@ -683,36 +692,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   #plan2d,
   #visite,
   #donnees {
-    padding-left: 1.5rem !important;
+    padding-left:  1.5rem !important;
     padding-right: 1.5rem !important;
-    padding-top: 4rem !important;
+    padding-top:   4rem !important;
   }
 
-  /* SectionPlan2D : colonne sur tablet aussi */
-  #plan2d > div > div[style*="grid-template-columns: 1fr 360px"] {
-    grid-template-columns: 1fr !important;
-  }
+  /* SectionPlan2D — 1 colonne sur tablet aussi */
+  .plan2d-grid { grid-template-columns: 1fr !important; }
 
-  /* SectionCampus : carte compacte */
-  #campus > div > div[style*="grid-template-columns: 420px"] {
-    grid-template-columns: 1fr 1fr !important;
-  }
-  #campus > div > div > div[style*="height: 460px"] {
-    height: 320px !important;
-  }
+  /* SectionCampus — 2 colonnes, map intermédiaire */
+  .campus-grid { grid-template-columns: 1fr 1fr !important; }
+  .campus-map  { height: 320px !important; }
 
-  /* Visite : 2 colonnes sur tablet */
+  /* SectionVisite — 2 colonnes sur tablet */
   #visite div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr 1fr !important;
-  }
-}
-
-/* ── Scroll margin compensation (bottom nav) ─────────────────
-   Évite que la bottom nav cache le titre des sections
-*/
-@media (max-width: 768px) {
-  #projet, #apropos, #campus,
-  #plan2d, #visite, #donnees {
-    scroll-margin-top: 80px !important;
   }
 }
