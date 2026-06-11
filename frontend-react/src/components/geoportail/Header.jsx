@@ -85,7 +85,7 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.35), 0 6px 16px rgba(0,0,0,0.3)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = darkMode ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0,0,0,0.12)' }}
         >
-          <img src="/sdi_logo.png" alt="SDI Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src="/iav_logo.png" alt="IAV Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         <div>
