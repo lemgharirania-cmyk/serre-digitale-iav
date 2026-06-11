@@ -26,18 +26,18 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
 
   const T = {
     fr: {
-      title:     'Serre Digitale Intelligente',
+      title:      'Serre Digitale Intelligente',
       titleShort: 'Serre Digitale',
-      sub:       'IAV Hassan II · AgroBioTech',
-      tech:      'Jumeau Numérique · Monitoring IoT · Visualisation 3D',
-      live:      'En direct', day: 'Mode Jour', night: 'Mode Nuit',
+      sub:        'IAV Hassan II · AgroBioTech',
+      tech:       'Jumeau Numérique · Monitoring IoT · Visualisation 3D',
+      live:       'En direct', day: 'Mode Jour', night: 'Mode Nuit',
     },
     en: {
-      title:     'Smart Digital Greenhouse',
+      title:      'Smart Digital Greenhouse',
       titleShort: 'Smart Greenhouse',
-      sub:       'IAV Hassan II · AgroBioTech',
-      tech:      'Digital Twin · IoT Monitoring · 3D Visualization',
-      live:      'Live', day: 'Light Mode', night: 'Dark Mode',
+      sub:        'IAV Hassan II · AgroBioTech',
+      tech:       'Digital Twin · IoT Monitoring · 3D Visualization',
+      live:       'Live', day: 'Light Mode', night: 'Dark Mode',
     },
   }[lang]
 
@@ -62,7 +62,6 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
       boxShadow: shadow,
       display: 'flex',
       alignItems: 'center',
-      // Tighter padding on mobile
       padding: isMobile ? '0 16px' : '0 32px',
       gap: isMobile ? '12px' : '28px',
       transition: 'background 0.35s ease, box-shadow 0.35s ease',
@@ -70,22 +69,38 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
 
       {/* Logo + Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '16px', flexShrink: 0 }}>
-        <div style={{
-          width: isMobile ? '38px' : '46px',
-          height: isMobile ? '38px' : '46px',
-          borderRadius: '14px',
-          flexShrink: 0,
-          overflow: 'hidden',
-          boxShadow: darkMode
-            ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
-            : '0 4px 12px rgba(0,0,0,0.12)',
-          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-          cursor: 'pointer',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.35), 0 6px 16px rgba(0,0,0,0.3)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = darkMode ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0,0,0,0.12)' }}
+        <div
+          style={{
+            width: isMobile ? '38px' : '46px',
+            height: isMobile ? '38px' : '46px',
+            borderRadius: '14px',
+            flexShrink: 0,
+            overflow: 'hidden',
+            // ── FIX: white background so the IAV logo is visible in dark mode ──
+            background: 'white',
+            boxShadow: darkMode
+              ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
+              : '0 4px 12px rgba(0,0,0,0.12)',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'scale(1.06)'
+            e.currentTarget.style.boxShadow = '0 0 28px rgba(34,197,94,0.35), 0 6px 16px rgba(0,0,0,0.3)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = darkMode
+              ? '0 0 20px rgba(34,197,94,0.2), 0 4px 12px rgba(0,0,0,0.4)'
+              : '0 4px 12px rgba(0,0,0,0.12)'
+          }}
         >
-          <img src="/iav_logo.png" alt="IAV Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {/* ── FIX: was /sdi_logo.png (doesn't exist) → /iav_logo.png ── */}
+          <img
+            src="/iav_logo.png"
+            alt="IAV Hassan II"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </div>
 
         <div>
@@ -174,8 +189,16 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = btnBg; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = btnBorder }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
+            e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'
+            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = btnBg
+            e.currentTarget.style.boxShadow = 'none'
+            e.currentTarget.style.borderColor = btnBorder
+          }}
         >
           {lang === 'fr' ? 'EN' : 'FR'}
         </button>
@@ -197,8 +220,16 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = btnBg; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = btnBorder }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
+            e.currentTarget.style.boxShadow = '0 0 14px rgba(34,197,94,0.18)'
+            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = btnBg
+            e.currentTarget.style.boxShadow = 'none'
+            e.currentTarget.style.borderColor = btnBorder
+          }}
         >
           {darkMode
             ? <><Sun size={14} strokeWidth={2} />{!isMobile && <span>{T.day}</span>}</>
