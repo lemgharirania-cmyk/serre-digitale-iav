@@ -42,9 +42,9 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
     },
   }[lang]
 
-  // Mobile: show short title with last word in green
-  // "Serre Digitale" → first="Serre" last="Digitale"
-  const displayTitle = isMobile ? T.titleShort : T.title
+  // Mobile: show FULL title, just smaller font
+  // "Serre Digitale Intelligente" → first="Serre Digitale" last="Intelligente"
+  const displayTitle = T.title  // always full title on both mobile and desktop
   const titleWords   = displayTitle.split(' ')
   const titleFirst   = titleWords.slice(0, -1).join(' ')
   const titleLast    = titleWords.slice(-1)[0]
@@ -106,8 +106,8 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
         <div style={{ minWidth: 0 }}>
           <div style={{
             fontFamily: "'Space Grotesk','Outfit',sans-serif",
-            // ── FIX: smaller font on mobile so title doesn't get clipped ──
-            fontSize: isMobile ? '13px' : '17px',
+            // ── FIX: 12px on mobile for 3-word title + subtitle
+            fontSize: isMobile ? '12px' : '17px',
             fontWeight: 800,
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
@@ -126,18 +126,19 @@ export default function Header({ lang, setLang, darkMode, setDarkMode, isMobile 
             </span>
           </div>
 
-          {/* Subtitle — desktop only */}
-          {!isMobile && (
-            <div style={{
-              fontFamily: "'Inter',sans-serif",
-              fontSize: '11px',
-              color: darkMode ? '#64748B' : '#94A3B8',
-              letterSpacing: '0.01em',
-              marginTop: '1px',
-            }}>
-              {T.sub}
-            </div>
-          )}
+          {/* Subtitle — always visible, smaller on mobile */}
+          <div style={{
+            fontFamily: "'Inter',sans-serif",
+            fontSize: isMobile ? '10px' : '11px',
+            color: darkMode ? '#64748B' : '#94A3B8',
+            letterSpacing: '0.01em',
+            marginTop: '1px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
+            {T.sub}
+          </div>
         </div>
       </div>
 
