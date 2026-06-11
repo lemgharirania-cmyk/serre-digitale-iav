@@ -87,16 +87,18 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           </button>
         </div>
 
-        {/* ── Nav — flex column, spacer pushes admin to bottom ── */}
+        {/* ── Nav — space-between fills the full height evenly ── */}
         <nav style={{
           flex: 1,
           overflowY: 'auto', overflowX: 'hidden',
           padding: '4px 8px',
           display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between',
           scrollbarWidth: 'none', msOverflowStyle: 'none',
         }}>
 
-          {/* Section label */}
+          {/* Top group: label + nav items */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {open && (
             <div style={{
               fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em',
@@ -107,7 +109,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             </div>
           )}
 
-          {/* Nav items — same tight spacing as old version */}
+          {/* Nav items */}
           {NAV.map(item => {
             const Icon     = item.icon
             const isActive = active === item.id
@@ -127,7 +129,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   padding: open ? '0 10px' : '0',
                   borderRadius: 10,
                   border: 'none',
-                  marginBottom: '4px',
+                  marginBottom: '0',
                   cursor: 'pointer',
                   background: isActive ? activeBg : 'transparent',
                   color: isActive ? '#22C55E' : textNormal,
@@ -164,11 +166,10 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               </button>
             )
           })}
+          </div>{/* end top group */}
 
-          {/* Spacer — pushes admin to the very bottom */}
-          <div style={{ flex: 1 }} />
-
-          {/* Divider */}
+          {/* Bottom group: divider + admin */}
+          <div>
           <div style={{ height: '1px', background: border, margin: '8px 4px', flexShrink: 0 }} />
 
           {/* Espace Admin — pinned to bottom, light green bg */}
@@ -210,6 +211,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0, color: adminColor }} />
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
           </Link>
+          </div>{/* end bottom group */}
         </nav>
       </aside>
     </>
