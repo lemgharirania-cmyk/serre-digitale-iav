@@ -692,7 +692,7 @@ export default function SectionProjet({ lang, stats, darkMode }) {
   return (
     <section id="projet" style={{ padding: '6rem 3rem', scrollMarginTop: '80px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2.5rem', alignItems: 'start', marginBottom: '2rem' }}>
+        <div className="projet-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2.5rem', alignItems: 'start', marginBottom: '2rem' }}>
 
           {/* Left */}
           <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '24px', padding: '2.5rem', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)' }}>
