@@ -803,35 +803,39 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
 
   function toggleFullscreen() {
     if (!isFS) {
-      // On mobile, requestFullscreen on a div is blocked by browsers.
-      // The only reliable target on mobile is the iframe itself.
-      // On desktop, we use the container div so the title bar is included.
-      const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      const isIOS     = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+      const isAndroid = /Android/i.test(navigator.userAgent)
 
-      if (isMobileDevice) {
-        // Mobile: fullscreen the iframe directly
+      if (isIOS) {
+        // iOS Safari completely blocks requestFullscreen on iframes embedded in React.
+        // Best UX: open the walkthrough directly in a new Safari tab where the user
+        // gets native fullscreen by scrolling (address bar hides automatically).
+        window.open(viewer.file, '_blank')
+        return
+      }
+
+      if (isAndroid) {
+        // Android Chrome: fullscreen the iframe element directly
         const iframe = iframeRef.current
         if (iframe) {
-          const req = iframe.requestFullscreen
-            || iframe.webkitRequestFullscreen   // iOS Safari
-            || iframe.mozRequestFullScreen
-            || iframe.msRequestFullscreen
+          const req = iframe.requestFullscreen || iframe.webkitRequestFullscreen
           if (req) {
             req.call(iframe).catch(() => {
-              // If iframe fullscreen also fails (e.g. sandboxed), fall back to container
-              const c = containerRef.current
-              const cr = c?.requestFullscreen || c?.webkitRequestFullscreen
-              if (cr) cr.call(c).catch(() => {})
+              // fallback: open in new tab
+              window.open(viewer.file, '_blank')
             })
+            return
           }
         }
-      } else {
-        // Desktop: fullscreen the container div (includes title bar)
-        const c = containerRef.current
-        if (c) {
-          const req = c.requestFullscreen || c.webkitRequestFullscreen
-          if (req) req.call(c).catch(() => {})
-        }
+        window.open(viewer.file, '_blank')
+        return
+      }
+
+      // Desktop: fullscreen the container div (includes title bar)
+      const c = containerRef.current
+      if (c) {
+        const req = c.requestFullscreen || c.webkitRequestFullscreen
+        if (req) req.call(c).catch(() => {})
       }
     } else {
       const exit = document.exitFullscreen
