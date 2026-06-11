@@ -778,7 +778,8 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
   /* ── track fullscreen state (Échap / programmatic exit) ── */
  useEffect(() => {
     function onFSChange() {
-      const entering = !!document.fullscreenElement
+      // Check both standard and webkit (iOS Safari)
+      const entering = !!(document.fullscreenElement || document.webkitFullscreenElement)
       setIsFS(entering)
       try {
         iframeRef.current?.contentWindow?.postMessage(
@@ -789,19 +790,55 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
     function onIframeExit(e) {
       if (e.data === 'iframeExitedFullscreen') setIsFS(false)
     }
+    // Standard + webkit prefix for iOS Safari
     document.addEventListener('fullscreenchange', onFSChange)
+    document.addEventListener('webkitfullscreenchange', onFSChange)
     window.addEventListener('message', onIframeExit)
     return () => {
       document.removeEventListener('fullscreenchange', onFSChange)
+      document.removeEventListener('webkitfullscreenchange', onFSChange)
       window.removeEventListener('message', onIframeExit)
     }
   }, [])
 
   function toggleFullscreen() {
     if (!isFS) {
-      containerRef.current?.requestFullscreen?.()
+      // On mobile, requestFullscreen on a div is blocked by browsers.
+      // The only reliable target on mobile is the iframe itself.
+      // On desktop, we use the container div so the title bar is included.
+      const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+      if (isMobileDevice) {
+        // Mobile: fullscreen the iframe directly
+        const iframe = iframeRef.current
+        if (iframe) {
+          const req = iframe.requestFullscreen
+            || iframe.webkitRequestFullscreen   // iOS Safari
+            || iframe.mozRequestFullScreen
+            || iframe.msRequestFullscreen
+          if (req) {
+            req.call(iframe).catch(() => {
+              // If iframe fullscreen also fails (e.g. sandboxed), fall back to container
+              const c = containerRef.current
+              const cr = c?.requestFullscreen || c?.webkitRequestFullscreen
+              if (cr) cr.call(c).catch(() => {})
+            })
+          }
+        }
+      } else {
+        // Desktop: fullscreen the container div (includes title bar)
+        const c = containerRef.current
+        if (c) {
+          const req = c.requestFullscreen || c.webkitRequestFullscreen
+          if (req) req.call(c).catch(() => {})
+        }
+      }
     } else {
-      document.exitFullscreen?.()
+      const exit = document.exitFullscreen
+        || document.webkitExitFullscreen
+        || document.mozCancelFullScreen
+        || document.msExitFullscreen
+      if (exit) exit.call(document).catch(() => {})
     }
   }
 
@@ -881,6 +918,7 @@ function ViewerBox({ viewer, isDark, ink, inkSub, glassBorder, T, vrSupported })
           key={viewer.file}
           src={viewer.file}
           allowFullScreen
+          allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
         />
       </div>
