@@ -602,9 +602,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 ══════════════════════════════════════════════════════════════ */
 
 /* ── Classes utilitaires géoportail ──────────────────────────
-   À ajouter dans SectionPlan2D.jsx  : className="plan2d-grid"
-   À ajouter dans SectionCampus.jsx  : className="campus-grid" sur le div grille
-                                        className="campus-map"  sur le div map
+   SectionProjet   : className="projet-grid"   sur le div grille 1fr 360px
+   SectionApropos  : className="apropos-grid"  sur le div grille 1fr 1fr
+                     className="apropos-photo" sur le div aspectRatio image
+   SectionCampus   : className="campus-grid"  sur le div grille
+                     className="campus-map"   sur le div map
+   SectionPlan2D   : className="plan2d-grid"  sur le div grille 1fr 360px
+   SectionVisite   : className="visite-cards-grid"   sur les grilles de cards
+   SectionDonnees  : className="donnees-cards-grid"  sur les grilles de cards
    → Remplace les sélecteurs [style*=] fragiles
 */
 .geo-bottom-nav { display: none; }
@@ -635,27 +640,43 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     scroll-margin-top: 80px !important;
   }
 
+  /* SectionProjet — 1 colonne, stats sous le texte */
+  .projet-grid { grid-template-columns: 1fr !important; }
+
+  /* SectionApropos — 1 colonne, photo contrainte */
+  .apropos-grid  { grid-template-columns: 1fr !important; }
+  .apropos-photo { aspect-ratio: 16/9 !important; max-height: 220px !important; }
+
   /* SectionPlan2D — 1 colonne */
-  .plan2d-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .plan2d-grid { grid-template-columns: 1fr !important; }
 
   /* SectionCampus — 1 colonne, map compacte */
   .campus-grid { grid-template-columns: 1fr !important; }
   .campus-map  { height: 220px !important; }
 
   /* SectionVisite — cards en colonne */
+  .visite-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  /* fallback pour les grilles encore en inline style */
   #visite div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
 
   /* SectionDonnees — 2 colonnes sur mobile */
+  .donnees-cards-grid { grid-template-columns: 1fr 1fr !important; }
+  /* fallback */
   #donnees div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr 1fr !important;
   }
 
   /* Footer — 1 colonne centré */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+  }
   footer > div > div[style*="grid-template-columns: 1fr auto 1fr"] {
     grid-template-columns: 1fr !important;
     text-align: center !important;
@@ -678,7 +699,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     padding-top:   2.5rem !important;
   }
 
+  /* SectionApropos photo encore plus compacte */
+  .apropos-photo { max-height: 180px !important; }
+
   /* SectionDonnees — 1 colonne sur très petit écran */
+  .donnees-cards-grid { grid-template-columns: 1fr !important; }
   #donnees div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr !important;
   }
@@ -697,6 +722,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     padding-top:   4rem !important;
   }
 
+  /* SectionProjet — colonne stats plus étroite sur tablet */
+  .projet-grid { grid-template-columns: 1fr 300px !important; }
+
+  /* SectionApropos — reste 2 colonnes sur tablet */
+  .apropos-grid  { grid-template-columns: 1fr 1fr !important; }
+
   /* SectionPlan2D — 1 colonne sur tablet aussi */
   .plan2d-grid { grid-template-columns: 1fr !important; }
 
@@ -705,6 +736,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .campus-map  { height: 320px !important; }
 
   /* SectionVisite — 2 colonnes sur tablet */
+  .visite-cards-grid { grid-template-columns: 1fr 1fr !important; }
   #visite div[style*="grid-template-columns: repeat(3"] {
     grid-template-columns: 1fr 1fr !important;
   }
