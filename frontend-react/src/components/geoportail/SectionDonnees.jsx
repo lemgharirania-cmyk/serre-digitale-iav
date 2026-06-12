@@ -258,6 +258,7 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
       style={{ position: 'relative' }}
       onMouseEnter={() => { setHovered(true); setShowPopup(true) }}
       onMouseLeave={() => { setHovered(false); setShowPopup(false) }}
+      onTouchStart={e => { e.preventDefault(); setHovered(p => !p); setShowPopup(p => !p) }}
     >
       {/* Card */}
       <div style={{
@@ -311,16 +312,16 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
 
       {/* ── Rich Popup ── */}
       {showPopup && (
-        <div style={{
+        <div className="donnees-popup" style={{
           position: 'absolute',
           bottom: 'calc(100% + 10px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '280px',
+          width: '260px',
           background: darkMode ? 'rgba(7,17,31,0.97)' : 'rgba(255,255,255,0.98)',
           border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: '16px',
-          padding: '16px',
+          borderRadius: '14px',
+          padding: '13px',
           zIndex: 200,
           boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
           backdropFilter: 'blur(20px)',
