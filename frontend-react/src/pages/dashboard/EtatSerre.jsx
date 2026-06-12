@@ -11,7 +11,7 @@ import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
-  ChevronDown, ChevronUp, Settings, Flame, Blinds, Window, Fan, Sprout,
+  ChevronDown, ChevronUp, Settings, Flame, Fan,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
