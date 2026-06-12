@@ -1091,7 +1091,8 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
   const fenetreAngle = ouvert ? -38 : 0
 
   return (
-    <svg viewBox="0 0 480 320" style={{ width:'100%', height:'auto', display:'block' }}>
+    <svg viewBox="0 0 480 345" style={{ width:'100%', height:'auto', display:'block' }}>
+      <style>{`@keyframes fanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <defs>
         <linearGradient id="sc-ciel" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={cSkyTop}/><stop offset="100%" stopColor={cSkyBot}/>
@@ -1111,12 +1112,12 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
           <line x1="0" y1="3" x2="6" y2="3" stroke="#caa14a" strokeWidth="1.6"/>
         </pattern>
         <clipPath id="sc-roof">
-          <polygon points="168,252 240,214 312,252 312,242 240,204 168,242"/>
+          <polygon points="152,252 240,203 328,252 328,240 240,191 152,240"/>
         </clipPath>
       </defs>
 
       {/* Ciel */}
-      <rect x="0" y="0" width="480" height="208" rx="12" fill="url(#sc-ciel)"/>
+      <rect x="0" y="0" width="480" height="210" rx="12" fill="url(#sc-ciel)"/>
 
       {/* Trajectoire solaire (arc pointillé) */}
       <path d={arc} fill="none" stroke={cAxis} strokeWidth="1.4" strokeDasharray="3 5" opacity="0.8"/>
@@ -1130,7 +1131,7 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
         fill="#FBBF24" opacity="0.55"/>
 
       {/* Ligne verticale heure actuelle */}
-      <line x1={aX} y1="12" x2={aX} y2="300"
+      <line x1={aX} y1="12" x2={aX} y2="325"
         stroke={serreColor} strokeWidth="1" strokeDasharray="2 4" opacity="0.5"/>
       <text x={aX} y="10" textAnchor="middle" fontFamily="monospace" fontSize="8.5" fill={serreColor}>
         {String(Math.floor(hNow)).padStart(2,'0')}:{String(Math.round((hNow%1)*60)).padStart(2,'0')}
@@ -1150,17 +1151,17 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
       </g>
 
       {/* Sol */}
-      <rect x="30" y="298" width="420" height="5" rx="2" fill={cSol}/>
+      <rect x="30" y="323" width="420" height="5" rx="2" fill={cSol}/>
 
       {/* Structure serre — polygone verre */}
-      <polygon points="168,298 168,250 240,214 312,250 312,298"
+      <polygon points="152,322 152,248 240,203 328,248 328,322"
         fill={cVerreF} stroke={cVerre} strokeWidth="2" strokeLinejoin="round"/>
-      <line x1="168" y1="250" x2="168" y2="298" stroke={cVerre} strokeWidth="2.5"/>
-      <line x1="312" y1="250" x2="312" y2="298" stroke={cVerre} strokeWidth="2.5"/>
+      <line x1="152" y1="248" x2="152" y2="322" stroke={cVerre} strokeWidth="2.5"/>
+      <line x1="328" y1="248" x2="328" y2="322" stroke={cVerre} strokeWidth="2.5"/>
       {/* Montants intermédiaires */}
-      <line x1="204" y1="232" x2="204" y2="298" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
-      <line x1="240" y1="214" x2="240" y2="298" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
-      <line x1="276" y1="232" x2="276" y2="298" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
+      <line x1="196" y1="228" x2="196" y2="322" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
+      <line x1="240" y1="203" x2="240" y2="322" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
+      <line x1="284" y1="228" x2="284" y2="322" stroke={cVerre} strokeWidth="1" opacity="0.4"/>
 
       {/* ── Plantes intérieures selon serre ── */}
       {serreIdx === 0 && <PlanteGenetique isDark={isDark} color={serreColor}/>}
@@ -1170,7 +1171,7 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
       {serreIdx === 4 && <PlanteProtection isDark={isDark} color={serreColor}/>}
 
       {/* ── Ombrage intérieur — bande coulissante ── */}
-      <rect x="172" y="244" width="136" height="7" rx="3" fill="url(#sc-meshInt)" opacity="0.95"
+      <rect x="156" y="243" width="168" height="7" rx="3" fill="url(#sc-meshInt)" opacity="0.95"
         style={{ transformBox:'fill-box', transformOrigin:'left center',
           transform:'scaleX(' + (intDep?1:0) + ')', transition:'transform ' + TR }}/>
       {/* Label ombrage int */}
@@ -1182,8 +1183,8 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
 
       {/* ── Ombrage extérieur — rideau qui glisse depuis la gauche ── */}
       <g clipPath="url(#sc-roof)">
-        <rect x="160" y="200" width="160" height="58" fill="url(#sc-meshExt)"
-          style={{ transform: extDep ? 'translateX(0)' : 'translateX(-170px)', transition:'transform ' + TR }}/>
+        <rect x="148" y="197" width="200" height="60" fill="url(#sc-meshExt)"
+          style={{ transform: extDep ? 'translateX(0)' : 'translateX(-210px)', transition:'transform ' + TR }}/>
       </g>
       {/* Label ombrage ext */}
       {extDep && (
@@ -1195,101 +1196,111 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
 
       {/* ── Fenêtre de toiture — rotative ── */}
       <g style={{
-        transformBox:'fill-box', transformOrigin:'240px 214px',
+        transformBox:'fill-box', transformOrigin:'240px 203px',
         transform:'rotate(' + fenetreAngle + 'deg)',
         transition:'transform ' + TR,
       }}>
-        <polygon points="240,214 296,234 296,239 240,219"
+        <polygon points="240,203 302,228 302,233 240,208"
           fill={isDark?'rgba(191,227,255,0.5)':'rgba(191,227,255,0.7)'}
           stroke="#9ec9ef" strokeWidth="2" strokeLinejoin="round"/>
       </g>
       {/* Indicateur ouverture */}
       {ouvert && (
         <g>
-          <path d="M 296 222 q 10,-8 16,-4" fill="none" stroke="#22C55E" strokeWidth="1.5"
+          <path d="M 302 218 q 10,-8 16,-4" fill="none" stroke="#22C55E" strokeWidth="1.5"
             strokeDasharray="2 2" opacity="0.8"/>
-          <text x="315" y="217" fontSize="7" fontFamily="monospace" fill="#22C55E">ouvert</text>
+          <text x="322" y="213" fontSize="7" fontFamily="monospace" fill="#22C55E">ouvert</text>
         </g>
       )}
       {/* Pivot fenêtre */}
-      <circle cx="240" cy="214" r="3.5" fill={cVerre}/>
+      <circle cx="240" cy="203" r="3.5" fill={cVerre}/>
 
-      {/* ── Équipements internes — icônes SVG dans la serre ── */}
-      {/* Ventilateur — coin bas-gauche intérieur serre */}
+      {/* ── Équipements internes — icônes SVG au-dessus des cultures ── */}
+
+      {/* Ventilateur — gauche, au-dessus des plantes, pale tournante fixe en place */}
       {(() => {
         const c = equip.ventilateur === 'actif' ? '#06B6D4' : equip.ventilateur === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
         const spin = equip.ventilateur === 'actif'
         return (
-          <g transform="translate(192,282)">
-            <circle cx="0" cy="0" r="9" fill={isDark?'rgba(6,182,212,0.12)':'rgba(6,182,212,0.08)'} stroke={c} strokeWidth="1.2"/>
-            {[0,90,180,270].map((a,i) => (
-              <path key={i} d={'M0,0 C' + (Math.cos((a+40)*Math.PI/180)*7) + ',' + (Math.sin((a+40)*Math.PI/180)*7) + ' ' + (Math.cos((a+70)*Math.PI/180)*7) + ',' + (Math.sin((a+70)*Math.PI/180)*7) + ' ' + (Math.cos((a+90)*Math.PI/180)*3.5) + ',' + (Math.sin((a+90)*Math.PI/180)*3.5)}
-                fill={c} opacity={spin ? 0.9 : 0.45}/>
-            ))}
-            <circle cx="0" cy="0" r="2" fill={c}/>
-            <text x="0" y="17" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">VENT.</text>
+          <g transform="translate(182,255)">
+            {/* Cercle fond statique */}
+            <circle cx="0" cy="0" r="11" fill={isDark?'rgba(6,182,212,0.12)':'rgba(6,182,212,0.08)'} stroke={c} strokeWidth="1.4"/>
+            {/* Pales — tournent sur place */}
+            <g style={spin ? {
+              transformBox: 'fill-box',
+              transformOrigin: 'center',
+              animation: 'fanSpin 0.65s linear infinite',
+            } : {}}>
+              {[0,90,180,270].map((a,i) => (
+                <path key={i} d={'M0,0 C' + (Math.cos((a+40)*Math.PI/180)*8.5) + ',' + (Math.sin((a+40)*Math.PI/180)*8.5) + ' ' + (Math.cos((a+70)*Math.PI/180)*8.5) + ',' + (Math.sin((a+70)*Math.PI/180)*8.5) + ' ' + (Math.cos((a+90)*Math.PI/180)*4) + ',' + (Math.sin((a+90)*Math.PI/180)*4)}
+                  fill={c} opacity={spin ? 0.9 : 0.45}/>
+              ))}
+            </g>
+            {/* Moyeu statique */}
+            <circle cx="0" cy="0" r="2.5" fill={c}/>
+            <text x="0" y="20" textAnchor="middle" fontSize="6" fontFamily="monospace" fill={c} opacity="0.85">VENT.</text>
           </g>
         )
       })()}
 
-      {/* Chauffage — coin bas-droit intérieur */}
-      {(() => {
-        const c = equip.chauffage === 'actif' ? '#F59E0B' : equip.chauffage === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
-        return (
-          <g transform="translate(295,282)">
-            <circle cx="0" cy="0" r="9" fill={isDark?'rgba(245,158,11,0.10)':'rgba(245,158,11,0.06)'} stroke={c} strokeWidth="1.2"/>
-            {[-4,0,4].map((dx,i) => (
-              <g key={i}>
-                <path d={'M' + dx + ',5 q' + (-3+i) + ',-5 ' + dx + ',-10'} fill="none" stroke={c} strokeWidth="1.4" strokeLinecap="round" opacity={equip.chauffage==='actif'?0.9:0.4}/>
-              </g>
-            ))}
-            <text x="0" y="17" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">CHAUF.</text>
-          </g>
-        )
-      })()}
-
-      {/* Brumisateur — centre-bas intérieur */}
+      {/* Brumisateur — centre, au-dessus des plantes */}
       {(() => {
         const c = equip.brumisateur === 'actif' ? '#8B5CF6' : equip.brumisateur === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
         return (
-          <g transform="translate(240,285)">
-            <rect x="-8" y="-6" width="16" height="10" rx="3" fill={isDark?'rgba(139,92,246,0.12)':'rgba(139,92,246,0.07)'} stroke={c} strokeWidth="1.2"/>
-            <line x1="0" y1="-6" x2="0" y2="-10" stroke={c} strokeWidth="1.2"/>
-            <circle cx="0" cy="-11" r="1.5" fill={c} opacity="0.7"/>
+          <g transform="translate(240,258)">
+            <rect x="-10" y="-8" width="20" height="13" rx="4" fill={isDark?'rgba(139,92,246,0.12)':'rgba(139,92,246,0.07)'} stroke={c} strokeWidth="1.4"/>
+            <line x1="0" y1="-8" x2="0" y2="-13" stroke={c} strokeWidth="1.4"/>
+            <circle cx="0" cy="-14.5" r="2" fill={c} opacity="0.7"/>
             {equip.brumisateur === 'actif' && [-5,0,5].map((dx,i) => (
               <g key={i}>
-                <circle cx={dx} cy={-15-i*3} r="1.2" fill={c} opacity="0.5"/>
-                <circle cx={dx+2} cy={-18-i*2} r="0.9" fill={c} opacity="0.35"/>
+                <circle cx={dx} cy={-19-i*3} r="1.4" fill={c} opacity="0.55"/>
+                <circle cx={dx+2} cy={-22-i*2} r="1" fill={c} opacity="0.35"/>
               </g>
             ))}
-            <text x="0" y="14" textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={c} opacity="0.8">BRUM.</text>
+            <text x="0" y="16" textAnchor="middle" fontSize="6" fontFamily="monospace" fill={c} opacity="0.85">BRUM.</text>
           </g>
         )
       })()}
 
-      {/* CO₂ — badge flottant haut-droite intérieur */}
+      {/* Chauffage — droite, au-dessus des plantes */}
+      {(() => {
+        const c = equip.chauffage === 'actif' ? '#F59E0B' : equip.chauffage === 'neutre' ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
+        return (
+          <g transform="translate(298,255)">
+            <circle cx="0" cy="0" r="11" fill={isDark?'rgba(245,158,11,0.10)':'rgba(245,158,11,0.06)'} stroke={c} strokeWidth="1.4"/>
+            {[-4,0,4].map((dx,i) => (
+              <g key={i}>
+                <path d={'M' + dx + ',6 q' + (-3+i) + ',-6 ' + dx + ',-12'} fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" opacity={equip.chauffage==='actif'?0.9:0.4}/>
+              </g>
+            ))}
+            <text x="0" y="20" textAnchor="middle" fontSize="6" fontFamily="monospace" fill={c} opacity="0.85">CHAUF.</text>
+          </g>
+        )
+      })()}
+
+      {/* CO₂ — badge flottant centre-haut intérieur, près du faîtage */}
       {(() => {
         const actif = equip.co2inj === 'actif' || equip.co2purge === 'actif'
         const neutre = equip.co2inj === 'neutre' || equip.co2purge === 'neutre'
         const c = actif ? '#22C55E' : neutre ? '#94A3B8' : (isDark?'#2d4a5e':'#cbd5e1')
         const label = equip.co2inj === 'actif' ? 'CO₂↑' : equip.co2purge === 'actif' ? 'CO₂↓' : 'CO₂'
         return (
-          <g transform="translate(295,228)">
-            <rect x="-12" y="-8" width="24" height="14" rx="4"
-              fill={isDark?'rgba(34,197,94,0.10)':'rgba(34,197,94,0.07)'} stroke={c} strokeWidth="1.2"/>
-            <text x="0" y="1.5" textAnchor="middle" fontSize="6.5" fontFamily="monospace" fontWeight="700" fill={c}>{label}</text>
+          <g transform="translate(240,228)">
+            <rect x="-14" y="-9" width="28" height="16" rx="5"
+              fill={isDark?'rgba(34,197,94,0.10)':'rgba(34,197,94,0.07)'} stroke={c} strokeWidth="1.4"/>
+            <text x="0" y="2" textAnchor="middle" fontSize="7.5" fontFamily="monospace" fontWeight="700" fill={c}>{label}</text>
           </g>
         )
       })()}
 
       {/* Indicateur T° intérieure */}
       <g>
-        <rect x="18" y="220" width="70" height="30" rx="7"
+        <rect x="18" y="235" width="70" height="30" rx="7"
           fill={isDark?'rgba(7,17,31,0.88)':'rgba(255,255,255,0.92)'}
           stroke={serreColor+'40'} strokeWidth="1"/>
-        <text x="53" y="232" textAnchor="middle" fontFamily="monospace" fontSize="8"
+        <text x="53" y="247" textAnchor="middle" fontFamily="monospace" fontSize="8"
           fill={isDark?'#94A3B8':'#64748B'}>T° INT.</text>
-        <text x="53" y="244" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700"
+        <text x="53" y="259" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700"
           fill={serreColor}>{temp != null ? temp + ' °C' : '— °C'}</text>
       </g>
 
@@ -1302,16 +1313,16 @@ function PlanteGenetique({ isDark, color }) {
   const pots = [185, 220, 255, 290]
   return (
     <g>
-      <rect x="175" y="275" width="140" height="4" rx="2" fill={isDark?'#2d4a5e':'#94a3b8'}/>
+      <rect x="170" y="300" width="155" height="4" rx="2" fill={isDark?'#2d4a5e':'#94a3b8'}/>
       {pots.map((x,i) => (
-        <g key={i} transform={'translate(' + x + ',279)'}>
+        <g key={i} transform={'translate(' + x + ',304)'}>
           <path d="M-9,0 L-7,16 L7,16 L9,0 Z" fill={isDark?'#1e3a5f':'#bfdbfe'}
             stroke={isDark?'#3b5a7a':'#93c5fd'} strokeWidth="1"/>
-          <line x1="0" y1="0" x2="0" y2={-18-i*4} stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-          <ellipse cx="-5" cy={-10-i*2} rx="5" ry="3" fill={color} opacity="0.85"
-            transform={'rotate(-30,-5,' + (-10-i*2) + ')'}/>
-          <ellipse cx="5" cy={-14-i*2} rx="5" ry="3" fill={color} opacity="0.7"
-            transform={'rotate(30,5,' + (-14-i*2) + ')'}/>
+          <line x1="0" y1="0" x2="0" y2={-22-i*5} stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+          <ellipse cx="-5" cy={-12-i*2} rx="5" ry="3" fill={color} opacity="0.85"
+            transform={'rotate(-30,-5,' + (-12-i*2) + ')'}/>
+          <ellipse cx="5" cy={-17-i*2} rx="5" ry="3" fill={color} opacity="0.7"
+            transform={'rotate(30,5,' + (-17-i*2) + ')'}/>
           <text x="0" y="24" textAnchor="middle" fontSize="6" fontFamily="monospace"
             fill={isDark?'#475569':'#94a3b8'}>G{i+1}</text>
         </g>
@@ -1322,22 +1333,22 @@ function PlanteGenetique({ isDark, color }) {
 
 function PlanteHorticulture({ isDark, color }) {
   const flowers = [
-    {x:185,type:'rose',h:52,c:'#f43f5e'},
-    {x:213,type:'tulipe',h:45,c:'#fb923c'},
-    {x:241,type:'tournesol',h:60,c:'#facc15'},
-    {x:269,type:'lavande',h:48,c:'#a78bfa'},
-    {x:297,type:'rose',h:50,c:'#ec4899'},
+    {x:180,type:'rose',h:62,c:'#f43f5e'},
+    {x:208,type:'tulipe',h:54,c:'#fb923c'},
+    {x:240,type:'tournesol',h:72,c:'#facc15'},
+    {x:272,type:'lavande',h:58,c:'#a78bfa'},
+    {x:300,type:'rose',h:60,c:'#ec4899'},
   ]
   return (
     <g>
-      <rect x="175" y="278" width="130" height="16" rx="5" fill={isDark?'#1a2e1a':'#bbf7d0'} opacity="0.6"/>
+      <rect x="168" y="300" width="155" height="16" rx="5" fill={isDark?'#1a2e1a':'#bbf7d0'} opacity="0.6"/>
       {flowers.map((f,i) => (
         <g key={i}>
-          <line x1={f.x} y1="278" x2={f.x} y2={278-f.h} stroke={isDark?'#22c55e':'#16a34a'} strokeWidth="2"/>
-          <ellipse cx={f.x-7} cy={278-f.h*0.35} rx="7" ry="3.5" fill={isDark?'#22c55e':'#4ade80'}
-            opacity="0.6" transform={'rotate(-35,' + (f.x-7) + ',' + (278-f.h*0.35) + ')'}/>
+          <line x1={f.x} y1="300" x2={f.x} y2={300-f.h} stroke={isDark?'#22c55e':'#16a34a'} strokeWidth="2"/>
+          <ellipse cx={f.x-7} cy={300-f.h*0.35} rx="7" ry="3.5" fill={isDark?'#22c55e':'#4ade80'}
+            opacity="0.6" transform={'rotate(-35,' + (f.x-7) + ',' + (300-f.h*0.35) + ')'}/>
           {f.type==='tournesol' ? (
-            <g transform={'translate(' + f.x + ',' + (278-f.h) + ')'}>
+            <g transform={'translate(' + f.x + ',' + (300-f.h) + ')'}>
               {[...Array(10)].map((_,j) => {
                 const a=(j/10)*Math.PI*2
                 return <ellipse key={j} cx={Math.cos(a)*10} cy={Math.sin(a)*10} rx="4.5" ry="2.5"
@@ -1346,7 +1357,7 @@ function PlanteHorticulture({ isDark, color }) {
               <circle cx="0" cy="0" r="6" fill={isDark?'#78350f':'#92400e'}/>
             </g>
           ) : f.type==='rose' ? (
-            <g transform={'translate(' + f.x + ',' + (278-f.h) + ')'}>
+            <g transform={'translate(' + f.x + ',' + (300-f.h) + ')'}>
               {[...Array(6)].map((_,j) => {
                 const a=(j/6)*Math.PI*2
                 return <ellipse key={j} cx={Math.cos(a)*6} cy={Math.sin(a)*6} rx="6" ry="4.5" fill={f.c} opacity="0.75+j*0.04"/>
@@ -1354,7 +1365,7 @@ function PlanteHorticulture({ isDark, color }) {
               <circle cx="0" cy="0" r="3.5" fill={f.c}/>
             </g>
           ) : f.type==='lavande' ? (
-            <g transform={'translate(' + f.x + ',' + (278-f.h) + ')'}>
+            <g transform={'translate(' + f.x + ',' + (300-f.h) + ')'}>
               {[-3,0,3].map((dx,j) => (
                 <g key={j}>
                   <line x1={dx} y1="0" x2={dx} y2="-12" stroke={f.c} strokeWidth="1.8"/>
@@ -1365,7 +1376,7 @@ function PlanteHorticulture({ isDark, color }) {
               ))}
             </g>
           ) : (
-            <g transform={'translate(' + f.x + ',' + (278-f.h) + ')'}>
+            <g transform={'translate(' + f.x + ',' + (300-f.h) + ')'}>
               <path d="M0,0 q-9,-7 -5,-16 q5,3 5,7 q0,-4 5,-7 q4,9 -5,16" fill={f.c} opacity="0.9"/>
             </g>
           )}
@@ -1376,13 +1387,13 @@ function PlanteHorticulture({ isDark, color }) {
 }
 
 function PlanteAgronomie({ isDark, color }) {
-  const cols = [183,207,231,255,279,303]
+  const cols = [178,202,226,254,278,304]
   return (
     <g>
       {cols.map((x,i) => {
-        const h = 42 + (i%3)*8
+        const h = 52 + (i%3)*10
         return (
-          <g key={i} transform={'translate(' + x + ',278)'}>
+          <g key={i} transform={'translate(' + x + ',302)'}>
             <line x1="0" y1="0" x2="0" y2={-h} stroke={color} strokeWidth="1.8"/>
             <path d={'M0,' + (-h*0.35) + ' q-9,-3 -7,-11'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
             <path d={'M0,' + (-h*0.6) + ' q9,-3 7,-11'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
@@ -1400,28 +1411,28 @@ function PlanteAgronomie({ isDark, color }) {
 }
 
 function PlanteHydroponie({ isDark, color }) {
-  const tubes = [240, 262, 284]
+  const tubes = [262, 284, 306]
   return (
     <g>
-      <rect x="175" y="230" width="140" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="175" y="292" width="140" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="175" y="230" width="4" height="67" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="311" y="230" width="4" height="67" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="255" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="315" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="255" width="4" height="65" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="321" y="255" width="4" height="65" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
       {tubes.map((y,ti) => (
         <g key={ti}>
-          <rect x="179" y={y} width="132" height="11" rx="5.5"
+          <rect x="164" y={y} width="157" height="12" rx="6"
             fill={isDark?'rgba(6,182,212,0.18)':'rgba(6,182,212,0.1)'}
             stroke={isDark?'#0891b2':'#06b6d4'} strokeWidth="1.2"/>
-          <line x1="184" y1={y+5.5} x2="307" y2={y+5.5}
+          <line x1="169" y1={y+6} x2="317" y2={y+6}
             stroke={isDark?'#22d3ee':'#67e8f9'} strokeWidth="0.8" opacity="0.5" strokeDasharray="6 5"/>
-          {[200,224,248,272,296].map((x,i) => (
+          {[192,216,240,265,290].map((x,i) => (
             <g key={i} transform={'translate(' + x + ',' + y + ')'}>
-              <circle cx="0" cy="0" r="5.5" fill={isDark?'#134e2e':'#bbf7d0'} stroke={color+'40'} strokeWidth="1"/>
-              <line x1="0" y1="-2" x2="0" y2="-14" stroke={color} strokeWidth="1.5"/>
-              <ellipse cx="-4" cy="-9" rx="4" ry="2.5" fill={color} opacity="0.8"
-                transform="rotate(-30,-4,-9)"/>
-              <ellipse cx="4" cy="-11" rx="4" ry="2.5" fill={color} opacity="0.7"
-                transform="rotate(30,4,-11)"/>
+              <circle cx="0" cy="0" r="6" fill={isDark?'#134e2e':'#bbf7d0'} stroke={color+'40'} strokeWidth="1"/>
+              <line x1="0" y1="-2" x2="0" y2="-16" stroke={color} strokeWidth="1.5"/>
+              <ellipse cx="-4" cy="-10" rx="4.5" ry="2.8" fill={color} opacity="0.8"
+                transform="rotate(-30,-4,-10)"/>
+              <ellipse cx="4" cy="-13" rx="4.5" ry="2.8" fill={color} opacity="0.7"
+                transform="rotate(30,4,-13)"/>
               {[-3,0,3].map((dx,ri) => (
                 <path key={ri} d={'M' + dx + ',6 q' + (dx*0.4) + ',7 0,14'} fill="none"
                   stroke={isDark?'#a3e635':'#84cc16'} strokeWidth="0.9" opacity="0.65"/>
@@ -1435,14 +1446,14 @@ function PlanteHydroponie({ isDark, color }) {
 }
 
 function PlanteProtection({ isDark, color }) {
-  const plants = [190, 220, 252, 282, 310]
+  const plants = [185, 215, 248, 280, 312]
   return (
     <g>
-      <rect x="178" y="276" width="140" height="16" rx="5" fill={isDark?'#1a1a1a':'#e2e8f0'} opacity="0.4"/>
+      <rect x="170" y="298" width="158" height="18" rx="5" fill={isDark?'#1a1a1a':'#e2e8f0'} opacity="0.4"/>
       {plants.map((x,i) => {
-        const h = 38 + (i%3)*10, healthy = i !== 2
+        const h = 48 + (i%3)*12, healthy = i !== 2
         return (
-          <g key={i} transform={'translate(' + x + ',276)'}>
+          <g key={i} transform={'translate(' + x + ',298)'}>
             <line x1="0" y1="0" x2="0" y2={-h} stroke={healthy?color:'#F59E0B'} strokeWidth="2"/>
             <ellipse cx="-6" cy={-h*0.45} rx="6" ry="3.5" fill={healthy?color:'#F59E0B'}
               opacity="0.8" transform={'rotate(-35,-6,' + (-h*0.45) + ')'}/>
@@ -1459,7 +1470,7 @@ function PlanteProtection({ isDark, color }) {
           </g>
         )
       })}
-      <g transform="translate(340,248)">
+      <g transform="translate(340,265)">
         <rect x="-10" y="-16" width="20" height="26" rx="4"
           fill={isDark?'#1e3a5f':'#bfdbfe'} stroke={isDark?'#3b82f6':'#60a5fa'} strokeWidth="1.2"/>
         <line x1="-10" y1="-4" x2="-20" y2="-4" stroke={isDark?'#60a5fa':'#3b82f6'} strokeWidth="1.8"/>
