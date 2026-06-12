@@ -1333,11 +1333,11 @@ function PlanteGenetique({ isDark, color }) {
 
 function PlanteHorticulture({ isDark, color }) {
   const flowers = [
-    {x:180,type:'rose',h:62,c:'#f43f5e'},
-    {x:208,type:'tulipe',h:54,c:'#fb923c'},
-    {x:240,type:'tournesol',h:72,c:'#facc15'},
-    {x:272,type:'lavande',h:58,c:'#a78bfa'},
-    {x:300,type:'rose',h:60,c:'#ec4899'},
+    {x:180,type:'rose',h:32,c:'#f43f5e'},
+    {x:208,type:'tulipe',h:28,c:'#fb923c'},
+    {x:240,type:'tournesol',h:36,c:'#facc15'},
+    {x:272,type:'lavande',h:30,c:'#a78bfa'},
+    {x:300,type:'rose',h:32,c:'#ec4899'},
   ]
   return (
     <g>
@@ -1391,17 +1391,17 @@ function PlanteAgronomie({ isDark, color }) {
   return (
     <g>
       {cols.map((x,i) => {
-        const h = 52 + (i%3)*10
+        const h = 28 + (i%3)*5
         return (
           <g key={i} transform={'translate(' + x + ',302)'}>
             <line x1="0" y1="0" x2="0" y2={-h} stroke={color} strokeWidth="1.8"/>
-            <path d={'M0,' + (-h*0.35) + ' q-9,-3 -7,-11'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
-            <path d={'M0,' + (-h*0.6) + ' q9,-3 7,-11'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
+            <path d={'M0,' + (-h*0.35) + ' q-7,-2 -5,-8'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
+            <path d={'M0,' + (-h*0.6) + ' q7,-2 5,-8'} fill="none" stroke={color} strokeWidth="1.4" opacity="0.65"/>
             <g transform={'translate(0,' + (-h) + ')'}>
-              {[-3,-1,1,3].map((dx,j) => (
-                <ellipse key={j} cx={dx} cy={-j*4.5} rx="2.5" ry="2" fill={color} opacity="0.9"/>
+              {[-2,0,2].map((dx,j) => (
+                <ellipse key={j} cx={dx} cy={-j*3} rx="2" ry="1.6" fill={color} opacity="0.9"/>
               ))}
-              <line x1="0" y1="-18" x2="0" y2="-24" stroke={color} strokeWidth="1"/>
+              <line x1="0" y1="-9" x2="0" y2="-13" stroke={color} strokeWidth="1"/>
             </g>
           </g>
         )
@@ -1411,32 +1411,28 @@ function PlanteAgronomie({ isDark, color }) {
 }
 
 function PlanteHydroponie({ isDark, color }) {
-  const tubes = [262, 284, 306]
+  const tubes = [278, 296, 314]
   return (
     <g>
-      <rect x="160" y="255" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="160" y="315" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="160" y="255" width="4" height="65" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
-      <rect x="321" y="255" width="4" height="65" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="272" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="318" width="165" height="5" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="160" y="272" width="4" height="51" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
+      <rect x="321" y="272" width="4" height="51" rx="2" fill={isDark?'#1e3a5f':'#bfdbfe'}/>
       {tubes.map((y,ti) => (
         <g key={ti}>
-          <rect x="164" y={y} width="157" height="12" rx="6"
+          <rect x="164" y={y} width="157" height="11" rx="5.5"
             fill={isDark?'rgba(6,182,212,0.18)':'rgba(6,182,212,0.1)'}
             stroke={isDark?'#0891b2':'#06b6d4'} strokeWidth="1.2"/>
-          <line x1="169" y1={y+6} x2="317" y2={y+6}
+          <line x1="169" y1={y+5.5} x2="317" y2={y+5.5}
             stroke={isDark?'#22d3ee':'#67e8f9'} strokeWidth="0.8" opacity="0.5" strokeDasharray="6 5"/>
           {[192,216,240,265,290].map((x,i) => (
             <g key={i} transform={'translate(' + x + ',' + y + ')'}>
-              <circle cx="0" cy="0" r="6" fill={isDark?'#134e2e':'#bbf7d0'} stroke={color+'40'} strokeWidth="1"/>
-              <line x1="0" y1="-2" x2="0" y2="-16" stroke={color} strokeWidth="1.5"/>
-              <ellipse cx="-4" cy="-10" rx="4.5" ry="2.8" fill={color} opacity="0.8"
-                transform="rotate(-30,-4,-10)"/>
-              <ellipse cx="4" cy="-13" rx="4.5" ry="2.8" fill={color} opacity="0.7"
-                transform="rotate(30,4,-13)"/>
-              {[-3,0,3].map((dx,ri) => (
-                <path key={ri} d={'M' + dx + ',6 q' + (dx*0.4) + ',7 0,14'} fill="none"
-                  stroke={isDark?'#a3e635':'#84cc16'} strokeWidth="0.9" opacity="0.65"/>
-              ))}
+              <circle cx="0" cy="0" r="5.5" fill={isDark?'#134e2e':'#bbf7d0'} stroke={color+'40'} strokeWidth="1"/>
+              <line x1="0" y1="-1" x2="0" y2="-11" stroke={color} strokeWidth="1.5"/>
+              <ellipse cx="-3" cy="-7" rx="3.5" ry="2" fill={color} opacity="0.8"
+                transform="rotate(-30,-3,-7)"/>
+              <ellipse cx="3" cy="-9" rx="3.5" ry="2" fill={color} opacity="0.7"
+                transform="rotate(30,3,-9)"/>
             </g>
           ))}
         </g>
@@ -1451,7 +1447,7 @@ function PlanteProtection({ isDark, color }) {
     <g>
       <rect x="170" y="298" width="158" height="18" rx="5" fill={isDark?'#1a1a1a':'#e2e8f0'} opacity="0.4"/>
       {plants.map((x,i) => {
-        const h = 48 + (i%3)*12, healthy = i !== 2
+        const h = 28 + (i%3)*8, healthy = i !== 2
         return (
           <g key={i} transform={'translate(' + x + ',298)'}>
             <line x1="0" y1="0" x2="0" y2={-h} stroke={healthy?color:'#F59E0B'} strokeWidth="2"/>
@@ -1461,10 +1457,10 @@ function PlanteProtection({ isDark, color }) {
               opacity="0.7" transform={'rotate(35,6,' + (-h*0.65) + ')'}/>
             <ellipse cx="0" cy={-h} rx="7" ry="4.5" fill={healthy?color:'#F59E0B'} opacity="0.9"/>
             {healthy && (
-              <g transform={'translate(0,' + (-h-12) + ')'}>
-                <path d="M0,-7 L-7,0 L-7,7 L0,10 L7,7 L7,0 Z"
+              <g transform={'translate(0,' + (-h-8) + ')'}>
+                <path d="M0,-5 L-5,0 L-5,5 L0,7 L5,5 L5,0 Z"
                   fill={color+'1a'} stroke={color} strokeWidth="1" opacity="0.55"/>
-                <text x="0" y="4" textAnchor="middle" fontSize="6" fill={color}>✓</text>
+                <text x="0" y="3" textAnchor="middle" fontSize="5" fill={color}>✓</text>
               </g>
             )}
           </g>
