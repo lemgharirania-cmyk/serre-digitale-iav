@@ -68,11 +68,10 @@ export const dashboardAPI = {
   export: (serreId, format, heures) =>
     apiFetch(`/api/dashboard/export/${serreId}?format=${format}&heures=${heures}`),
   getParams: (serreId) =>
-  apiFetch(`/api/params/${serreId}`).then(r => r?.json()),
-
-saveParamsBatch: (serreId, params) =>
-  apiFetch(`/api/params/${serreId}/batch`, {
-    method: 'PUT',
-    body: JSON.stringify({ params }),
-  }),
+    apiFetch(`/api/params/${serreId}`).then(r => r?.json()),
+  saveParamsBatch: (serreId, params) =>
+    apiFetch(`/api/params/${serreId}/batch`, {
+      method: 'PUT',
+      body: JSON.stringify({ params }),
+    }),
 }
