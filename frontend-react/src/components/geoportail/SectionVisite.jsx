@@ -511,7 +511,7 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
 
               {/* ── GLOBE END SCREEN ── */}
               {globeEnded && (
-                <div style={{
+                <div className="visite-end-overlay" style={{
                   position: 'absolute', inset: 0, zIndex: 10,
                   background: isDark
                     ? 'linear-gradient(160deg, rgba(5,12,26,0.93) 0%, rgba(11,23,40,0.97) 100%)'
