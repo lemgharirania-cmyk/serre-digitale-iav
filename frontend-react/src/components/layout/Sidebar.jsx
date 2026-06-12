@@ -206,7 +206,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside style={{
+    <aside className="dash-sidebar" style={{
       position: 'fixed', top: 0, left: 0, bottom: 0,
       height: '100vh', zIndex: 1000, width: W, flexShrink: 0,
       background: bg, borderRight: '1px solid ' + border,
