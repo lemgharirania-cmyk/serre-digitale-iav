@@ -582,51 +582,47 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .panel  { animation: fadeInUp 0.40s ease both; }
 
 /* ══════════════════════════════════════════════════════════════
-   RESPONSIVE — Dashboard admin (REPLACE existing block in index.css)
-   These rules go BEFORE the Géoportail responsive block
+   RESPONSIVE — Dashboard admin
+   REPLACE the existing block in index.css
+   NOTE: Desktop sidebar (layout/Sidebar.jsx) is NOT touched.
+   The DashBottomNav is its own component shown only at ≤900px.
 ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 1200px) {
   .kpi-row  { grid-template-columns: repeat(2, 1fr); }
   .over-row { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 900px) {
-  /* Hide desktop sidebar */
-  .admin-shell { grid-template-columns: 1fr; }
-  .admin-side  { display: none !important; }
-
-  /* Main content full width, padding for mobile bottom nav */
+  /* Main content gets bottom padding to clear the DashBottomNav */
   .admin-main {
     padding: 16px !important;
     padding-bottom: calc(62px + env(safe-area-inset-bottom) + 16px) !important;
   }
 
-  /* KPI and overview cards — 2 columns on tablet */
-  .kpi-row  { grid-template-columns: repeat(2, 1fr); }
-  .over-row { grid-template-columns: repeat(2, 1fr); }
+  .kpi-row  { grid-template-columns: repeat(2, 1fr) !important; }
+  .over-row { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 @media (max-width: 600px) {
-  /* KPI cards — 1 column on small phone */
+  .admin-main {
+    padding: 12px !important;
+    padding-bottom: calc(62px + env(safe-area-inset-bottom) + 12px) !important;
+  }
+
   .kpi-row  { grid-template-columns: 1fr !important; }
   .over-row { grid-template-columns: 1fr 1fr !important; }
 
-  /* Admin main — tighter padding */
-  .admin-main { padding: 12px !important; }
-
-  /* Admin top bar — stack on mobile */
+  /* Stack top bar on phone */
   .admin-top {
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 10px !important;
     align-items: flex-start !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 14px !important;
   }
   .admin-top h1 { font-size: 20px !important; }
   .admin-top-r  { width: 100% !important; justify-content: flex-end !important; }
-
-  /* Alert banner — smaller text */
-  .admin-shell > div[style*="position: fixed"][style*="top: 0"] span {
-    font-size: 11px !important;
-  }
 }
 /* ══════════════════════════════════════════════════════════════
    RESPONSIVE — Géoportail mobile / tablet
