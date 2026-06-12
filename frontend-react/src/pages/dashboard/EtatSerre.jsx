@@ -6,12 +6,12 @@
 //   2. Ambiance intérieure : grandes cartes ENV + IRR
 //   3. Schéma SVG enrichi + panneaux actionneurs droite
 // ════════════════════════════════════════════════════════════════
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
-  ChevronDown, ChevronUp, Settings, Flame, Fan,
+  Pencil, Check, X as XIcon,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
@@ -41,32 +41,46 @@ const OPTIMAL = {
   temp_eau:{ min:18, max:22 },   niveau_eau:{ min:0.6, max:1.0 },
 }
 
-// Seuils internes issus du contrôleur Pro-Leaf (synthèse PDF)
-const PARAMS_INTERNES = {
-  ventilation: {
-    cooling_jour:  { seuil:25, deadband:2 },   // Ouvre ventil. si T > 25°C (jour)
-    cooling_nuit:  { seuil:20, deadband:2 },   // Ouvre ventil. si T > 20°C (nuit)
-    mode: 'Cooling & Dehumidify Lock',
-  },
-  chauffage: {
-    heating_jour:  { seuil:20, deadband:2 },   // Chauffe si T < 20°C (jour)
-    heating_nuit:  { seuil:15, deadband:2 },   // Chauffe si T < 15°C (nuit)
-  },
-  deshumidification: {
-    jour: { seuil:80, deadband:5 },            // Déshumid. si H > 80%
-    nuit: { seuil:80, deadband:5 },
-  },
-  humidification: {
-    jour: { seuil:60, deadband:5 },            // Humidif. si H < 60%
-    nuit: { seuil:60, deadband:5 },
-  },
-  co2: {
-    up:   { seuil:1000, deadband:50 },         // Injection CO₂ si < 1000 ppm (jour)
-    down: { seuil:500,  deadband:50 },         // Purge CO₂ si > 500 ppm (nuit)
-    mode_fuzzy: true,
-    lock_cooling: true,
-    lock_dehumidify: true,
-  },
+// Valeurs par défaut Pro-Leaf — fallback si l'API ne répond pas
+const PI_DEFAULTS = {
+  ventilation_jour:       { seuil:25,   deadband:2  },
+  ventilation_nuit:       { seuil:20,   deadband:2  },
+  chauffage_jour:         { seuil:20,   deadband:2  },
+  chauffage_nuit:         { seuil:15,   deadband:2  },
+  humidification_jour:    { seuil:60,   deadband:5  },
+  humidification_nuit:    { seuil:60,   deadband:5  },
+  deshumidification_jour: { seuil:80,   deadband:5  },
+  deshumidification_nuit: { seuil:80,   deadband:5  },
+  co2_injection:          { seuil:1000, deadband:50 },
+  co2_purge:              { seuil:500,  deadband:50 },
+}
+
+// Convertit le format API plat → format structuré utilisé par equipEtats
+function apiToStruct(p) {
+  const g = (k) => ({ ...(PI_DEFAULTS[k]), ...(p[k] || {}) })
+  return {
+    ventilation: {
+      cooling_jour: { seuil: g('ventilation_jour').seuil,    deadband: g('ventilation_jour').deadband },
+      cooling_nuit: { seuil: g('ventilation_nuit').seuil,    deadband: g('ventilation_nuit').deadband },
+    },
+    chauffage: {
+      heating_jour: { seuil: g('chauffage_jour').seuil,      deadband: g('chauffage_jour').deadband },
+      heating_nuit: { seuil: g('chauffage_nuit').seuil,      deadband: g('chauffage_nuit').deadband },
+    },
+    humidification: {
+      jour: { seuil: g('humidification_jour').seuil,         deadband: g('humidification_jour').deadband },
+      nuit: { seuil: g('humidification_nuit').seuil,         deadband: g('humidification_nuit').deadband },
+    },
+    deshumidification: {
+      jour: { seuil: g('deshumidification_jour').seuil,      deadband: g('deshumidification_jour').deadband },
+      nuit: { seuil: g('deshumidification_nuit').seuil,      deadband: g('deshumidification_nuit').deadband },
+    },
+    co2: {
+      up:   { seuil: g('co2_injection').seuil,               deadband: g('co2_injection').deadband },
+      down: { seuil: g('co2_purge').seuil,                   deadband: g('co2_purge').deadband },
+      mode_fuzzy: true, lock_cooling: true, lock_dehumidify: true,
+    },
+  }
 }
 
 const ACTIONNEURS = {
@@ -109,8 +123,7 @@ function isJour(sunrise, sunset) {
   const cou = parseH(sunset)  ?? 19.5
   return h >= lev && h <= cou
 }
-function equipEtats(temp, humid, co2Val, jour) {
-  const pi = PARAMS_INTERNES
+function equipEtats(temp, humid, co2Val, jour, pi) {
   const cooling  = jour ? pi.ventilation.cooling_jour : pi.ventilation.cooling_nuit
   const heating  = jour ? pi.chauffage.heating_jour   : pi.chauffage.heating_nuit
   const deshumid = jour ? pi.deshumidification.jour   : pi.deshumidification.nuit
@@ -192,12 +205,21 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
   const [idx, setIdx]               = useState(defaultIdx)
   const [thresholds, setThresholds] = useState([])
 
+  // ── Params internes dynamiques ──────────────────────────────
+  const [paramsFlat,   setParamsFlat]   = useState({ ...PI_DEFAULTS })
+  const [paramsStruct, setParamsStruct] = useState(apiToStruct(PI_DEFAULTS))
+  const [editingCard,  setEditingCard]  = useState(null)   // 'ventilation' | 'chauffage' | ...
+  const [editForm,     setEditForm]     = useState({})
+  const [saving,       setSaving]       = useState(false)
+  const [saveOk,       setSaveOk]       = useState(null)   // null | 'ok' | 'err'
+
   const meta   = SERRES[idx]
   const serre  = liveData[idx] || {}
   const env    = serre.env || {}
   const irr    = serre.irr || {}
   const hasIrr = irr && Object.values(irr).some(v => v != null)
   const temp   = env.temperature
+  const canEdit = canAccessSerre(meta.id)
 
   useEffect(() => {
     let alive = true
@@ -207,11 +229,60 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
     return () => { alive = false }
   }, [meta.id])
 
+  // Charger les params internes depuis l'API à chaque changement de serre
+  useEffect(() => {
+    let alive = true
+    dashboardAPI.getParams(meta.id)
+      .then(data => {
+        if (!alive || !data?.params) return
+        const flat = {}
+        Object.keys(PI_DEFAULTS).forEach(k => {
+          flat[k] = { ...PI_DEFAULTS[k], ...(data.params[k] || {}) }
+        })
+        setParamsFlat(flat)
+        setParamsStruct(apiToStruct(flat))
+      })
+      .catch(() => { /* garde les defaults */ })
+    return () => { alive = false }
+  }, [meta.id])
+
+  // ── Helpers édition inline ──────────────────────────────────
+  function startEdit(cardKey, actions) {
+    const init = {}
+    actions.forEach(a => {
+      init[a + '_seuil']    = String(paramsFlat[a]?.seuil    ?? PI_DEFAULTS[a].seuil)
+      init[a + '_deadband'] = String(paramsFlat[a]?.deadband ?? PI_DEFAULTS[a].deadband)
+    })
+    setEditForm(init)
+    setEditingCard(cardKey)
+    setSaveOk(null)
+  }
+  function cancelEdit() { setEditingCard(null); setEditForm({}); setSaveOk(null) }
+  async function saveEdit(actions) {
+    setSaving(true)
+    try {
+      const payload = {}
+      actions.forEach(a => {
+        const s = parseFloat(editForm[a + '_seuil'])
+        const d = parseFloat(editForm[a + '_deadband'])
+        if (!isNaN(s) && !isNaN(d)) payload[a] = { seuil: s, deadband: d }
+      })
+      await dashboardAPI.saveParamsBatch(meta.id, payload)
+      const newFlat = { ...paramsFlat }
+      Object.entries(payload).forEach(([k, v]) => { newFlat[k] = v })
+      setParamsFlat(newFlat)
+      setParamsStruct(apiToStruct(newFlat))
+      setSaveOk('ok')
+      setTimeout(() => { setEditingCard(null); setEditForm({}); setSaveOk(null) }, 900)
+    } catch { setSaveOk('err') }
+    finally { setSaving(false) }
+  }
+
   const ext   = ecranEtat(temp, ACTIONNEURS.ombrage_ext)
   const int   = ecranEtat(temp, ACTIONNEURS.ombrage_int)
   const fen   = fenetreEtat(temp, meteo.vent, meteo.pluie, ACTIONNEURS.fenetre)
   const jour  = isJour(meteo.sunrise, meteo.sunset)
-  const equip = equipEtats(temp, env.humidite, env.co2, jour)
+  const equip = equipEtats(temp, env.humidite, env.co2, jour, paramsStruct)
   const getSeuil = (key) => thresholds.find(s => s.capteur === key) || null
 
   // Couleurs
@@ -461,19 +532,130 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             />
             <div style={{ fontSize:10, color:ink4, lineHeight:1.6, padding:'8px 0',
               borderTop:'1px solid ' + border, display:'flex', gap:5, alignItems:'flex-start' }}>
-              <Info size={10} style={{ flexShrink:0, marginTop:1 }}/> {t.note}
+              <Info size={10} style={{ flexShrink:0, marginTop:1 }}/>
+              {lang==='FR' ? 'Intervalles modifiables dans le panneau ci-dessous.' : 'Intervals editable in the panel below.'}
             </div>
           </div>
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          4. PANNEAU ACCORDÉON — Intervalles équipements
+          4. ÉQUIPEMENTS INTERNES — cartes éditables inline
       ══════════════════════════════════════════════════════════ */}
-      <IntervallesPanel
-        isDark={isDark} ink={ink} ink2={ink2} ink3={ink3} ink4={ink4} border={border}
-        cardBg={cardBg} meta={meta} equip={equip} jour={jour} lang={lang} t={t}
-      />
+      <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, padding:'20px 24px', marginTop:12 }}>
+
+        {/* En-tête */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ width:32, height:32, borderRadius:9, display:'flex', alignItems:'center',
+              justifyContent:'center', background:meta.color+'18', color:meta.color, flexShrink:0, fontSize:16 }}>⚙</span>
+            <div>
+              <div style={{ fontSize:14, fontWeight:800, color:ink, letterSpacing:'-0.01em' }}>{t.equipTitre}</div>
+              <div style={{ fontSize:11, color:ink3, marginTop:1 }}>
+                {jour ? '🌤 ' + t.jour : '🌙 ' + t.nuit}
+                {' · '}
+                {lang==='FR' ? 'Intervalles de pilotage (visualisation)' : 'Control intervals (visualization)'}
+              </div>
+            </div>
+          </div>
+          {/* Compteur actifs */}
+          {(() => {
+            const nb = [equip.ventilateur,equip.chauffage,equip.brumisateur,equip.deshumid]
+              .filter(e => e==='actif').length +
+              ((equip.co2inj==='actif'||equip.co2purge==='actif') ? 1 : 0)
+            return nb > 0 ? (
+              <span style={{ fontSize:10, fontWeight:700, padding:'3px 10px', borderRadius:99,
+                background:'rgba(34,197,94,0.12)', color:'#22C55E',
+                border:'1px solid rgba(34,197,94,0.25)' }}>
+                {nb} {lang==='FR' ? 'actif'+(nb>1?'s':'') : 'active'}
+              </span>
+            ) : null
+          })()}
+        </div>
+
+        {/* Bandeau avertissement visualisation */}
+        <div style={{ display:'flex', alignItems:'flex-start', gap:8, marginBottom:14,
+          background:isDark?'rgba(249,115,22,0.07)':'rgba(249,115,22,0.05)',
+          border:'1px solid '+(isDark?'rgba(249,115,22,0.2)':'rgba(249,115,22,0.15)'),
+          borderRadius:10, padding:'8px 12px' }}>
+          <AlertTriangle size={12} color="#F97316" style={{ flexShrink:0, marginTop:1 }}/>
+          <span style={{ fontSize:10, color:isDark?'#FED7AA':'#92400E', lineHeight:1.6 }}>
+            {lang==='FR'
+              ? 'Ces intervalles servent uniquement à la visualisation. Ils ne contrôlent pas l\'équipement réel — les seuils effectifs sont gérés dans l\'application locale Pro-Leaf.'
+              : 'These intervals are for visualization only. They do not control real equipment — effective thresholds are managed in the local Pro-Leaf application.'}
+          </span>
+        </div>
+
+        {/* Grille des 5 cartes */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
+          <EquipCard
+            isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
+            canEdit={canEdit} cardKey='ventilation' emoji='💨' label={t.ventTitre} color='#06B6D4'
+            etat={equip.ventilateur}
+            actions={['ventilation_jour','ventilation_nuit']}
+            rows={[
+              { action:'ventilation_jour', label:t.seuilJour, hint:'> °C' },
+              { action:'ventilation_nuit', label:t.seuilNuit, hint:'> °C' },
+            ]}
+            paramsFlat={paramsFlat} editingCard={editingCard} editForm={editForm}
+            setEditForm={setEditForm} saving={saving} saveOk={saveOk}
+            startEdit={startEdit} cancelEdit={cancelEdit} saveEdit={saveEdit}
+          />
+          <EquipCard
+            isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
+            canEdit={canEdit} cardKey='chauffage' emoji='🔥' label={t.chauffTitre} color='#F59E0B'
+            etat={equip.chauffage}
+            actions={['chauffage_jour','chauffage_nuit']}
+            rows={[
+              { action:'chauffage_jour', label:t.seuilJour, hint:'< °C' },
+              { action:'chauffage_nuit', label:t.seuilNuit, hint:'< °C' },
+            ]}
+            paramsFlat={paramsFlat} editingCard={editingCard} editForm={editForm}
+            setEditForm={setEditForm} saving={saving} saveOk={saveOk}
+            startEdit={startEdit} cancelEdit={cancelEdit} saveEdit={saveEdit}
+          />
+          <EquipCard
+            isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
+            canEdit={canEdit} cardKey='humidification' emoji='💧' label={t.brumTitre} color='#8B5CF6'
+            etat={equip.brumisateur}
+            actions={['humidification_jour','humidification_nuit']}
+            rows={[
+              { action:'humidification_jour', label:t.seuilJour, hint:'< %' },
+              { action:'humidification_nuit', label:t.seuilNuit, hint:'< %' },
+            ]}
+            paramsFlat={paramsFlat} editingCard={editingCard} editForm={editForm}
+            setEditForm={setEditForm} saving={saving} saveOk={saveOk}
+            startEdit={startEdit} cancelEdit={cancelEdit} saveEdit={saveEdit}
+          />
+          <EquipCard
+            isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
+            canEdit={canEdit} cardKey='deshumidification' emoji='🌬' label={t.deshumTitre} color='#3B82F6'
+            etat={equip.deshumid}
+            actions={['deshumidification_jour','deshumidification_nuit']}
+            rows={[
+              { action:'deshumidification_jour', label:t.seuilJour, hint:'> %' },
+              { action:'deshumidification_nuit', label:t.seuilNuit, hint:'> %' },
+            ]}
+            paramsFlat={paramsFlat} editingCard={editingCard} editForm={editForm}
+            setEditForm={setEditForm} saving={saving} saveOk={saveOk}
+            startEdit={startEdit} cancelEdit={cancelEdit} saveEdit={saveEdit}
+          />
+          <EquipCard
+            isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
+            canEdit={canEdit} cardKey='co2' emoji='🌿' label={t.co2Titre} color='#22C55E'
+            etat={equip.co2inj==='actif'||equip.co2purge==='actif' ? 'actif' : equip.co2inj==='neutre'||equip.co2purge==='neutre' ? 'neutre' : 'inactif'}
+            actions={['co2_injection','co2_purge']}
+            rows={[
+              { action:'co2_injection', label: lang==='FR'?'↑ Injection (jour)':'↑ Injection (day)', hint:'< ppm' },
+              { action:'co2_purge',     label: lang==='FR'?'↓ Purge (nuit)':'↓ Purge (night)',       hint:'> ppm' },
+            ]}
+            paramsFlat={paramsFlat} editingCard={editingCard} editForm={editForm}
+            setEditForm={setEditForm} saving={saving} saveOk={saveOk}
+            startEdit={startEdit} cancelEdit={cancelEdit} saveEdit={saveEdit}
+            extraBadge={lang==='FR'?t.fuzzy:'Fuzzy Control'}
+          />
+        </div>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
           5. PANNEAU SEUILS — comment fonctionnent les alertes
@@ -856,186 +1038,135 @@ function ParamCard({ paramKey, value, meta, seuil, lang, isDark, t }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// PANNEAU INTERVALLES — accordéon unifié actionneurs + équipements
+// CARTE ÉQUIPEMENT — éditable inline avec crayon
 // ════════════════════════════════════════════════════════════════
-function IntervallesPanel({ isDark, ink, ink2, ink3, ink4, border, cardBg, meta, equip, jour, lang, t }) {
-  const [open, setOpen] = useState(false)
-  const pi = PARAMS_INTERNES
+function EquipCard({
+  isDark, ink, ink3, ink4, border, lang, t, canEdit,
+  cardKey, emoji, label, color, etat,
+  actions, rows,
+  paramsFlat, editingCard, editForm, setEditForm,
+  saving, saveOk, startEdit, cancelEdit, saveEdit,
+  extraBadge,
+}) {
+  const isEditing = editingCard === cardKey
+  const c = etat==='actif' ? color : etat==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
+  const statusLabel = etat==='actif'   ? t.actifL
+                    : etat==='neutre'  ? t.transitionL
+                    : etat==='na'      ? t.naLabel
+                    : t.inactifL
 
-  const statusBadge = (e, labels) => {
-    const c = e==='actif' ? labels.cActif : e==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
-    const txt = e==='actif' ? t.actifL : e==='neutre' ? t.transitionL : e==='inactif' ? t.inactifL : t.naLabel
-    return (
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-        color:c, background:c+'18', border:'1px solid ' + c+'30', whiteSpace:'nowrap' }}>
-        {txt}
-      </span>
-    )
+  const inputStyle = {
+    background: isDark?'rgba(255,255,255,0.09)':'#fff',
+    border: '1px solid ' + color + '70',
+    borderRadius: 6,
+    padding: '3px 7px',
+    fontSize: 12,
+    fontFamily: "'JetBrains Mono',monospace",
+    color: isDark?'#F1F5F9':'#0F172A',
+    outline: 'none',
+    width: 62,
+    textAlign: 'right',
+    boxShadow: '0 0 0 2px ' + color + '15',
   }
 
-  // Compter les actifs pour afficher dans le header
-  const actifs = [
-    equip.ventilateur, equip.chauffage, equip.brumisateur, equip.deshumid,
-    (equip.co2inj === 'actif' || equip.co2purge === 'actif') ? 'actif' : 'inactif'
-  ].filter(e => e === 'actif').length
-
-  const rows = [
-    {
-      Icon: Fan,
-      label: t.ventTitre,
-      etat: equip.ventilateur,
-      cActif: '#06B6D4',
-      detail: () => (
-        <span>
-          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
-          <b style={{ color:'#06B6D4' }}>&gt; {pi.ventilation.cooling_jour.seuil}°C</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
-          <b style={{ color:'#06B6D4' }}>&gt; {pi.ventilation.cooling_nuit.seuil}°C</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.ventilation.cooling_jour.deadband}°C</b>
-        </span>
-      ),
-    },
-    {
-      Icon: Flame,
-      label: t.chauffTitre,
-      etat: equip.chauffage,
-      cActif: '#F59E0B',
-      detail: () => (
-        <span>
-          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
-          <b style={{ color:'#F59E0B' }}>&lt; {pi.chauffage.heating_jour.seuil}°C</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
-          <b style={{ color:'#F59E0B' }}>&lt; {pi.chauffage.heating_nuit.seuil}°C</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.chauffage.heating_jour.deadband}°C</b>
-        </span>
-      ),
-    },
-    {
-      Icon: Droplets,
-      label: t.brumTitre,
-      etat: equip.brumisateur,
-      cActif: '#8B5CF6',
-      detail: () => (
-        <span>
-          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
-          <b style={{ color:'#8B5CF6' }}>&lt; {pi.humidification.jour.seuil}%</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
-          <b style={{ color:'#8B5CF6' }}>&lt; {pi.humidification.nuit.seuil}%</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.humidification.jour.deadband}%</b>
-        </span>
-      ),
-    },
-    {
-      Icon: Wind,
-      label: t.deshumTitre,
-      etat: equip.deshumid,
-      cActif: '#3B82F6',
-      detail: () => (
-        <span>
-          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
-          <b style={{ color:'#3B82F6' }}>&gt; {pi.deshumidification.jour.seuil}%</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
-          <b style={{ color:'#3B82F6' }}>&gt; {pi.deshumidification.nuit.seuil}%</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.deshumidification.jour.deadband}%</b>
-        </span>
-      ),
-    },
-    {
-      Icon: Leaf,
-      label: t.co2Titre,
-      etat: (equip.co2inj==='actif'||equip.co2purge==='actif') ? 'actif' : (equip.co2inj==='neutre'||equip.co2purge==='neutre') ? 'neutre' : 'inactif',
-      cActif: '#22C55E',
-      detail: () => (
-        <span>
-          <span style={{ color:ink4 }}>↑ {t.jour}:</span>{' '}
-          <b style={{ color:'#22C55E' }}>&lt; {pi.co2.up.seuil} ppm</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>↓ {t.nuit}:</span>{' '}
-          <b style={{ color:'#22C55E' }}>&gt; {pi.co2.down.seuil} ppm</b>
-          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
-          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.co2.up.deadband} ppm</b>
-          {pi.co2.mode_fuzzy && <span style={{ marginLeft:6, fontSize:9, color:'#22C55E', fontWeight:600 }}>{t.fuzzy}</span>}
-        </span>
-      ),
-    },
-  ]
-
   return (
-    <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, marginTop:12, overflow:'hidden' }}>
-      {/* ── Header cliquable ── */}
-      <button onClick={() => setOpen(o => !o)} style={{
-        width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'14px 20px', background:'none', border:'none', cursor:'pointer',
-        fontFamily:"'Manrope','DM Sans',system-ui,sans-serif",
-      }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <span style={{ width:30, height:30, borderRadius:8, display:'flex', alignItems:'center',
-            justifyContent:'center', background:meta.color+'18', color:meta.color, flexShrink:0 }}>
-            <Settings size={15}/>
-          </span>
-          <div style={{ textAlign:'left' }}>
-            <div style={{ fontSize:13, fontWeight:700, color:ink, letterSpacing:'-0.01em' }}>
-              {t.equipTitre}
-            </div>
-            <div style={{ fontSize:10, color:ink3, marginTop:1 }}>
-              {jour ? <><Sun size={10} style={{ display:'inline', verticalAlign:'middle', marginRight:3 }}/>{t.jour}</> : <><Wind size={10} style={{ display:'inline', verticalAlign:'middle', marginRight:3 }}/>{t.nuit}</>}
-              {' · '}{lang==='FR' ? 'Intervalles Pro-Leaf' : 'Pro-Leaf intervals'}
-              {actifs > 0 && <span style={{ marginLeft:8, color:meta.color, fontWeight:700 }}>{actifs} {lang==='FR'?'actif'+(actifs>1?'s':''):'active'}</span>}
-            </div>
-          </div>
-        </div>
-        <span style={{ color:ink4, display:'flex', alignItems:'center', gap:6 }}>
-          {/* mini statuts actifs */}
-          {rows.filter(r => r.etat==='actif').map((r,i) => (
-            <span key={i} style={{ width:6, height:6, borderRadius:'50%', background:r.cActif,
-              boxShadow:'0 0 4px ' + r.cActif }}/>
-          ))}
-          {open ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-        </span>
-      </button>
+    <div style={{
+      borderRadius:12, padding:'12px 14px',
+      border:'1px solid ' + (etat==='actif' ? color+'35' : border),
+      background: etat==='actif'
+        ? (isDark ? color+'11' : color+'07')
+        : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)'),
+      transition:'border-color 0.2s, background 0.2s',
+    }}>
 
-      {/* ── Contenu dépliable ── */}
-      {open && (
-        <div style={{ borderTop:'1px solid ' + border, padding:'14px 20px 16px' }}>
-          <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
-            {rows.map((row, i) => {
-              const { Icon, label, etat, cActif, detail } = row
-              const c = etat==='actif' ? cActif : etat==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
-              const isLast = i === rows.length - 1
-              return (
-                <div key={i} style={{
-                  display:'grid', gridTemplateColumns:'28px 1fr auto',
-                  alignItems:'center', gap:12, padding:'10px 0',
-                  borderBottom: isLast ? 'none' : '1px solid ' + (isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'),
-                }}>
-                  {/* Icône */}
-                  <span style={{ width:28, height:28, borderRadius:7, display:'flex', alignItems:'center',
-                    justifyContent:'center', background:c+'18', color:c, flexShrink:0 }}>
-                    <Icon size={14}/>
-                  </span>
-                  {/* Label + détail */}
-                  <div style={{ minWidth:0 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:ink, marginBottom:2 }}>{label}</div>
-                    <div style={{ fontSize:10, color:ink3, lineHeight:1.55 }}>{detail()}</div>
-                  </div>
-                  {/* Badge statut */}
-                  {statusBadge(etat, { cActif })}
+      {/* En-tête carte */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <span style={{ fontSize:16 }}>{emoji}</span>
+          <span style={{ fontSize:12, fontWeight:700, color:ink }}>{label}</span>
+          {extraBadge && (
+            <span style={{ fontSize:8, fontWeight:700, padding:'1px 5px', borderRadius:99,
+              background:color+'18', color, border:'1px solid '+color+'30' }}>
+              {extraBadge}
+            </span>
+          )}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+            color:c, background:c+'18', border:'1px solid '+c+'30', whiteSpace:'nowrap' }}>
+            {statusLabel}
+          </span>
+          {/* ✏️ Crayon — visible seulement si l'admin gère cette serre */}
+          {canEdit && !isEditing && (
+            <button onClick={() => startEdit(cardKey, actions)}
+              title={lang==='FR'?'Modifier':'Edit'}
+              style={{ background:'none', border:'none', cursor:'pointer',
+                color:ink4, padding:'3px', borderRadius:5, display:'flex', alignItems:'center',
+                transition:'color 0.15s' }}
+              onMouseEnter={e=>e.currentTarget.style.color=color}
+              onMouseLeave={e=>e.currentTarget.style.color=ink4}>
+              <Pencil size={12}/>
+            </button>
+          )}
+          {/* Boutons annuler / valider en mode édition */}
+          {isEditing && (
+            <div style={{ display:'flex', gap:4 }}>
+              <button onClick={cancelEdit}
+                style={{ background:'none', border:'none', cursor:'pointer',
+                  color:ink4, padding:'3px', borderRadius:5, display:'flex', alignItems:'center' }}>
+                <XIcon size={12}/>
+              </button>
+              <button onClick={() => saveEdit(actions)} disabled={saving}
+                style={{ height:24, padding:'0 8px', borderRadius:6, fontSize:10, fontWeight:700,
+                  border:'none', cursor:saving?'not-allowed':'pointer',
+                  background: saveOk==='ok' ? '#22C55E' : saving ? ink4 : color,
+                  color:'#fff', display:'flex', alignItems:'center', gap:3, transition:'background 0.2s' }}>
+                {saving ? '...' : saveOk==='ok' ? <><Check size={10}/> OK</> : <Check size={10}/>}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Lignes seuil jour / seuil nuit */}
+      <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+        {rows.map((row, i) => {
+          const val = paramsFlat[row.action] ?? PI_DEFAULTS[row.action]
+          return (
+            <div key={row.action} style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between', gap:6,
+              paddingTop: i>0 ? 6 : 0,
+              borderTop: i>0 ? '1px dashed '+(isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)') : 'none',
+            }}>
+              <span style={{ fontSize:10, color:ink4, flexShrink:0 }}>{row.label}</span>
+              {isEditing ? (
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <span style={{ fontSize:9, color:ink4 }}>{row.hint.replace(/[<>]/g,'').trim()}</span>
+                  <input type="number"
+                    value={editForm[row.action+'_seuil'] ?? ''}
+                    onChange={e => setEditForm(f=>({...f, [row.action+'_seuil']:e.target.value}))}
+                    style={inputStyle}/>
+                  <span style={{ fontSize:9, color:ink4 }}>±</span>
+                  <input type="number"
+                    value={editForm[row.action+'_deadband'] ?? ''}
+                    onChange={e => setEditForm(f=>({...f, [row.action+'_deadband']:e.target.value}))}
+                    style={{ ...inputStyle, width:46 }}/>
                 </div>
-              )
-            })}
-          </div>
-          <div style={{ marginTop:10, fontSize:10, color:ink4, display:'flex', alignItems:'center', gap:5,
-            paddingTop:10, borderTop:'1px solid ' + border }}>
-            <Info size={10} style={{ flexShrink:0 }}/> {t.note}
-          </div>
+              ) : (
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11 }}>
+                  <b style={{ color }}>{row.hint} {val.seuil}</b>
+                  <span style={{ color:ink4, fontWeight:400, marginLeft:5 }}>· ±{val.deadband}</span>
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Erreur sauvegarde */}
+      {isEditing && saveOk==='err' && (
+        <div style={{ marginTop:6, fontSize:9, color:'#EF4444' }}>
+          {lang==='FR'?'Erreur sauvegarde.':'Save failed.'}
         </div>
       )}
     </div>
