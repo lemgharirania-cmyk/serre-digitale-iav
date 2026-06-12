@@ -1,5 +1,5 @@
 // src/components/geoportail/SectionDonnees.jsx
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ChevronLeft, ChevronRight, RefreshCw, Info, AlertTriangle, CheckCircle, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
 import { iotAPI } from '../../api/client'
 
@@ -245,6 +245,8 @@ function StatusIcon({ status, color }) {
 function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
   const [showPopup, setShowPopup] = useState(false)
   const [hovered,   setHovered]   = useState(false)
+  const [popupSide, setPopupSide] = useState('center') // 'left' | 'right' | 'center'
+  const cardRef = useRef(null)
   const info   = POPUP_INFO[paramKey]
   if (!info) return null
 
@@ -253,12 +255,31 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
   const cardColor = status === 'warning' ? '#F59E0B' : status === 'ok' ? serreColor : '#64748B'
   const desc   = info.serres[serreCode]?.[lang === 'fr' ? 'fr' : 'en'] || ''
 
+  function openPopup() {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      const mid  = window.innerWidth / 2
+      if (rect.left < mid * 0.5)       setPopupSide('right')   // card is far left → popup goes right
+      else if (rect.right > mid * 1.5) setPopupSide('left')    // card is far right → popup goes left
+      else                              setPopupSide('center')
+    }
+    setHovered(true); setShowPopup(true)
+  }
+
+  // popup position style based on side
+  const popupPos = popupSide === 'right'
+    ? { left: 0, transform: 'none' }
+    : popupSide === 'left'
+    ? { right: 0, left: 'auto', transform: 'none' }
+    : { left: '50%', transform: 'translateX(-50%)' }
+
   return (
     <div
+      ref={cardRef}
       style={{ position: 'relative' }}
-      onMouseEnter={() => { setHovered(true); setShowPopup(true) }}
+      onMouseEnter={openPopup}
       onMouseLeave={() => { setHovered(false); setShowPopup(false) }}
-      onTouchStart={e => { e.preventDefault(); setHovered(p => !p); setShowPopup(p => !p) }}
+      onTouchStart={e => { e.preventDefault(); if (showPopup) { setHovered(false); setShowPopup(false) } else { openPopup() } }}
     >
       {/* Card */}
       <div style={{
@@ -315,8 +336,7 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
         <div className="donnees-popup" style={{
           position: 'absolute',
           bottom: 'calc(100% + 10px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          ...popupPos,
           width: '260px',
           background: darkMode ? 'rgba(7,17,31,0.97)' : 'rgba(255,255,255,0.98)',
           border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
