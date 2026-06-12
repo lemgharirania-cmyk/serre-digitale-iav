@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
+  ChevronDown, ChevronUp, Settings, Flame, Blinds, Window, Fan, Sprout,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
@@ -467,179 +468,12 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          4. ÉQUIPEMENTS INTERNES — ventilation, chauffage, brumisateur, CO₂
+          4. PANNEAU ACCORDÉON — Intervalles équipements
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, padding:'20px 24px', marginTop:16 }}>
-        {/* Titre */}
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
-          <span style={{ width:32, height:32, borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center',
-            background: meta.color+'18', color: meta.color, flexShrink:0, fontSize:16 }}>⚙</span>
-          <div>
-            <div style={{ fontSize:14, fontWeight:800, color:ink, letterSpacing:'-0.01em' }}>{t.equipTitre}</div>
-            <div style={{ fontSize:11, color:ink3, marginTop:1 }}>
-              {jour ? '🌤 ' + t.jour : '🌙 ' + t.nuit} · {lang==='FR'?'Intervalles Pro-Leaf (synthèse contrôleur)':'Pro-Leaf intervals (controller summary)'}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(185px,1fr))', gap:10 }}>
-
-          {/* ── Ventilation ── */}
-          {(() => {
-            const e = equip.ventilateur
-            const c = e==='actif' ? '#06B6D4' : e==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
-            const pi = PARAMS_INTERNES.ventilation
-            return (
-              <div style={{ borderRadius:12, padding:'12px 14px',
-                border:'1px solid ' + (e==='actif' ? '#06B6D420' : border),
-                background: e==='actif' ? (isDark?'rgba(6,182,212,0.07)':'rgba(6,182,212,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <span style={{ fontSize:16 }}>🌀</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.ventTitre}</span>
-                  </div>
-                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
-                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
-                  </span>
-                </div>
-                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
-                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#06B6D4' }}>&gt; {pi.cooling_jour.seuil}°C</b>
-                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
-                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#06B6D4' }}>&gt; {pi.cooling_nuit.seuil}°C</b>
-                  <br/>
-                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.cooling_jour.deadband}°C</b>
-                  <span style={{ marginLeft:6, fontSize:9, color:ink4, fontStyle:'italic' }}>{lang==='FR'?pi.mode:pi.mode}</span>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* ── Chauffage ── */}
-          {(() => {
-            const e = equip.chauffage
-            const c = e==='actif' ? '#F59E0B' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
-            const pi = PARAMS_INTERNES.chauffage
-            return (
-              <div style={{ borderRadius:12, padding:'12px 14px',
-                border:'1px solid ' + (e==='actif' ? '#F59E0B20' : border),
-                background: e==='actif' ? (isDark?'rgba(245,158,11,0.07)':'rgba(245,158,11,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <span style={{ fontSize:16 }}>🔥</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.chauffTitre}</span>
-                  </div>
-                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
-                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
-                  </span>
-                </div>
-                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
-                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#F59E0B' }}>&lt; {pi.heating_jour.seuil}°C</b>
-                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
-                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#F59E0B' }}>&lt; {pi.heating_nuit.seuil}°C</b>
-                  <br/>
-                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.heating_jour.deadband}°C</b>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* ── Brumisateur / Humidification ── */}
-          {(() => {
-            const e = equip.brumisateur
-            const c = e==='actif' ? '#8B5CF6' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
-            const pi = PARAMS_INTERNES.humidification
-            return (
-              <div style={{ borderRadius:12, padding:'12px 14px',
-                border:'1px solid ' + (e==='actif' ? '#8B5CF620' : border),
-                background: e==='actif' ? (isDark?'rgba(139,92,246,0.07)':'rgba(139,92,246,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <span style={{ fontSize:16 }}>💧</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.brumTitre}</span>
-                  </div>
-                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
-                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
-                  </span>
-                </div>
-                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
-                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#8B5CF6' }}>&lt; {pi.jour.seuil}%</b>
-                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
-                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#8B5CF6' }}>&lt; {pi.nuit.seuil}%</b>
-                  <br/>
-                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.jour.deadband}%</b>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* ── Déshumidification ── */}
-          {(() => {
-            const e = equip.deshumid
-            const c = e==='actif' ? '#3B82F6' : e==='neutre' ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
-            const pi = PARAMS_INTERNES.deshumidification
-            return (
-              <div style={{ borderRadius:12, padding:'12px 14px',
-                border:'1px solid ' + (e==='actif' ? '#3B82F620' : border),
-                background: e==='actif' ? (isDark?'rgba(59,130,246,0.07)':'rgba(59,130,246,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <span style={{ fontSize:16 }}>🌬</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.deshumTitre}</span>
-                  </div>
-                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
-                    {e==='actif'?t.actifL:e==='neutre'?t.transitionL:e==='inactif'?t.inactifL:t.naLabel}
-                  </span>
-                </div>
-                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
-                  <span style={{ color:ink4 }}>{t.seuilJour}:</span> <b style={{ color:'#3B82F6' }}>&gt; {pi.jour.seuil}%</b>
-                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
-                  <span style={{ color:ink4 }}>{t.seuilNuit}:</span> <b style={{ color:'#3B82F6' }}>&gt; {pi.nuit.seuil}%</b>
-                  <br/>
-                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.jour.deadband}%</b>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* ── CO₂ ── */}
-          {(() => {
-            const actif = equip.co2inj === 'actif' || equip.co2purge === 'actif'
-            const neutre = equip.co2inj === 'neutre' || equip.co2purge === 'neutre'
-            const e = actif ? 'actif' : neutre ? 'neutre' : 'inactif'
-            const c = actif ? '#22C55E' : neutre ? '#94A3B8' : (isDark?'#475569':'#94A3B8')
-            const pi = PARAMS_INTERNES.co2
-            return (
-              <div style={{ borderRadius:12, padding:'12px 14px',
-                border:'1px solid ' + (actif ? '#22C55E20' : border),
-                background: actif ? (isDark?'rgba(34,197,94,0.07)':'rgba(34,197,94,0.04)') : (isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)') }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <span style={{ fontSize:16 }}>🌿</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:ink }}>{t.co2Titre}</span>
-                  </div>
-                  <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                    color:c, background:c+'18', border:'1px solid ' + c+'30' }}>
-                    {equip.co2inj==='actif'?'↑ Injection':equip.co2purge==='actif'?'↓ Purge':e==='neutre'?t.transitionL:t.inactifL}
-                  </span>
-                </div>
-                <div style={{ fontSize:10, color:ink3, lineHeight:1.65 }}>
-                  <span style={{ color:ink4 }}>↑ {t.jour}:</span> <b style={{ color:'#22C55E' }}>&lt; {pi.up.seuil} ppm</b>
-                  <span style={{ color:ink4, margin:'0 6px' }}>·</span>
-                  <span style={{ color:ink4 }}>↓ {t.nuit}:</span> <b style={{ color:'#22C55E' }}>&gt; {pi.down.seuil} ppm</b>
-                  <br/>
-                  <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.up.deadband} ppm</b>
-                  <span style={{ marginLeft:6, fontSize:9, color:'#22C55E', fontWeight:600 }}>{pi.mode_fuzzy ? t.fuzzy : ''}</span>
-                </div>
-              </div>
-            )
-          })()}
-
-        </div>
-      </div>
+      <IntervallesPanel
+        isDark={isDark} ink={ink} ink2={ink2} ink3={ink3} ink4={ink4} border={border}
+        cardBg={cardBg} meta={meta} equip={equip} jour={jour} lang={lang} t={t}
+      />
 
       {/* ══════════════════════════════════════════════════════════
           5. PANNEAU SEUILS — comment fonctionnent les alertes
@@ -1015,6 +849,193 @@ function ParamCard({ paramKey, value, meta, seuil, lang, isDark, t }) {
             borderRight:'1px solid ' + (isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),
             borderBottom:'1px solid ' + (isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),
             transform:'translateX(-50%) rotate(45deg)' }}/>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// PANNEAU INTERVALLES — accordéon unifié actionneurs + équipements
+// ════════════════════════════════════════════════════════════════
+function IntervallesPanel({ isDark, ink, ink2, ink3, ink4, border, cardBg, meta, equip, jour, lang, t }) {
+  const [open, setOpen] = useState(false)
+  const pi = PARAMS_INTERNES
+
+  const statusBadge = (e, labels) => {
+    const c = e==='actif' ? labels.cActif : e==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
+    const txt = e==='actif' ? t.actifL : e==='neutre' ? t.transitionL : e==='inactif' ? t.inactifL : t.naLabel
+    return (
+      <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+        color:c, background:c+'18', border:'1px solid ' + c+'30', whiteSpace:'nowrap' }}>
+        {txt}
+      </span>
+    )
+  }
+
+  // Compter les actifs pour afficher dans le header
+  const actifs = [
+    equip.ventilateur, equip.chauffage, equip.brumisateur, equip.deshumid,
+    (equip.co2inj === 'actif' || equip.co2purge === 'actif') ? 'actif' : 'inactif'
+  ].filter(e => e === 'actif').length
+
+  const rows = [
+    {
+      Icon: Fan,
+      label: t.ventTitre,
+      etat: equip.ventilateur,
+      cActif: '#06B6D4',
+      detail: () => (
+        <span>
+          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
+          <b style={{ color:'#06B6D4' }}>&gt; {pi.ventilation.cooling_jour.seuil}°C</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
+          <b style={{ color:'#06B6D4' }}>&gt; {pi.ventilation.cooling_nuit.seuil}°C</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.ventilation.cooling_jour.deadband}°C</b>
+        </span>
+      ),
+    },
+    {
+      Icon: Flame,
+      label: t.chauffTitre,
+      etat: equip.chauffage,
+      cActif: '#F59E0B',
+      detail: () => (
+        <span>
+          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
+          <b style={{ color:'#F59E0B' }}>&lt; {pi.chauffage.heating_jour.seuil}°C</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
+          <b style={{ color:'#F59E0B' }}>&lt; {pi.chauffage.heating_nuit.seuil}°C</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.chauffage.heating_jour.deadband}°C</b>
+        </span>
+      ),
+    },
+    {
+      Icon: Droplets,
+      label: t.brumTitre,
+      etat: equip.brumisateur,
+      cActif: '#8B5CF6',
+      detail: () => (
+        <span>
+          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
+          <b style={{ color:'#8B5CF6' }}>&lt; {pi.humidification.jour.seuil}%</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
+          <b style={{ color:'#8B5CF6' }}>&lt; {pi.humidification.nuit.seuil}%</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.humidification.jour.deadband}%</b>
+        </span>
+      ),
+    },
+    {
+      Icon: Wind,
+      label: t.deshumTitre,
+      etat: equip.deshumid,
+      cActif: '#3B82F6',
+      detail: () => (
+        <span>
+          <span style={{ color:ink4 }}>{t.seuilJour}:</span>{' '}
+          <b style={{ color:'#3B82F6' }}>&gt; {pi.deshumidification.jour.seuil}%</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.seuilNuit}:</span>{' '}
+          <b style={{ color:'#3B82F6' }}>&gt; {pi.deshumidification.nuit.seuil}%</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.deshumidification.jour.deadband}%</b>
+        </span>
+      ),
+    },
+    {
+      Icon: Leaf,
+      label: t.co2Titre,
+      etat: (equip.co2inj==='actif'||equip.co2purge==='actif') ? 'actif' : (equip.co2inj==='neutre'||equip.co2purge==='neutre') ? 'neutre' : 'inactif',
+      cActif: '#22C55E',
+      detail: () => (
+        <span>
+          <span style={{ color:ink4 }}>↑ {t.jour}:</span>{' '}
+          <b style={{ color:'#22C55E' }}>&lt; {pi.co2.up.seuil} ppm</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>↓ {t.nuit}:</span>{' '}
+          <b style={{ color:'#22C55E' }}>&gt; {pi.co2.down.seuil} ppm</b>
+          <span style={{ color:ink4, margin:'0 5px' }}>·</span>
+          <span style={{ color:ink4 }}>{t.deadband}:</span> <b>±{pi.co2.up.deadband} ppm</b>
+          {pi.co2.mode_fuzzy && <span style={{ marginLeft:6, fontSize:9, color:'#22C55E', fontWeight:600 }}>{t.fuzzy}</span>}
+        </span>
+      ),
+    },
+  ]
+
+  return (
+    <div style={{ background:cardBg, border:'1px solid ' + border, borderRadius:18, marginTop:12, overflow:'hidden' }}>
+      {/* ── Header cliquable ── */}
+      <button onClick={() => setOpen(o => !o)} style={{
+        width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
+        padding:'14px 20px', background:'none', border:'none', cursor:'pointer',
+        fontFamily:"'Manrope','DM Sans',system-ui,sans-serif",
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{ width:30, height:30, borderRadius:8, display:'flex', alignItems:'center',
+            justifyContent:'center', background:meta.color+'18', color:meta.color, flexShrink:0 }}>
+            <Settings size={15}/>
+          </span>
+          <div style={{ textAlign:'left' }}>
+            <div style={{ fontSize:13, fontWeight:700, color:ink, letterSpacing:'-0.01em' }}>
+              {t.equipTitre}
+            </div>
+            <div style={{ fontSize:10, color:ink3, marginTop:1 }}>
+              {jour ? <><Sun size={10} style={{ display:'inline', verticalAlign:'middle', marginRight:3 }}/>{t.jour}</> : <><Wind size={10} style={{ display:'inline', verticalAlign:'middle', marginRight:3 }}/>{t.nuit}</>}
+              {' · '}{lang==='FR' ? 'Intervalles Pro-Leaf' : 'Pro-Leaf intervals'}
+              {actifs > 0 && <span style={{ marginLeft:8, color:meta.color, fontWeight:700 }}>{actifs} {lang==='FR'?'actif'+(actifs>1?'s':''):'active'}</span>}
+            </div>
+          </div>
+        </div>
+        <span style={{ color:ink4, display:'flex', alignItems:'center', gap:6 }}>
+          {/* mini statuts actifs */}
+          {rows.filter(r => r.etat==='actif').map((r,i) => (
+            <span key={i} style={{ width:6, height:6, borderRadius:'50%', background:r.cActif,
+              boxShadow:'0 0 4px ' + r.cActif }}/>
+          ))}
+          {open ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+        </span>
+      </button>
+
+      {/* ── Contenu dépliable ── */}
+      {open && (
+        <div style={{ borderTop:'1px solid ' + border, padding:'14px 20px 16px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+            {rows.map((row, i) => {
+              const { Icon, label, etat, cActif, detail } = row
+              const c = etat==='actif' ? cActif : etat==='neutre' ? '#F59E0B' : (isDark?'#475569':'#94A3B8')
+              const isLast = i === rows.length - 1
+              return (
+                <div key={i} style={{
+                  display:'grid', gridTemplateColumns:'28px 1fr auto',
+                  alignItems:'center', gap:12, padding:'10px 0',
+                  borderBottom: isLast ? 'none' : '1px solid ' + (isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'),
+                }}>
+                  {/* Icône */}
+                  <span style={{ width:28, height:28, borderRadius:7, display:'flex', alignItems:'center',
+                    justifyContent:'center', background:c+'18', color:c, flexShrink:0 }}>
+                    <Icon size={14}/>
+                  </span>
+                  {/* Label + détail */}
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:ink, marginBottom:2 }}>{label}</div>
+                    <div style={{ fontSize:10, color:ink3, lineHeight:1.55 }}>{detail()}</div>
+                  </div>
+                  {/* Badge statut */}
+                  {statusBadge(etat, { cActif })}
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ marginTop:10, fontSize:10, color:ink4, display:'flex', alignItems:'center', gap:5,
+            paddingTop:10, borderTop:'1px solid ' + border }}>
+            <Info size={10} style={{ flexShrink:0 }}/> {t.note}
+          </div>
         </div>
       )}
     </div>
