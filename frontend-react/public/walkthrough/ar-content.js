@@ -6294,119 +6294,141 @@ function renderInfoCard(el, def){
     },
 
     'avocatier': {
-      status:['Spécimen en observation','Specimen under observation','عينة قيد المراقبة'],
+      status:['Spécimen — Unité Protection des Plantes','Specimen — Plant Protection Unit','عينة — وحدة وقاية النباتات'],
       audio:['audio/fr/avocatier.mp3','audio/en/avocatier.mp3','audio/ar/avocatier.mp3'],
       card:{ sections:[
         {title:secId, kind:'facts', items:[
           {i:'ti-seedling', k:Lk.espece,  v:'Persea americana'},
           {i:'ti-plant',    k:Lk.famille, v:{FR:'Lauracées',EN:'Lauraceae',AR:'الغارية'}},
           {i:'ti-map-pin',  k:Lk.origine, v:{FR:'Mésoamérique',EN:'Mesoamerica',AR:'أمريكا الوسطى'}},
+          {i:'ti-shield',   k:{FR:'Unité',EN:'Unit',AR:'الوحدة'}, v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
         ]},
-        {title:secOpt, kind:'facts', items:[
-          {i:'ti-temperature', k:Lk.temp,  v:'18 – 30 °C'},
-          {i:'ti-droplet',     k:Lk.hum,   v:'60 – 75 %'},
-          {i:'ti-sun',         k:Lk.light, v:{FR:'Plein soleil à mi-ombre',EN:'Full sun to part shade',AR:'شمس كاملة إلى ظل جزئي'}},
-          {i:'ti-stack',       k:Lk.sol,   v:{FR:'Bien drainé, pH 6–7',EN:'Well-drained, pH 6–7',AR:'جيد التصريف، pH 6–7'}},
+        {title:{FR:'MALADIE ÉTUDIÉE',EN:'DISEASE STUDIED',AR:'المرض المدروس'}, kind:'bullets', items:[
+          {FR:'Chancre de l\u2019avocatier.', EN:'Avocado canker.', AR:'تقرّح الأفوكادو.'},
         ]},
-        {title:secDis, kind:'bullets', items:[
-          {FR:'Cercosporose : taches nécrotiques foliaires (Cercospora sp.).', EN:'Cercospora leaf spot: necrotic leaf lesions (Cercospora sp.).', AR:'تبقع سركوسبورا: آفات نخرية على الأوراق (Cercospora sp.).'},
-          {FR:'Pourriture racinaire à Phytophthora cinnamomi.', EN:'Root rot caused by Phytophthora cinnamomi.', AR:'تعفن الجذور بفعل Phytophthora cinnamomi.'},
-          {FR:'Évaluation de la résistance variétale aux pathogènes.', EN:'Assessment of varietal resistance to pathogens.', AR:'تقييم مقاومة الأصناف لمسببات الأمراض.'},
+        {title:{FR:'À PROPOS DE LA MALADIE',EN:'ABOUT THE DISEASE',AR:'حول المرض'}, kind:'grid', items:[
+          {i:'ti-bug',         FR:'Maladie fongique principalement causée par des champignons des genres Phytophthora et Botryosphaeria.', EN:'Fungal disease mainly caused by fungi of the Phytophthora and Botryosphaeria genera.', AR:'مرض فطري تسببه أساساً فطريات من جنسي Phytophthora وBotryosphaeria.'},
+          {i:'ti-virus', FR:'Symptômes : lésions nécrotiques sur le tronc et les branches, écoulements gommeux, dessèchement progressif.', EN:'Symptoms: necrotic lesions on trunk and branches, gummy exudates, progressive dieback.', AR:'الأعراض: آفات نخرية على الجذع والأغصان، إفرازات صمغية، ذبول تدريجي.'},
+          {i:'ti-waves', FR:'Favorisée par les blessures, l\u2019humidité élevée et les sols mal drainés.', EN:'Favoured by wounds, high humidity and poorly drained soils.', AR:'يُفاقمها الجروح والرطوبة العالية والتربة سيئة التصريف.'},
+          {i:'ti-progress-alert',      FR:'Peut entraîner un dépérissement de l\u2019arbre et des pertes économiques importantes.', EN:'Can cause tree decline and significant economic losses.', AR:'يمكن أن يتسبب في تدهور الشجرة وخسائر اقتصادية كبيرة.'},
+        ]},
+        {title:{FR:'À PROPOS DE L\u2019ESPÈCE',EN:'ABOUT THE SPECIES',AR:'حول النوع'}, kind:'grid', items:[
+          {i:'ti-leaf',  FR:'Arbre fruitier tropical à subtropical, feuillage persistant.', EN:'Tropical to subtropical fruit tree with evergreen foliage.', AR:'شجرة فاكهة استوائية إلى شبه استوائية ذات أوراق دائمة.'},
+          {i:'ti-bulb',  FR:'Espèce d\u2019intérêt agronomique majeur, sensible à plusieurs pathogènes en culture.', EN:'Crop of major agronomic interest, sensitive to several pathogens in cultivation.', AR:'نوع ذو أهمية زراعية كبرى، حسّاس لعدة مسببات أمراض في الزراعة.'},
         ]},
       ]},
     },
 
     'plante x': {
-      status:['Espèce à confirmer','Species to confirm','النوع قيد التأكيد'],
-      audio:null,
-      card:{
-        pending:{FR:'Spécimen non encore identifié — fiche à compléter par l\u2019unité.',EN:'Specimen not yet identified — record to be completed by the unit.',AR:'العينة لم تُعرَّف بعد — البطاقة قيد الاستكمال من الوحدة.'},
-        sections:[
-          {title:secId, kind:'facts', items:[
-            {i:'ti-seedling', k:Lk.espece,  v:{FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'}, flag:true},
-            {i:'ti-plant',    k:Lk.famille, v:{FR:'à confirmer',EN:'to confirm',AR:'قيد التأكيد'}, flag:true},
-            {i:'ti-flag',     k:Lk.statut,  v:{FR:'En cours d\u2019identification',EN:'Being identified',AR:'قيد التعريف'}},
-          ]},
-        ],
-      },
+      status:['Spécimen — Unité Protection des Plantes','Specimen — Plant Protection Unit','عينة — وحدة وقاية النباتات'],
+      audio:['audio/fr/olivier.mp3','audio/en/olivier.mp3','audio/ar/olivier.mp3'],
+      card:{ sections:[
+        {title:secId, kind:'facts', items:[
+          {i:'ti-seedling', k:Lk.espece,  v:'Olea europaea'},
+          {i:'ti-plant',    k:Lk.famille, v:{FR:'Oléacées',EN:'Oleaceae',AR:'الزيتونية'}},
+          {i:'ti-map-pin',  k:Lk.origine, v:{FR:'Bassin méditerranéen',EN:'Mediterranean basin',AR:'حوض البحر الأبيض المتوسط'}},
+          {i:'ti-shield',   k:{FR:'Unité',EN:'Unit',AR:'الوحدة'}, v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
+        ]},
+        {title:{FR:'MALADIE ÉTUDIÉE',EN:'DISEASE STUDIED',AR:'المرض المدروس'}, kind:'bullets', items:[
+          {FR:'Anthracnose de l\u2019olivier.', EN:'Olive anthracnose.', AR:'أنثراكنوز الزيتون.'},
+        ]},
+        {title:{FR:'À PROPOS DE LA MALADIE',EN:'ABOUT THE DISEASE',AR:'حول المرض'}, kind:'grid', items:[
+          {i:'ti-bug',         FR:'Maladie fongique causée par des champignons du complexe Colletotrichum, en particulier sur les fruits.', EN:'Fungal disease caused by fungi of the Colletotrichum complex, particularly on the fruit.', AR:'مرض فطري تسببه فطريات من مركّب Colletotrichum، خاصة على الثمار.'},
+          {i:'ti-virus', FR:'Symptômes : taches brunes circulaires sur les olives, pourriture et momification des fruits, défoliation possible.', EN:'Symptoms: brown circular spots on olives, fruit rot and mummification, possible defoliation.', AR:'الأعراض: بقع بنية دائرية على الزيتون، تعفّن وتحنّط الثمار، واحتمال تساقط الأوراق.'},
+          {i:'ti-waves', FR:'Développement favorisé par les automnes humides et les températures douces.', EN:'Development favoured by humid autumns and mild temperatures.', AR:'يُحفّز تطوره الخريف الرطب ودرجات الحرارة المعتدلة.'},
+          {i:'ti-progress-alert',      FR:'Impact direct sur le rendement, la qualité de l\u2019huile et augmente son acidité.', EN:'Direct impact on yield and oil quality, increases its acidity.', AR:'تأثير مباشر على المردود وجودة الزيت ويرفع حموضته.'},
+        ]},
+        {title:{FR:'À PROPOS DE L\u2019ESPÈCE',EN:'ABOUT THE SPECIES',AR:'حول النوع'}, kind:'grid', items:[
+          {i:'ti-leaf', FR:'Arbre fruitier emblématique du climat méditerranéen, à feuillage persistant.', EN:'Iconic Mediterranean fruit tree with evergreen foliage.', AR:'شجرة فاكهة رمزية للمناخ المتوسطي ذات أوراق دائمة.'},
+          {i:'ti-bulb', FR:'Espèce d\u2019importance agricole et économique majeure dans la région.', EN:'Species of major agricultural and economic importance in the region.', AR:'نوع ذو أهمية زراعية واقتصادية كبرى في المنطقة.'},
+        ]},
+      ]},
     },
 
     /* ───── PLANT PATHOLOGY ───── */
     'cactus malade': {
-      status:['Sujet malade en étude','Diseased specimen under study','عينة مريضة قيد الدراسة'],
+      status:['Spécimen — Unité Protection des Plantes','Specimen — Plant Protection Unit','عينة — وحدة وقاية النباتات'],
       audio:['audio/fr/cactus.mp3','audio/en/cactus.mp3','audio/ar/cactus.mp3'],
       card:{ sections:[
         {title:secId, kind:'facts', items:[
           {i:'ti-plant',   k:Lk.famille, v:{FR:'Cactacées',EN:'Cactaceae',AR:'الصباريات'}},
           {i:'ti-map-pin', k:Lk.origine, v:{FR:'Amérique tropicale',EN:'Tropical America',AR:'أمريكا الاستوائية'}},
-          {i:'ti-flag',    k:Lk.statut,  v:{FR:'Sujet malade',EN:'Diseased',AR:'مريض'}},
+          {i:'ti-shield',  k:{FR:'Unité',EN:'Unit',AR:'الوحدة'}, v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
         ]},
-        {title:{FR:'PATHOLOGIES OBSERVÉES',EN:'OBSERVED PATHOLOGIES',AR:'الأمراض الملاحظة'}, kind:'bullets', items:[
-          {FR:'Pourriture molle ou sèche des cladodes — agents fongiques ou bactériens.', EN:'Soft or dry rot of cladodes — fungal or bacterial agents.', AR:'تعفن طري أو جاف للسيقان — عوامل فطرية أو بكتيرية.'},
-          {FR:'Cochenilles farineuses et à carapace — infestations fréquentes en serre.', EN:'Mealybugs and scale insects — common greenhouse infestations.', AR:'البق الدقيقي والحشرات القشرية — إصابات شائعة في الدفيئة.'},
-          {FR:'Chlorose des aréoles — carence ou infection possible.', EN:'Areole chlorosis — possible deficiency or infection.', AR:'اصفرار الهالات — نقص أو عدوى محتملة.'},
+        {title:{FR:'MALADIE ÉTUDIÉE',EN:'DISEASE STUDIED',AR:'المرض المدروس'}, kind:'bullets', items:[
+          {FR:'Cochenille à carmin du cactus.', EN:'Cactus carmine cochineal scale.', AR:'البق القرمزي للصبار.'},
         ]},
-        {title:secProto, kind:'facts', items:[
-          {i:'ti-lock',    k:Lk.isolement,  v:{FR:'Zone quarantaine',EN:'Quarantine zone',AR:'منطقة حجر'}},
-          {i:'ti-flask',   k:Lk.traitement, v:{FR:'En évaluation',EN:'Under evaluation',AR:'قيد التقييم'}},
-          {i:'ti-clock',   k:Lk.suivi,      v:{FR:'Hebdomadaire',EN:'Weekly',AR:'أسبوعي'}},
+        {title:{FR:'À PROPOS DU RAVAGEUR',EN:'ABOUT THE PEST',AR:'حول الآفة'}, kind:'grid', items:[
+          {i:'ti-bug',         FR:'Insecte piqueur-suceur (Dactylopius opuntiae) qui se fixe sur les raquettes du figuier de Barbarie.', EN:'Sap-sucking insect (Dactylopius opuntiae) that attaches to prickly pear cladodes.', AR:'حشرة ثاقبة ماصة (Dactylopius opuntiae) تتثبت على ألواح الصبار.'},
+          {i:'ti-virus', FR:'Symptômes : amas blancs cotonneux, jaunissement, dessèchement et effondrement des cladodes.', EN:'Symptoms: cottony white masses, yellowing, drying out and collapse of cladodes.', AR:'الأعراض: تكتلات بيضاء قطنية، اصفرار، جفاف وانهيار الألواح.'},
+          {i:'ti-waves', FR:'Propagation rapide par le vent, les vêtements, les outils et les animaux.', EN:'Rapid spread by wind, clothing, tools and animals.', AR:'انتشار سريع عبر الرياح والملابس والأدوات والحيوانات.'},
+          {i:'ti-progress-alert',      FR:'Ravageur invasif au Maroc — menace majeure pour les plantations de cactus.', EN:'Invasive pest in Morocco — major threat to cactus plantations.', AR:'آفة غازية في المغرب — تهديد كبير لمزارع الصبار.'},
+        ]},
+        {title:{FR:'À PROPOS DE L\u2019ESPÈCE',EN:'ABOUT THE SPECIES',AR:'حول النوع'}, kind:'grid', items:[
+          {i:'ti-leaf',  FR:'Plante succulente adaptée aux milieux arides, tige charnue et épines.', EN:'Succulent plant adapted to arid environments, with fleshy stem and spines.', AR:'نبات عصاري متكيّف مع البيئات القاحلة، ذو ساق لحمية وأشواك.'},
+          {i:'ti-bulb',  FR:'Cultivé pour ses usages fourragers, alimentaires et ornementaux.', EN:'Cultivated for forage, food and ornamental uses.', AR:'يُزرع لاستخداماته العلفية والغذائية والزينة.'},
         ]},
       ]},
     },
 
     'tomate malade': {
-      status:['Étude phytopathologique','Plant pathology study','دراسة أمراض النبات'],
+      status:['Spécimen — Unité Protection des Plantes','Specimen — Plant Protection Unit','عينة — وحدة وقاية النباتات'],
       audio:['audio/fr/tomate.mp3','audio/en/tomate.mp3','audio/ar/tomate.mp3'],
       card:{ sections:[
         {title:secId, kind:'facts', items:[
           {i:'ti-seedling', k:Lk.espece,  v:'Solanum lycopersicum'},
           {i:'ti-plant',    k:Lk.famille, v:{FR:'Solanacées',EN:'Solanaceae',AR:'الباذنجانية'}},
-          {i:'ti-flag',     k:Lk.statut,  v:{FR:'Plants malades',EN:'Diseased plants',AR:'نباتات مريضة'}},
+          {i:'ti-shield',   k:{FR:'Unité',EN:'Unit',AR:'الوحدة'}, v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
         ]},
-        {title:secDis, kind:'bullets', items:[
-          {FR:'Mildiou (Phytophthora infestans) — taches huileuses puis nécroses.', EN:'Late blight (Phytophthora infestans) — oily lesions then necrosis.', AR:'اللفحة المتأخرة (Phytophthora infestans) — بقع زيتية ثم نخر.'},
-          {FR:'Pourriture grise (Botrytis cinerea) sur tiges, feuilles et fruits.', EN:'Grey mould (Botrytis cinerea) on stems, leaves and fruit.', AR:'العفن الرمادي (Botrytis cinerea) على السيقان والأوراق والثمار.'},
-          {FR:'Viroses : mosaïque (ToMV) et feuilles jaunes en cuillère (TYLCV).', EN:'Viruses: mosaic (ToMV) and yellow leaf curl (TYLCV).', AR:'فيروسات: الموزاييك (ToMV) وتجعد واصفرار الأوراق (TYLCV).'},
-          {FR:'Alternariose (Alternaria solani) — taches concentriques.', EN:'Early blight (Alternaria solani) — concentric spots.', AR:'اللفحة المبكرة (Alternaria solani) — بقع متحدة المركز.'},
+        {title:{FR:'MALADIE ÉTUDIÉE',EN:'DISEASE STUDIED',AR:'المرض المدروس'}, kind:'bullets', items:[
+          {FR:'Alternariose de la tomate.', EN:'Tomato alternaria leaf blight.', AR:'تبقع ألترناريا الطماطم.'},
         ]},
-        {title:secObj, kind:'facts', items:[
-          {i:'ti-microscope', k:Lk.etude,       v:{FR:'Épidémiologie',EN:'Epidemiology',AR:'علم الأوبئة'}},
-          {i:'ti-test-pipe',  k:Lk.methode,     v:{FR:'Inoculation contrôlée',EN:'Controlled inoculation',AR:'تلقيح محكوم'}},
-          {i:'ti-shield',     k:Lk.application, v:{FR:'Lutte intégrée',EN:'Integrated pest management',AR:'المكافحة المتكاملة'}},
+        {title:{FR:'À PROPOS DE LA MALADIE',EN:'ABOUT THE DISEASE',AR:'حول المرض'}, kind:'grid', items:[
+          {i:'ti-bug',         FR:'Maladie fongique causée principalement par Alternaria solani et A. tomatophila.', EN:'Fungal disease mainly caused by Alternaria solani and A. tomatophila.', AR:'مرض فطري تسببه أساساً Alternaria solani وA. tomatophila.'},
+          {i:'ti-virus', FR:'Symptômes : taches brunes concentriques sur les feuilles âgées, lésions sur tiges et fruits, défoliation.', EN:'Symptoms: brown concentric spots on older leaves, lesions on stems and fruit, defoliation.', AR:'الأعراض: بقع بنية متحدة المركز على الأوراق المسنّة، آفات على السيقان والثمار، تساقط الأوراق.'},
+          {i:'ti-waves', FR:'Favorisée par les alternances de pluie et de chaleur, et par les plantes stressées ou affaiblies.', EN:'Favoured by alternating rain and heat, and by stressed or weakened plants.', AR:'يُفاقمها تناوب المطر والحرارة، والنباتات المُجهدة أو الضعيفة.'},
+          {i:'ti-progress-alert',      FR:'Cause des pertes importantes en rendement et en qualité commerciale des fruits.', EN:'Causes significant losses in yield and commercial fruit quality.', AR:'يتسبب في خسائر مهمة في المردود والجودة التجارية للثمار.'},
+        ]},
+        {title:{FR:'À PROPOS DE L\u2019ESPÈCE',EN:'ABOUT THE SPECIES',AR:'حول النوع'}, kind:'grid', items:[
+          {i:'ti-leaf', FR:'Plante herbacée annuelle, fruit charnu, l\u2019une des cultures maraîchères les plus répandues au monde.', EN:'Annual herbaceous plant with fleshy fruit, one of the most widely grown vegetable crops worldwide.', AR:'نبات عشبي حولي ذو ثمار لحمية، من أكثر المحاصيل الخضرية انتشاراً في العالم.'},
+          {i:'ti-bulb', FR:'Sensible à de nombreux pathogènes fongiques et viraux en culture.', EN:'Sensitive to numerous fungal and viral pathogens in cultivation.', AR:'حسّاس للعديد من المسببات الفطرية والفيروسية في الزراعة.'},
         ]},
       ]},
     },
 
     'blé malade': {
-      status:['Céréale en observation','Cereal under observation','حبوب قيد المراقبة'],
+      status:['Spécimen — Unité Protection des Plantes','Specimen — Plant Protection Unit','عينة — وحدة وقاية النباتات'],
       audio:['audio/fr/ble.mp3','audio/en/ble.mp3','audio/ar/ble.mp3'],
       card:{ sections:[
         {title:secId, kind:'facts', items:[
           {i:'ti-seedling', k:Lk.espece,  v:'Triticum aestivum'},
           {i:'ti-plant',    k:Lk.famille, v:{FR:'Poacées',EN:'Poaceae',AR:'النجيلية'}},
-          {i:'ti-flag',     k:Lk.statut,  v:{FR:'Plants en étude',EN:'Plants under study',AR:'نباتات قيد الدراسة'}},
+          {i:'ti-shield',   k:{FR:'Unité',EN:'Unit',AR:'الوحدة'}, v:{FR:'Protection des Plantes',EN:'Plant Protection',AR:'وقاية النباتات'}},
         ]},
-        {title:secDis, kind:'bullets', items:[
-          {FR:'Rouilles (Puccinia spp.) — pustules orangées à brunes sur feuilles.', EN:'Rusts (Puccinia spp.) — orange to brown pustules on leaves.', AR:'الأصداء (Puccinia spp.) — بثرات برتقالية إلى بنية على الأوراق.'},
-          {FR:'Septoriose (Zymoseptoria tritici) — taches nécrotiques à pycnides.', EN:'Septoria leaf blotch (Zymoseptoria tritici) — necrotic lesions with pycnidia.', AR:'تبقع الأوراق السبتوري (Zymoseptoria tritici) — آفات نخرية مع بكنيدات.'},
-          {FR:'Fusariose de l\u2019épi (Fusarium spp.) — risque de mycotoxines.', EN:'Fusarium head blight (Fusarium spp.) — mycotoxin risk.', AR:'لفحة السنابل (Fusarium spp.) — خطر السموم الفطرية.'},
-          {FR:'Oïdium (Blumeria graminis) — feutrage blanc poudreux.', EN:'Powdery mildew (Blumeria graminis) — white powdery growth.', AR:'البياض الدقيقي (Blumeria graminis) — نمو أبيض مسحوقي.'},
+        {title:{FR:'MALADIE ÉTUDIÉE',EN:'DISEASE STUDIED',AR:'المرض المدروس'}, kind:'bullets', items:[
+          {FR:'Septoriose du blé.', EN:'Septoria leaf blotch of wheat.', AR:'تبقع الأوراق السبتوري للقمح.'},
         ]},
-        {title:secObj, kind:'facts', items:[
-          {i:'ti-microscope', k:Lk.etude,       v:{FR:'Résistance variétale',EN:'Varietal resistance',AR:'مقاومة الأصناف'}},
-          {i:'ti-test-pipe',  k:Lk.methode,     v:{FR:'Notation au champ',EN:'Field scoring',AR:'تقييم حقلي'}},
-          {i:'ti-shield',     k:Lk.application, v:{FR:'Sélection variétale',EN:'Plant breeding',AR:'تربية الأصناف'}},
+        {title:{FR:'À PROPOS DE LA MALADIE',EN:'ABOUT THE DISEASE',AR:'حول المرض'}, kind:'grid', items:[
+          {i:'ti-bug',         FR:'Maladie fongique causée par Zymoseptoria tritici, principal pathogène foliaire du blé dans le monde.', EN:'Fungal disease caused by Zymoseptoria tritici, the most important foliar pathogen of wheat worldwide.', AR:'مرض فطري تسببه Zymoseptoria tritici، أهم مسبب ورقي للقمح في العالم.'},
+          {i:'ti-virus', FR:'Symptômes : taches nécrotiques brun pâle sur les feuilles, points noirs (pycnides), dessèchement précoce.', EN:'Symptoms: pale brown necrotic spots on leaves, black dots (pycnidia), early drying.', AR:'الأعراض: بقع نخرية بنية فاتحة على الأوراق، نقاط سوداء (بكنيدات)، جفاف مبكر.'},
+          {i:'ti-waves', FR:'Développement favorisé par les périodes humides et fraîches au printemps.', EN:'Development favoured by cool and humid spring periods.', AR:'يُحفّز تطوره فترات الربيع الباردة والرطبة.'},
+          {i:'ti-progress-alert',      FR:'Pertes de rendement pouvant dépasser 30 à 40 % lors d\u2019épidémies sévères.', EN:'Yield losses can exceed 30–40% during severe epidemics.', AR:'خسائر في المردود قد تتجاوز 30 إلى 40٪ في الأوبئة الشديدة.'},
+        ]},
+        {title:{FR:'À PROPOS DE L\u2019ESPÈCE',EN:'ABOUT THE SPECIES',AR:'حول النوع'}, kind:'grid', items:[
+          {i:'ti-leaf', FR:'Céréale annuelle à large adaptation climatique, base alimentaire mondiale.', EN:'Annual cereal with broad climatic adaptation; a global staple food.', AR:'محصول حبوب حولي ذو تكيّف مناخي واسع، غذاء أساسي عالمي.'},
+          {i:'ti-bulb', FR:'Plante stratégique en sélection variétale et en pathologie céréalière.', EN:'Strategic species in plant breeding and cereal pathology.', AR:'نوع استراتيجي في تربية الأصناف وأمراض الحبوب.'},
         ]},
       ]},
     },
   };
 
+
   // category labels
   addCat('fraise', ...CAT_CROP);
   addCat('courgette', ...CAT_CROP);
-  addCat('avocatier', ...CAT_CROP);
-  addCat('avocat', ...CAT_CROP);
-  addCat('plante x', ...CAT_CROP);
+  addCat('avocatier', ...CAT_PATH);
+  addCat('avocat', ...CAT_PATH);
+  addCat('plante x', ...CAT_PATH);
   addCat('cactus malade', ...CAT_PATH);
   addCat('tomate malade', ...CAT_PATH);
   addCat('tomate malades', ...CAT_PATH);
@@ -6418,11 +6440,11 @@ function renderInfoCard(el, def){
   const TITLES = {
     'fraise':        ['Fraise — Fragaria × ananassa','Strawberry — Fragaria × ananassa','الفراولة — Fragaria × ananassa'],
     'courgette':     ['Courgette — Cucurbita pepo','Zucchini — Cucurbita pepo','الكوسة — Cucurbita pepo'],
-    'avocatier':     ['Avocatier — Persea americana','Avocado — Persea americana','الأفوكادو — Persea americana'],
-    'plante x':      ['Spécimen — à identifier','Specimen — to identify','عينة — قيد التعريف'],
-    'cactus malade': ['Cactus — spécimen pathologique','Cactus — diseased specimen','صبار — عينة مريضة'],
-    'tomate malade': ['Tomate — étude phytopathologique','Tomato — plant pathology study','الطماطم — دراسة أمراض النبات'],
-    'blé malade':    ['Blé — étude phytopathologique','Wheat — plant pathology study','القمح — دراسة أمراض النبات'],
+    'avocatier':     ['Avocatier — Chancre de l\u2019avocatier','Avocado — Avocado canker','الأفوكادو — تقرّح الأفوكادو'],
+    'plante x':      ['Olivier — Anthracnose de l\u2019olivier','Olive — Olive anthracnose','الزيتون — أنثراكنوز الزيتون'],
+    'cactus malade': ['Cactus — Cochenille à carmin du cactus','Cactus — Carmine cochineal scale','الصبار — البق القرمزي للصبار'],
+    'tomate malade': ['Tomate — Alternariose','Tomato — Alternaria leaf blight','الطماطم — تبقع ألترناريا'],
+    'blé malade':    ['Blé — Septoriose','Wheat — Septoria leaf blotch','القمح — تبقع سبتوري'],
   };
 
   function applyOne(key, content){
