@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BarChart2, Bell, Sliders,
   Download, Settings, Beaker,
   ChevronLeft, ChevronRight, Sun, Moon,
-  ArrowLeft, LogOut, Languages,
+  ArrowLeft, LogOut, Languages, ClipboardList,
 } from 'lucide-react'
 
 // ── Architecture de navigation ─────────────────────────────────────────────
@@ -35,6 +35,10 @@ const NAV_GROUPS = [
       {
         id: 'alertes', labelFR: 'Alertes', labelEN: 'Alerts',
         icon: Bell, action: 'route', to: '/dashboard/alertes', badge: true,
+      },
+      {
+        id: 'journal', labelFR: 'Journal', labelEN: 'Action log',
+        icon: ClipboardList, action: 'route', to: '/dashboard/journal',
       },
     ],
   },
@@ -215,6 +219,10 @@ export default function Sidebar({
       overflow: 'hidden',
       boxShadow: isDark ? '4px 0 32px rgba(0,0,0,0.45)' : '4px 0 16px rgba(0,0,0,0.06)',
     }}>
+      {/* Hide on mobile — DashBottomNav handles navigation on ≤900px */}
+      <style>{`
+        @media (max-width: 900px) { .dash-sidebar { display: none !important; } }
+      `}</style>
 
       {/* ── Logo + collapse ── */}
       <div style={{
