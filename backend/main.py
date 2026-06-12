@@ -16,6 +16,7 @@ from scheduler import start_scheduler
 from routers import auth_router, iot_router, dashboard_router, serres_router
 from routers.profil_router import router as profil_router
 from routers.copilot_router import router as copilot_router
+from routers.params_router import router as params_router
 
 
 # ─── App ────────────────────────────────────────────────────
@@ -44,6 +45,7 @@ app.include_router(dashboard_router.router)
 app.include_router(serres_router.router)
 app.include_router(profil_router)
 app.include_router(copilot_router)
+app.include_router(params_router)
 
 # ─── Startup / Shutdown ─────────────────────────────────────
 @app.on_event("startup")
