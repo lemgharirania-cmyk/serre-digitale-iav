@@ -799,8 +799,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ── Globe flyover end-screen ── */
 
-/* Overlay: scroll vertically, reduce padding, align top */
 @media (max-width: 768px) {
+  /* Overlay: scrollable, top-aligned, tighter padding */
   .visite-end-overlay {
     padding: 1.25rem 0.75rem !important;
     justify-content: flex-start !important;
@@ -831,7 +831,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     gap: 8px !important;
   }
 
-  /* Each card — reduce padding */
+  /* Each card — row layout (icon left, text right) */
   .visite-end-grid button {
     padding: 0.85rem 0.75rem !important;
     flex-direction: row !important;
@@ -859,44 +859,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   }
 }
 
-/* ── SectionDonnees popup — stay within viewport on mobile ── */
+/* ── SectionDonnees popup — cap width, JS handles left/right anchoring ── */
 @media (max-width: 768px) {
   .donnees-popup {
-    /* Clamp width to screen */
-    width: min(240px, calc(100vw - 2rem)) !important;
-
-    /* Keep centered but prevent overflow */
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-
-    /* Smaller text and padding to fit more on screen */
-    padding: 10px !important;
+    width: min(260px, calc(100vw - 2rem)) !important;
+    font-size: 11px !important;
+    padding: 11px !important;
     border-radius: 12px !important;
-    font-size: 11px !important;
-
-    /* Ensure it stays above everything */
     z-index: 999 !important;
-  }
-
-  /* Reduce description text size inside popup */
-  .donnees-popup > div:last-of-type {
-    font-size: 11px !important;
-    line-height: 1.55 !important;
-  }
-
-  /* Value highlight — tighter */
-  .donnees-popup > div:nth-child(2) {
-    padding: 6px 10px !important;
-    margin-bottom: 8px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .donnees-popup {
-    width: min(220px, calc(100vw - 1.5rem)) !important;
-    /* On very small screens, anchor to left edge of card instead of centering */
-    left: 0 !important;
-    transform: none !important;
   }
 }
