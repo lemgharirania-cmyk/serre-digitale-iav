@@ -215,7 +215,7 @@ export default function Dashboard() {
         <AlertBanner liveData={liveData} theme={theme} lang={lang} onDismiss={() => setBannerOff(true)} />
       )}
       <Sidebar alertCount={alertCount} theme={theme} setTheme={setTheme} lang={lang} setLang={setLang} onWidthChange={setSidebarW} />
-      <div id="sidebar-spacer" style={{ width: sidebarW, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
+      <div id="sidebar-spacer" style={{ width: isMobile ? 0 : sidebarW, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
       <main className="admin-main" style={{
         flex: 1, minWidth: 0, height: '100vh',
         overflowY: 'auto', overflowX: 'hidden',
