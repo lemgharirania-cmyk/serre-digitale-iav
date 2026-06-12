@@ -535,13 +535,6 @@
         },
         {
           "type": "ar",
-          "pitch": -0.6,
-          "yaw": -100.9,
-          "label": "blé",
-          "arDesc": "blé"
-        },
-        {
-          "type": "ar",
           "pitch": 23.2,
           "yaw": -172.1,
           "label": "sensors",
@@ -630,13 +623,6 @@
         },
         {
           "type": "ar",
-          "pitch": -2.2,
-          "yaw": -55.5,
-          "label": "blé",
-          "arDesc": "blé"
-        },
-        {
-          "type": "ar",
           "pitch": 28.8,
           "yaw": 27.5,
           "label": "co2",
@@ -721,13 +707,6 @@
           "targetZoneId": "agronomie",
           "targetSceneId": "agronomie__001",
           "label": "→ sc.2"
-        },
-        {
-          "type": "ar",
-          "pitch": 0.9,
-          "yaw": -52.2,
-          "label": "blé",
-          "arDesc": "blé"
         },
         {
           "type": "ar",
