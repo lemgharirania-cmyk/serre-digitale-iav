@@ -1,10 +1,9 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar'
 import { iotAPI } from '../api/client'
-import { X, AlertTriangle, Beaker as BeakerIcon, ChevronDown as ChevronDownIcon,
-         LayoutDashboard, BarChart2, Bell, Sliders, Download, LogOut } from 'lucide-react'
+import { X, AlertTriangle, Beaker as BeakerIcon, ChevronDown as ChevronDownIcon } from 'lucide-react'
 
 import EtatSerre     from './dashboard/EtatSerre'
 import Graphiques    from './dashboard/Graphiques'
@@ -14,6 +13,7 @@ import Export        from './dashboard/Export'
 import Parametres    from './dashboard/Parametres'
 import NSCalculateur from './dashboard/NSCalculateur'
 import SDICopilot    from '../components/dashboard/SDICopilot'
+import DashBottomNav from '../components/layout/DashBottomNav'
 
 const METEO_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416' +
@@ -48,7 +48,7 @@ function AlertBanner({ liveData, theme, lang, onDismiss }) {
         flex: 1, fontSize: 13, fontWeight: 600,
         color: isDark ? '#FCA5A5' : '#991B1B',
         fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
-      }}>⚠️ {msg}</span>
+      }}>{'\u26A0\uFE0F'} {msg}</span>
       <button onClick={onDismiss} style={{
         background: 'none', border: 'none', cursor: 'pointer',
         color: '#EF4444', padding: 4, display: 'flex', alignItems: 'center',
@@ -107,104 +107,12 @@ function ScrollHome(props) {
   const sec = { scrollMarginTop: 24, marginBottom: 48 }
   return (
     <>
-      <section id="etat"        style={sec}><EtatSerre  {...props} /></section>
-      <section id="graphiques"  style={sec}><Graphiques {...props} /></section>
-      <section id="seuils"      style={sec}><Seuils     {...props} /></section>
-      <section id="calculateur" style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
-      <section id="export"      style={sec}><Export     {...props} /></section>
+      <section id="etat"         style={sec}><EtatSerre   {...props} /></section>
+      <section id="graphiques"   style={sec}><Graphiques  {...props} /></section>
+      <section id="seuils"       style={sec}><Seuils      {...props} /></section>
+      <section id="calculateur"  style={sec}><NSCalculateurAccordion theme={props.theme} lang={props.lang} /></section>
+      <section id="export"       style={sec}><Export      {...props} /></section>
     </>
-  )
-}
-
-// ── Mobile bottom nav for dashboard ──────────────────────────────────────────
-function DashBottomNav({ theme, lang, alertCount, onNavigate, currentSection }) {
-  const isDark = theme === 'dark'
-  const bg     = isDark ? 'rgba(7,17,31,0.97)' : 'rgba(255,255,255,0.97)'
-  const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
-  const ink3   = isDark ? '#64748B' : '#94A3B8'
-  const green  = '#22C55E'
-
-  const items = [
-    { id: 'etat',       icon: LayoutDashboard, labelFr: 'Direct',    labelEn: 'Live'   },
-    { id: 'graphiques', icon: BarChart2,        labelFr: 'Graphes',   labelEn: 'Charts' },
-    { id: 'alertes',    icon: Bell,             labelFr: 'Alertes',   labelEn: 'Alerts', badge: alertCount },
-    { id: 'seuils',     icon: Sliders,          labelFr: 'Seuils',    labelEn: 'Limits' },
-    { id: 'export',     icon: Download,         labelFr: 'Export',    labelEn: 'Export' },
-  ]
-
-  function handleLogout() {
-    localStorage.removeItem('sdi_token')
-    localStorage.removeItem('sdi_user')
-    window.location.href = '/'
-  }
-
-  return (
-    <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0,
-      zIndex: 600, height: '62px',
-      background: bg, borderTop: `1px solid ${border}`,
-      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-      display: 'flex', alignItems: 'stretch', justifyContent: 'space-around',
-      paddingBottom: 'env(safe-area-inset-bottom)',
-      boxShadow: isDark ? '0 -8px 32px rgba(0,0,0,0.5)' : '0 -4px 24px rgba(0,0,0,0.08)',
-    }}>
-      {items.map(item => {
-        const Icon     = item.icon
-        const isActive = currentSection === item.id
-        const label    = lang === 'FR' ? item.labelFr : item.labelEn
-        return (
-          <button key={item.id} onClick={() => onNavigate(item.id)}
-            style={{
-              flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              gap: '3px', border: 'none', background: 'none',
-              cursor: 'pointer', padding: '6px 2px',
-              color: isActive ? green : ink3,
-              transition: 'color 0.15s', position: 'relative',
-            }}>
-            {isActive && (
-              <div style={{
-                position: 'absolute', top: 0, left: '50%',
-                transform: 'translateX(-50%)',
-                width: '24px', height: '2px',
-                background: green, borderRadius: '0 0 2px 2px',
-              }} />
-            )}
-            <div style={{ position: 'relative' }}>
-              <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
-              {item.badge > 0 && (
-                <div style={{
-                  position: 'absolute', top: -4, right: -6,
-                  width: 14, height: 14, borderRadius: '50%',
-                  background: '#EF4444', color: 'white',
-                  fontSize: 8, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{item.badge > 9 ? '9+' : item.badge}</div>
-              )}
-            </div>
-            <span style={{ fontSize: '9px', fontWeight: isActive ? 700 : 500, fontFamily: "'Manrope',sans-serif" }}>
-              {label}
-            </span>
-          </button>
-        )
-      })}
-
-      {/* Logout button */}
-      <button onClick={handleLogout} style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        gap: '3px', border: 'none',
-        background: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)',
-        borderLeft: `1px solid ${border}`,
-        cursor: 'pointer', padding: '6px 2px',
-        color: '#EF4444', transition: 'color 0.15s',
-      }}>
-        <LogOut size={18} strokeWidth={1.8} />
-        <span style={{ fontSize: '9px', fontWeight: 600, fontFamily: "'Manrope',sans-serif" }}>
-          {lang === 'FR' ? 'Quitter' : 'Logout'}
-        </span>
-      </button>
-    </nav>
   )
 }
 
@@ -219,9 +127,7 @@ export default function Dashboard() {
   const [theme, setTheme] = useState(() => localStorage.getItem('sdi_theme') || 'light')
   const [lang,  setLang]  = useState(() => localStorage.getItem('sdi_lang')  || 'FR')
   const [isMobile, setIsMobile] = useState(false)
-  const [currentSection, setCurrentSection] = useState('etat')
 
-  // ── Mobile detection ──────────────────────────────────
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)')
     setIsMobile(mq.matches)
@@ -280,27 +186,6 @@ export default function Dashboard() {
     return () => clearInterval(m)
   }, [])
 
-  // ── Mobile navigation ─────────────────────────────────
-  function handleMobileNav(sectionId) {
-    setCurrentSection(sectionId)
-    // For alertes route
-    if (sectionId === 'alertes') {
-      window.history.pushState({}, '', '/dashboard/alertes')
-      window.dispatchEvent(new PopStateEvent('popstate'))
-      return
-    }
-    // Back to main scroll view then scroll to section
-    if (window.location.pathname !== '/dashboard' && window.location.pathname !== '/dashboard/') {
-      window.history.pushState({}, '', '/dashboard')
-      window.dispatchEvent(new PopStateEvent('popstate'))
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
-    } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
   const countdownLabel = `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}`
   const sdiUser  = (() => { try { return JSON.parse(localStorage.getItem('sdi_user') || '{}') } catch { return {} } })()
   const userRole = sdiUser.unit || sdiUser.role || 'ALL'
@@ -329,38 +214,16 @@ export default function Dashboard() {
       {hasCritical && (
         <AlertBanner liveData={liveData} theme={theme} lang={lang} onDismiss={() => setBannerOff(true)} />
       )}
-
-      {/* Sidebar — hidden on mobile via CSS .admin-side display:none at 900px */}
-      <Sidebar
-        alertCount={alertCount} theme={theme} setTheme={setTheme}
-        lang={lang} setLang={setLang} onWidthChange={setSidebarW}
-      />
-
-      {/* Sidebar spacer — 0 on mobile */}
-      <div
-        id="sidebar-spacer"
-        style={{
-          width: isMobile ? 0 : sidebarW,
-          flexShrink: 0,
-          transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Main content */}
-      <main
-        className="admin-main"
-        style={{
-          flex: 1, minWidth: 0, height: '100vh',
-          overflowY: 'auto', overflowX: 'hidden',
-          padding: isMobile ? '1rem' : '1.5rem',
-          paddingTop: hasCritical
-            ? `calc(${isMobile ? '1rem' : '1.5rem'} + 42px)`
-            : (isMobile ? '1rem' : '1.5rem'),
-          // On mobile: leave room for the bottom nav
-          paddingBottom: isMobile ? 'calc(62px + env(safe-area-inset-bottom) + 1rem)' : '1.5rem',
-        }}
-      >
+      <Sidebar alertCount={alertCount} theme={theme} setTheme={setTheme} lang={lang} setLang={setLang} onWidthChange={setSidebarW} />
+      <div id="sidebar-spacer" style={{ width: sidebarW, flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)' }} aria-hidden="true" />
+      <main className="admin-main" style={{
+        flex: 1, minWidth: 0, height: '100vh',
+        overflowY: 'auto', overflowX: 'hidden',
+        padding: '1.5rem',
+        paddingTop: hasCritical ? 'calc(1.5rem + 42px)' : '1.5rem',
+        // On mobile: leave room for the DashBottomNav (62px)
+        paddingBottom: isMobile ? 'calc(62px + env(safe-area-inset-bottom) + 1rem)' : '1.5rem',
+      }}>
         <Routes>
           <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
           <Route path="/seuils"      element={<Seuils     {...sharedProps} />} />
@@ -371,21 +234,11 @@ export default function Dashboard() {
         </Routes>
       </main>
 
-      {/* Mobile bottom nav — only on small screens */}
-      {isMobile && (
-        <DashBottomNav
-          theme={theme} lang={lang}
-          alertCount={alertCount}
-          onNavigate={handleMobileNav}
-          currentSection={currentSection}
-        />
-      )}
+      {/* SDI Copilot — widget flottant avec données live injectées */}
+      <SDICopilot isDark={theme === 'dark'} lang={lang} liveData={liveData} />
 
-      {/* SDI Copilot */}
-      <SDICopilot
-        isDark={theme === 'dark'} lang={lang} liveData={liveData}
-        bottomOffset={isMobile ? 78 : 24}
-      />
+      {/* Mobile-only bottom nav — desktop sidebar stays untouched */}
+      <DashBottomNav theme={theme} lang={lang} alertCount={alertCount} />
     </div>
   )
 }
