@@ -228,9 +228,10 @@ export default function Login() {
     <div style={{
       minHeight:'100vh',
       background:'linear-gradient(135deg,#07111F 0%,#0B1728 55%,#063B2D 100%)',
-      display:'flex', alignItems:'center', justifyContent:'center',
-      padding:'1rem', fontFamily:"'Inter','Outfit',sans-serif",
-      position:'relative',
+      display:'flex', alignItems:'flex-start', justifyContent:'center',
+      padding:'clamp(60px,12vw,80px) clamp(12px,4vw,16px) clamp(24px,5vw,32px)',
+      fontFamily:"'Inter','Outfit',sans-serif",
+      position:'relative', overflowY:'auto', minHeight:'100dvh',
     }}>
 
       {/* Grid background */}
@@ -244,7 +245,7 @@ export default function Login() {
       <button
         onClick={() => navigate('/')}
         style={{
-          position:'fixed', top:'20px', left:'20px', zIndex:10,
+          position:'fixed', top:'clamp(12px,3vw,20px)', left:'clamp(12px,3vw,20px)', zIndex:10,
           display:'flex', alignItems:'center', gap:'8px',
           padding:'9px 16px', borderRadius:'12px',
           background:'rgba(255,255,255,0.07)',
@@ -276,8 +277,8 @@ export default function Login() {
         background:'rgba(16,27,46,0.85)',
         backdropFilter:'blur(20px)',
         border:'1px solid rgba(255,255,255,0.08)',
-        borderRadius:'28px',
-        padding: tab === 'signup' ? '36px 32px' : '40px 36px',
+        borderRadius:'clamp(16px, 4vw, 28px)',
+        padding: tab === 'signup' ? 'clamp(20px,5vw,36px) clamp(16px,5vw,32px)' : 'clamp(24px,5vw,40px) clamp(16px,5vw,36px)',
         width:'100%', maxWidth:'440px',
         boxShadow:'0 20px 60px rgba(0,0,0,0.4)',
         animation:'lgFadeIn 0.45s ease',
@@ -347,7 +348,7 @@ export default function Login() {
         {tab === 'signup' && (<>
           <AlertBox msg={sErr} />
           <AlertBox msg={sOk} type="success" />
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'14px' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))', gap:'10px', marginBottom:'14px' }}>
             <div><Label>Prénom *</Label><TextInput value={sFirst} onChange={setSFirst} placeholder="Kawtar"/></div>
             <div><Label>Nom *</Label><TextInput value={sLast} onChange={setSLast} placeholder="Nafia"/></div>
           </div>
