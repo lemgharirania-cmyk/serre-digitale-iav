@@ -792,3 +792,111 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .donnees-env-grid { grid-template-columns: repeat(3,1fr) !important; gap: 12px !important; }
   .donnees-irr-grid { grid-template-columns: repeat(3,1fr) !important; gap: 12px !important; }
 }
+/* ══════════════════════════════════════════════════════════════
+   MOBILE FIXES — Globe end screen + Données popup
+   Append these rules at the END of index.css
+══════════════════════════════════════════════════════════════ */
+
+/* ── Globe flyover end-screen ── */
+
+/* Overlay: scroll vertically, reduce padding, align top */
+@media (max-width: 768px) {
+  .visite-end-overlay {
+    padding: 1.25rem 0.75rem !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    overflow-y: auto !important;
+    padding-top: 1.5rem !important;
+  }
+
+  /* Completion badge — smaller */
+  .visite-end-overlay > div:first-child > div {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .visite-end-overlay > div:first-child > div svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* Title block — tighten margin */
+  .visite-end-overlay > div:nth-child(2) {
+    margin-bottom: 1rem !important;
+  }
+
+  /* 3-card grid → single column */
+  .visite-end-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+  }
+
+  /* Each card — reduce padding */
+  .visite-end-grid button {
+    padding: 0.85rem 0.75rem !important;
+    flex-direction: row !important;
+    text-align: left !important;
+    gap: 12px !important;
+  }
+}
+
+/* ── SectionVisite space cards — fewer columns on mobile ── */
+@media (max-width: 768px) {
+  .visite-serres-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .visite-bloc-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .visite-serres-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .visite-bloc-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── SectionDonnees popup — stay within viewport on mobile ── */
+@media (max-width: 768px) {
+  .donnees-popup {
+    /* Clamp width to screen */
+    width: min(240px, calc(100vw - 2rem)) !important;
+
+    /* Keep centered but prevent overflow */
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+
+    /* Smaller text and padding to fit more on screen */
+    padding: 10px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+
+    /* Ensure it stays above everything */
+    z-index: 999 !important;
+  }
+
+  /* Reduce description text size inside popup */
+  .donnees-popup > div:last-of-type {
+    font-size: 11px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Value highlight — tighter */
+  .donnees-popup > div:nth-child(2) {
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .donnees-popup {
+    width: min(220px, calc(100vw - 1.5rem)) !important;
+    /* On very small screens, anchor to left edge of card instead of centering */
+    left: 0 !important;
+    transform: none !important;
+  }
+}
