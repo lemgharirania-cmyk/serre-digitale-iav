@@ -44,8 +44,7 @@ const T = {
     recipeName: "Nom de la recette", save: "Enregistrer", cancel: "Annuler",
     deleteConfirm: "Supprimer cette recette ?",
     hco3Neutr: "HCO₃ neutralisé", precip: "Test de précipitation", noRisk: "aucun risque",
-    note: "Estimation par la méthode séquentielle guidée du NS Calculator (Incrocci, 2011). " +
-      "Ajuster selon l'EC et le pH mesurés. Ordre : acide → Ca → NH₄ → P → Mg → NO₃ → K → micro.",
+    note: "Ajuster selon l'EC et le pH mesurés. Ordre : acide → Ca → NH₄ → P → Mg → NO₃ → K → micro.",
     L: { hco3: "HCO₃", no3: "N-NO₃", nh4: "N-NH₄", p: "P", k: "K", ca: "Ca", mg: "Mg",
       na: "Na", so4: "S-SO₄", cl: "Cl", fe: "Fe", b: "B", cu: "Cu", zn: "Zn", mn: "Mn", mo: "Mo" },
   },
@@ -72,8 +71,7 @@ const T = {
     recipeName: "Recipe name", save: "Save", cancel: "Cancel",
     deleteConfirm: "Delete this recipe?",
     hco3Neutr: "HCO₃ neutralized", precip: "Precipitation test", noRisk: "no risk",
-    note: "Estimated with the guided sequential method of the NS Calculator (Incrocci, 2011). " +
-      "Adjust to measured EC and pH. Order: acid → Ca → NH₄ → P → Mg → NO₃ → K → micro.",
+    note: "Adjust to measured EC and pH. Order: acid → Ca → NH₄ → P → Mg → NO₃ → K → micro.",
     L: { hco3: "HCO₃", no3: "N-NO₃", nh4: "N-NH₄", p: "P", k: "K", ca: "Ca", mg: "Mg",
       na: "Na", so4: "S-SO₄", cl: "Cl", fe: "Fe", b: "B", cu: "Cu", zn: "Zn", mn: "Mn", mo: "Mo" },
   },
@@ -527,7 +525,7 @@ function buildPrintableReport(name: string, r: CalcResult, t: typeof T["FR"], pH
     th,td{border:1px solid #CBD5E1;padding:5px 8px;text-align:left;font-size:12px}th{background:#2F9A64;color:#fff}
     tbody tr:nth-child(even){background:#F8FAFC}ul{font-size:13px;margin:4px 0;padding-left:18px}.note{font-size:11px;color:#64748B;margin-top:16px}
     @media print{body{padding:0}}</style></head><body>
-    <h1>${t.title} — ${name}</h1><p class="sub">NS Calculator v1.2 · L. Incrocci · IAV Hassan II</p>
+    <h1>${t.title} — ${name}</h1><p class="sub">NS Calculator· IAV Hassan II</p>
     <div class="meta">${t.kpiEc}: <b>${fmt(r.ecAchieved, 2)} dS/m</b> &nbsp;|&nbsp; pH ${pH} &nbsp;|&nbsp; ${t.dilution} ${dil}× &nbsp;|&nbsp; ${t.tankVol} ${vol} L &nbsp;|&nbsp; ${t.kpiCost}: <b>${fmt(r.totalCostPerM3, 2)} €/m³</b> · <b style="color:#C2740E">${fmt_mad(r.totalCostPerM3, 2)} MAD/m³</b></div>
     <h2>${t.dosages}</h2><table><thead><tr><th>${t.dosages}</th><th>${t.colGot}</th><th>g/cuve</th><th>A/B</th><th>€/m³</th><th>MAD/m³</th></tr></thead><tbody>${rows || `<tr><td colspan="6">${t.purewater}</td></tr>`}</tbody></table>
     <h2>${t.results}</h2><table><thead><tr><th>${t.ion}</th><th>${t.colTarget}</th><th>${t.colGot}</th><th>${t.colDiff}</th></tr></thead><tbody>${comp}</tbody></table>
