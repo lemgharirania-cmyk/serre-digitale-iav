@@ -161,15 +161,19 @@ export default function Dashboard() {
     } catch (e) { console.error('Fetch error:', e) }
   }
 
-  async function fetchMeteo() {
+async function fetchMeteo() {
     try {
       const r = await fetch(METEO_URL)
+      if (!r.ok) throw new Error('Meteo HTTP ' + r.status)
       const d = await r.json()
       const c = d.current || {}, dl = d.daily || {}
       setMeteo({
-        vent: c.wind_speed_10m, solaire: c.shortwave_radiation,
-        pluie: (c.precipitation || 0) > 0.1, is_day: !!c.is_day,
-        sunrise: dl.sunrise?.[0], sunset: dl.sunset?.[0],
+        vent:    c.wind_speed_10m,
+        solaire: c.shortwave_radiation,
+        pluie:   (c.precipitation || 0) > 0.1,
+        is_day:  !!c.is_day,
+        sunrise: dl.sunrise?.[0],
+        sunset:  dl.sunset?.[0],
       })
     } catch (e) { console.error('Meteo error:', e) }
   }
