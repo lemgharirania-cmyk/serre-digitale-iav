@@ -1172,7 +1172,15 @@ function EquipCard({
                 </div>
               ) : (
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11 }}>
-                  <b style={{ color }}>{row.hint} {val.seuil}</b>
+                  <b style={{ color }}>
+                    {/* hint format: "> °C" | "< %" | "< ppm" — render as: > 80% or > 25°C */}
+                    {(() => {
+                      const op   = row.hint.match(/^[<>]+/)?.[0] ?? ''
+                      const unit = row.hint.replace(/^[<>\s]+/, '').trim()
+                      // units that go AFTER the number: °C, %, ppm
+                      return `${op} ${val.seuil}${unit}`
+                    })()}
+                  </b>
                   <span style={{ color:ink4, fontWeight:400, marginLeft:5 }}>· ±{val.deadband}</span>
                 </span>
               )}
