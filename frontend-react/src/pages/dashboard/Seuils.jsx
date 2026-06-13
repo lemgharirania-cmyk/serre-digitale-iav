@@ -12,9 +12,9 @@ const SERRES = [
   { id:5, code:'S05', color:'#EF4444', nomFR:'Protection des Plantes',   nomEN:'Plant Protection' },
 ]
 
-const LABELS_FR = { temperature:'Température', humidite:'Humidité', vpd:'VPD', ph:'pH', ec:'EC', niveau_eau:'Niveau eau', co2:'CO₂' }
-const LABELS_EN = { temperature:'Temperature',  humidite:'Humidity',  vpd:'VPD', ph:'pH', ec:'EC', niveau_eau:'Water level', co2:'CO₂' }
-const UNITS     = { temperature:'°C', humidite:'%', vpd:'kPa', ph:'', ec:'mS/cm', niveau_eau:'m', co2:'ppm' }
+const LABELS_FR = { temperature:'Température', humidite:'Humidité', vpd:'VPD', ph:'pH', ec:'EC', niveau_eau:'Niveau eau', co2:'CO₂', luminosite:'Luminosité' }
+const LABELS_EN = { temperature:'Temperature',  humidite:'Humidity',  vpd:'VPD', ph:'pH', ec:'EC', niveau_eau:'Water level', co2:'CO₂', luminosite:'Light (PPFD)' }
+const UNITS     = { temperature:'°C', humidite:'%', vpd:'kPa', ph:'', ec:'mS/cm', niveau_eau:'m', co2:'ppm', luminosite:'µmol/m²/s' }
 
 const OPTIMAL = {
   temperature:{ min:18,  max:28,   color:'#F59E0B' },
@@ -24,6 +24,7 @@ const OPTIMAL = {
   ec:         { min:1.5, max:3.5,  color:'#059669' },
   niveau_eau: { min:0.6, max:1.0,  color:'#3773bd' },
   co2:        { min:400, max:1200, color:'#22C55E' },
+  luminosite: { min:100, max:600,  color:'#F59E0B' },
 }
 
 const T = {
