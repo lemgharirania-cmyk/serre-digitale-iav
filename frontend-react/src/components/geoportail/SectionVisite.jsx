@@ -2,15 +2,22 @@ import { useEffect, useState, useRef } from 'react'
 
 /* ─────────────────────── DATA ─────────────────────── */
 const VISITE_MODES = [
-    {
-      id: 'manual',
-      title: { fr: 'Visite complète', en: 'Full Tour' },
-      desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
-      sub:   { fr: 'Campus complet · 360° · Libre', en: 'Full campus · 360° · Free' },
-      file:  '/walkthrough/visitemanuelle.html',
-      color: '#06B6D4',
-      tag:   { fr: 'Complet', en: 'Full' },
-  ]
+  {
+    id: 'manual',
+    title: { fr: 'Visite complète', en: 'Full Tour' },
+    desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
+    sub:   { fr: 'Campus complet · 360° · Libre', en: 'Full campus · 360° · Free' },
+    file:  '/walkthrough/visitemanuelle.html',
+    color: '#06B6D4',
+    tag:   { fr: 'Complet', en: 'Full' },
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+    ),
+  },
+]
 const SERRES = [
   { title: { fr: 'Génétique',              en: 'Genetics'         }, badge: 'S01', file: '/walkthrough/serregenetique.html',    color: '#22C55E', desc: 'Sélection variétale · Culture in vitro' },
   { title: { fr: 'Horticulture',           en: 'Horticulture'     }, badge: 'S02', file: '/walkthrough/serrehorticulture.html', color: '#06B6D4', desc: 'Production florale · Maraîchage'       },
