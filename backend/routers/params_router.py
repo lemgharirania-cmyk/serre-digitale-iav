@@ -176,3 +176,32 @@ def _defaults():
         "co2_injection":          {"seuil": 1000, "deadband": 50},
         "co2_purge":              {"seuil": 500,  "deadband": 50},
     }
+
+
+# ── GET /api/params/{serre_id}/public ─────────────────────────
+# Lecture publique (PAS d'authentification) — utilisée par les
+# viewers 360° pour afficher les seuils du dashboard sur les
+# cartes AR. Retourne uniquement les valeurs, sans wrapper.
+@router.get("/{serre_id}/public")
+async def get_params_public(serre_id: int, db=Depends(get_db)):
+    """Lecture publique des intervalles de pilotage (sans JWT)."""
+    serre = await db.fetchrow("SELECT id FROM serres WHERE id=$1", serre_id)
+    if not serre:
+        raise HTTPException(status_code=404, detail="Serre introuvable.")
+
+    rows = await db.fetch(
+        "SELECT action, seuil, deadband "
+        "FROM params_internes WHERE serre_id=$1",
+        serre_id
+    )
+
+    if not rows:
+        return _defaults()
+
+    return {
+        r["action"]: {
+            "seuil":    float(r["seuil"]),
+            "deadband": float(r["deadband"]),
+        }
+        for r in rows
+    }
