@@ -1,5 +1,5 @@
-# routers/copilot_router.py — SDI Copilot : assistant conversationnel IA
-# Utilise Groq (llama-3.3-70b) — gratuit, rapide, fiable
+# routers/copilot_router.py — Terra : assistant conversationnel IA
+# Utilise Groq (llama-3.3-70b) avec rotation automatique de clés API
 # Routes : POST /api/copilot/chat (JWT) + POST /api/copilot/public (sans auth)
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,12 +16,22 @@ from auth import get_current_user
 
 router = APIRouter(prefix="/api/copilot", tags=["Copilot"])
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL   = "llama-3.3-70b-versatile"
-GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 
+# ─── Rotation automatique de clés Groq ────────────────────────
+# Ajouter GROQ_API_KEY_1 et GROQ_API_KEY_2 sur Render + .env
+# Si une clé échoue (rate limit, erreur), bascule automatiquement
 
-# ─── Base de connaissances AgroBioTech ────────────────────
+def get_groq_keys() -> list[str]:
+    keys = []
+    for var in ["GROQ_API_KEY_1", "GROQ_API_KEY_2", "GROQ_API_KEY"]:
+        k = os.getenv(var)
+        if k and k not in keys:
+            keys.append(k)
+    return keys
+
+# ─── Base de connaissances AgroBioTech ────────────────────────
 
 CAMPUS_KNOWLEDGE = """
 === CAMPUS AGROBIOTECH — IAV HASSAN II, RABAT ===
@@ -48,245 +58,93 @@ Note : variation ±2°C peut affecter l'expression génique — précision criti
 
 --- S02 — UNITÉ HORTICULTURE ---
 Code : S02 | Couleur : cyan #06B6D4
-Mission : plateforme pédagogique, expérimentale et de recherche en production horticole sous environnement contrôlé.
+Mission : plateforme pédagogique, expérimentale et de recherche en production horticole.
 Recherche appliquée : maraîchage, horticulture ornementale, gestion de l'eau, nutrition, stress biotique/abiotique.
-Infrastructure équipée de systèmes avancés de contrôle climatique et fertigation.
 Cultures : maraîchage & horticulture ornementale — notamment COURGETTE (Cucurbita pepo)
 Accès : Étudiants et personnel
 Capteurs : 2 ENV + 2 IRR
 Optimums : T° 18-26°C | HR 65-80% | VPD 0.8-1.5 kPa
 Note : en-dessous de 15°C la croissance ralentit, au-delà de 30°C stress thermique
-Recherche en cours sur la courgette :
-- Efficacité de l'eau magnétisée et du gypse agricole pour la gestion du stress salin
-- Impact du traitement magnétique de l'eau d'irrigation sur la tolérance à la salinité
-- Effet du gypse sur les propriétés physico-chimiques du sol en conditions salines
+Recherche courgette : eau magnétisée + gypse agricole pour tolérance stress salin
 
 --- S03 — UNITÉ AGRONOMIE ---
 Code : S03 | Couleur : ambre #F59E0B
 Mission : expérimentation agronomique sur grandes cultures et systèmes de production.
 Études sur fertilisation, irrigation et gestion des intrants agricoles.
-Évaluation de nouvelles variétés céréalières et légumineuses.
 Cultures : grandes cultures — Blé, Orge, Légumineuses
 Accès : Étudiants et personnel
 Capteurs : 2 ENV + 2 IRR
 Optimums : T° 18-28°C | HR 60-75%
-Note : la somme de températures (degrés-jours) détermine la maturité des cultures céréalières
+Note : somme de températures (degrés-jours) détermine la maturité des cultures
 
 --- S04 — UNITÉ HYDROPONIE & SYSTÈMES INNOVANTS ---
 Code : S04 | Couleur : violet #8B5CF6
 Mission : culture hors-sol avec solution nutritive recirculante (NFT, DWC).
-Expérimentation sur production de légumes et petits fruits.
-Monitoring IoT temps réel : pH, EC, température, niveau de solution.
 Cultures : FRAISIER NFT (Fragaria × ananassa), Basilic, Laitue — PAS DE TOMATE
 Système : NFT (Nutrient Film Technique) / DWC (Deep Water Culture)
 Accès : Étudiants et personnel
 Capteurs : 2 ENV + 2 IRR
 Optimums : T° 18-24°C | pH 5.5-6.5 | EC 1.5-2.5 mS/cm | T° solution 18-22°C
-Note : au-dessus de 28°C, l'O₂ dissous chute, risque Pythium sur racines
+Note : au-dessus de 28°C, O₂ dissous chute → risque Pythium sur racines
 Recette NS Fraise NFT (Incrocci) : NO₃=9.99 / NH₄=1.0 / P=1.0 / K=5.5 / Ca=3.5 / Mg=1.2 / EC=1.70 mS/cm
-Caractéristiques fraisier : substrat inerte (fibre de coco ou perlite), irrigation par cycles courts, fructification continue, sensible à l'oïdium et au Botrytis
 
 --- S05 — UNITÉ PROTECTION DES PLANTES ---
 Code : S05 | Couleur : rouge #EF4444
 Mission : étude et gestion des maladies, ravageurs et adventices.
-Développement de méthodes de lutte biologique et intégrée contre les bioagresseurs.
-Formation aux techniques phytosanitaires et protection raisonnée.
-Cultures et spécimens en étude phytopathologique :
-- CACTUS MALADE (Cactacées, Amérique tropicale, zone quarantaine)
-- TOMATE MALADE (Solanum lycopersicum, Solanacées) — multiples variants
-- BLÉ MALADE — études phytopathologiques sur résistance variétale
-- AVOCATIER (Persea americana, Lauracées, Mésoamérique) — observation phytosanitaire
-- PLANTE X — spécimen non identifié en caractérisation
-Accès : Personnel autorisé
-Note : zone de quarantaine, conditions strictes pour éviter propagation bioagresseurs
+Développement de méthodes de lutte biologique et intégrée.
+Spécimens en étude :
+- CACTUS MALADE (Cactacées) : cochenilles farineuses, pourriture cladodes, chlorose aréoles
+- TOMATE MALADE (Solanum lycopersicum) : mildiou (P.infestans), Botrytis, ToMV, TYLCV, Alternariose
+- BLÉ MALADE : Septoriose (Z.tritici), Fusariose, Oïdium (Blumeria graminis)
+- AVOCATIER (Persea americana) : Cercosporose, Phytophthora cinnamomi
+- PLANTE X : spécimen non identifié en caractérisation
+Accès : Personnel autorisé | Zone de quarantaine stricte
 
 ═══════════════════════════════════════════════════════════════
-PARTIE 2 — CULTURES & PATHOLOGIES DÉTAILLÉES
+PARTIE 2 — ÉQUIPEMENTS & CONTRÔLE CLIMATIQUE
 ═══════════════════════════════════════════════════════════════
 
---- FRAISIER NFT (S04 Hydroponie) ---
-Espèce : Fragaria × ananassa | Famille : Rosacées
-Système : NFT (Nutrient Film Technique)
-Substrat : inerte (fibre de coco ou perlite)
-Conditions : pH 5.5-6.5, EC 1.70 mS/cm cible, irrigation par cycles courts
-Sensibilités : Oïdium et Botrytis cinerea
-Fructification : continue
-
---- COURGETTE (S02 Horticulture) ---
-Espèce : Cucurbita pepo | Famille : Cucurbitacées
-Système : sol ou substrat
-Conditions optimales : T° jour 22-28°C, T° nuit 15-18°C, HR 60-70%, plein soleil
-Caractéristiques : plante rampante à croissance rapide, tuteurage/palissage vertical
-Pollinisation : manuelle ou par insectes auxiliaires
-Récolte : stade immature (15-20 cm) pour meilleure qualité gustative
-Recherche en cours : eau magnétisée, gypse agricole, gestion stress salin
-
---- AVOCATIER (S05 Protection) ---
-Espèce : Persea americana | Famille : Lauracées | Origine : Mésoamérique
-Conditions : T° 18-30°C, HR 60-75%, plein soleil à mi-ombre, sol bien drainé pH 6-7
-Pathologies étudiées :
-- Cercosporose (Cercospora sp.) : taches brunes à nécrotiques sur feuilles
-- Pourriture phytophthoréenne des racines (Phytophthora cinnamomi)
-- Évaluation de la résistance variétale
-
---- CACTUS MALADE (S05 Protection) ---
-Famille : Cactacées | Origine : Amérique tropicale | Statut : sujet malade en étude
-Pathologies observées :
-- Pourriture molle ou sèche des cladodes — agents fongiques ou bactériens
-- Cochenilles farineuses et à carapace — infestations fréquentes en serre
-- Chlorose des aréoles — possible carence ou infection virale
-Protocole : zone quarantaine, traitement en évaluation, suivi hebdomadaire
-
---- TOMATE MALADE (S05 Protection) ---
-Espèce : Solanum lycopersicum | Famille : Solanacées
-Statut : plants malades en étude — agents multiples
-Maladies étudiées :
-- Mildiou (Phytophthora infestans) : taches huileuses évoluant en nécroses
-- Pourriture grise (Botrytis cinerea) : sur tiges, feuilles et fruits
-- Virus de la mosaïque (ToMV) et Virus TY (TYLCV) : feuilles jaunes en cuillère
-- Alternariose (Alternaria solani) : taches concentriques sur feuilles
-Recherche : épidémiologie, inoculation contrôlée, lutte intégrée
-
---- BLÉ MALADE (S05 Protection) ---
-Statut : étude phytopathologique
-Maladies étudiées :
-- Septoriose (Zymoseptoria tritici) : lésions nécrotiques avec pycnides
-- Fusariose de l'épi (Fusarium spp.) : risque de mycotoxines
-- Oïdium (Blumeria graminis) : feutrage blanc poudreux
-Objectifs : étude de résistance variétale, notation au champ, sélection variétale
-
-═══════════════════════════════════════════════════════════════
-PARTIE 3 — ÉQUIPEMENTS TECHNIQUES (6 hotspots)
-═══════════════════════════════════════════════════════════════
-
---- BRUMISATEUR ---
-Génère un brouillard d'eau pour refroidissement évaporatif et hausse de l'HR.
-Activation : HR < seuil minimal. Double bénéfice : baisse T° et hausse HR.
-Fonctionne conjointement avec ventilation et système de refroidissement.
-
---- SYSTÈME DE REFROIDISSEMENT (Adiabatique) ---
-Type : évaporatif adiabatique.
-Abaisse la T° en augmentant l'HR. Activation : T° intérieure > seuil max (~30°C).
-Protège les cultures du stress thermique.
-
---- STATION DE FERTIGATION ---
-Prépare et distribue la solution nutritive aux cultures à intervalles programmés.
-Ajuste dynamiquement pH et EC en temps réel.
-Fertilisation précise en macroéléments (N, P, K, Ca, Mg, S) et micros selon stade végétatif.
-Optimise efficacité de l'eau et des intrants.
-Tabs : Info + IoT.
-
---- CHAUDIÈRE ---
-Chauffe l'eau du circuit de fertigation, maintient T° optimale pour absorption nutriments par racines.
-Alimente le système de chauffage de la zone racinaire des tablettes mobiles.
-Substrat chaud stimule activité racinaire et absorption des minéraux.
-Fonctionnement automatique selon T° consigne du circuit d'eau.
-
---- ADOUCISSEUR D'EAU ---
-Type : échangeur ionique (résines cationiques).
-Réduction de la dureté de l'eau d'irrigation par échange ionique.
-Prévient le colmatage des goutteurs et l'accumulation de calcaire.
-Améliore l'efficacité des solutions fertilisantes.
-Régénération : automatique au chlorure de sodium (NaCl). Dureté cible : < 7 °f.
-
-═══════════════════════════════════════════════════════════════
-PARTIE 4 — CONTRÔLE CLIMATIQUE (7 hotspots)
-═══════════════════════════════════════════════════════════════
-
---- INJECTION CO₂ ---
-Statut : système conçu, pas encore en commissioning.
-Compense l'appauvrissement en CO₂ des cultures denses, stimule la photosynthèse.
-Activation : CO₂ < 400 ppm.
-
---- VENTILATION NATURELLE ---
-Toits ouvrants pilotés par station météo.
-Laisse entrer l'air extérieur et évacue l'air chaud et humide.
-Réapprovisionne le CO₂, assèche le feuillage — limite Botrytis et mildiou.
-Renouvelle l'air naturellement, sans ventilation mécanique.
-Contrôle : station météo (T°, HR, vent, précipitations).
-Seuils : cooling jour > 25°C | cooling nuit > 20°C | deadband ±2°C.
-
---- VENTILATION EXTÉRIEURE / DEHORS / TOITURE ---
-Trois variantes complémentaires pour renouvellement d'air.
-
---- RIDEAUX AUTOMATIQUES (Ombrage) ---
-Écran thermique et d'ombrage.
-Ombrage extérieur : déploie > 30°C, rétracte < 25°C.
-Ombrage intérieur : déploie > 28°C.
-
---- FENÊTRES AUTOMATIQUES ---
-Ouverture/fermeture automatique selon conditions climatiques.
-Note : si LED éteinte → équipement arrivé en fin de course (complètement ouvert ou fermé).
-
---- CHAUFFAGE ---
-Activation : heating jour < 15°C | heating nuit < 12°C.
-Maintien des T° nocturnes en dessous des seuils critiques.
-
-═══════════════════════════════════════════════════════════════
-PARTIE 5 — CHAÎNE DE MESURE IoT (2 hotspots)
-═══════════════════════════════════════════════════════════════
-
---- CAPTEURS ENVIRONNEMENTAUX (SENSORS) ---
-Mesures : Température air, HR, VPD, CO₂, Luminosité.
-Fréquence : collecte toutes les 2 minutes par scheduler.
-
---- SYSTÈME DE MONITORING AGROBIOTECH ---
-Collecte et visualisation temps réel des données de toutes les serres.
-Alertes automatiques en cas de dépassement de seuils critiques.
-Supervision climat et irrigation depuis la salle de contrôle.
-
-═══════════════════════════════════════════════════════════════
-PARTIE 6 — ESPACES ADMINISTRATIFS & TECHNIQUES (7 hotspots)
-═══════════════════════════════════════════════════════════════
-
---- SALLE DE LAVAGE ---
-Lavage et désinfection du matériel de culture (pots, plateaux, outils) et récoltes.
-Propreté rigoureuse limite contaminations croisées — rôle essentiel en prévention sanitaire.
-
---- SALLE TECHNIQUE DE COMMANDES (Salle de Contrôle) ---
-Centre de pilotage 24/7 — centralise données capteurs et station météo.
-Suivi et ajustement ventilation, chauffage, refroidissement, brumisation.
-Supervision éclairage, injection CO₂, fertigation.
-
---- SALLE DE RÉUNION ---
-Espace de coordination pour équipes de recherche et formations du complexe.
-
---- SALLE DE PRÉPARATION ---
-Espace dédié à la préparation du matériel et des cultures avant mise en place.
-
---- BLOC GESTION TECHNIQUE ET ADMINISTRATIVE ---
-Bureaux administratifs du complexe AgroBioTech.
-
---- COMPLEXE DE SERRES ---
-Structure verre-aluminium avec toitures arquées maximisant la lumière naturelle.
-5 unités spécialisées reliées par un couloir central.
-Climat et irrigation supervisés depuis la salle de contrôle.
-
---- ZONE EXTÉRIEURE ---
-Extérieur du complexe AgroBioTech.
-
-═══════════════════════════════════════════════════════════════
-PARTIE 7 — SEUILS AGRONOMIQUES & ÉQUIPEMENTS
-═══════════════════════════════════════════════════════════════
-
-Valeurs de référence agronomiques :
-- Température : 18-28°C (optimum 20-25°C)
-- HR : 60-80%
-- VPD : 0.8-1.5 kPa
-- CO₂ : 400-1200 ppm (naturel 400, enrichi jusqu'à 1200)
-- pH solution : 5.5-7.0
-- EC : 1.5-3.5 mS/cm
-- T° eau : 18-22°C
-- Niveau eau : 0.6-1.0 m
-
-Seuils équipements automatiques :
+Seuils automatiques (configurables par serre dans le dashboard) :
 - Ventilation : cooling jour > 25°C | cooling nuit > 20°C | deadband ±2°C
-- Chauffage : heating jour < 15°C | heating nuit < 12°C
+- Chauffage : heating jour < 20°C | heating nuit < 15°C | deadband ±2°C
+- Brumisation/Humidification : HR < 60% (jour/nuit)
+- Déshumidification : HR > 80% (jour/nuit)
+- CO₂ injection : < 1000 ppm (système prévu, non commissioning)
 - Ombrage extérieur : déploie > 30°C, rétracte < 25°C
 - Ombrage intérieur : déploie > 28°C
-- Brumisation : déclenche si HR < 50%
-- Déshumidification : déclenche si HR > 85%
-- CO₂ injection : déclenche si < 400 ppm (système non commissioning)
+- Fenêtres : ouverture/fermeture automatique via station météo
+
+Équipements techniques :
+- Brumisateur : refroidissement évaporatif + hausse HR
+- Refroidissement adiabatique (CTA) : abaisse T° quand > seuil max
+- Station de fertigation : prépare solution nutritive, ajuste pH/EC, fertilise N/P/K/Ca/Mg/S
+- Chaudière : chauffe circuit d'eau pour fertigation et zone racinaire tablettes
+- Adoucisseur : échangeur ionique, réduit dureté < 7°f, prévient calcaire goutteurs
+
+═══════════════════════════════════════════════════════════════
+PARTIE 3 — ESPACES & INFRASTRUCTURE
+═══════════════════════════════════════════════════════════════
+
+- Salle de contrôle : pilotage 24/7 — ventilation, chauffage, refroidissement, CO₂, éclairage
+- Salle de fertigation : préparation solutions nutritives, contrôle pH/EC
+- Salle de lavage : désinfection matériel, prévention contaminations croisées
+- Salle de préparation : mise en place cultures et matériel
+- Bloc gestion technique et administrative : bureaux du complexe
+- Couloir central : circulation entre les 5 unités
+- Zone extérieure : extérieur du complexe
+
+═══════════════════════════════════════════════════════════════
+PARTIE 4 — VALEURS DE RÉFÉRENCE AGRONOMIQUES
+═══════════════════════════════════════════════════════════════
+
+Température air : 18-28°C (optimum 20-25°C)
+Humidité relative : 60-80%
+VPD : 0.8-1.5 kPa
+CO₂ : 400-1200 ppm
+pH solution : 5.5-7.0
+EC : 1.5-3.5 mS/cm
+Température eau : 18-22°C
+Niveau eau : 0.6-1.0 m
 """
 
 # ─── Schémas ────────────────────────────────────────────────
@@ -304,9 +162,10 @@ class PublicCopilotRequest(BaseModel):
     lang: Optional[str] = "fr"
     live_snapshot: Optional[list] = []
 
-# ─── Collecte contexte DB ──────────────────────────────────
+# ─── Collecte contexte DB enrichi ─────────────────────────────
 
 async def build_context(db) -> dict:
+    # 1. Données live 30min
     iot_rows = await db.fetch("""
         SELECT DISTINCT ON (serre_id, type_api)
             serre_id, type_api, temperature, humidite, vpd, co2, luminosite,
@@ -315,31 +174,63 @@ async def build_context(db) -> dict:
         WHERE capture_at > NOW() - INTERVAL '30 minutes'
         ORDER BY serre_id, type_api, capture_at DESC
     """)
+
+    # 2. Infos serres
     serres_rows = await db.fetch("SELECT id, code, nom_fr, nom_en, actif FROM serres ORDER BY code")
     serres_map  = {s["id"]: dict(s) for s in serres_rows}
 
+    # 3. Alertes 48h
     alertes_rows = await db.fetch("""
         SELECT a.id, a.serre_id, a.capteur, a.valeur, a.seuil_min, a.seuil_max,
                a.message_fr as message, a.created_at, a.lu, s.code as serre_code, s.nom_fr
         FROM alertes a JOIN serres s ON s.id = a.serre_id
         WHERE a.created_at > NOW() - INTERVAL '48 hours'
-        ORDER BY a.created_at DESC LIMIT 20
+        ORDER BY a.created_at DESC LIMIT 30
     """)
+
+    # 4. Seuils actifs
     seuils_rows = await db.fetch("""
         SELECT t.serre_id, t.capteur, t.valeur_min, t.valeur_max, t.actif, s.code
         FROM thresholds t JOIN serres s ON s.id = t.serre_id
         WHERE t.actif = TRUE ORDER BY s.code, t.capteur
     """)
+
+    # 5. Stats 7 jours
     stats_rows = await db.fetch("""
         SELECT serre_id, type_api,
                AVG(temperature) as avg_temp, MIN(temperature) as min_temp, MAX(temperature) as max_temp,
-               AVG(humidite) as avg_hum, AVG(vpd) as avg_vpd, AVG(co2) as avg_co2,
-               AVG(ph) as avg_ph, AVG(ec) as avg_ec, COUNT(*) as nb_mesures
+               AVG(humidite) as avg_hum, MIN(humidite) as min_hum, MAX(humidite) as max_hum,
+               AVG(vpd) as avg_vpd, AVG(co2) as avg_co2,
+               AVG(ph) as avg_ph, AVG(ec) as avg_ec,
+               COUNT(*) as nb_mesures
         FROM mesures_iot
         WHERE capture_at > NOW() - INTERVAL '7 days' AND temperature IS NOT NULL
         GROUP BY serre_id, type_api ORDER BY serre_id
     """)
 
+    # 6. Journal équipements (dernières 24h)
+    try:
+        journal_rows = await db.fetch("""
+            SELECT j.serre_id, j.action, j.etat, j.valeur_capteur,
+                   j.seuil_reference, j.periode, j.timestamp, s.code
+            FROM journal_actions j JOIN serres s ON s.id = j.serre_id
+            WHERE j.timestamp > NOW() - INTERVAL '24 hours'
+            ORDER BY j.timestamp DESC LIMIT 50
+        """)
+    except Exception:
+        journal_rows = []
+
+    # 7. Params internes (seuils équipements configurés)
+    try:
+        params_rows = await db.fetch("""
+            SELECT p.serre_id, p.action, p.seuil, p.deadband, s.code
+            FROM params_internes p JOIN serres s ON s.id = p.serre_id
+            ORDER BY s.code, p.action
+        """)
+    except Exception:
+        params_rows = []
+
+    # ── Assembler les données live par serre ──
     live_by_serre = {}
     for row in iot_rows:
         sid = row["serre_id"]
@@ -371,9 +262,23 @@ async def build_context(db) -> dict:
                    for s in seuils_rows],
         "stats_7j": [{"serre": serres_map.get(s["serre_id"], {}).get("code", "?"),
                       "avg_temp": round(float(s["avg_temp"]), 1) if s["avg_temp"] else None,
-                      "avg_hum": round(float(s["avg_hum"]), 1) if s["avg_hum"] else None,
-                      "avg_vpd": round(float(s["avg_vpd"]), 2) if s["avg_vpd"] else None}
+                      "min_temp": round(float(s["min_temp"]), 1) if s["min_temp"] else None,
+                      "max_temp": round(float(s["max_temp"]), 1) if s["max_temp"] else None,
+                      "avg_hum":  round(float(s["avg_hum"]),  1) if s["avg_hum"]  else None,
+                      "avg_vpd":  round(float(s["avg_vpd"]),  2) if s["avg_vpd"]  else None,
+                      "avg_co2":  round(float(s["avg_co2"]),  0) if s["avg_co2"]  else None,
+                      "avg_ph":   round(float(s["avg_ph"]),   2) if s["avg_ph"]   else None,
+                      "avg_ec":   round(float(s["avg_ec"]),   2) if s["avg_ec"]   else None,
+                      "nb_mesures": int(s["nb_mesures"])}
                      for s in stats_rows],
+        "journal_24h": [{"serre": j["code"], "action": j["action"], "etat": j["etat"],
+                         "valeur": float(j["valeur_capteur"]) if j["valeur_capteur"] else None,
+                         "seuil": float(j["seuil_reference"]) if j["seuil_reference"] else None,
+                         "periode": j["periode"], "heure": str(j["timestamp"])}
+                        for j in journal_rows],
+        "params_internes": [{"serre": p["code"], "action": p["action"],
+                             "seuil": float(p["seuil"]), "deadband": float(p["deadband"])}
+                            for p in params_rows],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -396,17 +301,20 @@ def build_system_prompt(context: dict, lang: str) -> str:
     else:
         intro = (
             "Tu es Terra, l'assistant intelligent du Géoportail AgroBioTech (IAV Hassan II, Rabat). "
-            "Tu es expert des 5 serres de recherche du campus. "
-            "Tu aides les responsables à analyser les données IoT, comprendre les alertes et "
-            "prendre des décisions agronomiques précises. "
-            "Réponds de façon concise en français. Cite toujours les valeurs numériques exactes."
+            "Tu es expert des 5 serres de recherche du campus et de leur fonctionnement. "
+            "Tu aides les responsables à analyser les données IoT en temps réel, comprendre les alertes, "
+            "consulter l'historique des équipements et prendre des décisions agronomiques précises. "
+            "Réponds de façon concise en français. Cite toujours les valeurs numériques exactes. "
+            "Tu as accès aux données live, aux alertes 48h, aux statistiques 7 jours, "
+            "au journal des équipements 24h et aux paramètres de pilotage configurés."
         )
     return (
         f"{intro}\n\n"
         f"--- BASE DE CONNAISSANCES CAMPUS ---\n{CAMPUS_KNOWLEDGE}\n--- FIN CONNAISSANCES ---\n\n"
-        f"--- DONNÉES LIVE TEMPS RÉEL ---\n{ctx_json}\n--- FIN DONNÉES ---\n\n"
+        f"--- DONNÉES TEMPS RÉEL & HISTORIQUE ---\n{ctx_json}\n--- FIN DONNÉES ---\n\n"
         f"Priorité : utilise les données live pour les valeurs actuelles. "
-        f"Utilise la base de connaissances pour le contexte agronomique. Max 200 mots."
+        f"Utilise stats_7j pour les tendances. Utilise journal_24h pour l'état des équipements. "
+        f"Utilise alertes_48h pour les incidents. Max 250 mots."
     )
 
 def build_public_system_prompt(live_snapshot: list, lang: str) -> str:
@@ -426,9 +334,9 @@ def build_public_system_prompt(live_snapshot: list, lang: str) -> str:
     else:
         intro = (
             "Tu es Terra, l'assistant public du Géoportail AgroBioTech (IAV Hassan II, Rabat). "
-            "Tu aides les visiteurs à découvrir les 5 serres de recherche du campus. "
-            "Réponds de façon concise en français. "
-            "Tu n'as pas accès aux données privées (alertes, seuils). "
+            "Tu aides les visiteurs à découvrir les 5 serres de recherche du campus IAV Hassan II. "
+            "Réponds de façon concise et pédagogique en français. "
+            "Tu n'as pas accès aux données privées (alertes, seuils, journal). "
             "Pour les fonctions admin, oriente vers le dashboard."
         )
     return (
@@ -438,10 +346,16 @@ def build_public_system_prompt(live_snapshot: list, lang: str) -> str:
         f"Max 150 mots. Sois pédagogique pour un visiteur non-spécialiste."
     )
 
-# ─── Helper Groq streaming ─────────────────────────────────
+# ─── Helper Groq streaming avec rotation de clés ──────────────
 
 async def call_groq_stream(messages: list, system: str):
-    """Appelle Groq API en streaming OpenAI-compatible et yield les chunks SSE."""
+    """Appelle Groq avec rotation automatique des clés API."""
+    keys = get_groq_keys()
+    if not keys:
+        yield f"data: {json.dumps({'error': 'Aucune clé GROQ_API_KEY configurée'})}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
     payload = {
         "model": GROQ_MODEL,
         "messages": [{"role": "system", "content": system}] + messages,
@@ -449,39 +363,60 @@ async def call_groq_stream(messages: list, system: str):
         "temperature": 0.7,
         "stream": True,
     }
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        async with client.stream("POST", GROQ_URL, json=payload, headers=headers) as response:
-            if response.status_code != 200:
-                err = await response.aread()
-                yield f"data: {json.dumps({'error': err.decode()})}\n\n"
-                return
-            async for line in response.aiter_lines():
-                if not line.startswith("data:"):
-                    continue
-                data_str = line[5:].strip()
-                if data_str == "[DONE]":
+
+    last_error = None
+    for i, key in enumerate(keys):
+        try:
+            headers = {
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            }
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                async with client.stream("POST", GROQ_URL, json=payload, headers=headers) as response:
+                    if response.status_code == 429:
+                        # Rate limit → essayer la clé suivante
+                        last_error = f"Rate limit clé {i+1}"
+                        print(f"[Terra] {last_error} — rotation vers clé suivante")
+                        continue
+                    if response.status_code != 200:
+                        err = await response.aread()
+                        last_error = err.decode()
+                        print(f"[Terra] Erreur clé {i+1}: {response.status_code}")
+                        continue
+                    # Succès — streamer la réponse
+                    async for line in response.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
+                        data_str = line[5:].strip()
+                        if data_str == "[DONE]":
+                            yield "data: [DONE]\n\n"
+                            return
+                        try:
+                            data  = json.loads(data_str)
+                            delta = data.get("choices", [{}])[0].get("delta", {})
+                            text  = delta.get("content", "")
+                            if text:
+                                yield f"data: {json.dumps({'text': text})}\n\n"
+                        except json.JSONDecodeError:
+                            pass
                     yield "data: [DONE]\n\n"
                     return
-                try:
-                    data = json.loads(data_str)
-                    delta = data.get("choices", [{}])[0].get("delta", {})
-                    text  = delta.get("content", "")
-                    if text:
-                        yield f"data: {json.dumps({'text': text})}\n\n"
-                except json.JSONDecodeError:
-                    pass
+        except Exception as e:
+            last_error = str(e)
+            print(f"[Terra] Exception clé {i+1}: {e}")
+            continue
+
+    # Toutes les clés ont échoué
+    yield f"data: {json.dumps({'error': f'Toutes les clés Groq ont échoué: {last_error}'})}\n\n"
     yield "data: [DONE]\n\n"
 
 # ─── Endpoint privé (JWT) ──────────────────────────────────
 
 @router.post("/chat")
 async def copilot_chat(request: CopilotRequest, db=Depends(get_db), user=Depends(get_current_user)):
-    if not GROQ_API_KEY:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY non configurée")
+    keys = get_groq_keys()
+    if not keys:
+        raise HTTPException(status_code=500, detail="Aucune GROQ_API_KEY configurée")
     if not request.messages:
         raise HTTPException(status_code=400, detail="Messages vides")
 
@@ -490,8 +425,8 @@ async def copilot_chat(request: CopilotRequest, db=Depends(get_db), user=Depends
     except Exception as e:
         context = {"error": str(e), "timestamp": datetime.now(timezone.utc).isoformat()}
 
-    system  = build_system_prompt(context, request.lang or "fr")
-    msgs    = [{"role": m.role, "content": m.content} for m in request.messages[-10:]]
+    system = build_system_prompt(context, request.lang or "fr")
+    msgs   = [{"role": m.role, "content": m.content} for m in request.messages[-10:]]
 
     return StreamingResponse(
         call_groq_stream(msgs, system),
@@ -503,8 +438,9 @@ async def copilot_chat(request: CopilotRequest, db=Depends(get_db), user=Depends
 
 @router.post("/public")
 async def copilot_public(request: PublicCopilotRequest, db=Depends(get_db)):
-    if not GROQ_API_KEY:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY non configurée")
+    keys = get_groq_keys()
+    if not keys:
+        raise HTTPException(status_code=500, detail="Aucune GROQ_API_KEY configurée")
     if not request.messages:
         raise HTTPException(status_code=400, detail="Messages vides")
 
