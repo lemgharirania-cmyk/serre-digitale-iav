@@ -5700,14 +5700,14 @@ function eqIcon(key, color){
 
     /* ── Rideaux automatiques — exterior T°, NOT yet integrated ── */
     'rideaux auto': {
-      status: {FR:'Automatique \u2014 T\u00b0 ext. (Station Météreologique) + plage horaire', EN:'Automatic \u2014 outdoor T\u00b0 (Station Météorologique) + time window', AR:'\u062a\u0644\u0642\u0627\u0626\u064a \u2014 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 + \u0627\u0644\u0641\u062a\u0631\u0629 \u0627\u0644\u0632\u0645\u0646\u064a\u0629'},
+      status: {FR:'Automatique \u2014 T\u00b0 ext. (Open-Meteo Rabat) + plage horaire', EN:'Automatic \u2014 outdoor T\u00b0 (Open-Meteo Rabat) + time window', AR:'\u062a\u0644\u0642\u0627\u0626\u064a \u2014 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 + \u0627\u0644\u0641\u062a\u0631\u0629 \u0627\u0644\u0632\u0645\u0646\u064a\u0629'},
       audio:  {FR:'audio/fr/rideaux.mp3', EN:'audio/en/rideaux.mp3', AR:'audio/ar/rideaux.mp3'},
       eq: {
         what: [
           {i:'ti-stack',   FR:'Deux rideaux thermiques d\u2019ombrage \u2014 un \u00e9cran INTERNE et un \u00e9cran EXTERNE \u2014 d\u00e9ploy\u00e9s pour limiter la mont\u00e9e de temp\u00e9rature dans la serre.', EN:'Two thermal shading curtains \u2014 an INTERIOR and an EXTERIOR screen \u2014 deployed to limit the rise in greenhouse temperature.', AR:'\u0633\u062a\u0627\u0631\u062a\u0627\u0646 \u062d\u0631\u0627\u0631\u064a\u062a\u0627\u0646 \u0644\u0644\u062a\u0638\u0644\u064a\u0644 \u2014 \u062f\u0627\u062e\u0644\u064a\u0629 \u0648\u062e\u0627\u0631\u062c\u064a\u0629 \u2014 \u062a\u064f\u0646\u0634\u0631 \u0644\u0644\u062d\u062f \u0645\u0646 \u0627\u0631\u062a\u0641\u0627\u0639 \u062f\u0631\u062c\u0629 \u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062f\u0641\u064a\u0626\u0629.'},
           {i:'ti-temperature-minus', FR:'Peut diminuer la temp\u00e9rature jusqu\u2019\u00e0 6\u00a0\u00b0C par rapport \u00e0 sa valeur, en interceptant le rayonnement solaire incident.', EN:'Can reduce temperature by up to 6\u00a0\u00b0C by intercepting incoming solar radiation.', AR:'\u064a\u0645\u0643\u0646 \u0623\u0646 \u062a\u062e\u0641\u0636 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u062d\u062a\u0649 6 \u00b0C \u0628\u0627\u0639\u062a\u0631\u0627\u0636 \u0627\u0644\u0625\u0634\u0639\u0627\u0639 \u0627\u0644\u0634\u0645\u0633\u064a.'},
           {i:'ti-grain',   FR:'Toile PH 66 polyester avec bandes de renfort \u2014 capacit\u00e9 d\u2019ombrage de 65\u00a0%.', EN:'PH 66 polyester fabric with reinforcement bands \u2014 65\u00a0% shading capacity.', AR:'\u0642\u0645\u0627\u0634 PH 66 \u0628\u0648\u0644\u064a\u0625\u0633\u062a\u0631 \u0645\u0639 \u0623\u0634\u0631\u0637\u0629 \u062a\u0642\u0648\u064a\u0629 \u2014 \u0642\u062f\u0631\u0629 \u062a\u0638\u0644\u064a\u0644 65\u00a0%.'},
-          {i:'ti-cpu',     FR:'Pilot\u00e9 par la T\u00b0 ext\u00e9rieure (Station météorologique \u00b7 Rabat) avec hyst\u00e9r\u00e9sis et plage horaire d\u00e9di\u00e9e pour chaque \u00e9cran.', EN:'Driven by outdoor temperature (Meteorological Station \u00b7 Rabat) with hysteresis and a dedicated time window per screen.', AR:'\u064a\u062f\u0627\u0631 \u0639\u0628\u0631 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 (Meteorological Station \u00b7 \u0627\u0644\u0631\u0628\u0627\u0637) \u0645\u0639 \u062a\u0623\u062e\u064a\u0631 \u0648\u0641\u062a\u0631\u0629 \u0632\u0645\u0646\u064a\u0629 \u0644\u0643\u0644 \u0633\u062a\u0627\u0631\u0629.'},
+          {i:'ti-cpu',     FR:'Pilot\u00e9 par la T\u00b0 ext\u00e9rieure (Open-Meteo \u00b7 Rabat) avec hyst\u00e9r\u00e9sis et plage horaire d\u00e9di\u00e9e pour chaque \u00e9cran.', EN:'Driven by outdoor temperature (Open-Meteo \u00b7 Rabat) with hysteresis and a dedicated time window per screen.', AR:'\u064a\u062f\u0627\u0631 \u0639\u0628\u0631 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 (Open-Meteo \u00b7 \u0627\u0644\u0631\u0628\u0627\u0637) \u0645\u0639 \u062a\u0623\u062e\u064a\u0631 \u0648\u0641\u062a\u0631\u0629 \u0632\u0645\u0646\u064a\u0629 \u0644\u0643\u0644 \u0633\u062a\u0627\u0631\u0629.'},
         ],
         screens: [
           {key:'ext', name:{FR:'Ombrage ext.',EN:'Exterior shade',AR:'\u062a\u0638\u0644\u064a\u0644 \u062e\u0627\u0631\u062c\u064a'}, deploy:28, retract:24, startH:10, startM:0, endH:17, endM:30},
@@ -5719,7 +5719,7 @@ function eqIcon(key, color){
           {i:'ti-grain',   k:{FR:'Toile',EN:'Fabric',AR:'\u0627\u0644\u0642\u0645\u0627\u0634'}, v:{FR:'PH 66 polyester \u00b7 bandes de renfort',EN:'PH 66 polyester \u00b7 reinforcement bands',AR:'PH 66 \u0628\u0648\u0644\u064a\u0625\u0633\u062a\u0631 \u00b7 \u0623\u0634\u0631\u0637\u0629 \u062a\u0642\u0648\u064a\u0629'}},
           {i:'ti-sun',     k:{FR:'Capacit\u00e9 d\u2019ombrage',EN:'Shading capacity',AR:'\u0642\u062f\u0631\u0629 \u0627\u0644\u062a\u0638\u0644\u064a\u0644'}, v:'65 %'},
           {i:'ti-temperature-minus', k:{FR:'R\u00e9duction T\u00b0',EN:'T\u00b0 reduction',AR:'\u062a\u062e\u0641\u064a\u0636 \u0627\u0644\u062d\u0631\u0627\u0631\u0629'}, v:{FR:'jusqu\u2019\u00e0 \u22126\u00a0\u00b0C',EN:'up to \u22126\u00a0\u00b0C',AR:'\u062d\u062a\u0649 \u22126 \u00b0C'}},
-          {i:'ti-cloud',   k:{FR:'Source m\u00e9t\u00e9o',EN:'Weather source',AR:'\u0645\u0635\u062f\u0631 \u0627\u0644\u0623\u0631\u0635\u0627\u062f'}, v:{FR:' \u00b7 Station Méteorologique ',EN:' \u00b7 Meteorological station',AR:' محطة الطقس\u00b7 \u0627\u0644\u0631\u0628\u0627\u0637'}},
+          {i:'ti-cloud',   k:{FR:'Source m\u00e9t\u00e9o',EN:'Weather source',AR:'\u0645\u0635\u062f\u0631 \u0627\u0644\u0623\u0631\u0635\u0627\u062f'}, v:{FR:'Open-Meteo \u00b7 Rabat',EN:'Open-Meteo \u00b7 Rabat',AR:'Open-Meteo \u00b7 \u0627\u0644\u0631\u0628\u0627\u0637'}},
           {i:'ti-cpu',     k:{FR:'Contr\u00f4le',EN:'Control',AR:'\u0627\u0644\u062a\u062d\u0643\u0645'}, v:{FR:'Automatique',EN:'Automatic',AR:'\u062a\u0644\u0642\u0627\u0626\u064a'}},
         ],
       },
@@ -7140,16 +7140,36 @@ if(document.readyState === 'loading') {
      Call this in each viewer alongside fetchIoT / fetchThresholds. */
   window.fetchParamsInternes = async function(serreId, apiBase){
     const base = apiBase || (window.API_BASE || '');
+    const url  = base + '/api/params/' + serreId + '/public';
     try{
-      const r = await fetch(base + '/api/dashboard/params/' + serreId + '/public');
-      if(!r.ok) throw new Error('http ' + r.status);
+      const r = await fetch(url);
+      if(!r.ok) throw new Error('HTTP ' + r.status);
       const data = await r.json();
-      /* Accept either {params:{...}} or flat object */
-      const params = (data && data.params) ? data.params : (data || null);
-      window.paramsInternes = params || window.PI_DEFAULTS;
+      let params = null;
+      /* Accept multiple response shapes:
+         1) { ventilation_jour: {seuil, deadband}, ... }
+         2) { params: { ventilation_jour: {seuil, deadband}, ... } }
+         3) [ { action: 'ventilation_jour', seuil: N, deadband: M }, ... ]  */
+      if (Array.isArray(data)) {
+        params = {};
+        data.forEach(it => {
+          if (it && it.action) {
+            params[it.action] = { seuil: Number(it.seuil), deadband: Number(it.deadband) };
+          }
+        });
+      } else if (data && typeof data === 'object') {
+        params = data.params || data;
+      }
+      if (params && Object.keys(params).length > 0) {
+        window.paramsInternes = Object.assign({}, window.PI_DEFAULTS, params);
+        console.info('[paramsInternes] LIVE values loaded from dashboard:', url);
+        console.info('[paramsInternes] chauffage_jour =', window.paramsInternes.chauffage_jour);
+      } else {
+        throw new Error('empty response');
+      }
     } catch(e){
-      console.warn('[paramsInternes] fallback to defaults:', e.message);
       window.paramsInternes = window.PI_DEFAULTS;
+      console.warn('[paramsInternes] using DEFAULTS (endpoint missing or unreachable):', url, '|', e.message);
     }
   };
 
