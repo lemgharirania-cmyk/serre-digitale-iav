@@ -87,23 +87,18 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
           </button>
         </div>
 
-        {/* Nav items */}
+        {/* Nav items — flex-1 so it fills all space between toggle and admin */}
         <nav style={{
-          flex: 1, overflowY: 'auto', overflowX: 'hidden',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-evenly',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           padding: '4px 8px',
-          scrollbarWidth: 'none', msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}>
-          {/* Section label */}
-          {open && (
-            <div style={{
-              fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em',
-              textTransform: 'uppercase', color: textMuted,
-              padding: '6px 8px 8px', marginBottom: '4px',
-            }}>
-              {lang === 'fr' ? 'Navigation' : 'Navigation'}
-            </div>
-          )}
-
           {NAV.map(item => {
             const Icon     = item.icon
             const isActive = active === item.id
@@ -123,7 +118,6 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   padding: open ? '0 10px' : '0',
                   borderRadius: 10,
                   border: 'none',
-                  marginBottom: '2px',
                   cursor: 'pointer',
                   background: isActive ? activeBg : 'transparent',
                   color: isActive ? '#22C55E' : textNormal,
@@ -136,6 +130,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
                   boxSizing: 'border-box',
                   borderLeft: open ? ('2px solid ' + (isActive ? '#22C55E' : 'transparent')) : 'none',
                   textAlign: 'left',
+                  flexShrink: 0,
                 }}
                 onMouseEnter={e => {
                   if (!isActive) {
@@ -159,11 +154,11 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
               </button>
             )
           })}
+        </nav>
 
-          {/* Divider */}
-          <div style={{ height: '1px', background: border, margin: '10px 4px', flexShrink: 0 }} />
-
-          {/* Admin link — light green bg */}
+        {/* Divider + Admin link — pinned to bottom */}
+        <div style={{ padding: '0 8px 12px', flexShrink: 0 }}>
+          <div style={{ height: '1px', background: border, marginBottom: '10px' }} />
           <Link
             to="/login"
             style={{
@@ -194,7 +189,7 @@ export default function Sidebar({ open, setOpen, active, lang, darkMode }) {
             <Lock size={15} strokeWidth={1.8} style={{ flexShrink: 0, color: darkMode ? '#4ADE80' : '#16A34A' }} />
             {open && <span>{lang === 'fr' ? 'Espace Admin' : 'Admin Space'}</span>}
           </Link>
-        </nav>
+        </div>
 
 
       </aside>
