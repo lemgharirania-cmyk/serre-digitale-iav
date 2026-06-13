@@ -9,7 +9,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
-  Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
+  Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2, Sun as SunIcon,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
   Pencil, Check, X as XIcon, Flame, AirVent, Settings,
 } from 'lucide-react'
@@ -28,15 +28,17 @@ const SERRES = [
 
 const PARAM_ICONS = {
   temperature:Thermometer, humidite:Droplets, vpd:Wind, co2:Leaf,
+  luminosite:SunIcon,
   ph:FlaskConical, ec:Zap, temp_eau:Waves, niveau_eau:BarChart2,
 }
 
-const ENV_KEYS = ['temperature','humidite','vpd','co2']
+const ENV_KEYS = ['temperature','humidite','vpd','co2','luminosite']
 const IRR_KEYS = ['ph','ec','temp_eau','niveau_eau']
 
 const OPTIMAL = {
   temperature:{ min:20, max:25 }, humidite:{ min:60, max:80 },
   vpd:{ min:0.8, max:1.5 },      co2:{ min:500, max:1000 },
+  luminosite:{ min:100, max:600 },
   ph:{ min:5.5, max:7.0 },       ec:{ min:1.5, max:3.5 },
   temp_eau:{ min:18, max:22 },   niveau_eau:{ min:0.6, max:1.0 },
 }
