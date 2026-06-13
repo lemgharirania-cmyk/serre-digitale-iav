@@ -13,6 +13,7 @@ const TEXTS = [
     titleFr: "La Serre Agro-Biotech \u2014 Un fleuron de l\u2019innovation",
     titleEn: "The Agro-Biotech Greenhouse \u2014 A Flagship of Innovation",
     longText: true,
+    syncPhoto: 0,
     textFr:
       "Parmi les temps forts de cette inauguration figurait la Serre Agro-Biotech, la nouvelle serre expérimentale automatisée de l\u2019Institut, qui incarne les ambitions de l\u2019IAV Hassan II en matière d\u2019innovation, de recherche appliquée et d\u2019agriculture de précision." +
       "\n\n" +
@@ -23,23 +24,24 @@ const TEXTS = [
       "Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.",
   },
   {
-    titleFr: "Insaf, chercheuse \u2014 Stress salin sur la courgette",
-    titleEn: "Insaf, Researcher \u2014 Salt Stress on Zucchini",
+    titleFr: "BERI Insaf, PFE \u2014 Stress salin sur la courgette",
+    titleEn: "BERI Insaf, Final-Year Project \u2014 Salt Stress on Zucchini",
     longText: true,
     textFr:
       "\u00ab Dans le cadre de mes travaux de recherche menés au sein de la serre High-Tech de l\u2019Institut Agronomique et Vétérinaire Hassan II, j\u2019ai travaillé sur l\u2019impact du stress salin sur la croissance et le développement de la courgette (Cucurbita pepo L.), une culture maraîchère largement cultivée et particulièrement importante pour la production sous serre. Cette recherche s\u2019inscrit dans un contexte marqué par la raréfaction des ressources en eau et l\u2019augmentation de la salinité dans plusieurs régions agricoles, des défis qui affectent directement la productivité des cultures. Grâce aux conditions contrôlées offertes par la serre High-Tech, j\u2019ai pu suivre l\u2019évolution des plantes dans un environnement stable et adapté à l\u2019expérimentation. Cette infrastructure constitue un véritable atout pour les chercheurs, car elle permet de mieux comprendre les réactions des cultures face aux contraintes environnementales et de contribuer au développement de pratiques agricoles plus résilientes et durables. \u00bb" +
       "\n\n" +
-      "\u2014 Insaf, chercheuse",
+      "\u2014 BERI Insaf, projet de fin d\u2019études",
     textEn:
       "\u00ab As part of my research conducted within the High-Tech greenhouse of the Institut Agronomique et Vétérinaire Hassan II, I studied the impact of salt stress on the growth and development of zucchini (Cucurbita pepo L.), a vegetable crop widely cultivated and particularly important for greenhouse production. This research is set against a backdrop of growing water scarcity and rising salinity in several agricultural regions \u2014 challenges that directly affect crop productivity. Thanks to the controlled conditions offered by the High-Tech greenhouse, I was able to monitor plant development in a stable environment well suited to experimentation. This infrastructure is a genuine asset for researchers, as it helps to better understand how crops respond to environmental constraints and contributes to the development of more resilient and sustainable agricultural practices. \u00bb" +
       "\n\n" +
-      "\u2014 Insaf, Researcher",
+      "\u2014 BERI Insaf, Final-Year Project",
     syncPhoto: 3,
   },
   {
     titleFr: "David A. Dumbuya \u2014 Irrigation magnétique & horticulture durable",
     titleEn: "David A. Dumbuya \u2014 Magnetic Irrigation & Sustainable Horticulture",
     longText: true,
+    syncPhoto: 2,
     textFr:
       "\u00ab Dans le cadre de mon Master en Eau et Horticulture Durable, mes recherches portent sur l\u2019utilisation de l\u2019eau d\u2019irrigation traitée magnétiquement et son influence sur la croissance des cultures, la qualité de l\u2019eau et la réponse des plantes aux différents stress environnementaux. Mes travaux sont menés sur plusieurs cultures maraîchères, notamment la laitue, le concombre et la tomate, cultivées sous serre. La serre High-Tech de l\u2019Institut Agronomique et Vétérinaire Hassan II constitue un outil essentiel pour la réalisation de ces recherches. Grâce à ses infrastructures modernes et à son environnement contrôlé, elle permet de conduire les expérimentations dans des conditions optimales et d\u2019assurer un suivi rigoureux du développement des cultures. Cette plateforme contribue ainsi à améliorer la qualité des données collectées et à renforcer la fiabilité des résultats obtenus, tout en favorisant l\u2019innovation dans le domaine de l\u2019agriculture durable. \u00bb" +
       "\n\n" +
@@ -49,14 +51,14 @@ const TEXTS = [
       "\n\n" +
       "\u2014 David Alimamy Dumbuya, Master\u2019s student-researcher in Water and Sustainable Horticulture",
   },
-  { titleFr: "À venir \u2014 Slide 5", titleEn: "Coming Soon \u2014 Slide 5", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon." },
+  { titleFr: "À venir \u2014 Slide 5", titleEn: "Coming Soon \u2014 Slide 5", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon.", syncPhoto: 0 },
 ]
 
 const PHOTOS = [
   { src: "/complexe-exterieur.jpg",  labelFr: "Vue extérieure du complexe",     labelEn: "Complex exterior view"          },
   { src: "/visite-officielle.jpg",   labelFr: "Visite officielle - intérieur",  labelEn: "Official visit - interior"      },
   { src: "/inspection-cultures.jpg", labelFr: "Inspection des cultures",        labelEn: "Research crop inspection"       },
-  { src: "/INSAF.jpeg",              labelFr: "Insaf - travaux en serre High-Tech", labelEn: "Insaf - High-Tech greenhouse work" },
+  { src: "/INSAF.jpeg",              labelFr: "BERI Insaf - PFE en serre High-Tech", labelEn: "BERI Insaf - Final-Year Project in High-Tech greenhouse" },
 ]
 
 export default function SectionApropos({ lang, darkMode }) {
@@ -86,18 +88,14 @@ export default function SectionApropos({ lang, darkMode }) {
   const textSecond = darkMode ? '#CBD5E1' : '#475569'
   const mutedColor = darkMode ? '#64748B' : '#94A3B8'
 
-  // Text carousel — skips advance while paused
+  // Carousel — single timer, text drives image via syncPhoto on each slide
   useEffect(() => {
     const t1 = setInterval(() => {
       if (pausedRef.current) return
       setTxtIdx(i => (i + 1) % TEXTS.length)
       setExpanded(false)
     }, 5000)
-    const t2 = setInterval(() => {
-      if (pausedRef.current) return
-      setImgIdx(i => (i + 1) % PHOTOS.length)
-    }, 4500)
-    return () => { clearInterval(t1); clearInterval(t2) }
+    return () => { clearInterval(t1) }
   }, [])
 
   // Sync photo when text slide changes (only when not expanded)
