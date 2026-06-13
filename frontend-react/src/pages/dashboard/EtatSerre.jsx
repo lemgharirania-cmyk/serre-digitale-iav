@@ -11,7 +11,7 @@ import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
-  Pencil, Check, X as XIcon,
+  Pencil, Check, X as XIcon, Flame, AirVent, Settings,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
@@ -548,11 +548,16 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <span style={{ width:32, height:32, borderRadius:9, display:'flex', alignItems:'center',
-              justifyContent:'center', background:meta.color+'18', color:meta.color, flexShrink:0, fontSize:16 }}>⚙</span>
+              justifyContent:'center', background:meta.color+'18', color:meta.color, flexShrink:0 }}>
+              <Settings size={16}/>
+            </span>
             <div>
               <div style={{ fontSize:14, fontWeight:800, color:ink, letterSpacing:'-0.01em' }}>{t.equipTitre}</div>
-              <div style={{ fontSize:11, color:ink3, marginTop:1 }}>
-                {jour ? '🌤 ' + t.jour : '🌙 ' + t.nuit}
+              <div style={{ fontSize:11, color:ink3, marginTop:1, display:'flex', alignItems:'center', gap:5 }}>
+                {jour
+                  ? <><Sun size={11} color="#F59E0B"/> {t.jour}</>
+                  : <><Wind size={11}/> {t.nuit}</>
+                }
                 {' · '}
                 {lang==='FR' ? 'Intervalles de pilotage (visualisation)' : 'Control intervals (visualization)'}
               </div>
@@ -590,7 +595,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
           <EquipCard
             isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
-            canEdit={canEdit} cardKey='ventilation' emoji='💨' label={t.ventTitre} color='#06B6D4'
+            canEdit={canEdit} cardKey='ventilation' Icon={Wind} label={t.ventTitre} color='#06B6D4'
             etat={equip.ventilateur}
             actions={['ventilation_jour','ventilation_nuit']}
             rows={[
@@ -603,7 +608,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           />
           <EquipCard
             isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
-            canEdit={canEdit} cardKey='chauffage' emoji='🔥' label={t.chauffTitre} color='#F59E0B'
+            canEdit={canEdit} cardKey='chauffage' Icon={Flame} label={t.chauffTitre} color='#F59E0B'
             etat={equip.chauffage}
             actions={['chauffage_jour','chauffage_nuit']}
             rows={[
@@ -616,7 +621,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           />
           <EquipCard
             isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
-            canEdit={canEdit} cardKey='humidification' emoji='💧' label={t.brumTitre} color='#8B5CF6'
+            canEdit={canEdit} cardKey='humidification' Icon={Droplets} label={t.brumTitre} color='#8B5CF6'
             etat={equip.brumisateur}
             actions={['humidification_jour','humidification_nuit']}
             rows={[
@@ -629,7 +634,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           />
           <EquipCard
             isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
-            canEdit={canEdit} cardKey='deshumidification' emoji='🌬' label={t.deshumTitre} color='#3B82F6'
+            canEdit={canEdit} cardKey='deshumidification' Icon={AirVent} label={t.deshumTitre} color='#3B82F6'
             etat={equip.deshumid}
             actions={['deshumidification_jour','deshumidification_nuit']}
             rows={[
@@ -642,7 +647,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
           />
           <EquipCard
             isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border} lang={lang} t={t}
-            canEdit={canEdit} cardKey='co2' emoji='🌿' label={t.co2Titre} color='#22C55E'
+            canEdit={canEdit} cardKey='co2' Icon={Leaf} label={t.co2Titre} color='#22C55E'
             etat={equip.co2inj==='actif'||equip.co2purge==='actif' ? 'actif' : equip.co2inj==='neutre'||equip.co2purge==='neutre' ? 'neutre' : 'inactif'}
             actions={['co2_injection','co2_purge']}
             rows={[
@@ -1042,7 +1047,7 @@ function ParamCard({ paramKey, value, meta, seuil, lang, isDark, t }) {
 // ════════════════════════════════════════════════════════════════
 function EquipCard({
   isDark, ink, ink3, ink4, border, lang, t, canEdit,
-  cardKey, emoji, label, color, etat,
+  cardKey, Icon, label, color, etat,
   actions, rows,
   paramsFlat, editingCard, editForm, setEditForm,
   saving, saveOk, startEdit, cancelEdit, saveEdit,
@@ -1080,23 +1085,37 @@ function EquipCard({
     }}>
 
       {/* En-tête carte */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-          <span style={{ fontSize:16 }}>{emoji}</span>
-          <span style={{ fontSize:12, fontWeight:700, color:ink }}>{label}</span>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+        {/* Left : icon + label + fuzzy badge (vertical stack if badge) */}
+        <div style={{ display:'flex', flexDirection:'column', gap:4, minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <span style={{ width:22, height:22, borderRadius:6, display:'flex', alignItems:'center',
+              justifyContent:'center', background:color+'18', flexShrink:0 }}>
+              <Icon size={13} color={color}/>
+            </span>
+            <span style={{ fontSize:12, fontWeight:700, color:ink }}>{label}</span>
+          </div>
           {extraBadge && (
-            <span style={{ fontSize:8, fontWeight:700, padding:'1px 5px', borderRadius:99,
-              background:color+'18', color, border:'1px solid '+color+'30' }}>
+            <span style={{
+              display:'inline-flex', alignItems:'center',
+              fontSize:8, fontWeight:700,
+              padding:'2px 7px', borderRadius:6,
+              background:color+'18', color,
+              border:'1px solid '+color+'30',
+              alignSelf:'flex-start',
+              whiteSpace:'nowrap', letterSpacing:'0.02em',
+            }}>
               {extraBadge}
             </span>
           )}
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+
+        {/* Right : status badge + pencil / save buttons */}
+        <div style={{ display:'flex', alignItems:'center', gap:5, flexShrink:0, marginLeft:6 }}>
           <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
             color:c, background:c+'18', border:'1px solid '+c+'30', whiteSpace:'nowrap' }}>
             {statusLabel}
           </span>
-          {/* ✏️ Crayon — visible seulement si l'admin gère cette serre */}
           {canEdit && !isEditing && (
             <button onClick={() => startEdit(cardKey, actions)}
               title={lang==='FR'?'Modifier':'Edit'}
@@ -1108,7 +1127,6 @@ function EquipCard({
               <Pencil size={12}/>
             </button>
           )}
-          {/* Boutons annuler / valider en mode édition */}
           {isEditing && (
             <div style={{ display:'flex', gap:4 }}>
               <button onClick={cancelEdit}
