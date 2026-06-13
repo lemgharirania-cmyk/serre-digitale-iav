@@ -97,38 +97,9 @@ async def get_params(
     }
 
 
-# ── PUT /api/params/{serre_id}/{action} ───────────────────────
-@router.put("/{serre_id}/{action}")
-async def update_param(
-    serre_id: int,
-    action:   str,
-    data:     ParamUpdate,
-    db=Depends(get_db),
-    user=Depends(get_current_user)
-):
-    """
-    Met à jour un seul paramètre de pilotage.
-    Restreint à l'admin de la serre concernée (ou super-admin).
-    """
-    if action not in ACTIONS_VALIDES:
-        raise HTTPException(status_code=400, detail=f"Action inconnue : {action}. Valeurs acceptées : {sorted(ACTIONS_VALIDES)}")
-
-    check_serre_access(user, serre_id)
-
-    await db.execute("""
-        INSERT INTO params_internes (serre_id, action, seuil, deadband, updated_at, updated_by)
-        VALUES ($1, $2, $3, $4, NOW(), $5)
-        ON CONFLICT (serre_id, action) DO UPDATE SET
-            seuil      = EXCLUDED.seuil,
-            deadband   = EXCLUDED.deadband,
-            updated_at = NOW(),
-            updated_by = EXCLUDED.updated_by
-    """, serre_id, action, data.seuil, data.deadband, user["id"])
-
-    return {"message": f"Paramètre '{action}' mis à jour pour la serre {serre_id}."}
-
-
 # ── PUT /api/params/{serre_id}/batch ─────────────────────────
+# IMPORTANT: must be defined BEFORE /{serre_id}/{action}
+# otherwise FastAPI matches 'batch' as {action} and returns 422
 @router.put("/{serre_id}/batch")
 async def update_params_batch(
     serre_id: int,
@@ -158,6 +129,37 @@ async def update_params_batch(
         """, serre_id, action, p.seuil, p.deadband, user["id"])
 
     return {"message": f"{len(data.params)} paramètre(s) mis à jour pour la serre {serre_id}."}
+
+
+# ── PUT /api/params/{serre_id}/{action} ───────────────────────
+@router.put("/{serre_id}/{action}")
+async def update_param(
+    serre_id: int,
+    action:   str,
+    data:     ParamUpdate,
+    db=Depends(get_db),
+    user=Depends(get_current_user)
+):
+    """
+    Met à jour un seul paramètre de pilotage.
+    Restreint à l'admin de la serre concernée (ou super-admin).
+    """
+    if action not in ACTIONS_VALIDES:
+        raise HTTPException(status_code=400, detail=f"Action inconnue : {action}. Valeurs acceptées : {sorted(ACTIONS_VALIDES)}")
+
+    check_serre_access(user, serre_id)
+
+    await db.execute("""
+        INSERT INTO params_internes (serre_id, action, seuil, deadband, updated_at, updated_by)
+        VALUES ($1, $2, $3, $4, NOW(), $5)
+        ON CONFLICT (serre_id, action) DO UPDATE SET
+            seuil      = EXCLUDED.seuil,
+            deadband   = EXCLUDED.deadband,
+            updated_at = NOW(),
+            updated_by = EXCLUDED.updated_by
+    """, serre_id, action, data.seuil, data.deadband, user["id"])
+
+    return {"message": f"Paramètre '{action}' mis à jour pour la serre {serre_id}."}
 
 
 # ── Valeurs par défaut (fallback si table vide) ───────────────
