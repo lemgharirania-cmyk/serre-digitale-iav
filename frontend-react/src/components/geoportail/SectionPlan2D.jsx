@@ -1,6 +1,6 @@
 // src/components/geoportail/SectionPlan2D.jsx
 import { useState } from 'react'
-import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
+import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2, Sun as SunIcon } from 'lucide-react'
 
 // ── Image dimensions (px) at display: 1320×880 ───────────────
 // All zones are expressed as percentages of the image dimensions
@@ -15,8 +15,8 @@ const ZONES = [
     roleFr: 'Sélection variétale, culture in vitro et amélioration génétique des espèces végétales cultivées en conditions contrôlées.',
     roleEn: 'Varietal selection, in vitro culture and genetic improvement of plant species grown under controlled conditions.',
     culturesFr: 'Tomate · Piment · Melon', culturesEn: 'Tomato · Pepper · Melon',
-    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
-    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂, PPFD) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂, PPFD) · 2 IRR sensors (pH, EC, Water T°, Level)',
     visitFile: '/walkthrough/serregenetique.html',
     visitBadge: 'S01',
   },
@@ -27,8 +27,8 @@ const ZONES = [
     roleFr: 'Production florale, maraîchage sous abri et expérimentations horticoles sur espèces à haute valeur commerciale.',
     roleEn: 'Flower production, greenhouse vegetables and horticultural experiments on high commercial value species.',
     culturesFr: 'Roses · Laitue · Fraise', culturesEn: 'Roses · Lettuce · Strawberry',
-    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
-    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂, PPFD) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂, PPFD) · 2 IRR sensors (pH, EC, Water T°, Level)',
     visitFile: '/walkthrough/serrehorticulture.html',
     visitBadge: 'S02',
   },
@@ -39,8 +39,8 @@ const ZONES = [
     roleFr: 'Essais culturaux, comparaisons variétales et recherche appliquée en agronomie des grandes cultures.',
     roleEn: 'Crop trials, varietal comparisons and applied agronomy research on field crops.',
     culturesFr: 'Blé · Orge · Légumineuses', culturesEn: 'Wheat · Barley · Legumes',
-    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
-    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂, PPFD) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂, PPFD) · 2 IRR sensors (pH, EC, Water T°, Level)',
     visitFile: '/walkthrough/serreagronomie.html',
     visitBadge: 'S03',
   },
@@ -51,8 +51,8 @@ const ZONES = [
     roleFr: 'Phytopathologie, entomologie et méthodes de lutte intégrée contre les ravageurs et maladies des cultures.',
     roleEn: 'Phytopathology, entomology and integrated pest management methods against crop pests and diseases.',
     culturesFr: 'Plants test · Cultures témoin · Zone quarantaine', culturesEn: 'Test plants · Control cultures · Quarantine zone',
-    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
-    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂, PPFD) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂, PPFD) · 2 IRR sensors (pH, EC, Water T°, Level)',
     visitFile: '/walkthrough/serreprotection.html',
     visitBadge: 'S05',
   },
@@ -63,8 +63,8 @@ const ZONES = [
     roleFr: 'Culture hors-sol en systèmes NFT, DWC et aéroponie pour production intensive et recherche sur les solutions nutritives.',
     roleEn: 'Soilless cultivation in NFT, DWC and aeroponic systems for intensive production and nutrient solution research.',
     culturesFr: 'Basilic · Tomate · Laitue · Fraise', culturesEn: 'Basil · Tomato · Lettuce · Strawberry',
-    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
-    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂) · 2 IRR sensors (pH, EC, Water T°, Level)',
+    capteursFr: '2 capteurs ENV (T°, HR, VPD, CO₂, PPFD) · 2 capteurs IRR (pH, EC, T°eau, Niveau)',
+    capteursEn: '2 ENV sensors (T°, RH, VPD, CO₂, PPFD) · 2 IRR sensors (pH, EC, Water T°, Level)',
     visitFile: '/walkthrough/serrehydroponie.html',
     visitBadge: 'S04',
   },
@@ -111,6 +111,7 @@ const PARAM_ICONS = {
   humidite:    Droplets,
   vpd:         Wind,
   co2:         Leaf,
+  luminosite:  SunIcon,
   ph:          FlaskConical,
   ec:          Zap,
   temp_eau:    Waves,
@@ -118,12 +119,12 @@ const PARAM_ICONS = {
 }
 
 const PARAM_LABELS = {
-  fr: { temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'T° Eau', niveau_eau:'Niveau Eau' },
-  en: { temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'Water T°', niveau_eau:'Water Level' },
+  fr: { temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂', luminosite:'Luminosité', ph:'pH', ec:'EC', temp_eau:'T° Eau', niveau_eau:'Niveau Eau' },
+  en: { temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂', luminosite:'Light (PPFD)', ph:'pH', ec:'EC', temp_eau:'Water T°', niveau_eau:'Water Level' },
 }
 
-const PARAM_UNITS = { temperature:'°C', humidite:'%', vpd:' kPa', co2:' ppm', ph:'', ec:' mS/cm', temp_eau:'°C', niveau_eau:' m' }
-const PARAM_COLORS = { temperature:'#F59E0B', humidite:'#06B6D4', vpd:'#8B5CF6', co2:'#22C55E', ph:'#0891b2', ec:'#059669', temp_eau:'#F59E0B', niveau_eau:'#3773bd' }
+const PARAM_UNITS  = { temperature:'°C', humidite:'%', vpd:' kPa', co2:' ppm', luminosite:' µmol/m²/s', ph:'', ec:' mS/cm', temp_eau:'°C', niveau_eau:' m' }
+const PARAM_COLORS = { temperature:'#F59E0B', humidite:'#06B6D4', vpd:'#8B5CF6', co2:'#22C55E', luminosite:'#F59E0B', ph:'#0891b2', ec:'#059669', temp_eau:'#F59E0B', niveau_eau:'#3773bd' }
 
 export default function SectionPlan2D({ lang, liveData, darkMode }) {
   const [selected,    setSelected]    = useState(null)
@@ -337,8 +338,8 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                       <>
                         {/* ENV */}
                         <div style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.env}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '12px' }}>
-                          {(['temperature','humidite','vpd','co2']).map(key => {
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                          {(['temperature','humidite','vpd','co2','luminosite']).map(key => {
                             const val = live.env?.[key]
                             const IconCmp = PARAM_ICONS[key]
                             const c = PARAM_COLORS[key]
