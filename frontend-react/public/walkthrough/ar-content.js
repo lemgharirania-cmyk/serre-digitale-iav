@@ -5360,6 +5360,13 @@ function renderSensorsCard(el, def){
       EN:'Measures the total mineral salt concentration of the solution (mS/cm). Too low means under-nutrition; too high causes osmotic stress that burns the roots.',
       AR:'يقيس التركيز الكلي للأملاح المعدنية في المحلول (mS/cm). منخفض جداً يعني سوء التغذية؛ مرتفع جداً يسبب إجهاداً أسموزياً يحرق الجذور.',
     },
+    sLuxName:   {FR:'Capteur de Lumi\u00e8re',  EN:'Light Sensor',          AR:'\u0645\u0633\u062a\u0634\u0639\u0631 \u0627\u0644\u0625\u0636\u0627\u0621\u0629'},
+    sLuxType:   {FR:'Luxm\u00e8tre / PAR',         EN:'Luxmeter / PAR',        AR:'\u0645\u0642\u064a\u0627\u0633 \u0644\u0648\u0643\u0633 / PAR'},
+    sLuxDesc:   {
+      FR:'Mesure l\u2019\u00e9clairement et le rayonnement photosynth\u00e9tiquement actif (PAR) re\u00e7u par la culture. Pilote l\u2019appoint d\u2019\u00e9clairage et le d\u00e9ploiement des \u00e9crans thermiques d\u2019ombrage.',
+      EN:'Measures illuminance and photosynthetically active radiation (PAR) received by the crop. Drives supplemental lighting and the deployment of shading thermal screens.',
+      AR:'\u064a\u0642\u064a\u0633 \u0634\u062f\u0629 \u0627\u0644\u0625\u0636\u0627\u0621\u0629 \u0648\u0627\u0644\u0625\u0634\u0639\u0627\u0639 \u0627\u0644\u0641\u0639\u0651\u0627\u0644 \u0636\u0648\u0626\u064a\u0627\u064b (PAR). \u064a\u062a\u062d\u0643\u0645 \u0641\u064a \u0627\u0644\u0625\u0636\u0627\u0621\u0629 \u0627\u0644\u0625\u0636\u0627\u0641\u064a\u0629 \u0648\u0646\u0634\u0631 \u0627\u0644\u0633\u062a\u0627\u0626\u0631 \u0627\u0644\u062d\u0631\u0627\u0631\u064a\u0629 \u0644\u0644\u062a\u0638\u0644\u064a\u0644.',
+    },
     sWlName:    {FR:'Niveau d\'Eau',          EN:'Water Level',           AR:'مستوى الماء'},
     sWlType:    {FR:'Capteur ultrasonique',   EN:'Ultrasonic sensor',     AR:'مستشعر فوق صوتي'},
     sWlDesc:    {
@@ -5383,6 +5390,7 @@ function renderSensorsCard(el, def){
     {tiIcon:'ti-droplet',        key:'ph',     name:tx('sPhName'),   type:tx('sPhType'),   desc:tx('sPhDesc'),   color:'#059669', iconColor:'#059669', bg:'rgba(16,185,129,.08)', border:'rgba(16,185,129,.2)'},
     {tiIcon:'ti-bolt',           key:'ec',     name:tx('sEcName'),   type:tx('sEcType'),   desc:tx('sEcDesc'),   color:'#b45309', iconColor:'#b45309', bg:'rgba(245,158,11,.08)', border:'rgba(245,158,11,.2)'},
     {tiIcon:'ti-waves',          key:'niveau', name:tx('sWlName'),   type:tx('sWlType'),   desc:tx('sWlDesc'),   color:'#0e7490', iconColor:'#0e7490', bg:'rgba(6,182,212,.08)',  border:'rgba(6,182,212,.2)'},
+    {tiIcon:'ti-sun',            key:'lux',    name:tx('sLuxName'),  type:tx('sLuxType'),  desc:tx('sLuxDesc'),  color:'#d97706', iconColor:'#d97706', bg:'rgba(251,191,36,.10)', border:'rgba(251,191,36,.25)'},
   ];
 
   /* ── Audio state ── */
@@ -5434,13 +5442,9 @@ function renderSensorsCard(el, def){
   });
   html += `</div>`;
 
-  /* 3 — Protocol */
+  /* 3 — Protocol (sans Fréquence) */
   html += `<div class="ar-section-title" style="margin-top:16px">${tx('secProto')}</div>
   <div class="sns-proto">
-    <div class="sns-proto-row">
-      <span class="sns-proto-label">${tx('protoFreq')}</span>
-      <span class="sns-proto-val">${tx('protoFreqV')}</span>
-    </div>
     <div class="sns-proto-row">
       <span class="sns-proto-label">${tx('protoTx')}</span>
       <span class="sns-proto-val">${tx('protoTxV')}</span>
@@ -5450,6 +5454,8 @@ function renderSensorsCard(el, def){
       <span class="sns-proto-val sns-proto-api">guardian.pro-leaf.com</span>
     </div>
   </div>`;
+
+  /* 3b — REMOVED — placeholder */
 
   /* 4 — Audio player */
   html += `<div class="ar-section-title" style="margin-top:16px">${tx('secAudio')}</div>
@@ -5633,7 +5639,7 @@ function eqIcon(key, color){
           on:  {FR:'VPD élevé, T° au-dessus du seuil ou humidité trop basse', EN:'High VPD, temp. above threshold or humidity too low', AR:'VPD مرتفع أو الحرارة فوق العتبة أو الرطوبة منخفضة'},
           off: {FR:'T° et humidité dans les plages cibles', EN:'Temp. and humidity within target ranges', AR:'الحرارة والرطوبة ضمن النطاقات'},
         },
-        band: {title:{FR:'Température ambiante',EN:'Ambient temperature',AR:'الحرارة المحيطة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:28},
+        band: {title:{FR:'Humidité relative',EN:'Relative humidity',AR:'الرطوبة النسبية'}, unit:'%', scaleMin:30, scaleMax:100, seuil:60},
         monitor: [M.temp, M.hum, M.vpd],
         set: [
           {i:'ti-spray',   k:{FR:'Buse',EN:'Nozzle',AR:'الفوهة'}, v:{FR:'Céramique HP',EN:'High-pressure ceramic',AR:'سيراميك عالي الضغط'}},
@@ -5683,7 +5689,7 @@ function eqIcon(key, color){
           on:  {FR:'Station météo : conditions favorables — fenêtres ouvertes', EN:'Weather station: favourable conditions — vents open', AR:'محطة الأرصاد: ظروف ملائمة — الفتحات مفتوحة'},
           off: {FR:'Vent fort, pluie, gel ou T° défavorable — fenêtres fermées', EN:'Strong wind, rain, frost or unfavourable temp. — vents closed', AR:'رياح قوية أو أمطار أو صقيع أو حرارة غير مناسبة — الفتحات مغلقة'},
         },
-        band: {title:{FR:'Température serre',EN:'Greenhouse temperature',AR:'حرارة الدفيئة'}, unit:'°C', scaleMin:15, scaleMax:40, seuil:30},
+        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, seuil:25},
         monitor: [M.temp, M.hum],
         set: [
           {i:'ti-window', k:{FR:'Type',EN:'Type',AR:'النوع'}, v:{FR:'Toits ouvrants / châssis zénithaux',EN:'Roof vents / zenith frames',AR:'فتحات سقفية / هياكل زينيثية'}},
@@ -5694,30 +5700,31 @@ function eqIcon(key, color){
 
     /* ── Rideaux automatiques — exterior T°, NOT yet integrated ── */
     'rideaux auto': {
-      status: {FR:'Automatique — T° et éclairement', EN:'Automatic — temp. and irradiance', AR:'تلقائي — الحرارة والإشعاع'},
+      status: {FR:'Automatique \u2014 T\u00b0 ext. (Open-Meteo Rabat) + plage horaire', EN:'Automatic \u2014 outdoor T\u00b0 (Open-Meteo Rabat) + time window', AR:'\u062a\u0644\u0642\u0627\u0626\u064a \u2014 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 + \u0627\u0644\u0641\u062a\u0631\u0629 \u0627\u0644\u0632\u0645\u0646\u064a\u0629'},
       audio:  {FR:'audio/fr/rideaux.mp3', EN:'audio/en/rideaux.mp3', AR:'audio/ar/rideaux.mp3'},
       eq: {
-          what: [
-          {i:'ti-moon',        FR:'Écran intérieur (nuit) — barrière isolante réduisant les pertes de chaleur par rayonnement et convection.', EN:'Interior screen (night) — insulating barrier reducing heat loss by radiation and convection.', AR:'شاشة داخلية (ليلاً) — حاجز عازل يحدّ من فقد الحرارة بالإشعاع والحمل.'},
-          {i:'ti-sun',         FR:'Écran extérieur (jour) — intercepte le rayonnement solaire avant qu\u2019il pénètre dans la serre.', EN:'Exterior screen (day) — intercepts solar radiation before it enters the greenhouse.', AR:'شاشة خارجية (نهاراً) — تعترض الإشعاع الشمسي قبل دخوله الدفيئة.'},
-          {i:'ti-gauge',       FR:'Déploiement automatisé selon l\u2019éclairement et la T° — en cohérence avec les autres équipements.', EN:'Automated deployment by irradiance and temperature — coordinated with other equipment.', AR:'نشر آلي حسب الإشعاع والحرارة — منسّق مع سائر التجهيزات.'},
-          {i:'ti-cpu',         FR:'Piloté par la station météo extérieure (prévu).', EN:'Driven by the outdoor weather station (planned).', AR:'يُدار بمحطة الطقس الخارجية (مُخطط).'},
+        what: [
+          {i:'ti-stack',   FR:'Deux rideaux thermiques d\u2019ombrage \u2014 un \u00e9cran INTERNE et un \u00e9cran EXTERNE \u2014 d\u00e9ploy\u00e9s pour limiter la mont\u00e9e de temp\u00e9rature dans la serre.', EN:'Two thermal shading curtains \u2014 an INTERIOR and an EXTERIOR screen \u2014 deployed to limit the rise in greenhouse temperature.', AR:'\u0633\u062a\u0627\u0631\u062a\u0627\u0646 \u062d\u0631\u0627\u0631\u064a\u062a\u0627\u0646 \u0644\u0644\u062a\u0638\u0644\u064a\u0644 \u2014 \u062f\u0627\u062e\u0644\u064a\u0629 \u0648\u062e\u0627\u0631\u062c\u064a\u0629 \u2014 \u062a\u064f\u0646\u0634\u0631 \u0644\u0644\u062d\u062f \u0645\u0646 \u0627\u0631\u062a\u0641\u0627\u0639 \u062f\u0631\u062c\u0629 \u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062f\u0641\u064a\u0626\u0629.'},
+          {i:'ti-temperature-minus', FR:'Peut diminuer la temp\u00e9rature jusqu\u2019\u00e0 6\u00a0\u00b0C par rapport \u00e0 sa valeur, en interceptant le rayonnement solaire incident.', EN:'Can reduce temperature by up to 6\u00a0\u00b0C by intercepting incoming solar radiation.', AR:'\u064a\u0645\u0643\u0646 \u0623\u0646 \u062a\u062e\u0641\u0636 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u062d\u062a\u0649 6 \u00b0C \u0628\u0627\u0639\u062a\u0631\u0627\u0636 \u0627\u0644\u0625\u0634\u0639\u0627\u0639 \u0627\u0644\u0634\u0645\u0633\u064a.'},
+          {i:'ti-grain',   FR:'Toile PH 66 polyester avec bandes de renfort \u2014 capacit\u00e9 d\u2019ombrage de 65\u00a0%.', EN:'PH 66 polyester fabric with reinforcement bands \u2014 65\u00a0% shading capacity.', AR:'\u0642\u0645\u0627\u0634 PH 66 \u0628\u0648\u0644\u064a\u0625\u0633\u062a\u0631 \u0645\u0639 \u0623\u0634\u0631\u0637\u0629 \u062a\u0642\u0648\u064a\u0629 \u2014 \u0642\u062f\u0631\u0629 \u062a\u0638\u0644\u064a\u0644 65\u00a0%.'},
+          {i:'ti-cpu',     FR:'Pilot\u00e9 par la T\u00b0 ext\u00e9rieure (Open-Meteo \u00b7 Rabat) avec hyst\u00e9r\u00e9sis et plage horaire d\u00e9di\u00e9e pour chaque \u00e9cran.', EN:'Driven by outdoor temperature (Open-Meteo \u00b7 Rabat) with hysteresis and a dedicated time window per screen.', AR:'\u064a\u062f\u0627\u0631 \u0639\u0628\u0631 \u0627\u0644\u062d\u0631\u0627\u0631\u0629 \u0627\u0644\u062e\u0627\u0631\u062c\u064a\u0629 (Open-Meteo \u00b7 \u0627\u0644\u0631\u0628\u0627\u0637) \u0645\u0639 \u062a\u0623\u062e\u064a\u0631 \u0648\u0641\u062a\u0631\u0629 \u0632\u0645\u0646\u064a\u0629 \u0644\u0643\u0644 \u0633\u062a\u0627\u0631\u0629.'},
         ],
-        trigger: {
-          onLabel:  {FR:'DÉPLOYÉ',EN:'DEPLOYED',AR:'مُنشور'},
-          offLabel: {FR:'NON DÉPLOYÉ',EN:'NOT DEPLOYED',AR:'غير مُنشور'},
-          on:  {FR:'T° et éclairement dans la plage — isolation nocturne ou ombrage diurne', EN:'Temp. and irradiance within range — night insulation or daytime shading', AR:'الحرارة والإشعاع ضمن النطاق — عزل ليلي أو تظليل نهاري'},
-          off: {FR:'Conditions hors plage — rétraction pour protéger la culture', EN:'Conditions out of range — retracted to protect crops', AR:'الظروف خارج النطاق — يُطوى لحماية المحصول'},
-        },
-        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, rangeLo:10, rangeHi:32},
+        screens: [
+          {key:'ext', name:{FR:'Ombrage ext.',EN:'Exterior shade',AR:'\u062a\u0638\u0644\u064a\u0644 \u062e\u0627\u0631\u062c\u064a'}, deploy:28, retract:24, startH:10, startM:0, endH:17, endM:30},
+          {key:'int', name:{FR:'Ombrage int.',EN:'Interior shade',AR:'\u062a\u0638\u0644\u064a\u0644 \u062f\u0627\u062e\u0644\u064a'}, deploy:34, retract:27, startH:11, startM:0, endH:18, endM:30},
+        ],
+        band: {title:{FR:'Température extérieure',EN:'Outdoor temperature',AR:'الحرارة الخارجية'}, unit:'°C', scaleMin:-5, scaleMax:45, seuil:28},
         monitor: [M.text],
         set: [
-          {i:'ti-cpu',   k:{FR:'Contrôle',EN:'Control',AR:'التحكم'}, v:{FR:'Automatique (prévu)',EN:'Automatic (planned)',AR:'تلقائي (مُخطط)'}},
+          {i:'ti-grain',   k:{FR:'Toile',EN:'Fabric',AR:'\u0627\u0644\u0642\u0645\u0627\u0634'}, v:{FR:'PH 66 polyester \u00b7 bandes de renfort',EN:'PH 66 polyester \u00b7 reinforcement bands',AR:'PH 66 \u0628\u0648\u0644\u064a\u0625\u0633\u062a\u0631 \u00b7 \u0623\u0634\u0631\u0637\u0629 \u062a\u0642\u0648\u064a\u0629'}},
+          {i:'ti-sun',     k:{FR:'Capacit\u00e9 d\u2019ombrage',EN:'Shading capacity',AR:'\u0642\u062f\u0631\u0629 \u0627\u0644\u062a\u0638\u0644\u064a\u0644'}, v:'65 %'},
+          {i:'ti-temperature-minus', k:{FR:'R\u00e9duction T\u00b0',EN:'T\u00b0 reduction',AR:'\u062a\u062e\u0641\u064a\u0636 \u0627\u0644\u062d\u0631\u0627\u0631\u0629'}, v:{FR:'jusqu\u2019\u00e0 \u22126\u00a0\u00b0C',EN:'up to \u22126\u00a0\u00b0C',AR:'\u062d\u062a\u0649 \u22126 \u00b0C'}},
+          {i:'ti-cloud',   k:{FR:'Source m\u00e9t\u00e9o',EN:'Weather source',AR:'\u0645\u0635\u062f\u0631 \u0627\u0644\u0623\u0631\u0635\u0627\u062f'}, v:{FR:'Open-Meteo \u00b7 Rabat',EN:'Open-Meteo \u00b7 Rabat',AR:'Open-Meteo \u00b7 \u0627\u0644\u0631\u0628\u0627\u0637'}},
+          {i:'ti-cpu',     k:{FR:'Contr\u00f4le',EN:'Control',AR:'\u0627\u0644\u062a\u062d\u0643\u0645'}, v:{FR:'Automatique',EN:'Automatic',AR:'\u062a\u0644\u0642\u0627\u0626\u064a'}},
         ],
       },
     },
 
-    /* ── Fenêtres automatiques — CORRECTED: exterior T° ONLY ── */
     'fenetre auto': {
       status: {FR:'Automatique — selon T° extérieure', EN:'Automatic — by outdoor temp.', AR:'تلقائي — حسب الحرارة الخارجية'},
       audio:  {FR:'audio/fr/fenetres.mp3', EN:'audio/en/fenetres.mp3', AR:'audio/ar/fenetres.mp3'},
@@ -5960,6 +5967,73 @@ function renderEquipmentCard(el, def){
     bands.forEach((b, idx) => { if(idx) h += `<div class="ar-section-title eq-sec">${px(b.title)}</div>`; h += eqBandHTML(b, lang); });
   }
 
+  /* ─── Écrans thermiques d'ombrage (rideaux auto) — dual-screen state UI ─── */
+  if(e.screens && e.screens.length){
+    const now    = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const outT   = (window._outsideTemp != null ? window._outsideTemp : window.outsideTemp);
+    const lblSec = {FR:'\u00c9CRANS D\u2019OMBRAGE',EN:'SHADING SCREENS',AR:'\u0633\u062a\u0627\u0626\u0631 \u0627\u0644\u062a\u0638\u0644\u064a\u0644'};
+    const lblDeploye   = {FR:'D\u00e9ploy\u00e9',     EN:'Deployed',     AR:'\u0645\u064f\u0646\u0634\u0648\u0631\u0629'};
+    const lblRetracte  = {FR:'R\u00e9tract\u00e9',    EN:'Retracted',    AR:'\u0645\u0637\u0648\u064a\u0629'};
+    const lblHorsPlage = {FR:'hors plage',          EN:'out of window',AR:'\u062e\u0627\u0631\u062c \u0627\u0644\u0641\u062a\u0631\u0629'};
+    const lblDans      = {FR:'dans plage',          EN:'within window',AR:'\u062f\u0627\u062e\u0644 \u0627\u0644\u0641\u062a\u0631\u0629'};
+    const lblNoData    = {FR:'donn\u00e9es indisponibles',EN:'data unavailable',AR:'\u0628\u064a\u0627\u0646\u0627\u062a \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629'};
+    const pad2 = n => String(n).padStart(2,'0');
+    h += `<div class="ar-section-title eq-sec">${px(lblSec)}</div>`
+       + `<div class="eq-screens">`;
+    e.screens.forEach(sc => {
+      const startMin = sc.startH * 60 + (sc.startM || 0);
+      const endMin   = sc.endH   * 60 + (sc.endM   || 0);
+      const inWin    = (nowMin >= startMin && nowMin < endMin);
+      let st = 'off', stLbl = px(lblRetracte), stColor = '#94a3b8';
+      if(outT == null){
+        st = 'na'; stLbl = px(lblNoData); stColor = '#94a3b8';
+      } else if(!inWin){
+        st = 'off';  stLbl = px(lblRetracte); stColor = '#94a3b8';
+      } else if(outT > sc.deploy){
+        st = 'on';   stLbl = px(lblDeploye);  stColor = '#06b6d4';
+      } else if(outT < sc.retract){
+        st = 'off';  stLbl = px(lblRetracte); stColor = '#94a3b8';
+      } else {
+        st = 'off';  stLbl = px(lblRetracte); stColor = '#94a3b8';
+      }
+      const winStr  = `${pad2(sc.startH)}:${pad2(sc.startM||0)}\u2013${pad2(sc.endH)}:${pad2(sc.endM||0)}`;
+      const winLbl  = inWin ? px(lblDans) : px(lblHorsPlage);
+      h += `<div class="eq-screen-row">`
+        +    `<div class="eq-screen-main">`
+        +      `<div class="eq-screen-name">${px(sc.name)}</div>`
+        +      `<div class="eq-screen-thr">${px({FR:'D\u00e9ploie',EN:'Deploy',AR:'\u062a\u064f\u0646\u0634\u0631 '})} \u003e ${sc.deploy}\u00a0\u00b0C \u00b7 ${px({FR:'R\u00e9tracte',EN:'Retract',AR:'\u062a\u064f\u0637\u0648\u0649'})} \u003c ${sc.retract}\u00a0\u00b0C</div>`
+        +      `<div class="eq-screen-win"><span class="eq-screen-clock">\u29bf</span>${winStr} \u00b7 ${winLbl}</div>`
+        +    `</div>`
+        +    `<div class="eq-screen-state" style="color:${stColor}"><span class="eq-screen-dot" style="background:${stColor};box-shadow:0 0 4px ${stColor}80"></span>${stLbl}</div>`
+        +  `</div>`;
+    });
+    h += `</div>`;
+  }
+
+  /* ─── Seuils d'activation live (from ParamsInternes / dashboard) ─── */
+  if(typeof window.getParamsForEquipment === 'function'){
+    const pp = window.getParamsForEquipment(def.title || def.statusText || '');
+    if(pp){
+      const lblSeuils = {FR:'SEUILS D\u2019ACTIVATION (DASHBOARD)', EN:'ACTIVATION THRESHOLDS (DASHBOARD)', AR:'\u0639\u062a\u0628\u0627\u062a \u0627\u0644\u062a\u0641\u0639\u064a\u0644 (\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645)'};
+      const lblJour = {FR:'Jour', EN:'Day', AR:'\u0646\u0647\u0627\u0631\u064b\u0627'};
+      const lblNuit = {FR:'Nuit', EN:'Night', AR:'\u0644\u064a\u0644\u0627'};
+      const lblDb   = {FR:'Deadband', EN:'Deadband', AR:'\u0646\u0637\u0627\u0642 \u0627\u0644\u062a\u062d\u0645\u0644'};
+      const lblInj  = {FR:'Injection (jour)', EN:'Injection (day)', AR:'\u062d\u0642\u0646 (\u0646\u0647\u0627\u0631\u064b\u0627)'};
+      const lblPrg  = {FR:'Purge (nuit)', EN:'Purge (night)', AR:'\u062a\u0646\u0641\u064a\u0633 (\u0644\u064a\u0644\u0627)'};
+      h += `<div class="ar-section-title eq-sec">${px(lblSeuils)}</div>`
+        + `<div class="eq-pi-grid">`;
+      if(pp.signDay && pp.signNight){
+        h += `<div class="eq-pi-row"><span class="eq-pi-lbl">${px(lblInj)}</span><span class="eq-pi-val"><b>${pp.signDay}\u202f${pp.jour.seuil}</b>\u202f${pp.unit}</span><span class="eq-pi-db">\u00b1${pp.jour.deadband}</span></div>`
+          + `<div class="eq-pi-row"><span class="eq-pi-lbl">${px(lblPrg)}</span><span class="eq-pi-val"><b>${pp.signNight}\u202f${pp.nuit.seuil}</b>\u202f${pp.unit}</span><span class="eq-pi-db">\u00b1${pp.nuit.deadband}</span></div>`;
+      } else {
+        h += `<div class="eq-pi-row"><span class="eq-pi-lbl">${px(lblJour)}</span><span class="eq-pi-val"><b>${pp.sign}\u202f${pp.jour.seuil}</b>\u202f${pp.unit}</span><span class="eq-pi-db">\u00b1${pp.jour.deadband}</span></div>`
+          + `<div class="eq-pi-row"><span class="eq-pi-lbl">${px(lblNuit)}</span><span class="eq-pi-val"><b>${pp.sign}\u202f${pp.nuit.seuil}</b>\u202f${pp.unit}</span><span class="eq-pi-db">\u00b1${pp.nuit.deadband}</span></div>`;
+      }
+      h += `</div>`;
+    }
+  }
+
   if(e.monitor && e.monitor.length){
     h += `<div class="ar-section-title eq-sec">${px(UI.secMonitor)}</div>`
       + `<div class="eq-monitor"><div class="eq-monitor-chips">`
@@ -6021,8 +6095,44 @@ function eqBandHTML(b, lang){
     label = `<span>${px({FR:'Plage cible',EN:'Target range',AR:'النطاق المستهدف'})}</span><b>${b.rangeLo} – ${b.rangeHi}${b.unit?' '+b.unit:''}</b>`;
     marker = `<div class="eq-band-fill" style="left:${l}%;width:${w}%"></div>`;
   } else if(b.seuil != null){
-    label = `<span>${px({FR:'Seuil d\u2019activation',EN:'Activation threshold',AR:'عتبة التشغيل'})}</span><b>${b.seuil} ${b.unit}</b>`;
-    marker = `<div class="eq-band-fill" style="left:0;width:${pc(b.seuil)}%;opacity:.28"></div><div class="eq-band-seuil" style="left:${pc(b.seuil)}%"></div>`;
+    /* Show LIVE IoT reading instead of the threshold value.
+       Falls back gracefully when no live sensor maps to this band. */
+    const titleRaw = (typeof b.title === 'object' ? (b.title.FR||b.title.EN||'') : (b.title||''));
+    const titleStr = titleRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const unit = (b.unit||'').toLowerCase();
+    const iot = (typeof window !== 'undefined' && (window._iotData || window.iotData)) || null;
+    const env = (iot && iot.env) || {};
+    const irr = (iot && iot.irr) || {};
+    const outT = (typeof window !== 'undefined') ? (window._outsideTemp != null ? window._outsideTemp : window.outsideTemp) : null;
+    let liveVal = null;
+    if(/exter|outside|out\b/.test(titleStr) && outT != null){
+      liveVal = outT;
+    } else if(/racin|substrat|substrate|root/.test(titleStr)){
+      liveVal = null; /* no live sensor for substrate temp */
+    } else if(/eclair|lumin|lux|light/.test(titleStr)){
+      liveVal = null; /* no luxmeter feed */
+    } else if(unit === '°c' || unit === '°c'){
+      liveVal = env.temperature;
+    } else if(unit === '%'){
+      liveVal = env.humidite;
+    } else if(unit === 'ppm'){
+      liveVal = env.co2;
+    } else if(unit === 'kpa'){
+      liveVal = env.vpd;
+    } else if(unit === 'ms/cm'){
+      liveVal = irr.ec;
+    }
+    const lblActuel = px({FR:'Valeur actuelle',EN:'Current reading',AR:'القيمة الحالية'});
+    if(liveVal != null && !isNaN(+liveVal)){
+      const v = +liveVal;
+      const fmt = v.toFixed(unit==='ppm' ? 0 : 1);
+      label = `<span>${lblActuel}</span><b>${fmt} ${b.unit}</b>`;
+      marker = `<div class="eq-band-fill" style="left:0;width:${pc(v)}%;opacity:.32"></div><div class="eq-band-seuil" style="left:${pc(v)}%"></div>`;
+    } else {
+      /* No live IoT for this band — leave gauge static, no threshold language */
+      label = `<span>${lblActuel}</span><b>—</b>`;
+      marker = `<div class="eq-band-fill" style="left:0;width:100%;opacity:.18"></div>`;
+    }
   }
   return `<div class="eq-band"><div class="eq-band-label">${label}</div><div class="eq-band-track">${marker}</div>`
     + `<div class="eq-band-ticks"><span>${b.scaleMin}${b.unit?' '+b.unit:''}</span><span>${b.scaleMax}${b.unit?' '+b.unit:''}</span></div></div>`;
@@ -6998,3 +7108,272 @@ if(document.readyState === 'loading') {
 } else {
   injectLangSwitcher();
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   PARAMS INTERNES → HOTSPOT STATE
+   Centralised hsGetState logic that uses the "Intervalles de pilotage"
+   thresholds (ParamsInternes / EtatSerre source of truth).
+   Mirrors equipEtats() from EtatSerre.jsx — same defaults, same logic.
+   Each serre viewer calls fetchParamsInternes() then hsGetState delegates here.
+════════════════════════════════════════════════════════════════════════ */
+(function paramsInternesIntegration(){
+  if(typeof window === 'undefined') return;
+
+  /* Same defaults as ParamsInternes.jsx / EtatSerre.jsx */
+  window.PI_DEFAULTS = {
+    ventilation_jour:       { seuil:25,   deadband:2  },
+    ventilation_nuit:       { seuil:20,   deadband:2  },
+    chauffage_jour:         { seuil:20,   deadband:2  },
+    chauffage_nuit:         { seuil:15,   deadband:2  },
+    humidification_jour:    { seuil:60,   deadband:5  },
+    humidification_nuit:    { seuil:60,   deadband:5  },
+    deshumidification_jour: { seuil:80,   deadband:5  },
+    deshumidification_nuit: { seuil:80,   deadband:5  },
+    co2_injection:          { seuil:1000, deadband:50 },
+    co2_purge:              { seuil:500,  deadband:50 },
+  };
+
+  window.paramsInternes = window.paramsInternes || null;
+
+  /* Fetch public endpoint — returns DEFAULTS on any failure.
+     Call this in each viewer alongside fetchIoT / fetchThresholds. */
+  window.fetchParamsInternes = async function(serreId, apiBase){
+    const base = apiBase || (window.API_BASE || '');
+    try{
+      const r = await fetch(base + '/api/dashboard/params/' + serreId + '/public');
+      if(!r.ok) throw new Error('http ' + r.status);
+      const data = await r.json();
+      /* Accept either {params:{...}} or flat object */
+      const params = (data && data.params) ? data.params : (data || null);
+      window.paramsInternes = params || window.PI_DEFAULTS;
+    } catch(e){
+      console.warn('[paramsInternes] fallback to defaults:', e.message);
+      window.paramsInternes = window.PI_DEFAULTS;
+    }
+  };
+
+  /* Day = 07h–19h, Night = otherwise. Override window.isJour to customise. */
+  window.isJour = window.isJour || function(){
+    const h = new Date().getHours();
+    return h >= 7 && h < 19;
+  };
+
+  /* Returns 'on' | 'off' | null  — matches existing viewer dot expectations
+     ('on' → green, 'off' → red, null → no dot).
+     Set window.HS_STATE_TRISTATE = true to enable 'neutre' (transition band)
+     if you later upgrade the viewer dot code to handle 3 colours.
+
+     Accepts ANY casing / accent / wording variation of the arDesc
+     (e.g. 'Système de chauffage', 'CHAUFFAGE', 'chauffage') by
+     normalising before substring-matching equipment keywords.            */
+  function _norm(s){
+    return String(s||'')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')  // strip accents
+      .replace(/[^a-z0-9 ]+/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  /* Robust IoT data accessor — viewer uses `let iotData`, mirrors to window._iotData */
+  function _getIot(){
+    if(typeof window !== 'undefined'){
+      if(window._iotData) return window._iotData;
+      if(window.iotData)  return window.iotData;
+    }
+    try { return iotData; } catch(e){ return null; }
+  }
+
+  window.hsGetStateFromParams = function(key){
+    const iot = _getIot();
+    const env = (iot && iot.env) || {};
+    const temp  = env.temperature, humid = env.humidite, co2 = env.co2;
+    const pi    = window.paramsInternes || window.PI_DEFAULTS;
+    const jour  = window.isJour();
+    const tri   = !!window.HS_STATE_TRISTATE;
+    const get   = (k) => pi[k] || window.PI_DEFAULTS[k];
+    const wrap  = (st) => (tri ? st : (st === 'neutre' ? 'on' : st));
+    const k     = _norm(key);
+
+    /* NATURAL VENTILATION — depends on OUTSIDE temp (Open-Meteo Rabat) */
+    if (k.includes('ventilation')
+      || k.includes('fenetre') || k.includes('fenetres')) {
+      const out = (typeof window !== 'undefined') ? (window._outsideTemp != null ? window._outsideTemp : window.outsideTemp) : null;
+      if(out == null) return null;
+      const v = jour ? get('ventilation_jour') : get('ventilation_nuit');
+      if(out > v.seuil)              return wrap('on');
+      if(out > v.seuil - v.deadband) return wrap('neutre');
+      return 'off';
+    }
+
+    /* THERMAL SHADING SCREENS — IAV thresholds (Ombrage ext + int):
+       Deploy ext when outdoor > 28°C inside 10:00–17:30 window.
+       Deploy int when outdoor > 34°C inside 11:00–18:30 window.
+       Hotspot dot = ON if EITHER screen should be deployed.            */
+    if (k.includes('rideau') || k.includes('ecran')) {
+      const out = (typeof window !== 'undefined') ? (window._outsideTemp != null ? window._outsideTemp : window.outsideTemp) : null;
+      if(out == null) return null;
+      const now = new Date(), nm = now.getHours()*60 + now.getMinutes();
+      const inExt = (nm >= 600 && nm < 1050);   /* 10:00–17:30 */
+      const inInt = (nm >= 660 && nm < 1110);   /* 11:00–18:30 */
+      const extOn = inExt && out > 28;
+      const intOn = inInt && out > 34;
+      return (extOn || intOn) ? 'on' : 'off';
+    }
+
+    /* ACTIVE COOLING — pad+fan / evap cooler — uses INSIDE temp */
+    if (k.includes('refroid')) {
+      if(temp == null) return null;
+      const v = jour ? get('ventilation_jour') : get('ventilation_nuit');
+      if(temp > v.seuil)              return wrap('on');
+      if(temp > v.seuil - v.deadband) return wrap('neutre');
+      return 'off';
+    }
+
+    /* HEATING action — chauffage / chaudière */
+    if (k.includes('chauffage') || k.includes('chaudiere')) {
+      if(temp == null) return null;
+      const c = jour ? get('chauffage_jour') : get('chauffage_nuit');
+      if(temp < c.seuil)              return wrap('on');
+      if(temp < c.seuil + c.deadband) return wrap('neutre');
+      return 'off';
+    }
+
+    /* HUMIDIFICATION — brumisateur */
+    if (k.includes('brumis')) {
+      if(humid == null) return null;
+      const h = jour ? get('humidification_jour') : get('humidification_nuit');
+      if(humid < h.seuil)              return wrap('on');
+      if(humid < h.seuil + h.deadband) return wrap('neutre');
+      return 'off';
+    }
+
+    /* CO2 — injection (day) or purge (night) */
+    if (k === 'co2' || k.includes('co2')) {
+      if(co2 == null) return null;
+      if(jour){
+        const up = get('co2_injection');
+        if(co2 < up.seuil - up.deadband)  return wrap('on');
+        if(co2 < up.seuil)                return wrap('neutre');
+        return 'off';
+      } else {
+        const dn = get('co2_purge');
+        if(co2 > dn.seuil + dn.deadband)  return wrap('on');
+        if(co2 > dn.seuil)                return wrap('neutre');
+        return 'off';
+      }
+    }
+
+    /* No relevant sensor — no dot (lumiere, tablettes, fertigation, etc.) */
+    return null;
+  };
+
+  /* ─── Auto-override viewer's hsGetState (no viewer edits required) ───
+     The viewer defines its own `function hsGetState(key)` in an inline
+     script after ar-content.js loads. We wait for DOM ready (or load),
+     then wrap the viewer's function so our params-internes logic is
+     consulted first and we fall back to the original for keys we don't
+     handle. Also triggers an immediate dot refresh.                       */
+  window.paramsInternes = window.paramsInternes || window.PI_DEFAULTS;
+
+  function _installHsOverride(){
+    if(typeof window === 'undefined') return;
+    if(typeof window.hsGetState !== 'function') return;
+    if(window.hsGetState.__paramsOverride) return;
+    const _orig = window.hsGetState;
+    const _wrapped = function(key){
+      try {
+        const r = window.hsGetStateFromParams(key);
+        if(r !== null && r !== undefined) return r;
+      } catch(e){ /* fall through */ }
+      return _orig(key);
+    };
+    _wrapped.__paramsOverride = true;
+    window.hsGetState = _wrapped;
+    if(typeof window.updateHotspotDots === 'function'){
+      try { window.updateHotspotDots(); } catch(e){}
+    }
+    console.info('[paramsInternes] hsGetState override active');
+  }
+
+  if(typeof document !== 'undefined'){
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', _installHsOverride);
+    } else {
+      setTimeout(_installHsOverride, 0);
+    }
+    if(typeof window !== 'undefined'){
+      window.addEventListener('load', _installHsOverride);
+      [200, 800, 2000].forEach(ms => setTimeout(_installHsOverride, ms));
+    }
+  }
+
+  /* ─── Auto-fetch live ParamsInternes from the dashboard ──────────────
+     Detects serre by inspecting _iotData.code (S01..S05).
+     Falls back gracefully to PI_DEFAULTS if endpoint is missing.        */
+  const _SERRE_MAP = {S01:1, S02:2, S03:3, S04:4, S05:5};
+  const _PI_API_BASE = 'https://serre-digitale-iav.onrender.com';
+  let _piFetched = false;
+
+  async function _maybeFetchLiveParams(){
+    if(_piFetched) return;
+    const iot = _getIot();
+    const code = iot && iot.code;
+    const sid  = _SERRE_MAP[code];
+    if(!sid) return;
+    _piFetched = true;
+    try {
+      await window.fetchParamsInternes(sid, _PI_API_BASE);
+      console.info('[paramsInternes] live params loaded for', code);
+    } catch(e) {
+      /* keep PI_DEFAULTS */
+    }
+    /* Refresh dots and any open AR card */
+    if(typeof window.updateHotspotDots === 'function'){
+      try { window.updateHotspotDots(); } catch(e){}
+    }
+    if(typeof window.renderARTab === 'function' && window.activeAR){
+      try { window.renderARTab(window.activeTab||0); } catch(e){}
+    }
+  }
+
+  if(typeof window !== 'undefined'){
+    let _piAttempts = 0;
+    const _piPoll = setInterval(() => {
+      _maybeFetchLiveParams();
+      if(_piFetched || ++_piAttempts > 60) clearInterval(_piPoll);
+    }, 1000);
+  }
+
+  /* ─── Expose helper for AR card UI: live activation thresholds ───────
+     Used by renderEquipmentCard to display the current jour/nuit seuils
+     from ParamsInternes (matching ParamsInternes.jsx in the dashboard).  */
+  window.getParamsForEquipment = function(eqKey){
+    const k = String(eqKey||'').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+    const pi = window.paramsInternes || window.PI_DEFAULTS;
+    const get = k => pi[k] || window.PI_DEFAULTS[k];
+    if(k.includes('rideau') || k.includes('ecran')){
+      /* écrans thermiques use a hardcoded comfort band, not ParamsInternes */
+      return null;
+    }
+    if(k.includes('ventilation') || k.includes('fenetre')){
+      return { label:'Ventilation', unit:'°C ext', jour:get('ventilation_jour'), nuit:get('ventilation_nuit'), sign:'>' };
+    }
+    if(k.includes('refroid')){
+      return { label:'Refroidissement', unit:'°C', jour:get('ventilation_jour'), nuit:get('ventilation_nuit'), sign:'>' };
+    }
+    if(k.includes('chauffage') || k.includes('chaudiere')){
+      return { label:'Chauffage',   unit:'°C', jour:get('chauffage_jour'),  nuit:get('chauffage_nuit'),  sign:'<' };
+    }
+    if(k.includes('brumis')){
+      return { label:'Brumisateur', unit:'%',  jour:get('humidification_jour'), nuit:get('humidification_nuit'), sign:'<' };
+    }
+    if(k === 'co2' || k.includes('co2')){
+      return { label:'CO\u2082', unit:'ppm', jour:get('co2_injection'), nuit:get('co2_purge'), signDay:'<', signNight:'>' };
+    }
+    return null;
+  };
+})();

@@ -2330,3 +2330,30 @@ body.vr-mode .hs-cross {
   position: fixed !important;
   z-index: 2147483647 !important;
 }
+
+/* ════════════════════════════════════════
+   SEUILS D'ACTIVATION (live from dashboard)
+════════════════════════════════════════ */
+.eq-pi-grid{display:flex;flex-direction:column;gap:5px;margin:0 0 4px}
+.eq-pi-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.55);border:1px solid rgba(180,205,230,.5);border-radius:10px;padding:7px 11px;transition:background .15s}
+.eq-pi-row:hover{background:rgba(255,255,255,.78)}
+.eq-pi-lbl{flex:1;font-size:10.5px;font-weight:600;color:rgba(15,23,42,.62);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq-pi-val{font-size:13px;color:var(--accent,#059669);font-family:'DM Mono',monospace,sans-serif;white-space:nowrap}
+.eq-pi-val b{font-weight:700}
+.eq-pi-db{font-size:10px;color:rgba(15,23,42,.4);font-family:'DM Mono',monospace,sans-serif;white-space:nowrap;min-width:34px;text-align:right}
+#ar-card[dir="rtl"] .eq-pi-row{flex-direction:row-reverse}
+
+/* ════════════════════════════════════════
+   ÉCRANS D'OMBRAGE — dual-screen state UI
+════════════════════════════════════════ */
+.eq-screens{display:flex;flex-direction:column;gap:7px;margin:0 0 4px}
+.eq-screen-row{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.58);border:1px solid rgba(180,205,230,.55);border-radius:13px;padding:11px 13px;transition:background .15s}
+.eq-screen-row:hover{background:rgba(255,255,255,.8)}
+.eq-screen-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.eq-screen-name{font-size:12.5px;font-weight:700;color:rgba(15,23,42,.82);letter-spacing:-.005em}
+.eq-screen-thr{font-size:10.5px;color:rgba(15,23,42,.55);font-family:'DM Mono',monospace,sans-serif;letter-spacing:-.01em}
+.eq-screen-win{font-size:10px;color:rgba(15,23,42,.42);display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace,sans-serif}
+.eq-screen-clock{font-size:11px;opacity:.65}
+.eq-screen-state{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;background:rgba(255,255,255,.7);border:1px solid rgba(180,205,230,.6);border-radius:999px;padding:5px 11px;white-space:nowrap;align-self:flex-start}
+.eq-screen-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+#ar-card[dir="rtl"] .eq-screen-row{direction:rtl}
