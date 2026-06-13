@@ -494,9 +494,9 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             padding:'3px 10px', borderRadius:20 }}>{meta.code}</span>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr', gap:0 }}>
-          {/* SVG */}
-          <div style={{ padding:'0 0 16px 16px' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+          {/* SVG — full width always */}
+          <div style={{ padding:'0 16px 12px 16px' }}>
             <Scene
               isDark={isDark} serreColor={meta.color} meteo={meteo}
               ext={ext.etat} int={int.etat} fenetre={fen.etat}
@@ -504,38 +504,40 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             />
           </div>
 
-          {/* Panneaux actionneurs droite */}
-          <div style={{ padding:'0 16px 16px', display:'flex', flexDirection:'column', gap:10, justifyContent:'center' }}>
-            <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
-              titre={t.ombrageExt}
-              actif={ext.etat==='deploye'} on={t.deploye} off={t.retracte}
-              cOn="#F59E0B" neutre={ext.neutre}
-              detail={lang==='FR'
-                ? 'Déploie > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'
-                : 'Deploys > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'}
-              plage={ACTIONNEURS.ombrage_ext.plage} t={t}
-            />
-            <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
-              titre={t.ombrageInt}
-              actif={int.etat==='deploye'} on={t.deploye} off={t.retracte}
-              cOn="#FBBF24" neutre={int.neutre}
-              detail={lang==='FR'
-                ? 'Déploie > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'
-                : 'Deploys > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'}
-              plage={ACTIONNEURS.ombrage_int.plage} t={t}
-            />
-            <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
-              titre={t.fenetres}
-              actif={fen.etat==='ouvert'} on={t.ouvert} off={fen.force ? t.fermeSec : t.ferme}
-              cOn="#22C55E" cOff={fen.force ? '#EF4444' : undefined}
-              force={fen.force} neutre={fen.neutre}
-              detail={lang==='FR'
-                ? 'Ouvre > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Ferme < ' + ACTIONNEURS.fenetre.ferme + ' °C'
-                : 'Opens > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Closes < ' + ACTIONNEURS.fenetre.ferme + ' °C'}
-              t={t}
-            />
-            <div style={{ fontSize:10, color:ink4, lineHeight:1.6, padding:'8px 0',
-              borderTop:'1px solid ' + border, display:'flex', gap:5, alignItems:'flex-start' }}>
+          {/* Panneaux actionneurs — row wrap below the schema */}
+          <div style={{ padding:'0 16px 16px', borderTop:'1px solid ' + border }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:10, paddingTop:12 }}>
+              <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
+                titre={t.ombrageExt}
+                actif={ext.etat==='deploye'} on={t.deploye} off={t.retracte}
+                cOn="#F59E0B" neutre={ext.neutre}
+                detail={lang==='FR'
+                  ? 'Déploie > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'
+                  : 'Deploys > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'}
+                plage={ACTIONNEURS.ombrage_ext.plage} t={t}
+              />
+              <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
+                titre={t.ombrageInt}
+                actif={int.etat==='deploye'} on={t.deploye} off={t.retracte}
+                cOn="#FBBF24" neutre={int.neutre}
+                detail={lang==='FR'
+                  ? 'Déploie > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'
+                  : 'Deploys > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'}
+                plage={ACTIONNEURS.ombrage_int.plage} t={t}
+              />
+              <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
+                titre={t.fenetres}
+                actif={fen.etat==='ouvert'} on={t.ouvert} off={fen.force ? t.fermeSec : t.ferme}
+                cOn="#22C55E" cOff={fen.force ? '#EF4444' : undefined}
+                force={fen.force} neutre={fen.neutre}
+                detail={lang==='FR'
+                  ? 'Ouvre > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Ferme < ' + ACTIONNEURS.fenetre.ferme + ' °C'
+                  : 'Opens > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Closes < ' + ACTIONNEURS.fenetre.ferme + ' °C'}
+                t={t}
+              />
+            </div>
+            <div style={{ fontSize:10, color:ink4, lineHeight:1.6, paddingTop:10,
+              borderTop:'1px solid ' + border, marginTop:10, display:'flex', gap:5, alignItems:'flex-start' }}>
               <Info size={10} style={{ flexShrink:0, marginTop:1 }}/>
               {lang==='FR' ? 'Intervalles modifiables dans le panneau ci-dessous.' : 'Intervals editable in the panel below.'}
             </div>
