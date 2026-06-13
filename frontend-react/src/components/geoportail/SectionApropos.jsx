@@ -3,32 +3,60 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const TEXTS = [
   {
-    titleFr: "Inauguration officielle — Mars 2024",
-    titleEn: "Official Inauguration — March 2024",
-    textFr: "Le complexe de serres intelligentes de l'IAV Hassan II a été officiellement inauguré en mars 2024 en présence des autorités académiques et institutionnelles. Cet événement marque une étape décisive dans la modernisation de l'enseignement agricole au Maroc.",
+    titleFr: "Inauguration officielle \u2014 Mars 2024",
+    titleEn: "Official Inauguration \u2014 March 2024",
+    textFr: "Le complexe de serres intelligentes de l\u2019IAV Hassan II a été officiellement inauguré en mars 2024 en présence des autorités académiques et institutionnelles. Cet événement marque une étape décisive dans la modernisation de l\u2019enseignement agricole au Maroc.",
     textEn: "The IAV Hassan II smart greenhouse complex was officially inaugurated in March 2024 in the presence of academic and institutional authorities. This event marks a decisive step in the modernisation of agricultural education in Morocco.",
     syncPhoto: 1,
   },
   {
-    titleFr: "La Serre Agro-Biotech — Un fleuron de l'innovation",
-    titleEn: "The Agro-Biotech Greenhouse — A Flagship of Innovation",
+    titleFr: "La Serre Agro-Biotech \u2014 Un fleuron de l\u2019innovation",
+    titleEn: "The Agro-Biotech Greenhouse \u2014 A Flagship of Innovation",
     longText: true,
-    textFr: `Parmi les temps forts de cette inauguration figurait la Serre Agro-Biotech, la nouvelle serre expérimentale automatisée de l'Institut, qui incarne les ambitions de l'IAV Hassan II en matière d'innovation, de recherche appliquée et d'agriculture de précision.
-
-Construite avec un budget de 13 millions de dirhams, cette plateforme haute technologie est dédiée à l'étude et au développement de systèmes de production agricole innovants. Composée de cinq compartiments indépendants à conditions environnementales contrôlées, elle permet de mener des essais scientifiques dans des contextes variés tout en assurant un suivi précis des paramètres climatiques et agronomiques. La Serre Agro-Biotech offre aux chercheurs, enseignants et étudiants un cadre privilégié pour concevoir des solutions aux défis de la durabilité et de l'adaptation au changement climatique.`,
-    textEn: `Among the highlights was the Agro-Biotech Greenhouse, the Institute's new automated experimental greenhouse, which embodies IAV Hassan II's ambitions in innovation, applied research and precision agriculture.
-
-Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.`,
+    textFr:
+      "Parmi les temps forts de cette inauguration figurait la Serre Agro-Biotech, la nouvelle serre expérimentale automatisée de l\u2019Institut, qui incarne les ambitions de l\u2019IAV Hassan II en matière d\u2019innovation, de recherche appliquée et d\u2019agriculture de précision." +
+      "\n\n" +
+      "Construite avec un budget de 13 millions de dirhams, cette plateforme haute technologie est dédiée à l\u2019étude et au développement de systèmes de production agricole innovants. Composée de cinq compartiments indépendants à conditions environnementales contrôlées, elle permet de mener des essais scientifiques dans des contextes variés tout en assurant un suivi précis des paramètres climatiques et agronomiques. La Serre Agro-Biotech offre aux chercheurs, enseignants et étudiants un cadre privilégié pour concevoir des solutions aux défis de la durabilité et de l\u2019adaptation au changement climatique.",
+    textEn:
+      "Among the highlights was the Agro-Biotech Greenhouse, the Institute\u2019s new automated experimental greenhouse, which embodies IAV Hassan II\u2019s ambitions in innovation, applied research and precision agriculture." +
+      "\n\n" +
+      "Built with a budget of 13 million dirhams, this high-technology platform is dedicated to the study and development of innovative agricultural production systems. Comprising five independent compartments with controlled environmental conditions, it enables scientific trials in varied contexts while ensuring precise monitoring of climatic and agronomic parameters. The Agro-Biotech Greenhouse offers researchers, teachers and students a privileged framework for designing solutions to the challenges of sustainability and climate change adaptation.",
   },
-  { titleFr: "À venir — Slide 3", titleEn: "Coming Soon — Slide 3", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon." },
-  { titleFr: "À venir — Slide 4", titleEn: "Coming Soon — Slide 4", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon." },
-  { titleFr: "À venir — Slide 5", titleEn: "Coming Soon — Slide 5", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon." },
+  {
+    titleFr: "Insaf, chercheuse \u2014 Stress salin sur la courgette",
+    titleEn: "Insaf, Researcher \u2014 Salt Stress on Zucchini",
+    longText: true,
+    textFr:
+      "\u00ab Dans le cadre de mes travaux de recherche menés au sein de la serre High-Tech de l\u2019Institut Agronomique et Vétérinaire Hassan II, j\u2019ai travaillé sur l\u2019impact du stress salin sur la croissance et le développement de la courgette (Cucurbita pepo L.), une culture maraîchère largement cultivée et particulièrement importante pour la production sous serre. Cette recherche s\u2019inscrit dans un contexte marqué par la raréfaction des ressources en eau et l\u2019augmentation de la salinité dans plusieurs régions agricoles, des défis qui affectent directement la productivité des cultures. Grâce aux conditions contrôlées offertes par la serre High-Tech, j\u2019ai pu suivre l\u2019évolution des plantes dans un environnement stable et adapté à l\u2019expérimentation. Cette infrastructure constitue un véritable atout pour les chercheurs, car elle permet de mieux comprendre les réactions des cultures face aux contraintes environnementales et de contribuer au développement de pratiques agricoles plus résilientes et durables. \u00bb" +
+      "\n\n" +
+      "\u2014 Insaf, chercheuse",
+    textEn:
+      "\u00ab As part of my research conducted within the High-Tech greenhouse of the Institut Agronomique et Vétérinaire Hassan II, I studied the impact of salt stress on the growth and development of zucchini (Cucurbita pepo L.), a vegetable crop widely cultivated and particularly important for greenhouse production. This research is set against a backdrop of growing water scarcity and rising salinity in several agricultural regions \u2014 challenges that directly affect crop productivity. Thanks to the controlled conditions offered by the High-Tech greenhouse, I was able to monitor plant development in a stable environment well suited to experimentation. This infrastructure is a genuine asset for researchers, as it helps to better understand how crops respond to environmental constraints and contributes to the development of more resilient and sustainable agricultural practices. \u00bb" +
+      "\n\n" +
+      "\u2014 Insaf, Researcher",
+    syncPhoto: 3,
+  },
+  {
+    titleFr: "David A. Dumbuya \u2014 Irrigation magnétique & horticulture durable",
+    titleEn: "David A. Dumbuya \u2014 Magnetic Irrigation & Sustainable Horticulture",
+    longText: true,
+    textFr:
+      "\u00ab Dans le cadre de mon Master en Eau et Horticulture Durable, mes recherches portent sur l\u2019utilisation de l\u2019eau d\u2019irrigation traitée magnétiquement et son influence sur la croissance des cultures, la qualité de l\u2019eau et la réponse des plantes aux différents stress environnementaux. Mes travaux sont menés sur plusieurs cultures maraîchères, notamment la laitue, le concombre et la tomate, cultivées sous serre. La serre High-Tech de l\u2019Institut Agronomique et Vétérinaire Hassan II constitue un outil essentiel pour la réalisation de ces recherches. Grâce à ses infrastructures modernes et à son environnement contrôlé, elle permet de conduire les expérimentations dans des conditions optimales et d\u2019assurer un suivi rigoureux du développement des cultures. Cette plateforme contribue ainsi à améliorer la qualité des données collectées et à renforcer la fiabilité des résultats obtenus, tout en favorisant l\u2019innovation dans le domaine de l\u2019agriculture durable. \u00bb" +
+      "\n\n" +
+      "\u2014 David Alimamy Dumbuya, étudiant-chercheur en Master Eau et Horticulture Durable",
+    textEn:
+      "\u00ab As part of my Master\u2019s degree in Water and Sustainable Horticulture, my research focuses on the use of magnetically treated irrigation water and its influence on crop growth, water quality, and plant response to various environmental stresses. My work is conducted on several vegetable crops, notably lettuce, cucumber and tomato, grown under greenhouse conditions. The High-Tech greenhouse of the Institut Agronomique et Vétérinaire Hassan II is an essential tool for carrying out this research. Thanks to its modern infrastructure and controlled environment, it allows experiments to be conducted under optimal conditions and ensures rigorous monitoring of crop development. This platform helps improve the quality of the data collected and strengthens the reliability of the results obtained, while fostering innovation in the field of sustainable agriculture. \u00bb" +
+      "\n\n" +
+      "\u2014 David Alimamy Dumbuya, Master\u2019s student-researcher in Water and Sustainable Horticulture",
+  },
+  { titleFr: "À venir \u2014 Slide 5", titleEn: "Coming Soon \u2014 Slide 5", textFr: "Contenu à ajouter prochainement.", textEn: "Content to be added soon." },
 ]
 
 const PHOTOS = [
-  { src: "/complexe-exterieur.jpg",  labelFr: "Vue extérieure du complexe",    labelEn: "Complex exterior view"     },
-  { src: "/visite-officielle.jpg",   labelFr: "Visite officielle - intérieur", labelEn: "Official visit - interior" },
-  { src: "/inspection-cultures.jpg", labelFr: "Inspection des cultures",       labelEn: "Research crop inspection"  },
+  { src: "/complexe-exterieur.jpg",  labelFr: "Vue extérieure du complexe",     labelEn: "Complex exterior view"          },
+  { src: "/visite-officielle.jpg",   labelFr: "Visite officielle - intérieur",  labelEn: "Official visit - interior"      },
+  { src: "/inspection-cultures.jpg", labelFr: "Inspection des cultures",        labelEn: "Research crop inspection"       },
+  { src: "/INSAF.jpeg",              labelFr: "Insaf - travaux en serre High-Tech", labelEn: "Insaf - High-Tech greenhouse work" },
 ]
 
 export default function SectionApropos({ lang, darkMode }) {
@@ -36,6 +64,17 @@ export default function SectionApropos({ lang, darkMode }) {
   const [imgIdx,   setImgIdx]   = useState(0)
   const [expanded, setExpanded] = useState(false)
   const [paused,   setPaused]   = useState(false)
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  )
+
+  // Track viewport for phone-only stacking
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768)
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   // Keep a ref so intervals can read the latest value without re-creating
   const pausedRef = useRef(false)
@@ -82,7 +121,7 @@ export default function SectionApropos({ lang, darkMode }) {
   const sectionLabel = lang === 'fr' ? 'À Propos · Faits & Témoignages' : 'About · Facts & Testimonials'
 
   return (
-    <section id="apropos" style={{ padding: '5rem 3rem', scrollMarginTop: '64px' }}>
+    <section id="apropos" style={{ padding: isMobile ? '3rem 1rem' : '5rem 3rem', scrollMarginTop: '64px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -92,7 +131,7 @@ export default function SectionApropos({ lang, darkMode }) {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
 
           {/* ── Left — text carousel ── */}
           <div style={{ background: cardBg, border: '1px solid ' + cardBorder, borderRadius: '24px', padding: '2rem', position: 'relative', display: 'flex', flexDirection: 'column', backdropFilter: 'blur(16px)', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.06)', height: '420px' }}>
