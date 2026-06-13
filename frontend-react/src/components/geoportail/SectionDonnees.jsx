@@ -318,7 +318,7 @@ function ParamCard({ paramKey, value, serreCode, lang, darkMode, serreColor }) {
         <div style={{ fontSize: '2rem', fontWeight: 900, color: hasVal ? cardColor : (darkMode ? '#64748B' : '#94A3B8'), fontFamily: "'Outfit',sans-serif", lineHeight: 1 }}>
           {hasVal ? value : '—'}
         </div>
-        {hasVal && <div style={{ fontSize: '11px', color: darkMode ? '#64748B' : '#94A3B8', marginTop: '4px' }}>{info.unit}</div>}
+        {hasVal && <div style={{ fontSize: '11px', color: darkMode ? '#64748B' : '#94A3B8', marginTop: '4px' }}>{info.unit || '\u00A0'}</div>}
 
         {/* Optimal range */}
         <div style={{
