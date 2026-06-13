@@ -1,6 +1,6 @@
 // src/components/geoportail/SectionDonnees.jsx
 import { useState, useRef } from 'react'
-import { ChevronLeft, ChevronRight, RefreshCw, Info, AlertTriangle, CheckCircle, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, RefreshCw, Info, AlertTriangle, CheckCircle, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2, Sun as SunIcon } from 'lucide-react'
 import { iotAPI } from '../../api/client'
 
 // Lucide icon components mapped per parameter
@@ -9,6 +9,7 @@ const PARAM_ICONS = {
   humidite:    Droplets,
   vpd:         Wind,
   co2:         Leaf,
+  luminosite:  SunIcon,
   ph:          FlaskConical,
   ec:          Zap,
   temp_eau:    Waves,
@@ -225,6 +226,35 @@ export const POPUP_INFO = {
       S03: { fr: 'En agronomie, le niveau d\'eau dans les cuves de fertigation est géré selon les besoins des cultures. La demande augmente fortement par temps chaud et lors des stades critiques (floraison, remplissage des grains). Les alertes sont configurées à 30% et 10%.', en: 'In agronomy, water level in fertigation tanks is managed according to crop needs. Demand increases strongly in hot weather and during critical stages (flowering, grain filling). Alerts are set at 30% and 10%.' },
       S04: { fr: 'En hydroponie, le niveau de la solution nutritive dans les réservoirs centraux est critique. Les systèmes NFT et DWC consomment de l\'eau continuellement par évapotranspiration. Un niveau bas concentre la solution (EC et pH dérivent). Maintenir entre 60–100%.', en: 'In hydroponics, nutrient solution level in central tanks is critical. NFT and DWC systems continuously consume water through evapotranspiration. Low level concentrates the solution (EC and pH drift). Maintain between 60–100%.' },
       S05: { fr: 'En protection des plantes, le niveau d\'eau des cuves de traitement est suivi pour garantir la disponibilité des produits en cas d\'alerte phytosanitaire urgente. Une capacité minimale de 50% est maintenue pour pouvoir intervenir rapidement sur toute la serre.', en: 'In plant protection, treatment tank water level is monitored to ensure product availability in case of urgent phytosanitary alert. A minimum capacity of 50% is maintained to be able to intervene quickly across the entire greenhouse.' },
+    },
+  },
+  luminosite: {
+    icon: null,
+    labelFr: 'Luminosité (PPFD)',
+    labelEn: 'Light Intensity (PPFD)',
+    unit: 'µmol/m²/s',
+    optimal: { min: 100, max: 600 },
+    serres: {
+      S01: {
+        fr: 'En serre Génétique, la lumière pilote l\'expression des gènes liés à la photosynthèse et au photopériodisme. 💡 Le saviez-vous ? L\'éclairage artificiel fonctionne en deux modes : mode végétatif (spectre bleu, 400–500 nm, PPFD 200–400) pour stimuler la croissance foliaire, et mode floraison (spectre rouge, 620–750 nm, PPFD 400–700) pour déclencher la reproduction. Changer de mode simule le passage de l\'été à l\'automne.',
+        en: 'In the Genetics greenhouse, light drives the expression of genes linked to photosynthesis and photoperiodism. 💡 Did you know? Artificial lighting works in two modes: vegetative mode (blue spectrum, 400–500 nm, PPFD 200–400) to stimulate leaf growth, and flowering mode (red spectrum, 620–750 nm, PPFD 400–700) to trigger reproduction. Switching modes simulates the transition from summer to autumn.',
+      },
+      S02: {
+        fr: 'En horticulture, la luminosité conditionne la qualité des fleurs et la compacité des plantes ornementales. 💡 Le saviez-vous ? En mode végétatif, la lumière bleue produit des plants trapus aux feuilles larges. En mode floraison, la lumière rouge allonge l\'entrenœud et stimule la mise à fleurs, même en hiver. C\'est le principe des "jours longs artificiels" utilisé pour la production de chrysanthèmes.',
+        en: 'In horticulture, light intensity conditions flower quality and compactness of ornamental plants. 💡 Did you know? In vegetative mode, blue light produces stocky plants with wide leaves. In flowering mode, red light elongates the internode and stimulates blooming, even in winter. This is the principle of "artificial long days" used for chrysanthemum production.',
+      },
+      S03: {
+        fr: 'En agronomie, la luminosité influence le taux de photosynthèse et le rendement final. 💡 Le saviez-vous ? Les deux modes d\'éclairage artificiel — végétatif et floraison — permettent de contrôler précisément le stade phénologique de la culture, indépendamment des saisons. En dessous de 100 µmol/m²/s, la plante est en compensation lumineuse (pas de croissance nette).',
+        en: 'In agronomy, light intensity influences the photosynthesis rate and final yield. 💡 Did you know? The two artificial lighting modes — vegetative and flowering — allow precise control of the crop phenological stage, regardless of seasons. Below 100 µmol/m²/s, the plant is at the light compensation point (no net growth).',
+      },
+      S04: {
+        fr: 'En hydroponie, la lumière est le principal facteur limitant la vitesse de croissance. Les systèmes verticaux utilisent des LED à spectre ajustable. 💡 Le saviez-vous ? Le mode végétatif (18h/jour de lumière) maintient la laitue en croissance sans montée en fleurs. Le mode floraison (12h/jour) force la tomate ou le poivron à produire des fruits rapidement.',
+        en: 'In hydroponics, light is the main factor limiting growth speed. Vertical systems use adjustable-spectrum LEDs. 💡 Did you know? Vegetative mode (18h/day of light) keeps lettuce growing without bolting. Flowering mode (12h/day) forces tomato or pepper to fruit rapidly.',
+      },
+      S05: {
+        fr: 'En protection des plantes, la luminosité affecte la virulence des agents pathogènes et l\'efficacité des traitements. 💡 Le saviez-vous ? Certains bioagents (comme Beauveria bassiana) sont sensibles aux UV. L\'éclairage artificiel en mode végétatif (lumière bleue) peut inhiber leur développement, tandis que le spectre rouge du mode floraison a moins d\'impact. Il faut en tenir compte lors des traitements biologiques.',
+        en: 'In plant protection, light intensity affects pathogen virulence and treatment effectiveness. 💡 Did you know? Some bioagents (such as Beauveria bassiana) are sensitive to UV. Artificial lighting in vegetative mode (blue light) can inhibit their development, while the red spectrum of flowering mode has less impact. This must be considered during biological treatments.',
+      },
     },
   },
 }
@@ -512,8 +542,8 @@ export default function SectionDonnees({ lang, liveData, countdown, onRefresh, d
         {/* ENV cards */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: mutedColor, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>{T.env}</div>
-       <div className="donnees-env-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
-            {['temperature','humidite','vpd','co2'].map(key => (
+       <div className="donnees-env-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '16px' }}>
+            {['temperature','humidite','vpd','co2','luminosite'].map(key => (
               <ParamCard key={key} paramKey={key} value={env[key]} serreCode={meta.code} lang={lang} darkMode={darkMode} serreColor={meta.color} />
             ))}
           </div>
