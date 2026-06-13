@@ -620,7 +620,14 @@ export default function SectionVisite({ darkMode = true, lang = 'fr' }) {
         {/* ══ SECTION 2 — CAMPUS COMPLET ══ */}
         <div ref={toursRef} style={{ scrollMarginTop: '160px', marginBottom: '8rem' }}>
           <SectionHeader title={T.tourTitle} sub={T.tourSub} color="#22C55E" ink={ink} inkSub={inkSub} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: VISITE_MODES.length === 1 ? '1fr' : '1fr 1fr',
+            gap: '14px',
+            marginBottom: '16px',
+            maxWidth: VISITE_MODES.length === 1 ? '520px' : '100%',
+            margin: VISITE_MODES.length === 1 ? '0 auto 16px' : '0 0 16px',
+          }}>
             {VISITE_MODES.map(mode => (
               <TourCard
                 key={mode.id} mode={mode}
