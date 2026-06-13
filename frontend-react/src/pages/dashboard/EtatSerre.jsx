@@ -11,7 +11,7 @@ import {
   ChevronLeft, ChevronRight, Info, CheckCircle, AlertTriangle, Clock, Lock,
   Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2, Sun as SunIcon,
   RefreshCw, Wind as WindIcon, Sun, CloudRain, Sunrise, Sunset,
-  Pencil, Check, X as XIcon, Flame, AirVent, Settings,
+  Pencil, Check, X as XIcon, Flame, AirVent, Settings, Gauge,
 } from 'lucide-react'
 import { dashboardAPI } from '../../api/client'
 import { useAccess } from '../../hooks/useAccess'
@@ -163,7 +163,7 @@ const T = {
     active:'Active', horsPlage:'hors plage', neutre:'transition',
     note:'Seuils réglés dans l\'application locale du complexe.',
     ventL:'Vent', rayL:'Rayonnement', pluieL:'Pluie', oui:'Oui', non:'Non',
-    leverL:'Lever', coucherL:'Coucher',
+    leverL:'Lever', coucherL:'Coucher', tempExtL:'Temp. ext.', pressionL:'Pression',
     etatGlobal:'État global', derniereMAJ:'Dernière mise à jour',
     equipTitre:'Équipements internes', jour:'Jour', nuit:'Nuit',
     ventTitre:'Ventilation', chauffTitre:'Chauffage', brumTitre:'Brumisateur', deshumTitre:'Déshumidification', co2Titre:'CO₂',
@@ -184,7 +184,7 @@ const T = {
     active:'Active', horsPlage:'off-schedule', neutre:'transition',
     note:'Thresholds set in the complex\'s local application.',
     ventL:'Wind', rayL:'Radiation', pluieL:'Rain', oui:'Yes', non:'No',
-    leverL:'Sunrise', coucherL:'Sunset',
+    leverL:'Sunrise', coucherL:'Sunset', tempExtL:'Ext. temp.', pressionL:'Pressure',
     etatGlobal:'Global status', derniereMAJ:'Last update',
     equipTitre:'Internal equipment', jour:'Day', nuit:'Night',
     ventTitre:'Ventilation', chauffTitre:'Heating', brumTitre:'Humidifier', deshumTitre:'Dehumidification', co2Titre:'CO₂',
@@ -304,11 +304,13 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
 
   // Météo extérieure
   const extStats = [
-    { icon:<WindIcon size={18}/>,    label:t.ventL,    val:meteo.vent    != null ? meteo.vent    : '—', unit:'km/h', color:'#06B6D4' },
-    { icon:<Sun size={18}/>,         label:t.rayL,     val:meteo.solaire != null ? meteo.solaire : '—', unit:'W/m²', color:'#F59E0B' },
-    { icon:<CloudRain size={18}/>,   label:t.pluieL,   val:meteo.pluie ? t.oui : t.non,                unit:'',     color:meteo.pluie?'#3773bd':ink4 },
-    { icon:<Sunrise size={18}/>,     label:t.leverL,   val:fmtT(meteo.sunrise),                        unit:'',     color:'#F59E0B' },
-    { icon:<Sunset size={18}/>,      label:t.coucherL, val:fmtT(meteo.sunset),                         unit:'',     color:'#8B5CF6' },
+    { icon:<WindIcon size={18}/>,    label:t.ventL,      val:meteo.vent     != null ? meteo.vent     : '—', unit:'km/h', color:'#06B6D4' },
+    { icon:<Sun size={18}/>,         label:t.rayL,       val:meteo.solaire  != null ? meteo.solaire  : '—', unit:'W/m²', color:'#F59E0B' },
+    { icon:<CloudRain size={18}/>,   label:t.pluieL,     val:meteo.pluie ? t.oui : t.non,                   unit:'',     color:meteo.pluie?'#3773bd':ink4 },
+    { icon:<Thermometer size={18}/>, label:t.tempExtL,   val:meteo.temp_ext != null ? meteo.temp_ext : '—', unit:'°C',   color:'#EF4444' },
+    { icon:<Gauge size={18}/>,       label:t.pressionL,  val:meteo.pression != null ? meteo.pression : '—', unit:'hPa',  color:'#8B5CF6' },
+    { icon:<Sunrise size={18}/>,     label:t.leverL,     val:fmtT(meteo.sunrise),                            unit:'',     color:'#F59E0B' },
+    { icon:<Sunset size={18}/>,      label:t.coucherL,   val:fmtT(meteo.sunset),                             unit:'',     color:'#8B5CF6' },
   ]
 
   const alertCount = stats?.alertes_actives || 0
