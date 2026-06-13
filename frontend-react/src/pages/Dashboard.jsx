@@ -18,7 +18,7 @@ import Journal       from './dashboard/Journal'
 
 const METEO_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416' +
-  '&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,shortwave_radiation,is_day' +
+  '&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,shortwave_radiation,is_day,pressure_msl' +
   '&daily=sunrise,sunset&timezone=Africa%2FCasablanca&forecast_days=1'
 
 function AlertBanner({ liveData, theme, lang, onDismiss }) {
@@ -169,12 +169,14 @@ async function fetchMeteo() {
       const d = await r.json()
       const c = d.current || {}, dl = d.daily || {}
       setMeteo({
-        vent:    c.wind_speed_10m,
-        solaire: c.shortwave_radiation,
-        pluie:   (c.precipitation || 0) > 0.1,
-        is_day:  !!c.is_day,
-        sunrise: dl.sunrise?.[0],
-        sunset:  dl.sunset?.[0],
+        vent:     c.wind_speed_10m,
+        solaire:  c.shortwave_radiation,
+        pluie:    (c.precipitation || 0) > 0.1,
+        is_day:   !!c.is_day,
+        sunrise:  dl.sunrise?.[0],
+        sunset:   dl.sunset?.[0],
+        temp_ext: c.temperature_2m != null ? Math.round(c.temperature_2m * 10) / 10 : null,
+        pression: c.pressure_msl   != null ? Math.round(c.pressure_msl)            : null,
       })
     } catch (e) { console.error('Meteo error:', e) }
   }
