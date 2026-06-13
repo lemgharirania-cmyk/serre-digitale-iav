@@ -74,4 +74,14 @@ export const dashboardAPI = {
       method: 'PUT',
       body: JSON.stringify({ params }),
     }),
+  getJournalResume: (serreId, date) =>
+    apiFetch(`/api/journal/${serreId}/resume${date ? `?date_cible=${date}` : ''}`).then(r => r?.json()),
+  getJournalFrequence: (serreId, jours = 7) =>
+    apiFetch(`/api/journal/${serreId}/frequence?jours=${jours}`).then(r => r?.json()),
+  exportJournal: (serreId, format, dateDebut, dateFin) => {
+    const params = new URLSearchParams({ format })
+    if (dateDebut) params.append('date_debut', dateDebut)
+    if (dateFin)   params.append('date_fin',   dateFin)
+    return apiFetch(`/api/journal/${serreId}/export?${params.toString()}`)
+  },
 }
