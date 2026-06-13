@@ -10,7 +10,7 @@ const VISITE_MODES = [
       file:  '/walkthrough/visitemanuelle.html',
       color: '#06B6D4',
       tag:   { fr: 'Complet', en: 'Full' },
-
+  ]
 const SERRES = [
   { title: { fr: 'Génétique',              en: 'Genetics'         }, badge: 'S01', file: '/walkthrough/serregenetique.html',    color: '#22C55E', desc: 'Sélection variétale · Culture in vitro' },
   { title: { fr: 'Horticulture',           en: 'Horticulture'     }, badge: 'S02', file: '/walkthrough/serrehorticulture.html', color: '#06B6D4', desc: 'Production florale · Maraîchage'       },
