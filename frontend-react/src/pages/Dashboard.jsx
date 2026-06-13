@@ -14,6 +14,7 @@ import Parametres    from './dashboard/Parametres'
 import NSCalculateur from './dashboard/NSCalculateur'
 import SDICopilot    from '../components/dashboard/SDICopilot'
 import DashBottomNav from '../components/layout/DashBottomNav'
+import Journal       from './dashboard/Journal'
 
 const METEO_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=34.0209&longitude=-6.8416' +
@@ -48,7 +49,7 @@ function AlertBanner({ liveData, theme, lang, onDismiss }) {
         flex: 1, fontSize: 13, fontWeight: 600,
         color: isDark ? '#FCA5A5' : '#991B1B',
         fontFamily: "'Manrope','DM Sans',system-ui,sans-serif",
-      }}>{'\u26A0\uFE0F'} {msg}</span>
+      }}>{msg}</span>
       <button onClick={onDismiss} style={{
         background: 'none', border: 'none', cursor: 'pointer',
         color: '#EF4444', padding: 4, display: 'flex', alignItems: 'center',
@@ -230,6 +231,7 @@ async function fetchMeteo() {
       }}>
         <Routes>
           <Route path="/alertes"     element={<Alertes    {...sharedProps} />} />
+          <Route path="/journal"     element={<Journal    {...sharedProps} />} />
           <Route path="/seuils"      element={<Seuils     {...sharedProps} />} />
           <Route path="/export"      element={<Export     {...sharedProps} />} />
           <Route path="/parametres"  element={<Parametres theme={theme} lang={lang} />} />
