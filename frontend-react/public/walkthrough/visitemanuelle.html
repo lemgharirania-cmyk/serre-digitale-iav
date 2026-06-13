@@ -287,6 +287,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans','Inter',s
 
 
 .iot-hud.visible{display:flex}
+:fullscreen #iot-hud,
+:-webkit-full-screen #iot-hud,
+:-moz-full-screen #iot-hud {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 1 !important;
+  display: flex !important;
+}
+
 
 
 

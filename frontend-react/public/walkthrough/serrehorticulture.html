@@ -259,6 +259,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',system-ui
 
 
 .iot-hud{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:150;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+:fullscreen #iot-hud,
+:-webkit-full-screen #iot-hud,
+:-moz-full-screen #iot-hud {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 1 !important;
+  display: flex !important;
+}
+
 
 
 
@@ -3391,7 +3404,6 @@ window.addEventListener('load', async ()=>{
   function hideUI() {
     var selectors = [
       // IoT HUD (serres only)
-      '#iot-hud',
       // Zone label, scene counter, flash, atmo, vignette
       '#zf', '#scene-ctr', '#flash', '#atmo', '#vignette',
       // Navigation arrows
