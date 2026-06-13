@@ -861,11 +861,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ── SectionDonnees popup — cap width, JS handles left/right anchoring ── */
 @media (max-width: 768px) {
-  .donnees-popup {
-    width: min(260px, calc(100vw - 2rem)) !important;
-    font-size: 11px !important;
-    padding: 11px !important;
-    border-radius: 12px !important;
-    z-index: 999 !important;
+ 
+  /* ── SectionVisite — carte "Campus complet" centrée full-width
+        quand il n'y a qu'un seul mode de visite             */
+  .visite-tour-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 420px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
+ 
 }
