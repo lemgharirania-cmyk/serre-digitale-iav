@@ -722,14 +722,17 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
               // Labels des capteurs (raccourcis)
               const LABELS = {
                 temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂',
+                luminosite:'Luminosité',
                 ph:'pH', ec:'EC', temp_eau:'T° eau', niveau_eau:'Niveau eau',
               }
               const LABELS_EN = {
                 temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂',
+                luminosite:'Light (PPFD)',
                 ph:'pH', ec:'EC', temp_eau:'Water temp', niveau_eau:'Water level',
               }
               const UNITS = {
                 temperature:'°C', humidite:'%', vpd:'kPa', co2:'ppm',
+                luminosite:'µmol/m²/s',
                 ph:'', ec:'mS/cm', temp_eau:'°C', niveau_eau:'m',
               }
               const label = lang==='FR' ? LABELS[key] : LABELS_EN[key]
