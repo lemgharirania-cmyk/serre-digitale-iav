@@ -5,15 +5,15 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, BarChart2, Bell, Sliders,
-  Download, LogOut,
+  Download, LogOut, ClipboardList,
 } from 'lucide-react'
 
 const ITEMS = [
   { id: 'etat',       icon: LayoutDashboard, labelFr: 'Direct',  labelEn: 'Live'   },
   { id: 'graphiques', icon: BarChart2,        labelFr: 'Graphes', labelEn: 'Charts' },
   { id: 'alertes',    icon: Bell,             labelFr: 'Alertes', labelEn: 'Alerts', route: '/dashboard/alertes' },
+  { id: 'journal',    icon: ClipboardList,    labelFr: 'Journal', labelEn: 'Log',    route: '/dashboard/journal' },
   { id: 'seuils',     icon: Sliders,          labelFr: 'Seuils',  labelEn: 'Limits', route: '/dashboard/seuils' },
-  { id: 'export',     icon: Download,         labelFr: 'Export',  labelEn: 'Export', route: '/dashboard/export' },
 ]
 
 export default function DashBottomNav({ theme, lang, alertCount = 0 }) {
