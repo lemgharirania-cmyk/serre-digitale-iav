@@ -23,6 +23,7 @@ const CAPTEURS = [
   { key:'humidite',    labelFR:'Humidité',    labelEN:'Humidity',    unit:'%',     color:'#3773bd' },
   { key:'vpd',         labelFR:'VPD',         labelEN:'VPD',         unit:'kPa',   color:'#8B5CF6' },
   { key:'co2',         labelFR:'CO₂',         labelEN:'CO₂',         unit:'ppm',   color:'#d6932a' },
+  { key:'luminosite',  labelFR:'Luminosité',  labelEN:'Light (PPFD)',unit:'µmol/m²/s', color:'#F59E0B' },
   { key:'ph',          labelFR:'pH',          labelEN:'pH',          unit:'',      color:'#0891b2' },
   { key:'ec',          labelFR:'EC',          labelEN:'EC',          unit:'mS/cm', color:'#059669' },
 ]
