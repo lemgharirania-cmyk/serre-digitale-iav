@@ -2,21 +2,14 @@ import { useEffect, useState, useRef } from 'react'
 
 /* ─────────────────────── DATA ─────────────────────── */
 const VISITE_MODES = [
-  {
-    id: 'manual',
-    title: { fr: 'Visite manuelle', en: 'Manual Tour' },
-    desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
-    sub:   { fr: 'Libre · Campus complet · 360°', en: 'Free · Full campus · 360°' },
-    file:  '/walkthrough/visitemanuelle.html',
-    color: '#06B6D4',
-    tag:   { fr: 'Libre', en: 'Free' },
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-      </svg>
-    ),
-  },
-]
+    {
+      id: 'manual',
+      title: { fr: 'Visite complète', en: 'Full Tour' },
+      desc:  { fr: "Explorez librement l'ensemble du campus à votre rythme", en: 'Explore the entire campus freely at your own pace' },
+      sub:   { fr: 'Campus complet · 360° · Libre', en: 'Full campus · 360° · Free' },
+      file:  '/walkthrough/visitemanuelle.html',
+      color: '#06B6D4',
+      tag:   { fr: 'Complet', en: 'Full' },
 
 const SERRES = [
   { title: { fr: 'Génétique',              en: 'Genetics'         }, badge: 'S01', file: '/walkthrough/serregenetique.html',    color: '#22C55E', desc: 'Sélection variétale · Culture in vitro' },
