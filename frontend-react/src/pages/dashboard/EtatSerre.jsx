@@ -505,7 +505,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             <Scene
               isDark={isDark} serreColor={meta.color} meteo={meteo}
               ext={ext.etat} int={int.etat} fenetre={fen.etat}
-              serreIdx={idx} temp={tempInt} equip={equip} jour={jour}
+              serreIdx={idx} temp={tempExt} equip={equip} jour={jour}
             />
           </div>
 
@@ -1485,13 +1485,13 @@ function Scene({ isDark, serreColor, meteo, ext, int, fenetre, serreIdx, temp, e
         )
       })()}
 
-      {/* Indicateur T° intérieure */}
+      {/* Indicateur T° extérieure */}
       <g>
         <rect x="18" y="235" width="70" height="30" rx="7"
           fill={isDark?'rgba(7,17,31,0.88)':'rgba(255,255,255,0.92)'}
           stroke={serreColor+'40'} strokeWidth="1"/>
         <text x="53" y="247" textAnchor="middle" fontFamily="monospace" fontSize="8"
-          fill={isDark?'#94A3B8':'#64748B'}>T° INT.</text>
+          fill={isDark?'#94A3B8':'#64748B'}>T° EXT.</text>
         <text x="53" y="259" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700"
           fill={serreColor}>{temp != null ? temp + ' °C' : '— °C'}</text>
       </g>
