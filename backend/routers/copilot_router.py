@@ -185,7 +185,7 @@ async def build_context(db) -> dict:
                a.message_fr as message, a.created_at, a.lu, s.code as serre_code, s.nom_fr
         FROM alertes a JOIN serres s ON s.id = a.serre_id
         WHERE a.created_at > NOW() - INTERVAL '48 hours'
-        ORDER BY a.created_at DESC LIMIT 30
+        ORDER BY a.created_at DESC LIMIT 15
     """)
 
     # 4. Seuils actifs
@@ -215,7 +215,7 @@ async def build_context(db) -> dict:
                    j.seuil_reference, j.periode, j.timestamp, s.code
             FROM journal_actions j JOIN serres s ON s.id = j.serre_id
             WHERE j.timestamp > NOW() - INTERVAL '24 hours'
-            ORDER BY j.timestamp DESC LIMIT 50
+            ORDER BY j.timestamp DESC LIMIT 20
         """)
     except Exception:
         journal_rows = []
@@ -240,13 +240,11 @@ async def build_context(db) -> dict:
             live_by_serre[sid]["env"] = {
                 "temperature": row["temperature"], "humidite": row["humidite"],
                 "vpd": row["vpd"], "co2": row["co2"], "luminosite": row["luminosite"],
-                "capture_at": str(row["capture_at"]) if row["capture_at"] else None,
             }
         elif row["type_api"] == "IRR":
             live_by_serre[sid]["irr"] = {
                 "ph": row["ph"], "ec": row["ec"],
                 "temp_eau": row["temp_eau"], "niveau_eau": row["niveau_eau"],
-                "capture_at": str(row["capture_at"]) if row["capture_at"] else None,
             }
 
     return {
@@ -254,7 +252,7 @@ async def build_context(db) -> dict:
                     **live_by_serre.get(s["id"], {"env": None, "irr": None})} for s in serres_rows],
         "alertes_48h": [{"serre": a["serre_code"], "capteur": a["capteur"],
                          "valeur": float(a["valeur"]) if a["valeur"] else None,
-                         "message": a["message"], "heure": str(a["created_at"]), "lu": a["lu"]}
+                         "message": a["message"], "lu": a["lu"]}
                         for a in alertes_rows],
         "seuils": [{"serre": s["code"], "capteur": s["capteur"],
                     "min": float(s["valeur_min"]) if s["valeur_min"] else None,
@@ -269,12 +267,12 @@ async def build_context(db) -> dict:
                       "avg_co2":  round(float(s["avg_co2"]),  0) if s["avg_co2"]  else None,
                       "avg_ph":   round(float(s["avg_ph"]),   2) if s["avg_ph"]   else None,
                       "avg_ec":   round(float(s["avg_ec"]),   2) if s["avg_ec"]   else None,
-                      "nb_mesures": int(s["nb_mesures"])}
+}
                      for s in stats_rows],
         "journal_24h": [{"serre": j["code"], "action": j["action"], "etat": j["etat"],
                          "valeur": float(j["valeur_capteur"]) if j["valeur_capteur"] else None,
                          "seuil": float(j["seuil_reference"]) if j["seuil_reference"] else None,
-                         "periode": j["periode"], "heure": str(j["timestamp"])}
+                         "periode": j["periode"]}
                         for j in journal_rows],
         "params_internes": [{"serre": p["code"], "action": p["action"],
                              "seuil": float(p["seuil"]), "deadband": float(p["deadband"])}
@@ -359,7 +357,7 @@ async def call_groq_stream(messages: list, system: str):
     payload = {
         "model": GROQ_MODEL,
         "messages": [{"role": "system", "content": system}] + messages,
-        "max_tokens": 1024,
+        "max_tokens": 512,
         "temperature": 0.7,
         "stream": True,
     }
