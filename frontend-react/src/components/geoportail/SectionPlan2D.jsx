@@ -1,5 +1,5 @@
 // src/components/geoportail/SectionPlan2D.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
 
 // ── Image dimensions (px) at display: 1320×880 ───────────────
@@ -129,6 +129,17 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
   const [selected,    setSelected]    = useState(null)
   const [hovered,     setHovered]     = useState(null)
   const [tab,         setTab]         = useState('info') // 'info' | 'data' | 'visite'
+  const [isMobile,    setIsMobile]    = useState(false)
+
+  // Detect mobile viewport (≤ 900px) — affects layout, paddings and grid
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 900px)')
+    setIsMobile(mq.matches)
+    const handler = e => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const cardBg     = darkMode ? 'rgba(16,27,46,0.95)' : '#FFFFFF'
   const cardBorder = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
@@ -166,10 +177,16 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
     if (selected === id) { setSelected(null); return }
     setSelected(id)
     setTab('info')
+    // On mobile, scroll to the info panel so user actually sees it appear below the map
+    if (isMobile) {
+      setTimeout(() => {
+        document.getElementById('plan2d-info-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 80)
+    }
   }
 
   return (
-    <section id="plan2d" style={{ padding: '5rem 3rem', scrollMarginTop: '64px' }}>
+    <section id="plan2d" style={{ padding: isMobile ? '2.5rem 1rem' : '5rem 3rem', scrollMarginTop: '64px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* ── Title ── */}
@@ -185,7 +202,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
         </div>
 
         {/* ── Main layout ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '2rem', alignItems: 'stretch' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 360px', gap: isMobile ? '1rem' : '2rem', alignItems: 'stretch' }}>
 
           {/* ── Image + clickable zones ── */}
           <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', overflow: 'hidden', boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column' }}>
@@ -235,7 +252,7 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
           </div>
 
           {/* ── Info panel ── */}
-          <div style={{
+          <div id="plan2d-info-panel" style={{
             background: cardBg,
             border: `1px solid ${zone ? zone.color+'40' : cardBorder}`,
             borderRadius: '20px',
