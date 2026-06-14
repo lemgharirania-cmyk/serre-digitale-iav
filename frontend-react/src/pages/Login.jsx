@@ -349,8 +349,8 @@ export default function Login() {
           <AlertBox msg={sErr} />
           <AlertBox msg={sOk} type="success" />
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))', gap:'10px', marginBottom:'14px' }}>
-            <div><Label>Prénom *</Label><TextInput value={sFirst} onChange={setSFirst} placeholder="Kawtar"/></div>
-            <div><Label>Nom *</Label><TextInput value={sLast} onChange={setSLast} placeholder="Nafia"/></div>
+            <div><Label>Prénom *</Label><TextInput value={sFirst} onChange={setSFirst} placeholder="Jean"/></div>
+            <div><Label>Nom *</Label><TextInput value={sLast} onChange={setSLast} placeholder="Dupont"/></div>
           </div>
           <Field>
             <Label>Unité assignée *</Label>
@@ -364,7 +364,7 @@ export default function Login() {
               {UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
             </select>
           </Field>
-          <Field><Label>Adresse email *</Label><TextInput value={sEmail} onChange={setSEmail} type="email" placeholder="kawtarnafia86@gmail.com"/></Field>
+          <Field><Label>Adresse email *</Label><TextInput value={sEmail} onChange={setSEmail} type="email" placeholder="nom@exemple.com"/></Field>
           <Field>
             <Label>Mot de passe * <span style={{color:'#475569',fontWeight:400}}>(min. 8 car.)</span></Label>
             <PwdInput value={sPwd} onChange={setSPwd} show={sShow1} setShow={setSShow1}/>
