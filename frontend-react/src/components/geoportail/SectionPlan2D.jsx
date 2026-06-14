@@ -1,6 +1,6 @@
 // src/components/geoportail/SectionPlan2D.jsx
 import { useState, useEffect } from 'react'
-import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2 } from 'lucide-react'
+import { X, Info, Activity, Video, ExternalLink, Thermometer, Droplets, Wind, Leaf, FlaskConical, Zap, Waves, BarChart2, Sun } from 'lucide-react'
 
 // ── Image dimensions (px) at display: 1320×880 ───────────────
 // All zones are expressed as percentages of the image dimensions
@@ -111,6 +111,7 @@ const PARAM_ICONS = {
   humidite:    Droplets,
   vpd:         Wind,
   co2:         Leaf,
+  luminosite:  Sun,
   ph:          FlaskConical,
   ec:          Zap,
   temp_eau:    Waves,
@@ -118,12 +119,12 @@ const PARAM_ICONS = {
 }
 
 const PARAM_LABELS = {
-  fr: { temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'T° Eau', niveau_eau:'Niveau Eau' },
-  en: { temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂', ph:'pH', ec:'EC', temp_eau:'Water T°', niveau_eau:'Water Level' },
+  fr: { temperature:'Température', humidite:'Humidité', vpd:'VPD', co2:'CO₂', luminosite:'Luminosité', ph:'pH', ec:'EC', temp_eau:'T° Eau', niveau_eau:'Niveau Eau' },
+  en: { temperature:'Temperature', humidite:'Humidity', vpd:'VPD', co2:'CO₂', luminosite:'Light', ph:'pH', ec:'EC', temp_eau:'Water T°', niveau_eau:'Water Level' },
 }
 
-const PARAM_UNITS = { temperature:'°C', humidite:'%', vpd:' kPa', co2:' ppm', ph:'', ec:' mS/cm', temp_eau:'°C', niveau_eau:' m' }
-const PARAM_COLORS = { temperature:'#F59E0B', humidite:'#06B6D4', vpd:'#8B5CF6', co2:'#22C55E', ph:'#0891b2', ec:'#059669', temp_eau:'#F59E0B', niveau_eau:'#3773bd' }
+const PARAM_UNITS = { temperature:'°C', humidite:'%', vpd:' kPa', co2:' ppm', luminosite:' µmol/m²/s', ph:'', ec:' mS/cm', temp_eau:'°C', niveau_eau:' m' }
+const PARAM_COLORS = { temperature:'#F59E0B', humidite:'#06B6D4', vpd:'#8B5CF6', co2:'#22C55E', luminosite:'#EAB308', ph:'#0891b2', ec:'#059669', temp_eau:'#F59E0B', niveau_eau:'#3773bd' }
 
 export default function SectionPlan2D({ lang, liveData, darkMode }) {
   const [selected,    setSelected]    = useState(null)
@@ -354,8 +355,8 @@ export default function SectionPlan2D({ lang, liveData, darkMode }) {
                       <>
                         {/* ENV */}
                         <div style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{T.env}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '12px' }}>
-                          {(['temperature','humidite','vpd','co2']).map(key => {
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                          {(['temperature','humidite','vpd','co2','luminosite']).map(key => {
                             const val = live.env?.[key]
                             const IconCmp = PARAM_ICONS[key]
                             const c = PARAM_COLORS[key]
