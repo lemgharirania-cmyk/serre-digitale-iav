@@ -220,7 +220,10 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
   const env    = serre.env || {}
   const irr    = serre.irr || {}
   const hasIrr = irr && Object.values(irr).some(v => v != null)
-  const temp   = env.temperature
+  // Température intérieure (capteur ENV Pro-Leaf) → équipements internes
+  // Température extérieure (Open-Meteo Rabat)    → actionneurs climat (ombrage + fenêtre)
+  const tempInt = env.temperature
+  const tempExt = meteo.temp_ext
   const canEdit = canAccessSerre(meta.id)
 
   useEffect(() => {
@@ -280,11 +283,13 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
     finally { setSaving(false) }
   }
 
-  const ext   = ecranEtat(temp, ACTIONNEURS.ombrage_ext)
-  const int   = ecranEtat(temp, ACTIONNEURS.ombrage_int)
-  const fen   = fenetreEtat(temp, meteo.vent, meteo.pluie, ACTIONNEURS.fenetre)
+  // Actionneurs climat : pilotés par la température EXTÉRIEURE (Open-Meteo Rabat)
+  const ext   = ecranEtat(tempExt, ACTIONNEURS.ombrage_ext)
+  const int   = ecranEtat(tempExt, ACTIONNEURS.ombrage_int)
+  const fen   = fenetreEtat(tempExt, meteo.vent, meteo.pluie, ACTIONNEURS.fenetre)
+  // Équipements internes : pilotés par la température INTÉRIEURE (capteur Pro-Leaf)
   const jour  = isJour(meteo.sunrise, meteo.sunset)
-  const equip = equipEtats(temp, env.humidite, env.co2, jour, paramsStruct)
+  const equip = equipEtats(tempInt, env.humidite, env.co2, jour, paramsStruct)
   const getSeuil = (key) => thresholds.find(s => s.capteur === key) || null
 
   // Couleurs
@@ -500,7 +505,7 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
             <Scene
               isDark={isDark} serreColor={meta.color} meteo={meteo}
               ext={ext.etat} int={int.etat} fenetre={fen.etat}
-              serreIdx={idx} temp={temp} equip={equip} jour={jour}
+              serreIdx={idx} temp={tempInt} equip={equip} jour={jour}
             />
           </div>
 
@@ -512,8 +517,8 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
                 actif={ext.etat==='deploye'} on={t.deploye} off={t.retracte}
                 cOn="#F59E0B" neutre={ext.neutre}
                 detail={lang==='FR'
-                  ? 'Déploie > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'
-                  : 'Deploys > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'}
+                  ? 'Déploie si T°ext > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'
+                  : 'Deploys if T°out > ' + ACTIONNEURS.ombrage_ext.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_ext.retracte + ' °C'}
                 plage={ACTIONNEURS.ombrage_ext.plage} t={t}
               />
               <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
@@ -521,8 +526,8 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
                 actif={int.etat==='deploye'} on={t.deploye} off={t.retracte}
                 cOn="#FBBF24" neutre={int.neutre}
                 detail={lang==='FR'
-                  ? 'Déploie > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'
-                  : 'Deploys > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'}
+                  ? 'Déploie si T°ext > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Rétracte < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'
+                  : 'Deploys if T°out > ' + ACTIONNEURS.ombrage_int.deploie + ' °C · Retracts < ' + ACTIONNEURS.ombrage_int.retracte + ' °C'}
                 plage={ACTIONNEURS.ombrage_int.plage} t={t}
               />
               <ActionCard isDark={isDark} ink={ink} ink3={ink3} ink4={ink4} border={border}
@@ -531,8 +536,8 @@ export default function EtatSerre({ liveData=[], meteo={}, stats={}, countdown, 
                 cOn="#22C55E" cOff={fen.force ? '#EF4444' : undefined}
                 force={fen.force} neutre={fen.neutre}
                 detail={lang==='FR'
-                  ? 'Ouvre > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Ferme < ' + ACTIONNEURS.fenetre.ferme + ' °C'
-                  : 'Opens > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Closes < ' + ACTIONNEURS.fenetre.ferme + ' °C'}
+                  ? 'Ouvre si T°ext > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Ferme < ' + ACTIONNEURS.fenetre.ferme + ' °C'
+                  : 'Opens if T°out > ' + ACTIONNEURS.fenetre.ouvre + ' °C · Closes < ' + ACTIONNEURS.fenetre.ferme + ' °C'}
                 t={t}
               />
             </div>
