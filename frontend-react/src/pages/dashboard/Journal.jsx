@@ -40,7 +40,7 @@ const ACTIONS = [
 // ── Traductions ────────────────────────────────────────────────────────────────
 const T = {
   FR: {
-    title: 'actions de régulation climatique',
+    title: 'Journal des actions de régulation climatique',
     sub: 'Historique des activations des équipements de contrôle climatique',
     resume: 'Résumé du jour', activations: 'activation(s)',
     timeline: 'Timeline des activations (24h)',
