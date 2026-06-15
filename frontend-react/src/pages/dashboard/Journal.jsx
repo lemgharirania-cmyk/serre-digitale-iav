@@ -48,7 +48,7 @@ const T = {
     exportCSV: 'CSV', exportExcel: 'Excel',
     noData: 'Aucune action enregistrée pour cette période.',
     loading: 'Chargement...', refresh: 'Actualiser',
-    visOnly: 'Basé sur les intervalles de visualisation — pas les seuils réels Pro-Leaf.',
+    visOnly: 'Basé sur les intervalles de visualisation.',
     nbJours: 'jours', today: "Aujourd'hui",
   },
   EN: {
