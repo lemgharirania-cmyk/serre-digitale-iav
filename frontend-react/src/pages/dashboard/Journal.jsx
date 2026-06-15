@@ -40,7 +40,7 @@ const ACTIONS = [
 // ── Traductions ────────────────────────────────────────────────────────────────
 const T = {
   FR: {
-    title: 'Journal des actions correctives',
+    title: 'actions de régulation climatique',
     sub: 'Historique des activations des équipements de contrôle climatique',
     resume: 'Résumé du jour', activations: 'activation(s)',
     timeline: 'Timeline des activations (24h)',
